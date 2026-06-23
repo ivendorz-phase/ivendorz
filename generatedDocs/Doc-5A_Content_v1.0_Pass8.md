@@ -29,7 +29,7 @@
 ### 11.2 Caller-Observable Event Completion
 
 - An API caller observes event-driven completion **only** through the **§10 status resource** (the owning module's Query of the entity's current true state) — **never** by consuming outbox events directly.
-- **Event delivery ≠ business completion:** an outbox event is delivered at-least-once to idempotent consumers (`Doc-4A §16`) and signals a fact to those consumers; it is **not** the caller's completion signal. This realizes and **closes the forward-verification flagged in §9.7 and §10.5** — the joint no-duplicate rule's event-surface face is consistent with the transport face: the caller's authority is the status resource, not event receipt.
+- **Event delivery ≠ business completion:** an outbox event is delivered at-least-once to idempotent consumers (`Doc-4A §16`) and signals a fact to those consumers; it is **not** the caller's completion signal. This realizes and **closes the forward-verification flagged in §10.5** — the joint no-duplicate rule's event-surface face is consistent with the transport face: the caller's authority is the status resource, not event receipt.
 - **Binds:** Doc-5A §10 (status resource); `Doc-4A §16`. **Rationale:** one caller-observable completion path (the status resource) means missed/duplicated/late event delivery never affects what the caller sees as the outcome.
 
 ### 11.3 No External Webhook / Push Surface (ratified exclusion)
@@ -42,7 +42,7 @@
 
 - Events **communicate facts between internal consumers**. They are **not** caller-facing completion authority, and they are **not** authoritative state.
 - The **authoritative business state remains the owning aggregate** and is observed through the **§10 status resource** (§10.2/§10.7).
-- A consumer **MUST NOT** infer completion authority from **event delivery alone** — the event is a fact to act on (idempotently, `Doc-4A §16`), not a determination of business outcome.
+- An API caller **MUST NOT** treat event receipt (via any notification or push channel) as completion authority. The authoritative outcome remains the **§10 status resource**. The event is a fact to act on (idempotently, `Doc-4A §16`), not a determination of business outcome.
 - **Binds:** `Doc-4A §16`; Doc-5A §10. **Rationale:** distinguishing "a fact was delivered" from "the business outcome is X" is what keeps the owning aggregate the single source of truth across the async and event surfaces.
 
 ---
