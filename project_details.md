@@ -237,10 +237,9 @@ dependencies resolved **additively** — never reopen a frozen doc.
 | Doc-4B…4M | M0–M9 contracts + Integration Index (4L) + State Machines (4M) | FROZEN |
 
 **Phase:** Implementation Governance.
-**Active deliverable:** Doc-5_Program_Governance_Note_v1.0
+**Active deliverable:** Doc-5A — API Standards (Doc-5 Implementation Contracts program). Doc-5_Program_Governance_Note_v1.0 = APPROVED. Doc-5A structure = FROZEN; content = ACTIVE (§0–§9 drafted via Pass-1…Pass-6; §10–§12 + Appendices A–C remaining; next = §10 Async).
 **Next program:** Doc-5 API · Doc-6 Database · Doc-7 Frontend · Doc-8 Tests.
-**Status tracker:** architecture = COMPLETE/FROZEN · implementation contracts (Doc-5…8) =
-NOT STARTED · application code = NOT STARTED.
+**Status tracker:** architecture = COMPLETE/FROZEN · Doc-5 Program Governance Note = APPROVED · Doc-5A = IN AUTHORING (structure frozen, content in progress) · Doc-5B…5M and Doc-6…8 = BLOCKED pending Doc-5A freeze · application code = NOT STARTED.
 
 **Maturity stages** (POLICY `platform.operating_stage`): Stage A (MVP, ~100 vendors,
 declared tiers, basic trust) → Stage B (~1,000, verified tiers, performance scoring) →
@@ -404,7 +403,7 @@ complete; the remainder is planned.
 |-------|-------|-------------|--------|
 | 1 | Vision & Scope | Product definition, market, business model, scope boundaries | COMPLETE |
 | 2 | Architecture Program | Master Architecture, ADRs, Doc-2, Doc-3, Doc-4A…4M | COMPLETE / FROZEN |
-| 3 | Implementation Contracts | Doc-5 API · Doc-6 Database · Doc-7 Frontend · Doc-8 Tests | NOT STARTED (active: Doc-5) |
+| 3 | Implementation Contracts | Doc-5 API · Doc-6 Database · Doc-7 Frontend · Doc-8 Tests | IN PROGRESS (active: Doc-5A — structure frozen, content §0–§9 drafted) |
 | 4 | Product Management Program | §15 artifacts (KPIs, journeys, operations, roadmap, mobile, liquidity) | NOT STARTED (parallel to Phase 3) |
 | 5 | Stage-A Build (MVP) | Core modules, RFQ workflow, declared tiers, basic trust, limited monetization; ~100-vendor beta | NOT STARTED |
 | 6 | Stage-A Launch & Liquidity | Anchor vendors, category seeding, buyer acquisition, supply/demand balancing | NOT STARTED |

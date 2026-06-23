@@ -2,7 +2,8 @@
 
 **Audience:** developers and AI coding agents (Claude Code, Cursor, Antigravity, Windsurf).
 **Status:** the architecture program is **COMPLETE / FROZEN**. The project is in
-**Implementation Governance**. Application code has **not** started.
+**Implementation Governance** — active deliverable **Doc-5A — API Standards** (structure frozen;
+content §0–§9 drafted, §10–§12 + Appendices A–C remaining). Application code has **not** started.
 
 This is the entry point for any implementation work. Read it first, then follow the order below.
 
@@ -75,7 +76,7 @@ is insufficient.
 | Which doc is canonical | `generatedDocs/CORPUS_INDEX.md`, `generatedDocs/00_AUTHORITY_MAP.md` |
 | API conventions | Doc-4A |
 | State machines | Doc-4M · Event catalog | Doc-4J · Cross-module flows | Doc-4L |
-| Current program | `generatedDocs/Doc-5_Program_Governance_Note_v1.0.md` (active: Doc-5A — API Standards) |
+| Current program | `generatedDocs/Doc-5_Program_Governance_Note_v1.0.md` (active: Doc-5A — API Standards; structure frozen, content §0–§9 drafted) |
 
 ---
 

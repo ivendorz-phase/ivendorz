@@ -79,7 +79,9 @@ imports (only `contracts/` is importable). **One module, one owner.**
 
 The **architecture program is complete and frozen** (Master System Architecture, ADR Compendium,
 Doc-2, Doc-3, Doc-4A…4M). The project is in **Implementation Governance**; the active deliverable
-is **Doc-5A — API Standards**. Implementation contracts (Doc-5…8) and application code are **not
+is **Doc-5A — API Standards** (Doc-5 program governance note APPROVED; Doc-5A **structure frozen**,
+content authoring in progress — §0–§9 drafted, §10–§12 + Appendices A–C remaining). Per-module
+contracts (Doc-5B…5M) and Doc-6/7/8 are blocked pending Doc-5A freeze; application code is **not
 started** — the frozen corpus is the blueprint.
 
 **Scaling target:** optimize for **100 → 1,000 → 10,000** vendors before 1,000,000.
