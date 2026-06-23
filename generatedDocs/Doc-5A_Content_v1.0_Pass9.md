@@ -35,10 +35,9 @@
 
 ### 12.3 Backward-Compatible vs Breaking Realization
 
-- Change classification is **owned by `Doc-4A §20.2`** and bound here **by pointer — not restated**. On the wire:
-  - **Additive / editorial** changes (e.g. new optional response/request field, new optional enum value, new `error_code` within an existing class) **MUST NOT** bump the surface version (`Doc-4A §20.2`, §20.3).
-  - **Breaking** changes (e.g. removing/renaming a field, changing a field type or semantics, a new required request field, renaming an `error_code`) **MUST** bump the surface version (`Doc-4A §20.2`, §20.3).
-- Clients **branch on `error_class`, not `error_code`** (§6; `Doc-4A §12`/§20.2); adding a new `error_code` within an existing class is therefore additive and non-breaking.
+- Change classification is **owned exclusively by `Doc-4A §20.2`** and is bound here **by pointer only**. The additive and breaking classification examples are **not repeated** in this document.
+- **Version-bump realization:** a change that `Doc-4A §20.2` classifies as **additive or editorial** carries **no** surface-version bump; a change it classifies as **breaking** **MUST** bump the surface version (`Doc-4A §20.3`). The classification outcome is read from §20.2; §12 only realizes the resulting wire action.
+- Clients **branch on `error_class`, not `error_code`** (§6; `Doc-4A §12`/§20.2).
 - **Contract identity stability:** a breaking change creates a **new contract version, not a new contract identity or resource identity**, unless explicitly authorized by an architecture-level corpus patch (`Doc-4A §20.3`; `Doc-5_Program_Governance_Note_v1.0 §7`). Renaming a resource or coining a parallel identity to express a version — `VendorProfile → VendorProfileV2`, `RFQ → RFQV2`, `…Search → …SearchNew` — is **nonconforming**; the version increment is the only sanctioned channel.
 - **Binds:** `Doc-4A §20.2`, §20.3; Doc-5A §6; Gov-Note §7. **Rationale:** classification stays single-sourced upstream; identity stability stops the most common AI-agent evolution error (forking a v2-named resource instead of bumping the version).
 
