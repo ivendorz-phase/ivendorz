@@ -1,0 +1,111 @@
+# iVendorz — Authority Map
+
+**Document type:** Authority map for the architecture corpus. Non-authoritative pointer.
+**Date:** 2026-06-23
+**Companion:** [`CORPUS_INDEX.md`](CORPUS_INDEX.md) (navigation). This file ranks **authority**.
+
+> On any conflict, higher authority wins. This map only states *which document decides*; it
+> never restates a decision. If a status here disagrees with the actual document, the
+> document wins and this map is patched.
+
+---
+
+## 1. Authority Order (binding)
+
+Architecture is supreme. Higher rank overrides lower.
+
+```
+0. Frozen Architecture Corpus  (Master Architecture · Doc-2 · Doc-3 · Doc-4A…4M)   ← immutable
+1. ADR Compendium                                                                  ← immutable
+2. Virtual CTO
+3. Enterprise Architect
+4. DDD Architect
+5. API Governance Board
+6. Security Architect
+7. Engineering
+8. Product
+9. AI Skills
+```
+
+Ranks **0–1** are immutable to all skills (including the Virtual CTO). Changing them requires
+an **additive architecture patch with human approval** — never a skill/agent decision.
+Implementation contracts (Doc-5…8), code, and all root orientation docs sit **below** rank 1
+and must conform upward.
+
+---
+
+## 2. Authority Levels (legend)
+
+| Level | Meaning |
+|-------|---------|
+| **CANONICAL** | Single source of truth; supreme within its scope |
+| **FROZEN** | Ratified; authoritative; changed only by additive patch + (rank 0–1) human approval |
+| **ACTIVE** | Current working program; not yet frozen |
+| **NON-AUTHORITATIVE** | Orientation/mirror; conforms to the corpus; patched to match |
+| **PROVENANCE** | Lifecycle record (reviews/patches/audits); reference only, never reopened |
+
+---
+
+## 3. Corpus Authority Table
+
+| Document | Authority Level | Version | Frozen? | Notes |
+|----------|-----------------|---------|---------|-------|
+| `Master_System_Architecture_v1.0_FINAL.md` | CANONICAL | v1.0 FINAL | ✅ | Single source of truth (rank 0) |
+| `ADR_Compendium_v1.md` | FROZEN | v1 | ✅ | Rank 1 |
+| `Doc-2_Domain_Model_And_Database_Blueprint` (+ patches) | FROZEN | v1.0.3 | ✅ | Domain model & DB blueprint |
+| `Doc-3_RFQ_Procurement_Engine_And_Operational_Specification` (+ patches) | FROZEN | v1.0.2 | ✅ | RFQ operational spec |
+| `Doc-4A_Structure_v1.0_FROZEN.md` (+ content passes) | FROZEN | v1.0 | ✅ | API metastandard — read before any contract work |
+| `Doc-4B` (M0 Platform Core) | FROZEN | v1.0 | ✅ | Owns audit, outbox, ID gen, config, flags |
+| `Doc-4C_Structure_v1.0_FROZEN.md` (M1 Identity) | FROZEN | v1.0 | ✅ | Users/orgs/roles/permissions/delegation |
+| `Doc-4D_Structure_v1.0_FROZEN.md` (M2 Marketplace) | FROZEN | v1.0 | ✅ | Vendor profiles, discovery, presentation |
+| `Doc-4E_*_v1.0_FROZEN.md` (M3 RFQ) | FROZEN | v1.0 | ✅ | Module cert: `Doc-4E_Module3_Full_Freeze_Certification_v1.0.md` |
+| `Doc-4F_*_FROZEN.md` (M4 Operations) | FROZEN | v1.0 | ✅ | Module freeze: `Doc-4F_Module4_Freeze_Audit_v1.0.md` |
+| `Doc-4G_Final_Freeze_Audit_v1.0.md` (M5 Trust) | FROZEN | v1.0 | ✅ | Trust/performance/verification/fraud |
+| `Doc-4H_*` (M6 Communication) | FROZEN | v1.0 | ✅ | Consolidation v2.0 supersedes v1.0 |
+| `Doc-4I_FROZEN_v1.0.md` (M7 Monetization) | FROZEN | v1.0 | ✅ | Plans/entitlements/billing |
+| `Doc-4J_FROZEN_v1.0.md` (M8 Admin) | FROZEN | v1.0 | ✅ | **Authoritative event catalog** |
+| `Doc-4K_FROZEN_v1.0.md` (M9 AI) | FROZEN | v1.0 | ✅ | Reserved; owns no authoritative data |
+| `Doc-4L_FROZEN_v1.0.md` (Integration Index) | FROZEN | v1.0 | ✅ | **Authoritative cross-module event-flow map** |
+| `Doc-4M_FROZEN_v1.0.md` (State Machines) | FROZEN | v1.0 | ✅ | **Authoritative lifecycle/state authority** |
+| `Doc-4_SERIES_FROZEN_v1.0.md` | FROZEN | v1.0 | ✅ | Whole Doc-4 series freeze record |
+| `Doc-5_Program_Governance_Note_v1.0.md` | APPROVED | v1.0 | ✅ | Implementation Contracts program; active deliverable = Doc-5A API Standards |
+| `iVendorz_Master_Overview_v1.0.md` | NON-AUTHORITATIVE | v1.3 | — | Consolidated mirror |
+| `CORPUS_INDEX.md` · `00_AUTHORITY_MAP.md` | NON-AUTHORITATIVE | — | — | Navigation + authority pointers |
+| Context Packs / Primers / Status / Roadmap | NON-AUTHORITATIVE | various | — | Orientation only |
+| `*_Structure_Proposal` · `*_Hard_Review` · `*_Patch` · `*_Freeze_Audit` · `*_Verification` | PROVENANCE | various | — | Lifecycle trail; reference only |
+
+---
+
+## 4. Single-Topic Authorities (where one document decides)
+
+| Topic | Authoritative document |
+|-------|------------------------|
+| Core invariants / module boundaries / security rules | Master System Architecture (§4, §16, §22) |
+| Architecture decisions | ADR Compendium |
+| Domain entities & database schema | Doc-2 |
+| RFQ operational policy / FIXED·POLICY·ORG settings | Doc-3 |
+| API conventions (namespace, validation order, error model, idempotency) | Doc-4A |
+| Lifecycle / state machines | Doc-4M |
+| Event catalog | Doc-4J |
+| Cross-module event flows | Doc-4L |
+| Outbox ownership & transactional write model | Doc-2 / Doc-4B / Doc-4J / Doc-4L |
+
+---
+
+## 5. Root (repository) authority — below rank 1
+
+| File | Authority Level | Role |
+|------|-----------------|------|
+| `README.md` | NON-AUTHORITATIVE | Entry description |
+| `IMPLEMENTATION_START_HERE.md` | NON-AUTHORITATIVE | Implementation entry point / reading order |
+| `CLAUDE.md` | NON-AUTHORITATIVE | AI-agent guardrails |
+| `project_details.md` | NON-AUTHORITATIVE | Full project description |
+| `REPOSITORY_STRUCTURE.md` | NON-AUTHORITATIVE | Repository constitution (folder shape, boundaries) |
+
+All conform upward to the frozen corpus and are patched to match it. None grants authority
+above rank 1.
+
+---
+
+*Non-authoritative authority map. Patch additively when the corpus changes; the document
+always wins over this map.*

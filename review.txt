@@ -1,0 +1,35 @@
+Pass-3 Cleanup Patch
+
+Apply only the following cleanup items.
+
+N-01
+
+* Verify all §4.0 references point to the final Transport Envelope section.
+* Update references only if required.
+
+N-02
+
+* Add a brief rationale note for:
+  QUOTA → 403
+  (entitlement exhaustion, not throughput limiting).
+
+NP-01
+
+* Expand §5.1 citation to include the additional Doc-4A sections supporting the command-shaped model.
+
+NP-02
+
+* Remove duplicate ASYNC_PENDING ownership wording if redundant.
+
+Constraints
+
+* No architecture changes.
+* No behavior changes.
+* No status mapping changes.
+* No new authorities.
+* No section restructuring.
+* Keep all other content unchanged.
+
+Output:
+
+1. say in text file updated.

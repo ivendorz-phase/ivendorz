@@ -1,0 +1,82 @@
+# IMPLEMENTATION — START HERE
+
+**Audience:** developers and AI coding agents (Claude Code, Cursor, Antigravity, Windsurf).
+**Status:** the architecture program is **COMPLETE / FROZEN**. The project is in
+**Implementation Governance**. Application code has **not** started.
+
+This is the entry point for any implementation work. Read it first, then follow the order below.
+
+---
+
+## The five rules (non-negotiable)
+
+1. **Read [CLAUDE.md](CLAUDE.md)** — the AI-agent guardrails and working rules.
+2. **Read [REPOSITORY_STRUCTURE.md](REPOSITORY_STRUCTURE.md)** — the repository constitution
+   (module shape, `contracts/`-only imports, forbidden patterns).
+3. **Read the relevant frozen contracts in [generatedDocs/](generatedDocs/)** — start at
+   [generatedDocs/CORPUS_INDEX.md](generatedDocs/CORPUS_INDEX.md), and read **Doc-4A** (API
+   metastandard) before any contract work, plus the owning module's contract doc (Doc-4B…4M).
+4. **Never modify `generatedDocs/`** — the corpus is frozen. Propose **additive patches** only;
+   never reopen a frozen document.
+5. **All code follows the contracts** — cross-module communication only through `contracts/`;
+   one module, one owner; references by ID only.
+
+---
+
+## Reading order
+
+| Step | Read | Why |
+|------|------|-----|
+| 1 | [README.md](README.md) | What iVendorz is, at a glance |
+| 2 | [CLAUDE.md](CLAUDE.md) | Guardrails, authority order, red-flag checklist |
+| 3 | [REPOSITORY_STRUCTURE.md](REPOSITORY_STRUCTURE.md) | Folder shape, boundaries, forbidden patterns |
+| 4 | [generatedDocs/CORPUS_INDEX.md](generatedDocs/CORPUS_INDEX.md) + [00_AUTHORITY_MAP.md](generatedDocs/00_AUTHORITY_MAP.md) | Find the canonical document for your task |
+| 5 | `generatedDocs/Doc-4A_Structure_v1.0_FROZEN.md` | API conventions (mandatory before contract work) |
+| 6 | The owning module's frozen contract (Doc-4B…4M) | The rules for the module you're touching |
+| 7 | `generatedDocs/Doc-5_Program_Governance_Note_v1.0.md` | Current implementation-contracts program |
+
+---
+
+## Authority order (who decides)
+
+```
+0. Frozen Architecture Corpus (Master Arch · Doc-2 · Doc-3 · Doc-4A…4M)   ← immutable
+1. ADR Compendium                                                         ← immutable
+2. Virtual CTO → 3. Enterprise Architect → 4. DDD Architect
+→ 5. API Governance Board → 6. Security Architect → 7. Engineering
+→ 8. Product → 9. AI Skills
+```
+
+If a request conflicts with the frozen corpus: **stop and flag it** (Flag-and-Halt). Do not
+work around it. Architecture-affecting changes require **human** approval — code review alone
+is insufficient.
+
+---
+
+## Before you open a PR
+
+- [ ] Change sits inside **one module** (one module, one owner).
+- [ ] No cross-module imports except `…/contracts`; no cross-module table access or FKs.
+- [ ] No forbidden pattern (see REPOSITORY_STRUCTURE.md §9): shared business logic, cross-module
+      writes, admin bypass, workflow-owned state, read-model-as-truth, AI-owned data, raw cross-schema SQL.
+- [ ] Conforms to Doc-4A (API) and the owning module's frozen contract.
+- [ ] No frozen document modified.
+- [ ] AI-generated code reviewed by AI Coding Supervisor or human; architecture-affecting
+      changes have **human** approval.
+
+---
+
+## Where things live
+
+| Need | Document |
+|------|----------|
+| What/why of the system | `README.md`, `project_details.md`, Master System Architecture |
+| Folder shape & boundaries | `REPOSITORY_STRUCTURE.md` |
+| Which doc is canonical | `generatedDocs/CORPUS_INDEX.md`, `generatedDocs/00_AUTHORITY_MAP.md` |
+| API conventions | Doc-4A |
+| State machines | Doc-4M · Event catalog | Doc-4J · Cross-module flows | Doc-4L |
+| Current program | `generatedDocs/Doc-5_Program_Governance_Note_v1.0.md` (active: Doc-5A — API Standards) |
+
+---
+
+*Non-authoritative entry point. On any conflict, the frozen corpus wins.*

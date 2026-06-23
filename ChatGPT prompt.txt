@@ -1,0 +1,622 @@
+# Architecture Board Assessment
+
+## Subject
+
+**Review of Independent Hard Review Findings for Doc-5A_API_Realization_Standards_v1.0_Pass2**
+
+Board Role:
+
+* Architecture Board Chair
+* Principal Enterprise Architect
+* Principal DDD Architect
+* Principal API Governance Lead
+* Principal Documentation Governance Lead
+* Virtual CTO
+
+Objective:
+
+Determine whether the review findings themselves are:
+
+```text
+VALID
+PARTIALLY VALID
+INVALID
+```
+
+and establish the official patch scope.
+
+---
+
+# Executive Verdict
+
+| Severity | Count |
+| -------- | ----- |
+| BLOCKER  | 3     |
+| MAJOR    | 3     |
+| MINOR    | 4     |
+| NITPICK  | 1     |
+
+### Status
+
+```text
+PATCH REQUIRED
+```
+
+The review is generally high quality.
+
+However:
+
+```text
+Not every finding should be accepted as written.
+```
+
+Some findings correctly identify defects but propose fixes that may overreach the frozen authority.
+
+---
+
+# Board Assessment By Finding
+
+---
+
+# B-01 / M-01
+
+## Missing Transport Envelope
+
+Source:
+
+* Review 1 B-01
+* Hard Review M-01
+
+Board Assessment:
+
+```text
+VALID
+```
+
+### Reason
+
+Frozen structure explicitly states:
+
+```text
+Transport Envelope & Standard Header Set
+```
+
+Pass-2 currently implements:
+
+```text
+Header Registry
+```
+
+but not:
+
+```text
+Transport Envelope
+```
+
+This is a direct structure violation.
+
+### Board Decision
+
+```text
+MUST PATCH
+```
+
+---
+
+# B-02
+
+## Missing Pagination Cursor Header Slot
+
+Board Assessment:
+
+```text
+VALID
+```
+
+### Reason
+
+Frozen structure explicitly includes:
+
+```text
+Pagination Cursor
+```
+
+Pass-2 omitted it.
+
+This is not discretionary.
+
+### Board Decision
+
+```text
+MUST PATCH
+```
+
+---
+
+# B-03
+
+## Nonexistent §10 Observability Owner
+
+Board Assessment:
+
+```text
+VALID
+```
+
+### Reason
+
+Current pointer:
+
+```text
+§10 / observability
+```
+
+does not exist.
+
+Frozen structure does not define:
+
+```text
+Observability Section
+```
+
+Therefore ownership is unresolved.
+
+### Board Decision
+
+```text
+MUST PATCH
+```
+
+---
+
+# B-04
+
+## Trace Propagation Header
+
+Board Assessment:
+
+```text
+PARTIALLY VALID
+```
+
+### Reason
+
+Reviewer correctly detected:
+
+```text
+Trace Propagation
+```
+
+is not present in frozen structure.
+
+However:
+
+The review assumes:
+
+```text
+must be removed
+```
+
+which is not necessarily true.
+
+Possible outcomes:
+
+### Option A
+
+Merge into:
+
+```text
+Correlation Header
+```
+
+### Option B
+
+Formal additive amendment
+
+### Option C
+
+Remove
+
+All three are valid.
+
+### Board Decision
+
+```text
+PATCH REQUIRED
+
+Resolution method
+left to author.
+```
+
+---
+
+# M-02
+
+## Missing Realization Convention Tags
+
+Board Assessment:
+
+```text
+VALID
+```
+
+### Reason
+
+Document itself promises:
+
+```text
+Every realization convention
+is marked
+```
+
+Several realization conventions are unmarked.
+
+This is an internal consistency defect.
+
+### Board Decision
+
+```text
+PATCH
+```
+
+---
+
+# M-03
+
+## Create / Update Semantics Lost
+
+Board Assessment:
+
+```text
+VALID
+```
+
+### Severity Upgrade
+
+The reviewer marked Major.
+
+Board agrees.
+
+This is one of the most important findings.
+
+### Reason
+
+Current wording:
+
+```text
+default / no-change semantics
+```
+
+collapses:
+
+```text
+Create
+Update
+```
+
+which Doc-4A treats differently.
+
+### Risk
+
+AI agents could implement:
+
+```text
+PATCH
+PUT
+Command DTO
+```
+
+incorrectly.
+
+### Board Decision
+
+```text
+MUST PATCH
+```
+
+---
+
+# Hard Review M-03
+
+## Idempotency / Concurrency Strengthening
+
+Board Assessment:
+
+```text
+VALID
+```
+
+### Reason
+
+Doc-4A permits:
+
+```text
+Concurrency: none
+```
+
+with justification.
+
+Pass-2 currently appears stronger.
+
+Doc-5A cannot increase normative strength.
+
+### Board Decision
+
+```text
+MUST PATCH
+```
+
+---
+
+# Hard Review M-05
+
+## Entity-ID Tiebreaker Applied Everywhere
+
+Board Assessment:
+
+```text
+VALID
+```
+
+### Reason
+
+Reviewer is correct.
+
+Current wording accidentally broadens:
+
+```text
+Pagination Ordering Rule
+```
+
+into:
+
+```text
+All Ordered Collections
+```
+
+These are different concepts.
+
+### Board Decision
+
+```text
+MUST PATCH
+```
+
+---
+
+# Hard Review N-01
+
+## Money Canonical Grammar
+
+Board Assessment:
+
+```text
+PARTIALLY VALID
+```
+
+### Reason
+
+Problem exists.
+
+However:
+
+Doc-5A Pass-2 may not be the proper authority to fully define decimal grammar.
+
+Need to check frozen structure ownership before expanding.
+
+### Board Decision
+
+```text
+OPTIONAL PATCH
+```
+
+---
+
+# Hard Review N-02
+
+## Currency Authority
+
+Board Assessment:
+
+```text
+VALID
+```
+
+### Reason
+
+Reviewer correctly notes:
+
+```text
+Doc-2 §0.4
+```
+
+does not define:
+
+```text
+currency code set
+```
+
+Current citation overclaims authority.
+
+### Board Decision
+
+```text
+PATCH
+```
+
+---
+
+# Hard Review N-03
+
+## Timestamp Precision
+
+Board Assessment:
+
+```text
+VALID
+```
+
+### Reason
+
+Current wording:
+
+```text
+optional fractional seconds
+```
+
+does not define normalization.
+
+Potential concurrency issues later.
+
+### Board Decision
+
+```text
+PATCH RECOMMENDED
+```
+
+---
+
+# Hard Review N-04
+
+## Application Headers vs HTTP Headers
+
+Board Assessment:
+
+```text
+VALID
+```
+
+### Reason
+
+Current wording may accidentally prohibit:
+
+```text
+Accept
+Content-Type
+```
+
+This ambiguity should not survive freeze.
+
+### Board Decision
+
+```text
+PATCH
+```
+
+---
+
+# Hard Review N-05
+
+## Missing Realization Markers
+
+Board Assessment:
+
+```text
+DUPLICATE
+```
+
+Already covered earlier.
+
+No separate finding required.
+
+---
+
+# Overall Review Quality
+
+## Technical Quality
+
+```text
+9 / 10
+```
+
+---
+
+## Authority Traceability
+
+```text
+9 / 10
+```
+
+---
+
+## Architecture Understanding
+
+```text
+8.5 / 10
+```
+
+---
+
+## AI-Agent Risk Detection
+
+```text
+9.5 / 10
+```
+
+---
+
+# Official Patch Scope
+
+## Mandatory
+
+```text
+Transport Envelope
+
+Pagination Cursor Header
+
+Observability Owner Fix
+
+Create vs Update Semantics
+
+Idempotency / Concurrency Alignment
+
+Ordering Rule Narrowing
+
+Currency Authority Correction
+
+Application Header Boundary Clarification
+
+Realization Convention Markers
+```
+
+---
+
+## Recommended
+
+```text
+Timestamp Precision
+
+Money Grammar Clarification
+```
+
+---
+
+# Final Board Decision
+
+```text
+BLOCKER: 3
+MAJOR: 3
+MINOR: 4
+NITPICK: 1
+
+STATUS:
+PATCH REQUIRED
+```
+
+### Ready For Pass-3?
+
+```text
+NO
+```
+Apply only Board-approved findings.
+
+Then:
+
+Independent Patch Verification
+
+Then:
+
+Proceed to Pass-3 Authoring.
+```
+
+This review is strong enough that I would **not run another independent review**. The next efficient step is a focused patch cycle followed by patch verification.
