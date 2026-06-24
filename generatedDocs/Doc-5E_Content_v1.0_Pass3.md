@@ -4,7 +4,7 @@
 |---|---|
 | Document | Doc-5E — RFQ Procurement Engine (Module 3) — API Realization |
 | Pass | 3 of 3 — Sections §8 (out-of-wire boundary), §9 (conformance & carried items), and Appendix A (conformance attestation) — final content pass |
-| Status | ACTIVE — Content Pass 3 of 3; §8–§9 + Appendix A. Independent Hard Review applied (MINOR-01 §8.2 dual-path traceability; MINOR-02 CHK-5A-121 objective gate; NP-01 §8.5 GraphQL exclusion; NP-02 dedicated engine-execution attestation). 0 open BLOCKER/MAJOR/MINOR. Doc-5E content (§0–§9 + Appendix A) complete → next is the Doc-5E Freeze Readiness Audit |
+| Status | ACTIVE — Content Pass 3 of 3; §8–§9 + Appendix A. Two independent hard-review rounds applied. Round 1: MINOR-01 §8.2 dual-path traceability; MINOR-02 CHK-5A-121 objective gate; NP-01 §8.5 GraphQL exclusion; NP-02 dedicated engine-execution attestation. Round 2 (Board-calibrated): MINOR-01 CHK-5A-082 coverage completeness (all 5 concurrency-bearing contracts); MINOR-02 §9.3 + CHK-5A-122 realization-convention location accuracy; NP-01 §8.1 language consistency; NP-02 CHK-5A-110 §12 precision; §8.4 event-catalog optional cleanup. 0 open BLOCKER/MAJOR/MINOR. **READY FOR FREEZE READINESS AUDIT** |
 | Structure | Conforms to `Doc-5E_Structure_v1.0_FROZEN.md` |
 | Realizes | The out-of-wire boundary (the 8 System engine workers, the internal-service read legs, the DE-1…DE-8 integrations, the emitted outbox events) + the Doc-5A Appendix A attestation for the 30 caller-facing M3 endpoints |
 | Authority | `Doc-5_Program_Governance_Note_v1.0`; `Doc-5A_SERIES_FROZEN_v1.0` (FROZEN) governs this document |
@@ -37,7 +37,7 @@
   | `expire_rfq` | `matching → expired` / coverage-exhausted edge (`Doc-4M`) | RFQ state (`get_rfq`) |
   | `generate_comparison_statement` | compute the decision-support artifact (`Doc-3 §9`) | `get_comparison_statement` (§6) |
 
-- **Caller-visible async (R1/§10):** **no caller endpoint returns `202`** (§2.1). Each caller command commits its own state transition synchronously (`200`/`201`); the engine runs **downstream** as these System workers, and progress is observed via the §4/§7 reads — never a synchronous engine trigger. **`generate_comparison_statement` is engine computation: no caller-facing endpoint exists or may be added; the buyer reads the *result* via `get_comparison_statement` (§6), not the generation** (R6 — the platform never auto-decides; the statement is read-only decision support).
+- **Caller-visible async (R1/§10):** **no caller endpoint returns `202`** (§2.1). Each caller command commits its own state transition synchronously (`200`/`201`); the engine runs **downstream** as these System workers, and progress is observed via the §4/§7 reads — never a synchronous engine trigger. **`generate_comparison_statement` is engine computation: no caller-facing endpoint exists or may be added; the buyer reads the *result* via `get_comparison_statement` (§6), not the generation** (R6 — the platform never auto-decides; the statement is decision support, never auto-decision).
 - **Binds:** `Doc-4E §E5/§E6/§E9/§E10`; `Doc-3 §3–§9`; `Doc-4M`; `Doc-5A §1.3/§10/§11`; structure R1.
 
 ### 8.2 Internal-Service Read Legs (dual-path rule — no wire)
@@ -64,7 +64,7 @@
 
 ### 8.4 Emitted Domain Events (outbox — no wire)
 
-- M3's domain events (`RFQCreated`, `RFQSubmitted`, `RFQApproved`, `RFQClosedWon`, `RFQClosedLost`, `QuotationSubmitted`, `QuotationWithdrawn`, `QuotationSelected`, `InvitationAccepted`, `InvitationDeclined`, … — exact catalog owned by `Doc-4E §E12` / Doc-2, **bound by pointer, never restated or invented**) are written to the **Doc-4B transactional outbox** within the same transaction as the state change, then delivered by infrastructure (Inngest). **No event is a wire field; no consumer/notification/webhook contract is authored** (DE-6 single-authorship). Idempotent command replay (§4.3/§5.4/§6.4) does **not** re-emit an already-emitted event (`Doc-5A §9.7`).
+- M3's domain events are emitted through the **Doc-4B transactional outbox** within the same transaction as the state change, then delivered by infrastructure (Inngest) — **bound by pointer to `Doc-4E §E12` / Doc-2 §8; event catalog not restated here.** **No event is a wire field; no consumer/notification/webhook contract is authored** (DE-6 single-authorship). Idempotent command replay (§4.3/§5.4/§6.4) does **not** re-emit an already-emitted event (`Doc-5A §9.7`).
 - **Binds:** `Doc-4E §E12`; `Doc-2 §8`; `Doc-4B` outbox; `Doc-5A §9.7`.
 
 ### 8.5 Explicit Protocol Exclusion & Flag-and-Halt
@@ -95,12 +95,12 @@
 | **DE-7** | OPEN (out-of-wire) | Quota read/consumed per three-instrument identity (R7, §5.3); no ledger; payment never influences matching |
 | **DE-8** | OPEN (out-of-wire) | Platform Core consumed by pointer; events via outbox (§8.4); audit via `core.append_audit_record` |
 | `[ESC-RFQ-AUDIT]` | OPEN | Audit actions not separately enumerated in Doc-2 §9 bound to the nearest §9 action; channel Doc-2 §9 additive; never invented (§4.5/§6.4/§7.4) |
-| `[ESC-RFQ-POLICY]` | **CONDITIONAL** | `rfq.*` POLICY keys (idempotency/dedup windows) referenced by exact Doc-3 §12.2 name; **No gate if every referenced key exists in Doc-3 §12.2; blocks if any referenced key is unregistered** (`CHK-5A-121`; Doc-3 §12.2 additive first). The freeze audit confirms registration. |
+| `[ESC-RFQ-POLICY]` | **RESOLVED** | The two referenced `rfq.*` keys (`rfq.idempotency_dedup_window`, `rfq.list_page_size_max`) are **registered in Doc-3 §12.2** via the approved `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ` (2026-06-24). Gate cleared (`CHK-5A-121`; Doc-4A §18.2 satisfied). |
 | `[ESC-RFQ-SLUG]` | OPEN | Human-assist / routing-rule admin slugs interim `staff_*`; least-privilege slug = future Doc-2 §7 patch; escalate, never invent (§7) |
 
 ### 9.3 Doc-5E Coins Nothing
 
-- Doc-5E realizes the wire face of the frozen Doc-4E contracts and **coins no** endpoint identity, HTTP status, header token, error class, `error_code`, permission slug, POLICY key, or event (`CHK-5A-121/154`; `Doc-4A §6.4/§20.1`). The realization-convention decisions (§4.6 `reissue_rfq`; §6.1 nested/singleton paths; §7.2 `manage_routing_rule` per-variant) are transport-addressing disambiguations on which Doc-5A is silent (§0.4), contradicting nothing upstream. Carried `DE-*` / `[ESC-RFQ-*]` are **escalated**, never invented (`CHK-5A-123`).
+- Doc-5E realizes the wire face of the frozen Doc-4E contracts and **coins no** endpoint identity, HTTP status, header token, error class, `error_code`, permission slug, POLICY key, or event (`CHK-5A-121/154`; `Doc-4A §6.4/§20.1`). The realization-convention decisions (§4.6 `reissue_rfq`; §4.1/§5.1/§6.1/§7.1 nested/singleton paths; §7.2 `manage_routing_rule` per-variant) are transport-addressing disambiguations on which Doc-5A is silent (§0.4), contradicting nothing upstream. Carried `DE-*` / `[ESC-RFQ-*]` are **escalated**, never invented (`CHK-5A-123`).
 - **Binds:** `Doc-5A Appendix A`; `Doc-4A §6.4/§20.1`.
 
 ---
@@ -143,24 +143,24 @@ Per-band attestation of the realized M3 caller-facing surface (§4–§7, the 30
 | CHK-5A-062 | B | PASS | No authz assertion from client input (§3.5); no plan/payment value a matching input (R7 firewall) |
 | CHK-5A-063 | M | PASS | Actor-type + §6B delegation resolved server-side (§3.2/§3.4) |
 | CHK-5A-070 | B | PASS / N/A | Cursor pagination on list reads (`list_rfqs`, `list_quotations_for_rfq`, `list_invitations`); N/A singletons (`get_comparison_statement`) |
-| CHK-5A-071 | M | PASS | Page bound via POLICY key (`[ESC-RFQ-POLICY]`) on paginated lists |
+| CHK-5A-071 | M | PASS | Page bound via POLICY key `rfq.list_page_size_max` (Doc-3 §12.2, registered via Patch v1.1) on paginated lists |
 | CHK-5A-072 | M | PASS | Filter/sort allowlist per Doc-4E; no protected-fact filter exposed (R5) |
 | CHK-5A-073 | B | PASS | Counts/items exclude non-disclosed/deferred/gated-out identically (R5 — no count leak) |
 | CHK-5A-080 | B | PASS | `Idempotency-Key` on `required` mutations (§4.3/§5.4/§6.4/§7.4) |
 | CHK-5A-081 | B | PASS | Replay → same result, no duplicate audit record, **no re-emitted outbox event** (§8.4; `Doc-5A §9.7`) |
-| CHK-5A-082 | M | PASS | Optimistic concurrency precondition (`expected_version_no`) on `update_rfq`/`revise_quotation`; carriage owned by Doc-5A §9 |
+| CHK-5A-082 | M | PASS | Optimistic concurrency precondition (`expected_version_no`) on `update_rfq`, `revise_quotation`, `shortlist_quotation`, `award_rfq`, `close_lost_rfq`; carriage owned by Doc-5A §9 |
 | CHK-5A-083 | m | PASS | Retry aligned to §6 `retryable` |
 | CHK-5A-090…095 | B/M | N/A | All M3 **caller** contracts commit synchronously; no caller `202`. The async engine is out-of-wire (§8), not a caller async pattern |
 | CHK-5A-100/102 | B/M | N/A | No event-driven completion on the caller surface; engine results observed via reads (§2.1) |
 | CHK-5A-101 | B | PASS | No external webhook/push surface; DE-6 single-authorship — no notification/thread contract (§8.4/§8.5) |
 | CHK-5A-103 | m | PASS | Event catalog not restated — events emitted via outbox (§8.4), bound by pointer (`Doc-4E §E12`) |
-| CHK-5A-110 | B | PASS | No URL/query versioning; surface version via `Iv-Api-Version` (conditional, owned by §12) |
+| CHK-5A-110 | B | PASS | No URL/query versioning; surface version via `Iv-Api-Version` (conditional, owned by Doc-5A §12) |
 | CHK-5A-111/113 | M | N/A | Initial `v1`; no breaking change / deprecation |
 | CHK-5A-112 | B | PASS | Contract identity stable; no `…V2` resource |
 | CHK-5A-114 | B | PASS | No domain change expressed as a version bump |
 | CHK-5A-120 | B | PASS | No upstream content restated; Doc-3/Doc-4E/Doc-4M bound by pointer |
-| CHK-5A-121 | B | **PASS (conditional)** | Nothing coined — §9.3. `[ESC-RFQ-POLICY]` keys referenced by exact Doc-3 §12.2 name. **Freeze promotion is blocked only if any referenced policy key is absent from Doc-3 §12.2** (objective gate — confirmed by the Freeze Audit) |
-| CHK-5A-122 | m | PASS | Transport choices marked `[realization convention]` (§4.6/§6.1/§7.2/§2.5) |
+| CHK-5A-121 | B | **PASS** | Nothing coined — §9.3. The two `[ESC-RFQ-POLICY]` keys (`rfq.idempotency_dedup_window`, `rfq.list_page_size_max`) are **registered in Doc-3 §12.2** via approved Patch v1.1 (Doc-4A §18.2 satisfied); gate cleared |
+| CHK-5A-122 | m | PASS | Transport choices marked `[realization convention]` (§4.1/§4.6/§5.1/§6.1/§7.1/§7.2/§2.5) |
 | CHK-5A-123 | B | PASS | Nested/singleton/source addressing surfaced; `DE-*`/`[ESC-RFQ-*]` escalated, not invented |
 | CHK-5A-124 | B | PASS | No invented webhook/push; no synchronous engine facade (§8.5) |
 | CHK-5A-131 | B | PASS | `Owner-Module` = Module 3 on every endpoint |
@@ -198,7 +198,7 @@ Attested against `CHK-5A-050…053` + `Doc-4A §7.5`; first-class M3 wire invari
 | Loss feedback banded, never exact | PASS | §6.3 — `Doc-3 §9.5` by pointer; banded only |
 | Vendor-house representative conflict never surfaced to buyer | PASS | §3.4/§5.3 — surfaced inside the vendor org only |
 
-**Attestation result:** all applicable `[B]`/`[M]` checks **PASS**; `[m]` PASS, no deviation. The R5 non-disclosure invariant is attested PASS across all seven aspects. One item is **conditional and freeze-gated** — `[ESC-RFQ-POLICY]` key registration (`CHK-5A-121`), confirmed by the Doc-5E Freeze Readiness Audit. No other unresolved checklist item remains; freeze eligibility is determined by that audit.
+**Attestation result:** all applicable `[B]`/`[M]` checks **PASS**; `[m]` PASS, no deviation. The R5 non-disclosure invariant is attested PASS across all seven aspects; the engine-execution moat invariant is attested PASS. The former `[ESC-RFQ-POLICY]` freeze gate is **cleared** — both `rfq.*` keys are registered in Doc-3 §12.2 via approved Patch v1.1. **No unresolved checklist item remains.**
 
 ---
 

@@ -30,7 +30,7 @@ review/patch/audit trail is grouped by category.
 - **Authoritative:** `Doc-2_Domain_Model_And_Database_Blueprint_v1.0.2.md` + patches `Doc2_Patch_v1.0.2.md`, `Doc-2_Patch_v1.0.3.md` (effective v1.0.3)
 
 **Doc-3 — RFQ Procurement Engine & Operational Specification**
-- **Authoritative:** `Doc-3_RFQ_Procurement_Engine_And_Operational_Specification_v1.0.1.md` + patches `Doc-3_Patch_v1.0.2.md`, `Doc-3_Policy_Key_Registration_Patch_v1.0.md` (effective v1.0.2)
+- **Authoritative:** `Doc-3_RFQ_Procurement_Engine_And_Operational_Specification_v1.0.1.md` + patches `Doc-3_Patch_v1.0.2.md`, `Doc-3_Policy_Key_Registration_Patch_v1.0.md` (`core.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ.md` (`rfq.*` API-realization keys) (effective v1.0.2)
 
 **Architecture-level patches / reconfirmation**
 - `Architecture_CD-MA-1_Patch_v1.0.md` · `Architecture_CD-MA-1_Patch_Verification_v1.0.md` · `Architecture_Freeze_Reconfirmation_v1.0.md`
@@ -147,8 +147,10 @@ review/patch/audit trail is grouped by category.
 | `Doc-5C_SERIES_FROZEN_v1.0.md` (M1 `identity`) | **Doc-5C FROZEN** — M1 API realization freeze manifest; effective = `Doc-5C_Content_v1.0_Pass1…2` + `Doc-5C_Structure_v1.0_FROZEN` + resolved registers. User-primary/active-org surface; R1–R6 |
 | `Doc-5C_Structure_v1.0_FROZEN.md` · `Doc-5C_Content_v1.0_Pass1…2.md` | Doc-5C source (canonical TOC + §0–§8 + Appendix A) |
 | `Doc-5C_Structure_Proposal_v0.1.md` · `governanceReviews/Doc-5C_Freeze_Readiness_Audit_v1.0.md` | Doc-5C structure authoring history (v0.2; Hard Review) + freeze audit |
-| `Doc-5E_Structure_v1.0_FROZEN.md` (M3 `rfq`) | **Doc-5E STRUCTURE FROZEN** — canonical TOC realizing Doc-4E (38 contracts) on HTTP; matching/routing engine out-of-wire (R1); R1–R7 + DE-1…DE-8. Content passes next (3) |
-| `Doc-5E_Structure_Proposal_v0.1.md` | Doc-5E structure authoring history (v0.2; Hard Review — 3 MAJOR + 6 MINOR + 4 NITPICK resolved) |
+| `Doc-5E_SERIES_FROZEN_v1.0.md` (M3 `rfq`) | **Doc-5E FROZEN** — M3 RFQ Procurement Engine (the moat) API realization freeze manifest; effective = `Doc-5E_Content_v1.0_Pass1…3` + `Doc-5E_Structure_v1.0_FROZEN` + resolved registers. Realizes Doc-4E (38 contracts); matching/routing engine out-of-wire (R1); R1–R7; non-disclosure + engine-execution attestations |
+| `Doc-5E_Structure_v1.0_FROZEN.md` · `Doc-5E_Content_v1.0_Pass1…3.md` | Doc-5E source (canonical TOC + §0–§9 + Appendix A) |
+| `Doc-5E_Structure_Proposal_v0.1.md` · `governanceReviews/Doc-5E_Freeze_Readiness_Audit_v1.0.md` | Doc-5E structure authoring history (v0.2; Hard Review) + freeze audit (`[ESC-RFQ-POLICY]` gate → cleared by Patch v1.1) |
+| `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ.md` | Additive Doc-3 §12.2 registration of 2 `rfq.*` API-realization keys; clears the Doc-5E freeze gate (Doc-4A §18.2) |
 
 ---
 
