@@ -4,7 +4,7 @@
 |---|---|
 | Document | Doc-5E — RFQ Procurement Engine (Module 3) — API Realization |
 | Pass | 3 of 3 — Sections §8 (out-of-wire boundary), §9 (conformance & carried items), and Appendix A (conformance attestation) — final content pass |
-| Status | ACTIVE — Content Pass 3 of 3; §8–§9 + Appendix A. On completion, Doc-5E content (§0–§9 + Appendix A) is complete → next is the Doc-5E Freeze Readiness Audit |
+| Status | ACTIVE — Content Pass 3 of 3; §8–§9 + Appendix A. Independent Hard Review applied (MINOR-01 §8.2 dual-path traceability; MINOR-02 CHK-5A-121 objective gate; NP-01 §8.5 GraphQL exclusion; NP-02 dedicated engine-execution attestation). 0 open BLOCKER/MAJOR/MINOR. Doc-5E content (§0–§9 + Appendix A) complete → next is the Doc-5E Freeze Readiness Audit |
 | Structure | Conforms to `Doc-5E_Structure_v1.0_FROZEN.md` |
 | Realizes | The out-of-wire boundary (the 8 System engine workers, the internal-service read legs, the DE-1…DE-8 integrations, the emitted outbox events) + the Doc-5A Appendix A attestation for the 30 caller-facing M3 endpoints |
 | Authority | `Doc-5_Program_Governance_Note_v1.0`; `Doc-5A_SERIES_FROZEN_v1.0` (FROZEN) governs this document |
@@ -42,7 +42,7 @@
 
 ### 8.2 Internal-Service Read Legs (dual-path rule — no wire)
 
-- Where a Doc-4E read contract has **both** a caller-facing leg and an internal-service leg, §4–§7 realize the caller leg only; the internal-service leg is **out-of-wire** (in-process module composition via `rfq/contracts/`, never HTTP — frozen Doc-5C precedent). This governs the internal legs of `get_rfq`, `list_rfqs`, `get_rfq_version`, `get_matching_results`, `get_routing_log`, `get_invitation`, `list_invitations`. **Consumers access the in-process service interface only; no cross-module table access is permitted** (One Owner — `Doc-4A §4.1/§4.3`). Contract count (38) is unchanged — these are legs of existing contracts, not new contracts.
+- Where a Doc-4E read contract has **both** a caller-facing leg and an internal-service leg, §4–§7 realize the caller leg only; the internal-service leg is **out-of-wire** (in-process module composition via `rfq/contracts/`, never HTTP — frozen Doc-5C precedent). This governs the internal legs of `get_rfq`, `list_rfqs`, `get_rfq_version`, `get_matching_results`, `get_routing_log`, `get_invitation`, `list_invitations`. **Consumers access the in-process service interface only; no cross-module table access is permitted** (One Owner — `Doc-4A §4.1/§4.3`). Contract count (38) is unchanged — these are legs of existing contracts, not new contracts. **The dual-path classification originates from the Doc-4E contract consumption patterns and does not create additional contracts** (CHK-5A-132 traceability — both legs trace to one frozen Doc-4E contract).
 - **Binds:** structure §1 (dual-path rule); `Doc-4A §4.1/§4.3`; `Doc-5A §1.3`.
 
 ### 8.3 DE-1…DE-8 Cross-Module Integrations (no wire)
@@ -70,6 +70,7 @@
 ### 8.5 Explicit Protocol Exclusion & Flag-and-Halt
 
 - For **every** §8 mechanism — the 8 engine workers, the internal read legs, the DE-1…DE-8 integrations, and the emitted events — **no REST endpoint, no SSE/WebSocket stream, and no webhook** is defined or may be added. There is no synchronous engine facade, no engine control surface, and no public RFQ board (R5). Matching/routing reads (§7) expose **derived/explainability artifacts only** — observational, never a control surface, never disclosing a protected fact.
+- For **every** §8 mechanism, **no GraphQL surface exists or may be added** — this closes the protocol list (no REST, SSE/WebSocket, webhook, or GraphQL).
 - Proposing **any** wire surface (any protocol) for the engine, the internal reads, or the integrations is an **architecture-affecting change** → **flag-and-halt** + human/Board approval (`Doc-5_Program_Governance_Note_v1.0 §7`; CLAUDE.md Red-Flag list). Doc-5E does not, and may not, grant them a wire.
 - **Binds:** Gov-Note §7; structure R1 / Fences; `Doc-5A §11`.
 
@@ -158,7 +159,7 @@ Per-band attestation of the realized M3 caller-facing surface (§4–§7, the 30
 | CHK-5A-112 | B | PASS | Contract identity stable; no `…V2` resource |
 | CHK-5A-114 | B | PASS | No domain change expressed as a version bump |
 | CHK-5A-120 | B | PASS | No upstream content restated; Doc-3/Doc-4E/Doc-4M bound by pointer |
-| CHK-5A-121 | B | **PASS (conditional)** | Nothing coined — §9.3. `[ESC-RFQ-POLICY]` keys referenced by exact Doc-3 §12.2 name; freeze-gated on registration (every referenced key must exist in Doc-3 §12.2 — confirmed by the Freeze Audit) |
+| CHK-5A-121 | B | **PASS (conditional)** | Nothing coined — §9.3. `[ESC-RFQ-POLICY]` keys referenced by exact Doc-3 §12.2 name. **Freeze promotion is blocked only if any referenced policy key is absent from Doc-3 §12.2** (objective gate — confirmed by the Freeze Audit) |
 | CHK-5A-122 | m | PASS | Transport choices marked `[realization convention]` (§4.6/§6.1/§7.2/§2.5) |
 | CHK-5A-123 | B | PASS | Nested/singleton/source addressing surfaced; `DE-*`/`[ESC-RFQ-*]` escalated, not invented |
 | CHK-5A-124 | B | PASS | No invented webhook/push; no synchronous engine facade (§8.5) |
@@ -174,6 +175,14 @@ Per-band attestation of the realized M3 caller-facing surface (§4–§7, the 30
 | CHK-5A-152 | B | PASS | `rfq_` code prefix in `Doc-4A Appendix B.2` |
 | CHK-5A-153 | B | PASS | Standard-header tokens in App B.4, agree with §4.4 |
 | CHK-5A-154 | B | PASS | No self-assigned namespace/registry token |
+
+### Dedicated attestation — Engine-Execution Non-Disclosure (the moat invariant)
+
+Attested against structure R1 + `Doc-5A §1.3/§11` + §8.1/§8.5.
+
+| Aspect | Result | Evidence |
+|---|---|---|
+| **No caller-visible surface exists for engine execution** | PASS | §8.1/§8.5 — the 8 System workers have no path/method/status; no caller `202`; no synchronous engine facade, trigger, or control surface; results observed only via §4–§7 reads. *The single most important moat invariant.* |
 
 ### Dedicated attestation — R5 Non-Disclosure (highest-risk M3 audit area)
 
