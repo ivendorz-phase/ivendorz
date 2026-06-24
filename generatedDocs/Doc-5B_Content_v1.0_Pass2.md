@@ -30,7 +30,7 @@
     Input-Placement : all filters / sort / page_size / cursor → query   (§5.4)
     Success-Status  : 200                                   (§5.5)
     Response-Body   : list                                  (§5.6)
-    Error-Status-Set: { VALIDATION→400, AUTHORIZATION→403, NOT_FOUND→404, RATE_LIMITED→429 }  (§6.2)
+    Error-Status-Set: realized in §3.6 — includes non-disclosure collapse per §3.5  (§6.2)
   ```
 - `GET` is safe and carries **no body**; every input is a query parameter (§5.4). No `{id}` path segment — this is a collection read, never an item path.
 - **Binds:** `Doc-5A §5.2/§5.3/§5.4/§5.5/§5.7`; `Doc-4B §B4`. **Rationale [realization convention — read endpoint]:** the corpus declares an Admin read with filters; the single GET collection endpoint is its wire form.
@@ -41,21 +41,22 @@
   - **`audit_record_query.v1`** — the general-filter variant: the `Doc-4B §B4` **Filterable** allowlist (`entity_type, entity_id, actor_id, actor_type, action, organization_id, occurred_from, occurred_to`) as query parameters, each bound to its §B4 declaration (by pointer).
   - **`audit_correlation_lookup.v1`** — the correlation variant: the `reference_id` query parameter (required by that contract) resolves the audit chain bound to a prior response `reference_id` (`Doc-4B §B4`; §17.2).
 - `organization_id` is a **filter over recorded audit context only — never an act-as-organization field** (`Doc-4B §B4`; `Doc-4A §9.7`; §5.4 prohibited inputs). No filter introduces a protected fact (§7.5).
-- A query carrying `reference_id` realizes the correlation contract's `required` input; absent it, the general-filter contract applies. No new parameter is introduced beyond the two §B4 request contracts.
+- A request containing `reference_id` realizes the correlation-lookup capability. A request omitting `reference_id` realizes the general-query capability. No new parameter is introduced beyond the two §B4 request contracts.
 - **Binds:** `Doc-4B §B4` (Filterable/Sortable allowlists, request contracts); `Doc-5A §8` (filter grammar). **Rationale:** one read surface with an allowlisted filter set; the two frozen contracts are its filter variants, not two endpoints.
 
 ### 3.3 Pagination & Sort (§8)
 
-- Pagination is **cursor-based**: the opaque `cursor` query parameter (`Doc-4B §B4`; `Doc-4A §9.6`); **no offset/index** pagination. `page_size` is bounded by the POLICY key `core.system_configuration.core.audit_query_page_size_max` (`Doc-4B §B4` [PA-E1]) — referenced by key, **never a literal** on the wire (`Doc-5A §8`; `Doc-3 §12`).
-- `sort` accepts only the §B4 **Sortable** allowlist (`timestamp`, tiebreaker `audit_id` for total order); non-allowlisted sort/filter fields are a VALIDATION failure (§3.6).
-- **Binds:** `Doc-5A §8`; `Doc-4B §B4`; `Doc-4A §9.6/§18`; `Doc-3 §12`. **Rationale:** one pagination/sort grammar; bounds stay POLICY-keyed.
+- **`audit_record_query.v1` only — pagination and sort:** Pagination is **cursor-based**: the opaque `cursor` query parameter (`Doc-4B §B4`; `Doc-4A §9.6`); **no offset/index** pagination. `page_size` is bounded by the POLICY key `core.system_configuration.core.audit_query_page_size_max` (`Doc-4B §B4` [PA-E1]) — referenced by key, **never a literal** on the wire (`Doc-5A §8`; `Doc-3 §12`). `sort` accepts only the §B4 **Sortable** allowlist (`timestamp`, tiebreaker `audit_id` for total order); non-allowlisted sort/filter fields are a VALIDATION failure (§3.6).
+- **`audit_correlation_lookup.v1` — no pagination, no sort:** the single `reference_id` input (`Doc-4B §B4`) resolves a fixed audit chain; the capability defines no pagination or sort surface (`Doc-4B §B4` response contract — no cursor, page_size, or sort declared).
+- **Binds:** `Doc-5A §8`; `Doc-4B §B4`; `Doc-4A §9.6/§18`; `Doc-3 §12`. **Rationale:** pagination and sort apply to the general-query capability only; the correlation-lookup capability is non-paginated per its §B4 declaration.
 
 ### 3.4 Response Representation (§5.6)
 
-- The success body is the **list shape** `{ "items": [ <audit_record> … ], "page_info": { "next_cursor", "has_more", "total_count"? }, "reference_id": <uuidv7> }` (`Doc-5A §5.6`; `Doc-4A §10.3`), with the top-level `reference_id` per `Doc-4A §22.1 C-05`.
+- Response shapes differ by capability (`Doc-4B §B4`; `Doc-5A §5.6`; `Doc-4A §10.3`):
+  - **General-query (`audit_record_query.v1`):** the `Doc-5A §5.6` list envelope — `{ "items": [ <audit_record> … ], "page_info": { "next_cursor", "has_more" }, "reference_id": <uuidv7> }`. `total_count` is a **conditional field within `page_info`** per `Doc-4B §B4` — compliance-scoped only (`Doc-4B §B4`; §7.5), never a general count.
+  - **Correlation-lookup (`audit_correlation_lookup.v1`):** `{ "items": [ <audit_record> … ], "reference_id": <uuidv7> }` — no `page_info`; the capability defines no pagination or sort surface (`Doc-4B §B4` response contract — no cursor, page_size, or sort declared; `exclusion/§7.5-consistent` per §B4).
 - `<audit_record>` is the **canonical representation owned by `Doc-4B §B4`** (the Doc-2 §9 audit field set) — referenced by pointer, **never reshaped or restated here**. Redaction-aware fields (`ip_address`, `user_agent`) are **absent when redacted and the absence is not signaled** (`Doc-4B §B4`; §10.7/§14.3) — the wire does not distinguish "redacted" from "never present".
-- `total_count` is **conditional and compliance-scoped** (`Doc-4B §B4`; §7.5) — emitted only within the compliance audience, never as a general count.
-- **Binds:** `Doc-5A §5.6`; `Doc-4B §B4`; `Doc-4A §10.3`. **Rationale:** the envelope is realized; the representation stays the owning contract's.
+- **Binds:** `Doc-5A §5.6`; `Doc-4B §B4`; `Doc-4A §10.3`, `§22.1 C-05 / P6-B01`. **Rationale:** response shape realized per-capability; representation ownership stays with Doc-4B §B4.
 
 ### 3.5 Non-Disclosure on the Wire (§6.3 / §7)
 
@@ -65,29 +66,30 @@
 
 ### 3.6 Error-Status Set (§6)
 
-- The §B4 error codes map to status by the §6.2 class→status mapping (codes are within the registered `core_` namespace — `Doc-4B §B4`; Appendix B.2 → `Doc-4A Appendix B.2` — bound by pointer, not re-listed):
+- The §B4 error codes map to HTTP status by the §6.2 class→status mapping (codes within the registered `core_` namespace — `Doc-4B §B4`; `Doc-4A Appendix B.2`). The mapping is realized here; codes remain owned by `Doc-4B §B4`:
 
-| `error_class` (Doc-4A §12.2) | HTTP status | §B4 `error_code` |
-|---|---|---|
-| `VALIDATION` | `400` | `core_audit_invalid_query_input` |
-| `AUTHORIZATION` | `403` | (§5.6 context / authz failures — collapsed per §3.5 where existence is gated) |
-| `NOT_FOUND` | `404` | `core_audit_not_found` (the collapse target) |
-| `RATE_LIMITED` | `429` | `core_audit_rate_window_exceeded` (carries `Retry-After`, §6.4) |
+| `error_class` (`Doc-4A §12.2`) | HTTP status | §B4 `error_code` | Capability |
+|---|---|---|---|
+| `VALIDATION` | `400` | `core_audit_invalid_query_input` | both |
+| `AUTHORIZATION` | `403` | (`Doc-4A §5.6` context / authz failures — collapsed per §3.5 where existence is gated) | both |
+| `NOT_FOUND` | `404` | `core_audit_not_found` | `audit_record_query.v1` (collapse target) |
+| `NOT_FOUND` | `404` | `core_audit_reference_not_found` | `audit_correlation_lookup.v1` (collapse target) |
+| `RATE_LIMITED` | `429` | `core_audit_rate_window_exceeded` (carries `Retry-After`, §6.4) | both |
 
 - Clients branch on `error_class` / `error_code`, never status alone (`Doc-5A §6`; `Doc-4A §12.3`). Rate-limit windows are POLICY-keyed (`Doc-4B §B4` [PA-E1]).
 - **Binds:** `Doc-5A §6.2/§6.4`; `Doc-4B §B4`; `Doc-4A §12.2/§12.3`. **Rationale:** the mapping is Doc-5A's; the codes are Doc-4B's.
 
 ### 3.7 Identity, Context & Authorization (§7)
 
-- **Admin actor** (Template 21.6): `Authorization` bearer carries **authentication only** (`Doc-5A §7.1`); authorization is the server-side `staff_super_admin` slug check (`Doc-4B §B4`; Doc-2 §7) plus the `tenant-data-access` Admin-Scope and Compliance-Basis (`Doc-4B §B4`; §5.6). **No `Iv-Active-Organization`** — admin carries no org context (`Doc-5A §7.3`); no delegation (`Doc-4B §B4` — not eligible).
+- **Admin actor** (Template 21.6): `Authorization` bearer carries **authentication only** (`Doc-5A §7.1`); authorization is the server-side `staff_super_admin` slug check (`Doc-4B §B4`; Doc-2 §7) plus the `tenant-data-access` Admin-Scope and Compliance-Basis (`Doc-4B §B4`; `Doc-4A §5.6`). **No `Iv-Active-Organization`** — admin carries no org context (`Doc-5A §7.3`); no delegation (`Doc-4B §B4` — not eligible).
 - No authorization vocabulary (slugs, scope, compliance basis) is ever a request input (`Doc-5A §7`; `Doc-4A §9.7`); all are server-derived.
-- **Access-Flagging (infrastructure, not a wire field):** the `Doc-4B §B4` "Super Admin access (flagged)" audit row is written by the gateway/middleware layer **before** this endpoint executes (an operational obligation, not a contract-level audit declaration or a response field) — it is **out-of-wire** for §3 and introduces no audit event/action (`Doc-4B §B4` [PA-m02]).
+- **Access-Flagging (out-of-wire):** the access-flagging obligation (`Access-Flagging: yes`) is owned by `Doc-4B §B4` [PA-m02] and is not realized on the wire; §3 introduces no audit event or action for it.
 - **Binds:** `Doc-5A §7.1/§7.3`; `Doc-4B §B4`; Doc-2 §7. **Rationale:** the tenancy/authz boundary is server-enforced; the wire carries nothing authorization-bearing.
 
 ### 3.8 Idempotency, Concurrency & Async (§9 / §10)
 
-- The audit read is a **safe `GET`** (`Idempotency: not-applicable`, `State-Machine-Effects: none`, `Execution: sync` — `Doc-4B §B4`): it carries **no `Idempotency-Key` and no `If-Match`** (`Doc-5A §9` — those are for unsafe/optimistic operations) and is **not** async (no `202`/`ASYNC_PENDING`, §10).
-- **Binds:** `Doc-5A §9/§10`; `Doc-4B §B4`. **Rationale:** a read mutates nothing; no idempotency or concurrency carriage applies.
+- The audit read is a **safe `GET`** (classified safe by `Doc-5A §5.2`; `Doc-4B §B4`: `Idempotency: not-applicable`, `State-Machine-Effects: none`, `Execution: sync`): it carries **no `Idempotency-Key` and no `If-Match`** (`Doc-5A §9` — those are for unsafe/optimistic operations) and is **not** async (no `202`/`ASYNC_PENDING`, `Doc-5A §10`).
+- **Binds:** `Doc-5A §5.2/§9/§10`; `Doc-4B §B4`. **Rationale:** a read mutates nothing; no idempotency or concurrency carriage applies.
 
 ---
 
