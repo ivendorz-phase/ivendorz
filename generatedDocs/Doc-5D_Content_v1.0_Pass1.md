@@ -124,11 +124,11 @@ The 71 Doc-4D contracts partition by wire-realizability (structure R1) — **64 
 | 25 | `marketplace.create_spec_library_entry.v1` | User | `POST /marketplace/spec_library_entries` | Y | `201` |
 | 26 | `marketplace.update_spec_library_entry.v1` | User | `PATCH /marketplace/spec_library_entries/{id}` | Y | `200` |
 | 27 | `marketplace.add_spec_document.v1` | User | `POST /marketplace/spec_library_entries/{id}/documents` *(versioned add — §2.5)* | Y | `201` |
-| 28 | `marketplace.supersede_spec_document.v1` | User | `POST /marketplace/spec_documents/{id}/supersede_spec_document` *(new version, never overwrite — §2.5)* | Y | `200` |
+| 28 | `marketplace.supersede_spec_document.v1` | User | `POST /marketplace/spec_documents/{id}/supersede_spec_document` *(creates new addressable revision; never overwrite — §2.5)* | Y | `201` |
 | 29 | `marketplace.get_product.v1` | Public / User | `GET /marketplace/products/{id}` *(projection-gated)* | Y / N | `200` |
 | 30 | `marketplace.list_products.v1` | Public / User | `GET /marketplace/products` *(public = published only)* | Y / N | `200` |
 | 31 | `marketplace.get_spec_library_entry.v1` | User | `GET /marketplace/spec_library_entries/{id}` | Y | `200` |
-| 32 | `marketplace.get_spec_document.v1` | User | `GET /marketplace/spec_documents/{id}` *(RFQ-gated leg)* | Y | `200` |
+| 32 | `marketplace.get_spec_document.v1` | Public / User | `GET /marketplace/spec_documents/{id}` *(published/own-org; buyer-uploaded RFQ-attached read is RFQ-owned `rfq_document_grants`, not M2 — Doc-4E)* | Y / N | `200` |
 
 ### 2.4 Inventory — §6 Profile Experience & Presentation (BC-MKT-4, 20)
 
@@ -174,7 +174,7 @@ The 71 Doc-4D contracts partition by wire-realizability (structure R1) — **64 
 
 ### 2.6 Inventory Notes
 - **Methods (§5.2):** create → `POST` collection (`201`+`Location`); partial update (`update_*`) → `PATCH` item; state/domain command → `POST` named; read → `GET`. **Removals (`remove_category_assignment`, `remove_catalog_favorite`)** are realized `DELETE` on the item — the assignment/favorite row is the addressed resource; whether these are ADR-012 soft-deletes or relationship-row removals is confirmed against Doc-4D PassB `State Effects` in the §5/§7 content pass. **N:N link/unlink (`link_product_spec`/`unlink_product_spec`)** are relationship-mutation **named commands** (`POST`), not item `DELETE` (the product aggregate is unchanged; only the link row toggles).
-- **Success (§5.5):** creates + `add_spec_document` (new versioned document) → `201`; all other commands + reads → `200`. **No `202`** (§2.1 — System consumers/rebuild/infra are out-of-wire, observed via reads).
+- **Success (§5.5):** creates + `add_spec_document` / `supersede_spec_document` (each creates a new addressable spec-document revision — Doc-4D §D7.2) → `201`+`Location`; all other commands + reads → `200`. **No `202`** (§2.1 — System consumers/rebuild/infra are out-of-wire, observed via reads).
 - **Active-Org:** **Public** reads carry no `Authorization`/`Iv-Active-Organization` (anonymous); **User** ops carry the server-validated `Iv-Active-Organization` (§3.3); **Admin** ops (`set_vendor_profile_status`, category lifecycle, `review_advertisement`) carry **none** (§3.3). Mixed `Y/N` reads (`get_product`, `get_microsite`, `get_profile_experience`, ads reads, …) serve a Public projection (anonymous) or a Controlling-Org projection (User), resolved by the §3 projection rule (R5). **The Public and Controlling-Org projections are distinct wire surfaces and are never merged in a single response** (R5; §3.4).
 - **Nested / singleton / search [realization convention §0.4]:** `capacity_profile`, profile-experience `sections`/`branding_assets`/`seo_settings`, spec `documents` sub-collection, and `catalog_search` are addressed per §0.4 (Doc-5A §5.3 silent on nested children, org-singletons, and search-as-read). **These are the selected realization; alternatives are historical-review only** unless an architecture review reopens (`Doc-5_Program_Governance_Note_v1.0 §5`). The full §5.7 instantiation is authored in **§4–§8** (Pass-2/3).
 - **Binds:** `Doc-5A §5.1/§5.2/§5.5/§5.7`, §7.3, §10; Doc-4D PassB.

@@ -1,0 +1,120 @@
+# Doc-5D — Marketplace & Discovery (M2 `marketplace`) API Realization — Content v1.0, Pass 2 (§4–§6)
+
+| Field | Value |
+|---|---|
+| Document | Doc-5D — Marketplace & Discovery (Module 2) — API Realization |
+| Pass | 2 of 3 — Sections §4, §5, §6 (the 52 vendor-profile / catalog-product-spec / profile-experience endpoints) |
+| Status | ACTIVE — Content Pass 2 of 3; §4–§6. Independent Hard Review applied: **MAJOR-01** §4.7 top-level `reference_id` (C-05) added (the freeze-gate BLOCKER; verified absent from Pass-1 §3); dual-leg rule restated §5.4. **MINOR** — §4.2 DD-4 mislabel removed + `seeded→invited` owner declared (M2 authors no invite); §5.6 `supersede_spec_document` → `201`+`Location` (verified independent UUIDv7, Doc-4D §D7.2); §5.5 cursor pagination + `marketplace.*` page-size key (DD-6 batch); DD-6 "referenced by intended name only, registration not implied"; outbox catalog owned by Doc-2 §8; §6.3 entitlement never persisted/derived; state authority = Doc-4M index / Doc-2·Doc-4D edges. **OBSERVATION-01** grouped §5.7 format — CLOSED (Doc-5C/5E precedent froze with grouped format). **OBSERVATION-02 / NP** — Pass-1 entries 28 (`201`) + 32 (projection) patched. NP-02 (Appendix A projection-separation attestation) carried to Pass-3. 0 open BLOCKER/MAJOR/MINOR. Conforms to `Doc-5D_Structure_v1.0_FROZEN.md` |
+| Realizes | 52 caller-facing M2 endpoints on HTTP (method/path per §5.2/§5.3, state machine per Doc-4M, idempotency/concurrency, error-status set, audit, projection class per read, non-disclosure) |
+| Authority | `Doc-5_Program_Governance_Note_v1.0`; `Doc-5A_SERIES_FROZEN_v1.0` (FROZEN) governs this document |
+| Builds on | Doc-5D Content Pass-1 (§0–§3 + inventory; both review rounds applied) |
+| Contains | The §5.7 realization of each §4–§6 caller-facing surface. No contract bodies, representations, error codes, POLICY keys, audit actions, events, or Doc-4D rules restated; the 7 out-of-wire contracts, integrations, and emitted events are §9 (Pass-3) |
+| Audience | Architecture / API Governance Boards · Doc-5D authors · AI Coding Supervisor · backend, QA |
+
+> **Realize, never re-decide.** Doc-4D fixed the contracts; Doc-4M owns the state machines; Doc-5A fixed the wire mechanics. §4–§6 realize the **wire face** per Doc-5A §5/§6/§7/§9 and re-decide nothing. Error codes, representations, POLICY keys, slugs, audit actions, state edges, and events are bound **by pointer, never restated**. The §3 cross-cutting model (tri-actor / visibility / non-disclosure) governs every endpoint here; **every read declares its projection class** (§3.4 binding rule). Transport-level choices are marked **[realization convention]**.
+
+**Dependency realization path:** `Doc-5A §5/§6/§7/§9`; `Doc-4D §D4–§D7.3`; `Doc-4M`; `Doc-4I` (entitlement, consumed); §3 (this document).
+
+---
+
+## §4 — Vendor Profile, Capacity & Financial-Tier Surface Realization (BC-MKT-1)
+
+### 4.1 Endpoint Realization (§5.2/§5.3; inventory §2.2)
+- Methods: `create_vendor_profile` → `POST /marketplace/vendor_profiles` (`201`+`Location`); `update_vendor_profile` → `PATCH /marketplace/vendor_profiles/{id}` (partial, no state transition); `claim_vendor_profile`/`transfer_vendor_ownership`/`set_declared_financial_tier` → `POST …/{id}/{command}` (domain commands); `set_vendor_profile_status` → `POST …/{id}/set_vendor_profile_status` (Admin, no org context); `upsert_vendor_capacity_profile` → `PATCH …/{id}/capacity_profile` (nested singleton — §0.4); reads → `GET`.
+- **[Realization convention §0.4] — nested singleton `capacity_profile` (`…/vendor_profiles/{id}/capacity_profile`):** Doc-5A §5.3 is silent on a single child resource with no independent identity (one capacity profile per vendor). Per §0.4: the vendor `{id}` is the addressing anchor; `upsert` creates on first call, patches thereafter. Contradicts nothing upstream.
+- Inputs per §5.4: `{id}`=`UUIDv7` in path; Request-Contract fields in body; **no** prohibited input (actor/org-selection/authz/state/attribution never a field — `Doc-4A §9.7`).
+- **Binds:** `Doc-5A §5.2/§5.3/§5.4/§5.5`; `Doc-4D §D4/§D5`.
+
+### 4.2 Vendor Claim & Status Machines (Doc-4M authoritative)
+- The **claim** machine (`seeded → invited → claimed → verified`) and the **status** machine (`active ⇄ suspended`; `active → banned`) are realized as **legal transitions only** — each caller transition is its named command; **no transition invented** (`Doc-4M` = authoritative state-machine index; edges sourced from `Doc-2 §5.3` / `Doc-4D`; `Doc-4A §13`). `create_vendor_profile` enters at `seeded`; `claim_vendor_profile` drives `→ claimed` (DD-7 content-blocker — see §4.6). The **`→ verified` edge is owned by the §9 System consumer** `reflect_verified_claim_status` (R7 reflect-never-decide), never a caller command.
+- **`seeded → invited` driver (One Module, One Owner):** **M2 authors no invite command** — this edge is **not an M2 caller surface**. It is driven outside M2 (M8 Admin invite / System seeding — `Doc-4M` + `Doc-4J`); for M2 it is **out-of-wire**. Doc-5D realizes only the `claimed` (caller) edge; the `invited` intermediate is accounted to its owning module, not coined here.
+- `set_vendor_profile_status` (Admin — 21.6, `staff_*` slug, no org context — §3.3; **vendor moderation is an M2-native governance edge, not DD-4** which scopes category approval only) realizes the **`active ⇄ suspended`** moderation edges only. The **`→ banned` edge is owned by the §9 System consumer** `reflect_vendor_ban` (the ban *decision* is Admin/`Doc-4J` — DD-3; M2 only reflects it; R7). Illegal transition → `STATE` → `409`.
+- **Binds:** `Doc-4M` (vendor claim + status); `Doc-4A §13`; `Doc-4D §D4/§D5`; DD-1/DD-3 (§9).
+
+### 4.3 Declared ≠ Verified Financial Tier (DD-1)
+- `set_declared_financial_tier` writes the vendor's **self-declared** tier; it is **never gated by verification** (declared ≠ verified — DD-1). The **verified** tier is written only by the §9 System consumer `sync_verified_financial_tier` (Trust-driven; R7). `get_declared_financial_tier` and `get_financial_tier_history` read the declared value / its version chain (never overwritten — `Doc-2 §10.3`); the verified value is Trust-owned (`Doc-4G`, out-of-wire). The firewall holds: a payment/plan value is never a wire input here (R7-adjacent; `Doc-4A §4B`).
+- **Binds:** `Doc-4D §D5`; `Doc-2 §10.3`; DD-1 (§9).
+
+### 4.4 Projection Class per Read (§3.4 binding rule)
+- `get_vendor_profile` → **Public-or-Controlling-Org** (published vendor profile is public; draft/unverified detail is Controlling-Org). `get_vendor_capacity_profile` → **Controlling-Org** (capacity is a matching input — private; never on a public read). `get_declared_financial_tier` → **Controlling-Org** (self-declared tier is not a public fact). `get_financial_tier_history` → **Controlling-Org** (owning-org, version chain). No read merges draft and published state (R5).
+- **Binds:** §3.4; `Doc-4D §D6`; `Doc-2 §0.2`.
+
+### 4.5 Idempotency, Concurrency, Error & Audit
+- Every §4 mutation declares `Idempotency: required` → **`Idempotency-Key` mandatory** (`Doc-5A §9`); replay within the POLICY-keyed window (**`marketplace.*` dedup key — DD-6; referenced by intended name only, registration is not implied; content-freeze gate, not finalized until registered in Doc-3 §12.2**) returns the cached original — same result, no duplicate audit, **no re-emitted outbox event** (`Doc-5A §9.7`). `update_vendor_profile` / `upsert_vendor_capacity_profile` declaring `Concurrency: optimistic` carry **`If-Match`** (`updated_at`); stale → `CONFLICT` → `409`.
+- Error classes per **`Doc-5A §6.2`**; codes owned by the `Doc-4D §D4/§D5` registers (`marketplace_` namespace, `Doc-4A Appendix B.2`) — by pointer: `VALIDATION`→`400`, `AUTHORIZATION`→`403` (else `404` collapse, §3.6/R9), `NOT_FOUND`→`404`, `STATE`→`409`, `CONFLICT`→`409`, `REFERENCE`→`422`, `BUSINESS`→`422`.
+- Mutations **audited** via Doc-4B `core.append_audit_record.v1` (`Doc-4D §D8`; Doc-2 §9 by pointer); profile/ownership audit actions may carry **`[ESC-MKT-AUDIT]`** (nearest §9 action; never invented). Emitted events (`VendorClaimed`/`VendorSuspended`/`VendorOwnershipTransferred`, …) are §9 (outbox, R10). **The event catalog and payloads are owned by `Doc-2 §8` and are not restated by Doc-5D** (`CHK-5A-103`).
+- **Authorization** server-side via `check_permission` (§3.5); `set_vendor_profile_status` is **Admin, no org context** (`staff_*`, §3.3). Non-disclosure: a non-entitled vendor read collapses to `404` (§3.6/R9).
+- **Binds:** `Doc-5A §6/§9`; `Doc-4D §D4/§D5/§D8`; Doc-2 §7/§8/§9; DD-6, `[ESC-MKT-AUDIT]`.
+
+### 4.6 `claim_vendor_profile` DD-7 Content-Finalization Block
+- `claim_vendor_profile` mutates `vendor_claim_records`, whose tenancy class is **unresolved** between `Doc-2 §6` (platform-owned) and `Doc-2 §10.3/§3.3` (marketplace child) — a **cross-frozen-doc conflict** (DD-7). Per flag-and-halt, **mutation ownership is not decided here** (architecture-touching → human/Board; channel: additive Doc-2 §6/§3.3 reconciliation). The endpoint's method/path/actor/state-edge realization above stands; **only the contract's final ownership binding is blocked** until DD-7 resolves. **DD-7 blocks `claim_vendor_profile` finalization only — not Doc-5D authoring, review, the Freeze Audit, or any other contract** (§1.4).
+- **Binds:** `Doc-4D` Appendix C (DD-7); `Doc-2 §6/§10.3/§3.3`; Gov-Note §7.
+
+### 4.7 Top-Level `reference_id` (C-05) — Doc-5D nominated declaration point
+- **Every Doc-5D response that carries a body** (success and error) includes a **top-level `reference_id`** (platform-assigned `UUIDv7`) — `Doc-4A §22.1 C-05`, clarified by `PATCH-D4A-C05-204` (ratified 2026-06-24) to **body-bearing responses only; `204` no-body responses are exempt**. It is a sibling of `result`/`error` at the envelope top level, **never nested inside `error`** (`Doc-5A §6`; `CHK-5A-042` [B]). This is consistent with the Doc-4D §B.3 response contracts (each shows `+ reference_id`).
+- **Cross-cutting:** this declaration **applies equally to §5 and §6** (and §7/§8, Pass-3) — §4 is the nominated declaration point for Doc-5D; the obligation is uniform across every M2 caller-facing surface and is not restated per section.
+- **Binds:** `Doc-4A §22.1 C-05`; `PATCH-D4A-C05-204`; `Doc-5A §6`; `Doc-4D §B.3`.
+
+---
+
+## §5 — Catalog, Product & Specification Surface Realization (BC-MKT-2 + BC-MKT-3)
+
+### 5.1 Endpoint Realization (§5.2/§5.3; inventory §2.3)
+- **Categories (Admin governance — DD-4):** `create_category` → `POST /marketplace/categories` (`201`); `update_category` → `PATCH …/{id}`; `set_category_status` → `POST …/{id}/set_category_status` — all Admin (21.6, `staff_can_manage_categories`, no org context). **Category assignment (User):** `assign_category` → `POST /marketplace/category_assignments` (`201`); `update_category_assignment` → `PATCH …/{id}`; `remove_category_assignment` → `DELETE …/{id}` (§5.6).
+- **Products & specs (User):** `create_product` → `POST /marketplace/products` (`201`); `update_product` → `PATCH …/{id}`; `set_product_status` → `POST …/{id}/set_product_status`; `link_product_spec`/`unlink_product_spec` → `POST …/products/{id}/{command}` (relationship mutation — §5.6); `create_spec_library_entry` → `POST /marketplace/spec_library_entries` (`201`); `update_spec_library_entry` → `PATCH …/{id}`; `add_spec_document` → `POST …/spec_library_entries/{id}/documents` (`201`, versioned — §5.6); `supersede_spec_document` → `POST /marketplace/spec_documents/{id}/supersede_spec_document` (new version — §5.6).
+- Reads → `GET` (`list_categories`, `get_category_assignments`, `get_product`, `list_products`, `get_spec_library_entry`, `get_spec_document`).
+- **Binds:** `Doc-5A §5.2/§5.3`; `Doc-4D §D7.1/§D7.2`.
+
+### 5.2 Category & Product Machines (Doc-4M)
+- **Category** (`draft → active → retired`) and **product** (`draft → published → unpublished`) lifecycles realized as **legal transitions only**, each its named command (`set_category_status`, `set_product_status`); no transition invented (`Doc-4M` = authoritative state-machine index; edges sourced from `Doc-2`/`Doc-4D`; `Doc-4A §13`). Illegal → `STATE` → `409`. Retired categories and unpublished products are excluded from public reads (`Doc-2 §0.2`; R5). Category governance is **Admin**; assignment is **User** (controlling-org) — separate auth paths (DD-4).
+- **Binds:** `Doc-4M` (category + product); `Doc-4D §D7.1/§D7.2`.
+
+### 5.3 Versioned Spec Documents (never overwrite)
+- `add_spec_document` appends a new spec document to a library entry (`201`); `supersede_spec_document` produces a **new version that supersedes the prior** — **the prior document is never overwritten or hard-deleted** (`Doc-2 §10.3`; Invariant #8). The supersede command acts on the existing document `{id}` and links the successor; versioning semantics owned by `Doc-4D §D7.2`, bound by pointer.
+- **Binds:** `Doc-4D §D7.2`; `Doc-2 §10.3`.
+
+### 5.4 Projection Class per Read (§3.4 binding rule)
+- **Module-wide dual-leg rule (restated from §3.4 for §5–§8 anchoring):** where a Doc-4D contract has **both** a caller-facing path and an Internal-Service consumption path, **Doc-5D realizes only the caller-facing wire leg; the Internal-Service consumption is realized exclusively in §9 and creates no additional HTTP surface** (in-process via `marketplace/contracts/`, never HTTP — frozen Doc-5C/5E precedent).
+- `list_categories` → **Public** (taxonomy is public). `get_category_assignments` → **Controlling-Org** (a vendor's assignments are owning-org-scoped). `get_product` → **Public-or-Controlling-Org** (published product public; draft Controlling-Org). `list_products` → **Public** projection returns **published only**; Controlling-Org projection includes the org's drafts. `get_spec_library_entry` → **Controlling-Org**. `get_spec_document` → **Public-or-Controlling-Org** caller leg (published/own-org spec documents per Doc-4D §B.9). **The buyer-uploaded RFQ-attached document read is gated by `rfq.rfq_document_grants` — RFQ-owned (`Doc-4E`); Marketplace authors no document-grant** — that gated read is RFQ's surface, not an M2 endpoint. No read merges projections (R5).
+- **Binds:** §3.4; `Doc-4D §D6/§D7.2` (§B.9); `Doc-4E` (RFQ document-grant, by pointer).
+
+### 5.5 Idempotency, Concurrency, Error & Audit
+- **Pagination:** `list_categories` and `list_products` use **cursor-based pagination only — no offset** (`CHK-5A-070` [B]; `Doc-5A §8`); the page-size bound is governed by a **`marketplace.*` list page-size POLICY key** (referenced by intended name only, registration not implied; part of the **DD-6 registration batch** — content-freeze gate, `CHK-5A-071`). Counts/items exclude non-disclosed/unpublished/retired identically (R5/R9).
+- Mutations `Idempotency: required` (`marketplace.*` dedup key — DD-6 content-gate; referenced by intended name only, registration not implied); `update_*` declaring optimistic concurrency carry `If-Match` (`updated_at`); stale → `CONFLICT` → `409`. Error classes per `Doc-5A §6.2` (by pointer, not restated); codes owned by `Doc-4D §D7.1/§D7.2` registers (`marketplace_`). Audited via `core.append_audit_record.v1`; product/spec audit actions carry **`[ESC-MKT-AUDIT]`** (nearest §9 action; never invented). Emitted catalog/product events are §9 (outbox, R10) — **catalog/payloads owned by `Doc-2 §8`, not restated** (`CHK-5A-103`). Authorization server-side (§3.5); category lifecycle Admin no-org, assignment/product User active-org (§3.3).
+- **Binds:** `Doc-5A §6/§9`; `Doc-4D §D7.1/§D7.2/§D8`; DD-6, `[ESC-MKT-AUDIT]`.
+
+### 5.6 Method Realization Conventions (§0.4 / Doc-4D State-Effects-bound)
+- **Removals → `DELETE` on the item.** `remove_category_assignment` is realized `DELETE /marketplace/category_assignments/{id}` — the assignment row is the addressed resource. **Whether this is an ADR-012 soft-delete or a relationship-row removal is owned by `Doc-4D §D7.1` `State Effects`, bound by pointer — not decided here**; either way the wire method is `DELETE` (`Doc-5A §5.2`). No hard delete of a versioned/aggregate entity.
+- **N:N link/unlink → `POST` named command, not item `DELETE`.** `link_product_spec`/`unlink_product_spec` toggle a relationship row; the product aggregate is unchanged, so they are **relationship-mutation named commands** (`POST …/products/{id}/{command}`), not a soft-delete of the product (`Doc-5A §5.2` state-command row). Contradicts nothing upstream.
+- **Versioned add/supersede → `201`+`Location` (verified against Doc-4D §D7.2).** Both `add_spec_document` and `supersede_spec_document` **create a new independently-addressable `spec_documents` resource** (response `{ spec_document_id : uuid, version_no, is_active_revision }` — Doc-4D §D7.2; the new revision has its own `UUIDv7`, canonically read via `GET /marketplace/spec_documents/{id}`). Per `Doc-5A §5.5` a `POST` that creates a new addressable resource returns **`201`+`Location`** (success status **inherited from the Doc-5A §5.5 command-realization rules**, not chosen here). `supersede_spec_document` is addressed as a named command on the superseded document `{id}` — a **create-via-source-command [realization convention §0.4]** (the prior `{id}` is intrinsic; prior revision retained, never overwritten — `Doc-2 §10.3`). **This supersedes the Pass-1 inventory's `200` for entry 28** (patched).
+- **Binds:** `Doc-5A §5.2/§5.5`, §0.4; ADR-012; `Doc-4D §D7.2`; `Doc-2 §10.3`.
+
+---
+
+## §6 — Profile Experience & Presentation Surface Realization (BC-MKT-4)
+
+### 6.1 Endpoint Realization (§5.2/§5.3; inventory §2.4)
+- **Microsites:** `create_microsite` → `POST /marketplace/microsites` (`201`); `update_microsite` → `PATCH …/{id}`; `publish_microsite`/`unpublish_microsite`/`set_microsite_domain` → `POST …/{id}/{command}`.
+- **Profile experience (the Content ≠ Presentation core — R5):** `update_profile_sections`/`update_branding_assets`/`update_seo_settings` → `PATCH /marketplace/profile_experiences/{id}/{sections|branding_assets|seo_settings}` (nested singletons — §0.4); `publish_profile`/`unpublish_profile` → `POST …/profile_experiences/{id}/{command}` driving the literal draft↔published transition (`Doc-4M`).
+- **Custom domains (entitlement-gated — DD-5/R8):** `create_custom_domain` → `POST /marketplace/custom_domains` (`201`); `activate_custom_domain`/`release_custom_domain` → `POST …/{id}/{command}`. The infra **`confirm_custom_domain_verification` is §9 out-of-wire** (System, between create and activate).
+- **Showcase:** `create_showcase_project` → `POST /marketplace/showcase_projects` (`201`); `update_showcase_project` → `PATCH …/{id}`; `publish_showcase_project` → `POST …/{id}/publish_showcase_project`.
+- Reads → `GET` (`get_microsite`, `get_profile_experience`, `get_showcase_project`, `get_custom_domain`).
+- **[Realization convention §0.4] — nested singletons `sections`/`branding_assets`/`seo_settings`:** Doc-5A §5.3 is silent on a single child resource with no independent identity under a parent profile experience. Per §0.4: the profile-experience `{id}` is the addressing anchor; each is a one-per-profile singleton `PATCH`. Contradicts nothing upstream.
+- **Binds:** `Doc-5A §5.2/§5.3`; `Doc-4D §D7.3`; `Doc-4I` (entitlement, consumed — DD-5).
+
+### 6.2 Presentation Machines & Content ≠ Presentation (R5)
+- Microsite, profile-experience, and showcase **draft ⇄ published** lifecycles are realized as **legal transitions only** via `publish_*`/`unpublish_*` (`Doc-4M`); illegal → `STATE` → `409`. **Draft (Controlling-Org) and published (Public) are distinct wire surfaces; no single read merges them** (R5; §3.4; Invariant #9). The **custom-domain lifecycle** (`create → [infra confirm §9] → activate → release`) realizes only the User legs; the verification step is §9 (infra-driven). Unpublished/soft-deleted/retired presentation entities are excluded from public reads (`Doc-2 §0.2`).
+- **Binds:** `Doc-4M` (microsite/profile/showcase/custom-domain); `Doc-4D §D7.3`; `Doc-2 §0.2`.
+
+### 6.3 Entitlement Gating (DD-5/R8) & Projection Class per Read
+- `create_custom_domain` (and custom-domain activation) **consume** Billing (`Doc-4I`) entitlement at the gate; **denial collapses to `NOT_FOUND`** (R9 — never a distinguishable `403` leaking the gated resource). **Billing checks are consumed only through the Billing-owned authority, never duplicated in M2** (DD-5; `Doc-4A §4.1/§4.3`); **M2 consumes entitlement decisions and never persists, caches, or derives entitlement state** (no shadow entitlement ledger). Doc-5D authors no Billing contract; the purchase is Billing-owned (`Doc-4D §D7.4`), referenced by bare UUID.
+- **Projection (§3.4):** `get_microsite` / `get_profile_experience` / `get_showcase_project` → **Public-or-Controlling-Org** (published projection public; draft Controlling-Org — the defining R5 split). `get_custom_domain` → **Controlling-Org** (a domain binding is owning-org-private). No merged read.
+- **Binds:** `Doc-4I` (consumed — DD-5); §3.4/§3.6; `Doc-4D §D6/§D7.3`.
+
+### 6.4 Idempotency, Concurrency, Error, Audit & Events
+- Mutations `Idempotency: required` (`marketplace.*` dedup key — DD-6 content-gate; referenced by intended name only, registration not implied); `update_*` optimistic → `If-Match` (`updated_at`); stale → `CONFLICT` → `409`. Error per `Doc-5A §6.2` (by pointer; codes `Doc-4D §D7.3`, `marketplace_`). Audited via `core.append_audit_record.v1`; presentation/custom-domain/showcase audit actions carry **`[ESC-MKT-AUDIT]`** (nearest §9 action; never invented). **Domain events** (`ProfilePublished`, `MicrositePublished`, `ShowcaseProjectPublished`, …) emit to the **M0 transactional outbox** by the realizing command (R10) — **event catalog and payloads owned by `Doc-2 §8`, never restated; no webhook surface** (`Doc-5A §11.3`; `CHK-5A-103`). Emission mechanism is §9. Authorization server-side, User active-org (§3.3/§3.5).
+- **Binds:** `Doc-5A §6/§9/§11`; `Doc-4D §D7.3/§D8`; `Doc-2 §8`; DD-6, `[ESC-MKT-AUDIT]`.
+
+---
+
+*End of Doc-5D Content v1.0, Pass 2 (§4–§6). The 52 vendor-profile / catalog-product-spec / profile-experience endpoints realized per the §5.2 method mapping (creates `POST`/`201`, partial updates `PATCH`, state/domain commands `POST` named, removals `DELETE`, N:N link/unlink `POST` named, versioned spec add `201`, reads `GET`; nested singletons `capacity_profile`/`sections`/`branding_assets`/`seo_settings` per §0.4); claim/status/category/product/presentation machines bound to Doc-4M (verified-claim, verified-tier, ban edges owned by §9 System consumers — R7); declared ≠ verified tier (DD-1); Content ≠ Presentation draft/published distinct surfaces (R5); every read declares its projection class (§3.4); entitlement gating consumed not authored (DD-5/R8); `claim_vendor_profile` finalization DD-7-blocked (that contract only); idempotency/concurrency/error/audit/events by pointer; `marketplace.*` dedup key is a DD-6 content-freeze gate; representations/codes/POLICY keys/audit actions/events/Doc-4D rules not restated; nothing coined. §7 (advertising/favorites), §8 (discovery), §9 (out-of-wire), §10 (conformance) + Appendix A follow in Pass-3, conforming to `Doc-5D_Structure_v1.0_FROZEN.md`.*
