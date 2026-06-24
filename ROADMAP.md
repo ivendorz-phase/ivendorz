@@ -9,7 +9,7 @@
 
 > On any conflict, the frozen corpus wins and this file is patched to match.
 > Architecture is COMPLETE/FROZEN. All Doc-4A…4M ratified. Project is in **Implementation Governance**.
-> Active deliverable: **Doc-5A — API Realization Standards** — **FROZEN** (freeze patches ratified 2026-06-24); §0–§12 + Appendices A–C complete (`Doc-5A_SERIES_FROZEN_v1.0`). Next: Doc-5B…5M.
+> Doc-5A — API Realization Standards: **FROZEN** (patches ratified 2026-06-24). Active deliverable: **Doc-5B (M0 `core`)** — **STRUCTURE FROZEN** (`Doc-5B_Structure_v1.0_FROZEN`); content passes next.
 
 ---
 
