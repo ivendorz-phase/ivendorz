@@ -5,7 +5,8 @@
 **Implementation Governance** — **Doc-5A — API Realization Standards** is **FROZEN**
 (`Doc-5A_SERIES_FROZEN_v1.0`; freeze patches ratified 2026-06-24): §0–§12 + Appendices A–C complete.
 **Doc-5B (M0 `core`)** is **FROZEN** (`Doc-5B_SERIES_FROZEN_v1.0`, 2026-06-24; §0–§7 + Appendix A; out-of-wire
-boundary R1 precedent). **Doc-5C (M1 Identity) is next**; Doc-5C…5M gated by the Appendix A checklist.
+boundary R1 precedent). **Doc-5C (M1 Identity)** is **STRUCTURE FROZEN** (`Doc-5C_Structure_v1.0_FROZEN`,
+2026-06-24; 42 contracts; R1–R6) — **content passes next**. Doc-5C…5M gated by the Appendix A checklist.
 Application code has **not** started.
 
 This is the entry point for any implementation work. Read it first, then follow the order below.

@@ -9,7 +9,7 @@
 
 > On any conflict, the frozen corpus wins and this file is patched to match.
 > Architecture is COMPLETE/FROZEN. All Doc-4A…4M ratified. Project is in **Implementation Governance**.
-> Doc-5A — API Realization Standards: **FROZEN** (patches ratified 2026-06-24). Doc-5B (M0 `core`): **FROZEN** 2026-06-24 (`Doc-5B_SERIES_FROZEN_v1.0`; out-of-wire boundary R1 precedent; no ratification dependency). Active deliverable next: **Doc-5C (M1 Identity)** — structure authoring.
+> Doc-5A — API Realization Standards: **FROZEN** (patches ratified 2026-06-24). Doc-5B (M0 `core`): **FROZEN** 2026-06-24 (`Doc-5B_SERIES_FROZEN_v1.0`; out-of-wire boundary R1 precedent). Doc-5C (M1 Identity): **STRUCTURE FROZEN** 2026-06-24 (`Doc-5C_Structure_v1.0_FROZEN`; 42 contracts; R1–R6). Active deliverable next: **Doc-5C content passes** (Pass-1 §0–§3 + inventory; Pass-2 §4–§8 + App A).
 
 ---
 
@@ -33,7 +33,8 @@
 | Doc-5A Content §10–§12 (Pass-7/8/9) | APPROVED |
 | Doc-5A Appendices A–C (Pass-11/10/12) | APPROVED |
 | **Doc-5B (M0 `core`)** | **FROZEN** (`Doc-5B_SERIES_FROZEN_v1.0`); §0–§7 + Appendix A; freeze audit clean (0 B/M/m); one carried item D-2 (non-gate); R1 out-of-wire precedent |
-| Doc-5C…5M (Module API Contracts) | NOT STARTED — Doc-5C (M1 Identity) next; recommended 5C→5E order |
+| **Doc-5C (M1 Identity)** | **STRUCTURE FROZEN** (`Doc-5C_Structure_v1.0_FROZEN`; 42 contracts; §3 cross-cutting authz/context; R1–R6 + DC-1…DC-5); content passes next (compressed: 2 passes) |
+| Doc-5D…5M (Module API Contracts) | NOT STARTED — recommended 5C→5E order |
 | Doc-6 / Doc-7 / Doc-8 | NOT STARTED — planning may proceed in parallel |
 | Application Code | NOT STARTED |
 
