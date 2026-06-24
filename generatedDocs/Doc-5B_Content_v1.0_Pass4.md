@@ -37,7 +37,7 @@
 - **UUIDv7 machine IDs** — algorithmic, in-process at entity creation; no table, no contract, no wire (`Doc-4B §B7`; Architecture §17.2). Consuming contracts declare `uuid` fields per `Doc-5A §3`.
 - **`core.allocate_human_reference.v1`** — an internal-service (Template 21.4 composition, `Audience: internal-service`) invoked **inside the owning module's create-entity transaction** (`Doc-4B §B7`); it inherits the caller's context and exposes no independent idempotency key or wire. Reference prefixes/formats are owned by Doc-2 §0.1 + the Doc-4A Appendix B human-ref registry (by pointer; a new prefix is a Doc-4A patch, never invented).
 - **No wire:** human-ref allocation is realized only as a downstream effect of another module's create command — which is that **module's** Doc-5x surface, never an M0 endpoint (§1.3 dependency boundary).
-- **Binds:** `Doc-4B §B7`; `Doc-5A §3` (identifier types).
+- **Binds:** `Doc-4B §B7`; Doc-2 §0.1, `Doc-4A Appendix B` (human-ref prefix registry); `Doc-5A §3` (identifier types).
 
 ### 6.4 G5 / G6 — Internal Configuration & Flag Reads (`Doc-4B §B8/§B9`)
 
@@ -62,7 +62,7 @@
 
 ### 7.1 Conformance Obligation
 
-- Before Doc-5B may freeze it **MUST** pass the Doc-5A **Appendix A** checklist (`CHK-5A-xxx`, binary pass/fail) for **every** caller-facing endpoint (§2–§5). A contract with any unresolved **`[B]`** check **MUST NOT** freeze; **`[M]`** must be resolved or deferred with escalation; **`[m]`** accepted with recorded justification (`Doc-5A Appendix A §A.0`; `Doc-5_Program_Governance_Note_v1.0 §6`). The attestation is **Appendix A** of this document.
+- Before Doc-5B may freeze it **MUST** pass the Doc-5A **Appendix A** checklist (`CHK-5A-xxx`, binary pass/fail) for **every** caller-facing endpoint (§2–§5). Freeze eligibility and the `[B]`/`[M]`/`[m]` severity discipline are governed by **`Doc-5A Appendix A §A.0`** and **`Doc-5_Program_Governance_Note_v1.0 §6`** — not restated here. The attestation is **Appendix A** of this document.
 - **Binds:** `Doc-5A Appendix A`; Gov-Note §6.
 
 ### 7.2 Attestation Summary
@@ -120,7 +120,7 @@ Per-band attestation of the realized M0 caller-facing surface (§2–§5) agains
 | CHK-5A-041 | B | PASS | §6 canonical error envelope |
 | CHK-5A-042 | B | PASS | Top-level `reference_id` on every body-bearing response (`Doc-4A §22.1 C-05` per `PATCH-D4A-C05-204`) — §3.4/§4.1/§5.1 |
 | CHK-5A-043 | B | PASS | All codes within the registered `core_` namespace — §3.6/§4.4/§5.4 |
-| CHK-5A-044 | M | PASS | `RATE_LIMITED` carries `Retry-After` (read); commands non-retryable — §3.6 |
+| CHK-5A-044 | M | PASS | `retryable: true` body signal on `RATE_LIMITED` (read; with `Retry-After`); `retryable: false` on non-retryable classes (commands) per the §6 class — §3.6 |
 | CHK-5A-045 | M | PASS / N/A | Read realizes `Doc-4A §19` rate response; commands declare no rate limit (N/A) — §3.6 |
 | **A.5 Non-Disclosure (Wire)** ||||
 | CHK-5A-050 | B | PASS / N/A | PASS audit read + redaction (404 collapse); N/A config·flag (`Timing-Uniformity: not-applicable`) — §3.5/§4.3 |
@@ -177,7 +177,7 @@ Per-band attestation of the realized M0 caller-facing surface (§2–§5) agains
 | CHK-5A-153 | B | PASS | Standard-header tokens exist in App B.4 and agree with §4.4 — §4 |
 | CHK-5A-154 | B | PASS | No self-assigned namespace/registry token — §7.4 |
 
-**Attestation result:** all applicable `[B]` and `[M]` checks **PASS**; `[m]` checks PASS with no deviation. `CHK-5A-001…009` are owned by `Doc-4A Appendix A` (not in Doc-5B's scope). **No unresolved check blocks the Doc-5B freeze.**
+**Attestation result:** all applicable `[B]` and `[M]` checks **PASS**; `[m]` checks PASS with no deviation. `CHK-5A-001…009` are owned by `Doc-4A Appendix A` (not in Doc-5B's scope). **No unresolved checklist item remains; freeze eligibility is determined by the Doc-5B Freeze Readiness Audit.**
 
 ---
 
