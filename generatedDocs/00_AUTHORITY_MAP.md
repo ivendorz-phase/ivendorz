@@ -69,7 +69,8 @@ and must conform upward.
 | `Doc-4M_FROZEN_v1.0.md` (State Machines) | FROZEN | v1.0 | ✅ | **Authoritative lifecycle/state authority** |
 | `Doc-4_SERIES_FROZEN_v1.0.md` | FROZEN | v1.0 | ✅ | Whole Doc-4 series freeze record |
 | `Doc-5_Program_Governance_Note_v1.0.md` | APPROVED | v1.0 | ✅ | Implementation Contracts program; active deliverable = Doc-5A API Standards |
-| `Doc-5A_SERIES_FROZEN_v1.0.md` (API Realization Standards) | FROZEN — pending ratification | v1.0 | ✅ | API realization metastandard; effective = Pass-1…12 + patches (`STRUCT-02`, `0-D`, `D4A-C05-204`); gates Doc-5B…5M via Appendix A |
+| `Doc-5A_SERIES_FROZEN_v1.0.md` (API Realization Standards) | FROZEN | v1.0 | ✅ | API realization metastandard; effective = Pass-1…12 + ratified patches (`STRUCT-02`, `0-D`, `D4A-C05-204`); gates Doc-5B…5M via Appendix A |
+| `Doc-4A_Patch_C-05-204_v1.0.md` | RATIFIED | v1.0 | ✅ | Additive Doc-4A §22.1 C-05 clarification (reference_id on body-bearing responses; 204 exempt) |
 | `iVendorz_Master_Overview_v1.0.md` | NON-AUTHORITATIVE | v1.3 | — | Consolidated mirror |
 | `CORPUS_INDEX.md` · `00_AUTHORITY_MAP.md` | NON-AUTHORITATIVE | — | — | Navigation + authority pointers |
 | Context Packs / Primers / Status / Roadmap | NON-AUTHORITATIVE | various | — | Orientation only |

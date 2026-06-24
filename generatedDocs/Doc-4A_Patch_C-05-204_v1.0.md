@@ -5,7 +5,7 @@
 | Patches | `Doc-4A` Content Pass-6 — Consistency Correction **C-05** (§22.1) only |
 | Patch ID | `PATCH-D4A-C05-204` |
 | Type | **Additive clarification** (narrows the carriage scope of an existing requirement; adds no field, status, header, or behavior). Frozen Doc-4A body not rewritten; effective = base + this patch. |
-| Status | **APPROVED — human ruling on `GAP-D5A-P11-01` (2026-06-24)** · pending Architecture-Board ratification into the frozen corpus |
+| Status | **RATIFIED — Architecture-Board (2026-06-24)** · effective in the frozen corpus; `Doc-4A §22.1 C-05` clarification in force |
 | Authority | Architecture corpus is rank-0 immutable; changed only by an **additive patch with human approval** (`CLAUDE.md §7`; `Master Architecture §22.7`). Human approval recorded; Board ratification required to take effect. |
 | Resolves | `GAP-D5A-P11-01` (`governanceReviews/Doc-5A_CORPUS_GAP_P11-01_reference_id_204.md`) |
 
@@ -28,4 +28,4 @@ No new field, status code, header, or error class is introduced. The audit/idemp
 
 ## Ratification
 
-This additive clarification is recorded as human-approved (GAP-D5A-P11-01 ruling). It becomes corpus-effective on Architecture-Board ratification; until then it is carried as an approved-pending-ratification patch and cited by `GAP-D5A-P11-01` and the Doc-5A Freeze Readiness Audit. Record in `00_AUTHORITY_MAP.md` provenance at ratification.
+**RATIFIED by the Architecture Board, 2026-06-24** (human-approved via the `GAP-D5A-P11-01` ruling). The clarification is **corpus-effective**: `Doc-4A §22.1 C-05` now reads "every response that carries a body", with `204` exempt. Cited by `GAP-D5A-P11-01` (closed) and the Doc-5A Freeze Readiness Audit. Recorded in `00_AUTHORITY_MAP.md` provenance.

@@ -5,7 +5,7 @@
 | Patches | `Doc-5A_Structure_v1.0_FROZEN.md` — §4 purpose line only |
 | Patch ID | `PATCH-D5A-STRUCT-02` |
 | Type | Additive wording-synchronization patch (frozen structure body not rewritten; effective structure = base + this patch) |
-| Status | APPLIED — pending merge into the consolidated `Doc-5A_FROZEN` artifact |
+| Status | **RATIFIED — Architecture-Board (2026-06-24)** · effective; merged into the Doc-5A freeze register (`Doc-5A_SERIES_FROZEN_v1.0`) |
 | Authority | `Doc-5_Program_Governance_Note_v1.0 §5` (post-freeze additive amendment) |
 | Conforms To | `Doc-4A §9.6` (frozen); Doc-5A §8 (pagination ownership), §4.4 (header registry) |
 

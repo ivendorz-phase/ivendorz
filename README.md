@@ -79,11 +79,11 @@ imports (only `contracts/` is importable). **One module, one owner.**
 
 The **architecture program is complete and frozen** (Master System Architecture, ADR Compendium,
 Doc-2, Doc-3, Doc-4A…4M). The project is in **Implementation Governance**; the active deliverable
-is **Doc-5A — API Realization Standards**, now **FROZEN (pending Architecture-Board ratification of
-two approved patches)** — §0–§12 + Appendices A–C complete (`Doc-5A_SERIES_FROZEN_v1.0`); freeze
-audit clean (0 open BLOCKER/MAJOR/MINOR). Per-module contracts (Doc-5B…5M) begin on ratification,
-each gated by the Appendix A conformance checklist; Doc-6/7/8 may plan in parallel. Application code
-is **not started** — the frozen corpus is the blueprint.
+is **Doc-5A — API Realization Standards**, now **FROZEN** (`Doc-5A_SERIES_FROZEN_v1.0`; both freeze
+patches ratified 2026-06-24) — §0–§12 + Appendices A–C complete; freeze audit clean (0 open
+BLOCKER/MAJOR/MINOR). Per-module contracts (Doc-5B…5M) are next, each gated by the Appendix A
+conformance checklist; Doc-6/7/8 may plan in parallel. Application code is **not started** — the
+frozen corpus is the blueprint.
 
 **Scaling target:** optimize for **100 → 1,000 → 10,000** vendors before 1,000,000.
 

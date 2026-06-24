@@ -5,7 +5,7 @@
 | Subject | Doc-5A — API Realization Standards (§0–§12 + Appendix A/B/C) |
 | Audit date | 2026-06-24 |
 | Authority | `Doc-5_Program_Governance_Note_v1.0 §8` (freeze rules); Appendix A discipline |
-| Verdict | **FREEZE-READY — conditional** on Architecture-Board ratification of two approved-pending patches (`PATCH-D5A-STRUCT-02`, `PATCH-D4A-C05-204`). No open BLOCKER/MAJOR/MINOR. |
+| Verdict | **FROZEN** — `PATCH-D5A-STRUCT-02` + `PATCH-D4A-C05-204` **RATIFIED by the Architecture Board (2026-06-24)**. No open BLOCKER/MAJOR/MINOR; freeze unconditional. |
 
 ## 1. Section completeness (content passes)
 
@@ -34,12 +34,12 @@ All 13 sections + 3 appendices present. No "TBD"; no orphan forward reference.
 
 | Item | Disposition |
 |---|---|
-| 0-A STRUCT-02 (structure §4 purpose line) | **CLOSED** — `PATCH-D5A-STRUCT-02` (additive; frozen structure body untouched). *Pending Board ratification.* |
+| 0-A STRUCT-02 (structure §4 purpose line) | **CLOSED** — `PATCH-D5A-STRUCT-02` (additive; frozen structure body untouched). *Ratified 2026-06-24.* |
 | 0-B Pass-3 §5.6/§6.1 `reference_id` | **CLOSED** — top-level in both success and error bodies (`Doc-4A §22.1 C-05`). |
 | 0-C Pass-4 §7 (F-001…F-005) | **CLOSED** — F-003 + F-005 applied; F-001/F-002/F-004 already in place (no double-patch). |
 | 0-D §4.4 ↔ B.4 `Iv-Api-Version` | **CLOSED** — `PATCH-D5A-0D`; cells identical; `CHK-5A-153` passes. |
 | M6 family-map label | **CLOSED** — `comms` → `communication` (`Doc-2 §0.3`). |
-| `GAP-D5A-P11-01` (`reference_id`/204) | **RESOLVED** — human ruling → `PATCH-D4A-C05-204` (Doc-4A C-05 clarified; 204 exempt). *Pending Board ratification.* |
+| `GAP-D5A-P11-01` (`reference_id`/204) | **RESOLVED** — human ruling → `PATCH-D4A-C05-204` (Doc-4A C-05 clarified; 204 exempt). *Ratified 2026-06-24.* |
 
 ## 3. Anchor verification (sampled, verbatim against frozen corpus)
 
@@ -61,12 +61,12 @@ All 13 sections + 3 appendices present. No "TBD"; no orphan forward reference.
 - Reference-never-restate: spot-checked — no upstream normative content restated; §20.2 table and Doc-4A App B.2 are pointer-only.
 - No new module/ownership/state-machine/event/permission/POLICY/header/status coined.
 
-## 5. Open conditions (the only freeze gate remaining)
+## 5. Ratification (closed)
 
-Two **additive, human-approved** patches await **Architecture-Board ratification** before the consolidated `Doc-5A_FROZEN` becomes corpus-effective:
-1. `PATCH-D5A-STRUCT-02` — structure §4 purpose-line wording sync.
-2. `PATCH-D4A-C05-204` — Doc-4A C-05 no-body clarification (touches rank-0 corpus; ratification mandatory).
+Two **additive, human-approved** patches were **RATIFIED by the Architecture Board (2026-06-24)** and are corpus-effective:
+1. `PATCH-D5A-STRUCT-02` — structure §4 purpose-line wording sync. **RATIFIED.**
+2. `PATCH-D4A-C05-204` — Doc-4A C-05 no-body clarification (rank-0 corpus amendment). **RATIFIED.**
 
 ## Verdict
 
-**FREEZE-READY (conditional).** Residual open BLOCKER/MAJOR/MINOR = **0**. Doc-5A may be consolidated into the FROZEN artifact now; its **effective FROZEN status is contingent on Board ratification** of the two patches above. Proceed to consolidation (Step 9); mark the consolidated artifact "FROZEN — pending ratification of PATCH-D5A-STRUCT-02 + PATCH-D4A-C05-204."
+**FROZEN.** Residual open BLOCKER/MAJOR/MINOR = **0**; both patches ratified. Doc-5A is consolidated into `Doc-5A_SERIES_FROZEN_v1.0` (unconditional FROZEN). Doc-5B…5M may begin, gated by the Appendix A checklist.

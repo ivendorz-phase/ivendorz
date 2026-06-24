@@ -4,7 +4,7 @@
 |---|---|
 | ID | `GAP-D5A-P11-01` |
 | Raised by | Doc-5A Pass-11 (Appendix A, CHK-5A-042 verification) |
-| Status | **RESOLVED — human ruling 2026-06-24: Option 1 (Doc-4A clarifies C-05).** Patch `PATCH-D4A-C05-204` created (`generatedDocs/Doc-4A_Patch_C-05-204_v1.0.md`); pending Architecture-Board ratification into the frozen corpus. |
+| Status | **CLOSED — Option 1 ratified 2026-06-24.** `PATCH-D4A-C05-204` (`generatedDocs/Doc-4A_Patch_C-05-204_v1.0.md`) **RATIFIED** by the Architecture Board; Doc-4A §22.1 C-05 clarification effective in the frozen corpus. |
 | Class | CORPUS GAP (conflict between frozen authorities) |
 | Nature | **Architecture-touching** — resolution is a corpus-precedence decision, **outside Doc-5A's authority** (`Gov-Note §7`; `Master Architecture §22.7`). Doc-5A invents nothing. |
 | Blocks | Doc-5A freeze gate disposition (Step 8) — must be ruled before the Freeze Readiness Audit closes. |
@@ -42,4 +42,4 @@ Architecture / API Governance Board (with human approval) rules among the above.
 
 ## Ruling (2026-06-24)
 
-**Option 1 — Doc-4A clarifies C-05.** C-05 is clarified to "every response **that carries a body**"; `204 No Content` is explicitly exempt (linkage maintained server-side via the audit record §17.2 + idempotency/correlation identifiers). Implemented as additive clarification **`PATCH-D4A-C05-204`** (human-approved; pending Architecture-Board ratification). `CHK-5A-042` (already scoped to body-bearing responses) now matches clarified C-05; no Doc-5A mechanism invented. GAP **closed** pending ratification.
+**Option 1 — Doc-4A clarifies C-05.** C-05 is clarified to "every response **that carries a body**"; `204 No Content` is explicitly exempt (linkage maintained server-side via the audit record §17.2 + idempotency/correlation identifiers). Implemented as additive clarification **`PATCH-D4A-C05-204`** (human-approved; **RATIFIED by the Architecture Board 2026-06-24**, corpus-effective). `CHK-5A-042` (already scoped to body-bearing responses) now matches clarified C-05; no Doc-5A mechanism invented. GAP **CLOSED**.

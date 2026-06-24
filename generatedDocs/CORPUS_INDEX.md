@@ -138,9 +138,9 @@ review/patch/audit trail is grouped by category.
 | File | Purpose |
 |------|---------|
 | `Doc-5_Program_Governance_Note_v1.0.md` | **Doc-5 program governance** — entry to Implementation Contracts (API/DB/Frontend/Tests). |
-| `Doc-5A_SERIES_FROZEN_v1.0.md` | **Doc-5A FROZEN (pending ratification)** — API realization metastandard freeze manifest; effective = `Doc-5A_Content_v1.0_Pass1…12` + `Doc-5A_Structure_v1.0_FROZEN` + patches. Gates Doc-5B…5M. |
+| `Doc-5A_SERIES_FROZEN_v1.0.md` | **Doc-5A FROZEN** — API realization metastandard freeze manifest; effective = `Doc-5A_Content_v1.0_Pass1…12` + `Doc-5A_Structure_v1.0_FROZEN` + ratified patches. Gates Doc-5B…5M. |
 | `Doc-5A_Content_v1.0_Pass1…12.md` · `Doc-5A_Structure_v1.0_FROZEN.md` | Doc-5A source passes (§0–§12 + App A/B/C) + canonical structure |
-| `Doc-5A_Structure_Patch_STRUCT-02.md` · `Doc-4A_Patch_C-05-204_v1.0.md` | Applied/approved patches (pending Board ratification) |
+| `Doc-5A_Structure_Patch_STRUCT-02.md` · `Doc-4A_Patch_C-05-204_v1.0.md` | Ratified patches (2026-06-24) |
 
 ---
 

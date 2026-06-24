@@ -3,9 +3,9 @@
 | Field | Value |
 |---|---|
 | Document | `Doc-5A_SERIES_FROZEN_v1.0` |
-| Status | **FROZEN — CONDITIONAL** (effective on Architecture-Board ratification of `PATCH-D5A-STRUCT-02` + `PATCH-D4A-C05-204`) |
+| Status | **FROZEN** (unconditional — `PATCH-D5A-STRUCT-02` + `PATCH-D4A-C05-204` ratified by the Architecture Board, 2026-06-24) |
 | Freeze Date | 2026-06-24 |
-| Freeze Authority | `Doc-5A_Freeze_Readiness_Audit_v1.0` — FREEZE-READY (BLOCKER=0 · MAJOR=0 · MINOR=0); 2 approved patches pending ratification |
+| Freeze Authority | `Doc-5A_Freeze_Readiness_Audit_v1.0` — FREEZE-READY (BLOCKER=0 · MAJOR=0 · MINOR=0); both patches **RATIFIED** |
 | Nature | **Document-level frozen designation.** Governance closure for Doc-5A — API Realization Standards. This manifest **designates and assembles**; it authors nothing, defines nothing, resolves nothing. Effective content is the registered passes + applied patches, read in order under the cleaning rules below. |
 | Corpus Authority | Master Architecture v1.0 FINAL → ADR Compendium v1 → Doc-2 v1.0.3 → Doc-3 v1.0.2 → Doc-4A–4M (FROZEN) → **Doc-5A** → Doc-5B…5M → Code |
 | Conflict Rule | FLAG-AND-HALT |
@@ -18,9 +18,9 @@
 BLOCKER = 0   MAJOR = 0   MINOR = 0   NITPICK = 0(carried via review records)
 ```
 
-**Audit Status: FREEZE-READY (conditional on ratification of 2 patches)**
+**Audit Status: FREEZE-READY — both patches RATIFIED (2026-06-24)**
 
-**Governance Status: DOC-5A FROZEN — PENDING RATIFICATION**
+**Governance Status: DOC-5A FROZEN**
 
 Doc-5A is the **API Realization Metastandard** of the Doc-5 family: it fixes *how* the abstract Doc-4 contracts become concrete HTTP APIs, and supplies the conformance checklist (Appendix A) and reserved-namespace registry (Appendix B) that gate every downstream Doc-5B…5M document.
 
@@ -62,20 +62,20 @@ Governing authority for all sections: `Doc-5_Program_Governance_Note_v1.0`.
 
 | Patch | Scope | Status |
 |---|---|---|
-| `PATCH-D5A-STRUCT-02` | Structure §4 purpose-line — remove "pagination cursors" (cursor = request param, `Doc-4A §9.6`) | **APPROVED — pending Board ratification** |
+| `PATCH-D5A-STRUCT-02` | Structure §4 purpose-line — remove "pagination cursors" (cursor = request param, `Doc-4A §9.6`) | **RATIFIED 2026-06-24** |
 | `PATCH-D5A-0D` | §4.4 `Iv-Api-Version` classification cell aligned to Appendix B.4 (`CHK-5A-153`) | APPLIED (content) |
-| `PATCH-D4A-C05-204` | **Doc-4A** §22.1 C-05 clarified — `reference_id` on "every response that carries a body"; `204` exempt | **APPROVED (human ruling) — pending Architecture-Board ratification** (touches rank-0 corpus) |
+| `PATCH-D4A-C05-204` | **Doc-4A** §22.1 C-05 clarified — `reference_id` on "every response that carries a body"; `204` exempt | **RATIFIED 2026-06-24** (rank-0 corpus amendment) |
 
 ---
 
-## Pending-Ratification Register (the only open conditions)
+## Ratification Register (closed)
 
 | ID | Affected | Item | Status |
 |---|---|---|---|
-| RAT-01 | `Doc-5A_Structure_v1.0_FROZEN` | `PATCH-D5A-STRUCT-02` wording sync | **PENDING BOARD RATIFICATION** |
-| RAT-02 | `Doc-4A` (rank-0 corpus) | `PATCH-D4A-C05-204` C-05 no-body clarification | **PENDING BOARD RATIFICATION** (human-approved) |
+| RAT-01 | `Doc-5A_Structure_v1.0_FROZEN` | `PATCH-D5A-STRUCT-02` wording sync | **RATIFIED 2026-06-24** |
+| RAT-02 | `Doc-4A` (rank-0 corpus) | `PATCH-D4A-C05-204` C-05 no-body clarification | **RATIFIED 2026-06-24** |
 
-Doc-5A's FROZEN status becomes **unconditional** when RAT-01 and RAT-02 are ratified. Review evidence: `governanceReviews/Doc-5A_Freeze_Readiness_Audit_v1.0.md`, `governanceReviews/Doc-5A_CORPUS_GAP_P11-01_reference_id_204.md`.
+Both patches ratified by the Architecture Board; Doc-5A FROZEN status is **unconditional**. Review evidence: `governanceReviews/Doc-5A_Freeze_Readiness_Audit_v1.0.md`, `governanceReviews/Doc-5A_CORPUS_GAP_P11-01_reference_id_204.md`.
 
 ---
 
