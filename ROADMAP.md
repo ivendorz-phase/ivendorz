@@ -9,7 +9,7 @@
 
 > On any conflict, the frozen corpus wins and this file is patched to match.
 > Architecture is COMPLETE/FROZEN. All Doc-4A…4M ratified. Project is in **Implementation Governance**.
-> Active deliverable: **Doc-5A — API Realization Standards** (structure FROZEN; content §0–§9 approved).
+> Active deliverable: **Doc-5A — API Realization Standards** — **FROZEN (pending Board ratification)**; §0–§12 + Appendices A–C complete (`Doc-5A_SERIES_FROZEN_v1.0`).
 
 ---
 
@@ -23,16 +23,16 @@
 | Doc-3 (RFQ Operational Spec) v1.0.2 | FROZEN |
 | Doc-4A (API Metastandard) | FROZEN (structure + content Pass-1…6) |
 | Doc-4B…4M (Module Contracts) | ALL FROZEN |
-| Doc-5A Structure | FROZEN |
-| Doc-5A Content §0–§2 (Pass-1) | APPROVED |
-| Doc-5A Content §3–§4 (Pass-2) | APPROVED — C-01 patch applied; GOVNOTE-D5A-STRUCT-02 OPEN |
-| Doc-5A Content §5–§6 (Pass-3) | APPROVED — **patch pending** (§5.6 + §6.1 `reference_id`) |
-| Doc-5A Content §7 (Pass-4) | APPROVED — **patch pending** (F-001 MAJOR + F-002–4 MINOR + F-005 NITPICK) |
-| Doc-5A Content §8 (Pass-5) | APPROVED |
-| Doc-5A Content §9 (Pass-6) | APPROVED |
-| Doc-5A Content §10–§12 | NOT STARTED |
-| Doc-5A Appendices A–C | NOT STARTED |
-| Doc-5B…5M (Module API Contracts) | NOT STARTED — blocked until Doc-5A FROZEN |
+| Doc-5A Structure | FROZEN (+ `PATCH-D5A-STRUCT-02`) |
+| **Doc-5A (§0–§12 + App A/B/C)** | **FROZEN — pending Board ratification** (`Doc-5A_SERIES_FROZEN_v1.0`); Pass-1…12; freeze audit clean (0 B/M/m) |
+| Doc-5A Content §0–§2 (Pass-1) | APPROVED — M6 family-map label fixed |
+| Doc-5A Content §3–§4 (Pass-2) | APPROVED — `PATCH-D5A-0D` (§4.4↔B.4) applied |
+| Doc-5A Content §5–§6 (Pass-3) | APPROVED — `reference_id` top-level (§5.6/§6.1) applied |
+| Doc-5A Content §7 (Pass-4) | APPROVED — §7 F-001…F-005 applied |
+| Doc-5A Content §8–§9 (Pass-5/6) | APPROVED |
+| Doc-5A Content §10–§12 (Pass-7/8/9) | APPROVED |
+| Doc-5A Appendices A–C (Pass-11/10/12) | APPROVED |
+| Doc-5B…5M (Module API Contracts) | NOT STARTED — begin on Doc-5A ratification |
 | Doc-6 / Doc-7 / Doc-8 | NOT STARTED — planning may proceed in parallel |
 | Application Code | NOT STARTED |
 
@@ -62,7 +62,8 @@
 
 ## PHASE 0 — Clear Open Blockers
 
-> Must close before new content passes begin. All three independent; can run in parallel.
+> **STATUS (2026-06-24): 0-A · 0-B · 0-C · 0-D CLOSED.** STRUCT-02 → `PATCH-D5A-STRUCT-02` (file); Pass-3 §5.6/§6.1 `reference_id` top-level; Pass-4 §7 (F-003 + F-005 applied, F-001/F-002/F-004 already in place); §4.4↔B.4 `Iv-Api-Version` aligned (`PATCH-D5A-0D`, `CHK-5A-153` passes). M6 family-map label `comms`→`communication`.
+> **`GAP-D5A-P11-01` RESOLVED** (human ruling 2026-06-24): Doc-4A C-05 clarified to "every response that carries a body"; `204` exempt → additive `PATCH-D4A-C05-204` (pending Architecture-Board ratification). All Phase-0 blockers closed.
 
 ### 0-A: Structure Patch — GOVNOTE-D5A-STRUCT-02
 

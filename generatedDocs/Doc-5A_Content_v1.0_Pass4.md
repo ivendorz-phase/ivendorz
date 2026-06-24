@@ -28,7 +28,7 @@
 
 - The four actor types — **User, Admin, System, AI Agent** (`Doc-4A §5.2`) — are **determined server-side** from the authenticated principal and the request context. A request **MUST NOT** carry a field or header asserting its own actor type; a client-asserted actor type (e.g. an "as-admin" flag) is a forbidden input (§4.4 Forbidden; `Doc-4A §9.7`).
 - No Doc-5 contract adds, renames, or merges actor types (`Doc-4A §5.2`). Admin (`staff_*`) and User principals are distinguished by the server from the authenticated identity, not by the wire.
-- **Binds:** `Doc-4A §5.2` (actor types), §9.7 (no client-asserted identity/authorization). **Rationale:** actor type drives authorization and audit attribution; deriving it server-side is the only realization that preserves the §5/§6 trust boundary.
+- **Binds:** `Doc-4A §5.2` (actor types); `Master Architecture §13.5` (Platform Roles — the platform-role basis distinguishing Admin/staff from User principals); `Doc-2 §7` (slug catalog owner for the `staff_*` namespace); §9.7 (no client-asserted identity/authorization). **Rationale:** actor type drives authorization and audit attribution; deriving it server-side is the only realization that preserves the §5/§6 trust boundary.
 
 ### 7.3 Active-Organization Context Carriage
 

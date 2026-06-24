@@ -80,12 +80,12 @@
 |---|---|---|---|
 | CHK-5A-040 | Every error maps its error-class → HTTP status per the §6 mapping | §6 | B |
 | CHK-5A-041 | Wire error envelope is the §6 canonical shape | §6 | B |
-| CHK-5A-042 | Top-level `reference_id` (platform-assigned UUIDv7) present in every response **that carries a body** (success and error) | `Doc-4A §22.1 C-05`; §6 | B |
+| CHK-5A-042 | Top-level `reference_id` (platform-assigned UUIDv7) present in every response **that carries a body** (success and error) | `Doc-4A §22.1 C-05` (clarified by `PATCH-D4A-C05-204`); §6 | B |
 | CHK-5A-043 | `error_code` is within the module's registered namespace | App B.2 → `Doc-4A Appendix B.2` | B |
 | CHK-5A-044 | `retryable` signal set per the §6 class | §6 | M |
 | CHK-5A-045 | Rate/quota responses realize `Doc-4A §19` | §6; `Doc-4A §19` | M |
 
-> **CORPUS GAP — `reference_id` on no-body (`204`) responses (flag-and-halt; not filled here):** `Doc-4A §22.1 C-05` requires `reference_id` in **every** contract response; §5.5/§4.0 define `204 No Content` as a **no-body** outcome; and the corpus defines `reference_id` **only** as a body field (success result body, error envelope §6.1, audit §17.2) — **no header carriage is defined.** The carriage of `reference_id` on a no-body response is therefore **undefined in the frozen corpus.** `CHK-5A-042` tests body-bearing responses (the machine-verifiable part) and **does not weaken** C-05's requirement; the no-body case is **escalated for a `Doc-4A` clarification** (`Doc-5_Program_Governance_Note_v1.0 §7`). Appendix A **does not invent** a mechanism (e.g., a reference-id response header). This gap is raised for the Doc-5A freeze gate, not resolved locally.
+> **CORPUS GAP `GAP-D5A-P11-01` — RESOLVED (`PATCH-D4A-C05-204`):** `Doc-4A §22.1 C-05` ("every response") vs §5.5/§4.0 (`204` = no-body) vs `reference_id` defined only as a body field left no-body carriage undefined. **Human ruling (2026-06-24):** Doc-4A C-05 is clarified to "every response **that carries a body**"; `204` is exempt (linkage maintained server-side via the audit record §17.2 + idempotency/correlation identifiers) — additive clarification `PATCH-D4A-C05-204` (pending Architecture-Board ratification). `CHK-5A-042` (already scoped to body-bearing responses) now matches clarified C-05; Appendix A invented no mechanism. Record: `governanceReviews/Doc-5A_CORPUS_GAP_P11-01_reference_id_204.md`.
 
 ---
 
@@ -218,4 +218,4 @@
 
 ---
 
-*End of Doc-5A Content v1.0, Pass 11 (Appendix A). Machine-executable conformance checklist only — every `CHK-5A-xxx` binds an existing §0–§12 / Appendix B / Doc-4A obligation as a binary pass/fail test citing its source; no rule, token, status, header, error class, POLICY key, or behavior is coined. The conformance severity model is exactly `Doc-4A Appendix A`'s `[B]/[M]/[m]` (NITPICK is review-methodology, not a checklist tier). `CHK-5A-001…009` intentionally unused. Contract-level module-ownership checks are deferred to `Doc-4A Appendix A` (CHK-002…009) by pointer, not duplicated. One CORPUS GAP raised — `reference_id` carriage on no-body (`204`) responses — escalated for a Doc-4A clarification, not filled. Appendix C (Cross-Reference Index) follows in the final pass, conforming to `Doc-5A_Structure_v1.0_FROZEN.md`.*
+*End of Doc-5A Content v1.0, Pass 11 (Appendix A). Machine-executable conformance checklist only — every `CHK-5A-xxx` binds an existing §0–§12 / Appendix B / Doc-4A obligation as a binary pass/fail test citing its source; no rule, token, status, header, error class, POLICY key, or behavior is coined. The conformance severity model is exactly `Doc-4A Appendix A`'s `[B]/[M]/[m]` (NITPICK is review-methodology, not a checklist tier). `CHK-5A-001…009` intentionally unused. Contract-level module-ownership checks are deferred to `Doc-4A Appendix A` (CHK-002…009) by pointer, not duplicated. One CORPUS GAP (`GAP-D5A-P11-01`, `reference_id` on no-body `204`) — **resolved** by `PATCH-D4A-C05-204` (Doc-4A C-05 clarified to body-bearing responses; `204` exempt; pending Board ratification). Appendix C (Cross-Reference Index) follows in the final pass, conforming to `Doc-5A_Structure_v1.0_FROZEN.md`.*

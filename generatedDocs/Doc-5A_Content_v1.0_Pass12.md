@@ -52,9 +52,9 @@ The index records — but does **not** resolve — the open items surfaced durin
 
 | Item | Nature | Authority / disposition |
 |---|---|---|
-| **STRUCT-02** | Structure §4 purpose line still lists "pagination cursors"; content excludes it. | Substance settled by frozen `Doc-4A §9.6` (cursor = request parameter, owned by §8); only a structure-doc purpose-line **wording-sync patch** (`PATCH-D5A-STRUCT-02`) remains. |
-| **B.4 ↔ §4.4 `Iv-Api-Version` wording** | B.4 records "version-carriage header (owned by §12)"; §4.4 classifies "Conditional — per §12 rules". | §4.5 normative sync / `CHK-5A-153` require identical wording → parallel §4.4 alignment by Doc-5A amendment. |
-| **GAP-D5A-P11-01** | `reference_id` carriage on no-body (`204`) responses is undefined: `Doc-4A §22.1 C-05` (every response) vs §5.5/§4.0 (204 no-body); `reference_id` defined only as a body field. | **CORPUS GAP** — escalated for a `Doc-4A` clarification (`Gov-Note §7`); Appendix A invents no mechanism. |
+| **STRUCT-02** | Structure §4 purpose line listed "pagination cursors"; content excludes it. | **RESOLVED** — additive `PATCH-D5A-STRUCT-02` synchronizes the structure §4 purpose-line wording (substance settled by frozen `Doc-4A §9.6`). Merged at consolidation. |
+| **B.4 ↔ §4.4 `Iv-Api-Version` wording** | B.4 recorded "version-carriage header (owned by §12)"; §4.4 classified "Conditional — per §12 rules". | **RESOLVED** — `PATCH-D5A-0D` aligns §4.4's cell to the identical B.4 wording; §4.5 sync / `CHK-5A-153` now pass. |
+| **GAP-D5A-P11-01** | `reference_id` carriage on no-body (`204`) responses was undefined: `Doc-4A §22.1 C-05` (every response) vs §5.5/§4.0 (204 no-body); `reference_id` defined only as a body field. | **RESOLVED** (human ruling 2026-06-24) — `PATCH-D4A-C05-204` clarifies C-05 to "every response that carries a body"; `204` exempt (linkage server-side, §17.2). Pending Architecture-Board ratification. Record: `governanceReviews/Doc-5A_CORPUS_GAP_P11-01_reference_id_204.md`. |
 
 *Additional pre-existing freeze-gate debts (e.g. Pass-3 §5.6/§6.1 and Pass-4 §7 patches) are tracked by the program roadmap and the Freeze Readiness Audit, not duplicated in this index.*
 

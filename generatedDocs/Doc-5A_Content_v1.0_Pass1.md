@@ -76,7 +76,7 @@ Doc-5A **does NOT** contain any module's endpoints, integration flows, or per-en
 | **Doc-5E** | Doc-4E (M3 `rfq`) | RFQ Procurement API realization |
 | **Doc-5F** | Doc-4F (M4 `operations`) | Business Operations API realization |
 | **Doc-5G** | Doc-4G (M5 `trust`) | Trust & Verification API realization |
-| **Doc-5H** | Doc-4H (M6 `comms`) | Communication API realization |
+| **Doc-5H** | Doc-4H (M6 `communication`) | Communication API realization |
 | **Doc-5I** | Doc-4I (M7 `billing`) | Monetization API realization |
 | **Doc-5J** | Doc-4J (M8 `admin`) | Admin Operations API realization |
 | **Doc-5K** | Doc-4K (M9 `ai`) | AI Layer API realization |

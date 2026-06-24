@@ -196,7 +196,7 @@ Rules:
 |---|---|---|---|---|
 | Idempotency key | `Idempotency-Key` | Conditional — present when the contract declares `Idempotency: required` (`Doc-4A §14.2`); absent otherwise | **§9** (later pass) | Carries the idempotency key; duplicate-request behavior defined in §9. |
 | Concurrency precondition | `If-Match` | Conditional — present when the contract declares `Concurrency: optimistic` (`Doc-4A §14.5`); absent when `Concurrency: none` | **§9** (later pass) | Carries the optimistic-concurrency token (`updated_at` per `Doc-4A §14.5`); semantics in §9. |
-| Surface version | `Iv-Api-Version` | Conditional — per §12 rules | **§12** (later pass) | Carries the API surface-version identifier; versioning behavior defined in §12. |
+| Surface version | `Iv-Api-Version` | Version-carriage header (owned by §12) | **§12** (later pass) | Carries the API surface-version identifier; versioning behavior defined in §12. (Present per the §12 rules; this cell records ownership only — kept identical to Appendix B.4 per §4.5, PATCH-D5A-0D.) |
 
 > **Pagination cursor (board M-01):** the paginated-traversal continuation cursor is a **pagination concern, not a header**. It is carried as the `cursor` request parameter (`Doc-4A §9.6`) and owned entirely by **§8**; it is **not** a slot in this header registry. Removed from the registry to keep §4 a pure header registry (no non-header entries).
 

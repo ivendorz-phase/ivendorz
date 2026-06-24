@@ -78,9 +78,10 @@ Realizes the `Doc-4A §21.1` Endpoint Contract Template and `Doc-4A §4` surface
 ### 5.6 Request & Response Body Binding
 
 - Every request/response body, when present, is a **JSON object root** (§4.0).
-- **Single-entity success:** `{ "result": <representation> }`, where `<representation>` is the owning module's canonical (or summary) representation **by reference** (`Doc-4A §10.1/§10.2` — never reshaped here).
-- **List success:** `{ "items": [ <representation> … ], "page_info": { … } }`, realizing the `Doc-4A §10.3` list structure (`items`, `page_info.next_cursor`, `has_more`, optional `total_count`); the pagination *grammar* is owned by §8 (later pass) and bound by pointer.
-- **Batch / multi-outcome:** per-item positional outcomes, each a `result` or an `error` object (`Doc-4A §10.5`); partial success is explicit.
+- **Top-level `reference_id` (every body):** every response body carries a **top-level `reference_id`** (platform-assigned `UUIDv7`, generated at request acceptance) per `Doc-4A §22.1 C-05` — a sibling of `result`/`items`/`error`, **never** nested inside them. It is the linkage between the response, the audit record, and the idempotency key; it is **not** a caller-supplied value (`Doc-4A §22.1 C-05`).
+- **Single-entity success:** `{ "result": <representation>, "reference_id": <uuidv7> }`, where `<representation>` is the owning module's canonical (or summary) representation **by reference** (`Doc-4A §10.1/§10.2` — never reshaped here).
+- **List success:** `{ "items": [ <representation> … ], "page_info": { … }, "reference_id": <uuidv7> }`, realizing the `Doc-4A §10.3` list structure (`items`, `page_info.next_cursor`, `has_more`, optional `total_count`); the pagination *grammar* is owned by §8 (later pass) and bound by pointer.
+- **Batch / multi-outcome:** `{ "items": [ <result|error> … ], "reference_id": <uuidv7> }` — per-item positional outcomes, each a `result` or an `error` object (`Doc-4A §10.5`); partial success is explicit. The top-level `reference_id` is the one for the batch request; per-item objects carry their own fields per `Doc-4A §10.5`.
 - **Binds:** `Doc-4A §10.1–§10.5`. **Rationale [realization convention — envelope keys]:** Doc-4A fixes the `result`/`items`/`page_info`/`error` field structure; fixing the JSON-object root and these top-level keys gives one envelope across all modules.
 
 ### 5.7 Endpoint Realization Template
@@ -136,9 +137,9 @@ Realizes `Doc-4A §12` (canonical error structure, the closed error-class set, c
 
 ### 6.1 Error Wire Envelope
 
-- An error response body is a **JSON object root** (§4.0): `{ "error": <Doc-4A §12.1 error structure> }`, i.e. `error.error_class`, `error.error_code`, `error.message`, `error.field_errors` (VALIDATION only), `error.retryable`, `error.reference_id`.
-- The envelope fields, their names, and their meanings are owned by `Doc-4A §12.1` and are **not** added to, removed, or renamed here. Doc-5A fixes only the JSON-object root and the single top-level `error` key (mirroring the `result` key of §5.6 and the `result`/`error` duality of `Doc-4A §10.5`).
-- **Binds:** `Doc-4A §12.1`, §10.5; §4.0. **Rationale [realization convention — error envelope key]:** one wire envelope for errors across all modules; structure itself is upstream.
+- An error response body is a **JSON object root** (§4.0): `{ "error": <Doc-4A §12.1 error structure>, "reference_id": <uuidv7> }`, i.e. `error.error_class`, `error.error_code`, `error.message`, `error.field_errors` (VALIDATION only), `error.retryable` — with **`reference_id` at the top level**, a sibling of `error`, **not** nested inside it (`Doc-4A §22.1 C-05`: present in every response; the same linkage on success per §5.6).
+- The envelope fields, their names, and their meanings are owned by `Doc-4A §12.1` and are **not** added to, removed, or renamed here. Doc-5A fixes only the JSON-object root, the single top-level `error` key, and the top-level `reference_id` (mirroring the `result` key of §5.6 and the `result`/`error` duality of `Doc-4A §10.5`).
+- **Binds:** `Doc-4A §12.1`, §10.5, §22.1 C-05; §4.0; Doc-5A §5.6. **Rationale [realization convention — error envelope key]:** one wire envelope for errors across all modules, with `reference_id` carried identically (top-level) on success and error; structure itself is upstream.
 
 ### 6.2 Error-Class → HTTP Status Mapping (normative)
 
