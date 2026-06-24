@@ -141,6 +141,9 @@ review/patch/audit trail is grouped by category.
 | `Doc-5A_SERIES_FROZEN_v1.0.md` | **Doc-5A FROZEN** — API realization metastandard freeze manifest; effective = `Doc-5A_Content_v1.0_Pass1…12` + `Doc-5A_Structure_v1.0_FROZEN` + ratified patches. Gates Doc-5B…5M. |
 | `Doc-5A_Content_v1.0_Pass1…12.md` · `Doc-5A_Structure_v1.0_FROZEN.md` | Doc-5A source passes (§0–§12 + App A/B/C) + canonical structure |
 | `Doc-5A_Structure_Patch_STRUCT-02.md` · `Doc-4A_Patch_C-05-204_v1.0.md` | Ratified patches (2026-06-24) |
+| `Doc-5B_SERIES_FROZEN_v1.0.md` | **Doc-5B FROZEN** — M0 `core` API realization freeze manifest; effective = `Doc-5B_Content_v1.0_Pass1…4` + `Doc-5B_Structure_v1.0_FROZEN` + resolved finding registers. Realizes Doc-4B; out-of-wire boundary (R1) precedent. |
+| `Doc-5B_Content_v1.0_Pass1…4.md` · `Doc-5B_Structure_v1.0_FROZEN.md` | Doc-5B source passes (§0–§7 + Appendix A) + canonical structure |
+| `governanceReviews/Doc-5B_Freeze_Readiness_Audit_v1.0.md` · `governanceReviews/Doc-5B_Pass3_Escalation_B01_M03.md` | Doc-5B freeze audit + Pass-3 escalation record (B-01/M-03, CLOSED) |
 
 ---
 

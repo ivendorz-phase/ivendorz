@@ -9,7 +9,7 @@
 
 > On any conflict, the frozen corpus wins and this file is patched to match.
 > Architecture is COMPLETE/FROZEN. All Doc-4A…4M ratified. Project is in **Implementation Governance**.
-> Doc-5A — API Realization Standards: **FROZEN** (patches ratified 2026-06-24). Active deliverable: **Doc-5B (M0 `core`)** — **STRUCTURE FROZEN** (`Doc-5B_Structure_v1.0_FROZEN`); content passes next.
+> Doc-5A — API Realization Standards: **FROZEN** (patches ratified 2026-06-24). Doc-5B (M0 `core`): **FROZEN** 2026-06-24 (`Doc-5B_SERIES_FROZEN_v1.0`; out-of-wire boundary R1 precedent; no ratification dependency). Active deliverable next: **Doc-5C (M1 Identity)** — structure authoring.
 
 ---
 
@@ -32,7 +32,8 @@
 | Doc-5A Content §8–§9 (Pass-5/6) | APPROVED |
 | Doc-5A Content §10–§12 (Pass-7/8/9) | APPROVED |
 | Doc-5A Appendices A–C (Pass-11/10/12) | APPROVED |
-| Doc-5B…5M (Module API Contracts) | NOT STARTED — begin on Doc-5A ratification |
+| **Doc-5B (M0 `core`)** | **FROZEN** (`Doc-5B_SERIES_FROZEN_v1.0`); §0–§7 + Appendix A; freeze audit clean (0 B/M/m); one carried item D-2 (non-gate); R1 out-of-wire precedent |
+| Doc-5C…5M (Module API Contracts) | NOT STARTED — Doc-5C (M1 Identity) next; recommended 5C→5E order |
 | Doc-6 / Doc-7 / Doc-8 | NOT STARTED — planning may proceed in parallel |
 | Application Code | NOT STARTED |
 
@@ -216,8 +217,8 @@ Begins only after Doc-5A FROZEN. All artifacts conform to Doc-5A; Appendix A che
 
 | Priority | Document | Module | Rationale |
 |---|---|---|---|
-| 1 | Doc-5B | M0 Platform Core | Audit, outbox, ID gen — foundational for all |
-| 2 | Doc-5C | M1 Identity | Auth, org context, permissions — prerequisite pattern |
+| 1 | Doc-5B | M0 Platform Core | Audit, outbox, ID gen — foundational for all — **✅ FROZEN 2026-06-24** |
+| 2 | Doc-5C | M1 Identity | Auth, org context, permissions — prerequisite pattern — **NEXT** |
 | 3 | Doc-5E | M3 RFQ | Platform moat — highest complexity, highest business value |
 | 4 | Doc-5D | M2 Marketplace | Vendor profile / discovery — large surface, feeds M3 |
 | 5 | Doc-5F | M4 Operations | Post-award, CRM — depends on M3 award flow |

@@ -71,7 +71,8 @@ and must conform upward.
 | `Doc-5_Program_Governance_Note_v1.0.md` | APPROVED | v1.0 | ✅ | Implementation Contracts program; active deliverable = Doc-5A API Standards |
 | `Doc-5A_SERIES_FROZEN_v1.0.md` (API Realization Standards) | FROZEN | v1.0 | ✅ | API realization metastandard; effective = Pass-1…12 + ratified patches (`STRUCT-02`, `0-D`, `D4A-C05-204`); gates Doc-5B…5M via Appendix A |
 | `Doc-4A_Patch_C-05-204_v1.0.md` | RATIFIED | v1.0 | ✅ | Additive Doc-4A §22.1 C-05 clarification (reference_id on body-bearing responses; 204 exempt) |
-| `Doc-5B_Structure_v1.0_FROZEN.md` (M0 `core` API realization) | STRUCTURE FROZEN | v1.0 | ✅ | Realizes Doc-4B on HTTP; canonical TOC; content passes next |
+| `Doc-5B_SERIES_FROZEN_v1.0.md` (M0 `core` API realization) | FROZEN | v1.0 | ✅ | Realizes Doc-4B on HTTP; effective = `Doc-5B_Content_v1.0_Pass1…4` + `Doc-5B_Structure_v1.0_FROZEN` + resolved registers; out-of-wire boundary (R1) precedent; no ratification dependency. Gated by Doc-5A Appendix A |
+| `Doc-5B_Structure_v1.0_FROZEN.md` · `Doc-5B_Content_v1.0_Pass1…4.md` | FROZEN | v1.0 | ✅ | Doc-5B source (canonical TOC + §0–§7 + Appendix A); read via the freeze manifest |
 | `iVendorz_Master_Overview_v1.0.md` | NON-AUTHORITATIVE | v1.3 | — | Consolidated mirror |
 | `CORPUS_INDEX.md` · `00_AUTHORITY_MAP.md` | NON-AUTHORITATIVE | — | — | Navigation + authority pointers |
 | Context Packs / Primers / Status / Roadmap | NON-AUTHORITATIVE | various | — | Orientation only |

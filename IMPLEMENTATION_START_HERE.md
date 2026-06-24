@@ -2,9 +2,11 @@
 
 **Audience:** developers and AI coding agents (Claude Code, Cursor, Antigravity, Windsurf).
 **Status:** the architecture program is **COMPLETE / FROZEN**. The project is in
-**Implementation Governance** — **Doc-5A — API Realization Standards** is now **FROZEN**
+**Implementation Governance** — **Doc-5A — API Realization Standards** is **FROZEN**
 (`Doc-5A_SERIES_FROZEN_v1.0`; freeze patches ratified 2026-06-24): §0–§12 + Appendices A–C complete.
-Doc-5B…5M are next, gated by the Appendix A checklist. Application code has **not** started.
+**Doc-5B (M0 `core`)** is **FROZEN** (`Doc-5B_SERIES_FROZEN_v1.0`, 2026-06-24; §0–§7 + Appendix A; out-of-wire
+boundary R1 precedent). **Doc-5C (M1 Identity) is next**; Doc-5C…5M gated by the Appendix A checklist.
+Application code has **not** started.
 
 This is the entry point for any implementation work. Read it first, then follow the order below.
 
@@ -77,7 +79,7 @@ is insufficient.
 | Which doc is canonical | `generatedDocs/CORPUS_INDEX.md`, `generatedDocs/00_AUTHORITY_MAP.md` |
 | API conventions | Doc-4A |
 | State machines | Doc-4M · Event catalog | Doc-4J · Cross-module flows | Doc-4L |
-| Current program | `generatedDocs/Doc-5A_SERIES_FROZEN_v1.0.md` (Doc-5A FROZEN; §0–§12 + App A/B/C complete; patches ratified) |
+| Current program | `generatedDocs/Doc-5B_SERIES_FROZEN_v1.0.md` (Doc-5B M0 FROZEN; §0–§7 + App A) · `generatedDocs/Doc-5A_SERIES_FROZEN_v1.0.md` (Doc-5A metastandard FROZEN). Next: Doc-5C (M1 Identity) |
 
 ---
 
