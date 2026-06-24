@@ -113,6 +113,19 @@
 
 ---
 
+### 0-D: B.4 ↔ §4.4 `Iv-Api-Version` wording alignment
+
+**Issue:** Pass-10 PATCH-02 set Appendix B.4's `Iv-Api-Version` classification cell to "Version-carriage header (owned by §12)", diverging from §4.4's "Conditional — per §12 rules". The §4.5 normative synchronization requirement (`CHK-5A-153`) requires the two be identical.
+
+**Actions:**
+1. Apply a parallel wording-alignment amendment so §4.4 and B.4 agree (ownership-only wording)
+2. Re-verify `CHK-5A-153`
+3. Record in `00_AUTHORITY_MAP.md` provenance trail
+
+*Freeze-gate item; substance unchanged.*
+
+---
+
 ## PHASE 1 — Complete Doc-5A Content (§10–§12)
 
 ### Pass-7: §10 + §11 (co-authored)
