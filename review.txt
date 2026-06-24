@@ -1,35 +1,179 @@
-Pass-3 Cleanup Patch
+# Doc-5B Content v1.0 Pass-1 — Board Patch Request
 
-Apply only the following cleanup items.
+Apply only the findings below. Preserve structure, scope, and all approved authority bindings. No new endpoints, contracts, statuses, headers, permissions, POLICY keys, or architecture decisions.
 
-N-01
+---
 
-* Verify all §4.0 references point to the final Transport Envelope section.
-* Update references only if required.
+## PATCH M-01 — Inventory Cardinality Must Match Frozen Structure
 
-N-02
+### Finding
 
-* Add a brief rationale note for:
-  QUOTA → 403
-  (entitlement exhaustion, not throughput limiting).
+Pass-1 collapses:
 
-NP-01
+```text
+core.audit_record_query.v1
+core.audit_correlation_lookup.v1
+```
 
-* Expand §5.1 citation to include the additional Doc-4A sections supporting the command-shaped model.
+into a single inventory row.
 
-NP-02
+However the approved Pass-1 scope and frozen structure inventory were authored as **five caller-facing endpoint entries**.
 
-* Remove duplicate ASYNC_PENDING ownership wording if redundant.
+Doc-5B content cannot reduce inventory cardinality without a structure amendment.
 
-Constraints
+### Required Change
 
-* No architecture changes.
-* No behavior changes.
-* No status mapping changes.
-* No new authorities.
-* No section restructuring.
-* Keep all other content unchanged.
+Restore five inventory rows in §2.2.
+
+Inventory must contain:
+
+```text
+1. Audit Record Query
+2. Audit Correlation Lookup
+3. Audit Redaction
+4. Configuration Value Change
+5. Feature Flag Set
+```
+
+The two audit-read entries may share the same resource path if authority permits, but they must remain separate inventory entries.
+
+### Verification
+
+* Inventory row count = 5.
+* Each row traces to exactly one frozen Doc-4B contract.
+* No structure amendment required.
+
+---
+
+## PATCH M-02 — Command Token Authority
+
+### Finding
+
+§2.1 currently derives:
+
+```text
+admin_redact_audit_field -> redact_field
+admin_update_config_value -> update_value
+admin_set_feature_flag -> set_flag
+```
+
+using a realization convention that lacks an explicit authority source.
+
+### Required Change
+
+Either:
+
+### Option A (preferred)
+
+Use the exact operation token already declared by the frozen contract.
+
+Example:
+
+```text
+/admin_redact_audit_field
+/admin_update_config_value
+/admin_set_feature_flag
+```
+
+OR
+
+### Option B
+
+Provide a direct frozen authority that explicitly permits deterministic command-token shortening.
+
+If no such authority exists, Option A is mandatory.
+
+### Verification
+
+* No invented command tokens.
+* Every command token directly traces to frozen authority.
+
+---
+
+## PATCH m-01 — Endpoint Count Wording
+
+### Finding
+
+Opening summary says:
+
+```text
+four M0 HTTP endpoints
+```
+
+while the approved inventory contains five entries.
+
+### Required Change
+
+Update wording to match the corrected inventory.
+
+### Verification
+
+Inventory count and narrative count are identical.
+
+---
+
+## PATCH m-02 — Success Status Rationale
+
+### Finding
+
+§2.3 states:
+
+```text
+21.6 operations -> 200
+```
+
+without a cited authority.
+
+### Required Change
+
+Either:
+
+* add the frozen authority that establishes this mapping; OR
+* remove the unsupported rationale and keep only the inventory success-status assignment.
+
+### Verification
+
+Every status rationale is authority-backed.
+
+---
+
+## PATCH m-03 — D-2 Traceability
+
+### Finding
+
+§1.4 references D-2 and staff_super_admin but the bind line does not directly include Doc-2 §7.
+
+### Required Change
+
+Add:
+
+```text
+Doc-2 §7
+```
+
+to the binding line for §1.4.
+
+### Verification
+
+D-2 traceability is direct and explicit.
+
+---
+
+## Constraints
+
+Do NOT:
+
+* amend the frozen structure;
+* merge contracts;
+* invent convenience endpoints;
+* invent command names;
+* introduce schemas;
+* introduce request/response bodies;
+* introduce status-code rules;
+* realize §3–§5 content early.
 
 Output:
 
-1. say in text file updated.
+1. Patched sections only.
+2. Verification report for M-01, M-02, m-01, m-02, m-03.
+3. Explicit statement whether Pass-1 is now ready for targeted verification.
