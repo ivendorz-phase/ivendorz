@@ -107,7 +107,7 @@
 | **DD-3** | OPEN (out-of-wire) | Admin ban decision (`Doc-4J`); `reflect_vendor_ban` §9; banned drops from §8 (R9) |
 | **DD-4** | CARRY FORWARD | Admin category governance binds `staff_can_manage_categories` per `Doc-4D §D7.1`; registration status confirmed in `Doc-4D` (any unresolved registration gap is a pre-existing Doc-4D matter — escalate via Doc-4D errata channel; not a Doc-5D obligation) |
 | **DD-5** | OPEN (out-of-wire) | Billing entitlement consumed (R8); denial → `404`; no ledger; ad purchase Billing-owned |
-| **DD-6** | **CONTENT-FREEZE GATE** | `marketplace.*` POLICY keys (dedup window + list page-size) **must be registered in Doc-3 §12.2** (additive patch — precedent `core.*` v1.0 / `rfq.*` v1.1; Doc-4A §18.2) **before the content Freeze Audit** (`CHK-5A-121`); referenced by intended name only, registration not implied |
+| **DD-6** | **RESOLVED** | `marketplace.idempotency_dedup_window` + `marketplace.list_page_size_max` **registered in Doc-3 §12.2** via the approved `Doc-3_Policy_Key_Registration_Patch_v1.2_Marketplace` (2026-06-25). Content-freeze gate cleared (`CHK-5A-121/071`; Doc-4A §18.2 satisfied) |
 | **DD-7** | **TRACKED / escalated** | `vendor_claim_records` tenancy (cross-frozen-doc, Board-gated); blocks `claim_vendor_profile` **content finalization only** — not authoring/review/Freeze Audit/other contracts (§4.6) |
 | **DD-8** | OPEN (blocked) | No `VendorBanLifted` event in Doc-2 §8 → `reflect_vendor_ban_lift` blocked, non-implementable (§9); channel Doc-2 §8 additive |
 | `[ESC-MKT-AUDIT]` | OPEN | Advertisement/product-publish/showcase/custom-domain audit actions bound to nearest Doc-2 §9 action; never invented |
@@ -156,7 +156,7 @@ Per-band attestation of the realized M2 caller-facing surface (§4–§8, the 64
 | CHK-5A-062 | B | PASS | No authz assertion from client input (§3.5) |
 | CHK-5A-063 | M | PASS | Actor-type (Public/User/Admin) + delegation resolved server-side via `check_permission` (§3.2/§3.5) |
 | CHK-5A-070 | B | PASS | Cursor pagination on list reads (`list_*`, `search_catalog`, `vendor_directory`); no offset (§5.5/§7.4/§8.3) |
-| CHK-5A-071 | M | PASS (conditional) | Page-size bound via `marketplace.*` POLICY key — DD-6 registration batch (content-freeze gate, §10.2) |
+| CHK-5A-071 | M | PASS | Page-size bound via `marketplace.list_page_size_max` (Doc-3 §12.2, registered via Patch v1.2); DD-6 gate cleared |
 | CHK-5A-072 | M | PASS | Filter/sort allowlist per Doc-4D; no protected-fact filter exposed (R9) |
 | CHK-5A-073 | B | PASS | Counts/items exclude non-disclosed/unpublished/retired identically (R9 — no count leak) |
 | CHK-5A-080 | B | PASS | `Idempotency-Key` on `required` mutations (§4–§7) |
@@ -172,7 +172,7 @@ Per-band attestation of the realized M2 caller-facing surface (§4–§8, the 64
 | CHK-5A-112 | B | PASS | Contract identity stable; no `…V2` resource |
 | CHK-5A-114 | B | PASS | No domain change expressed as a version bump |
 | CHK-5A-120 | B | PASS | No upstream content restated; Doc-4D/Doc-4M/Doc-2 bound by pointer (error-class mapping pointer-attributed to `Doc-5A §6.2`) |
-| CHK-5A-121 | B | **PASS (conditional)** | Nothing coined — §10.3. `marketplace.*` POLICY keys referenced by exact intended name; **content-freeze-gated on the DD-6 Doc-3 §12.2 registration patch** (Doc-4A §18.2; confirmed by the Freeze Audit) |
+| CHK-5A-121 | B | **PASS** | Nothing coined — §10.3. The two `marketplace.*` POLICY keys are **registered in Doc-3 §12.2** via approved Patch v1.2 (Doc-4A §18.2 satisfied); DD-6 gate cleared |
 | CHK-5A-122 | m | PASS | Transport choices marked `[realization convention]` with explicit keyword (§4.1/§5.6/§6.1/§8.1/§2.6) |
 | CHK-5A-123 | B | PASS | Nested/singleton/source/search addressing surfaced; `DD-*`/`[ESC-MKT-AUDIT]` escalated, not invented |
 | CHK-5A-124 | B | PASS | No invented webhook/push; no synchronous facade (§9.3) |
@@ -212,7 +212,7 @@ Attested against `CHK-5A-050…053` + `Doc-4A §7.5` (`Doc-2 §0.2/§10.11`).
 | No matching/ranking/recommendation surface (DD-2 moat) | PASS | §8.2/§9.1 — discovery is catalog relevance only; matching is RFQ-owned |
 | **No caller-visible matching / ranking / routing / eligibility surface exists on any M2 endpoint** | PASS | §8.2/§9.1 — `get_vendor_matching_attributes` is internal-service §9; `rebuild_vendor_matching_attributes` is System §9; M2 realizes no selection or ranking logic; RFQ engine owns all matching (`Doc-4E`; One Module, One Owner) |
 
-**Attestation result:** all applicable `[B]`/`[M]` checks **PASS**; `[m]` PASS, no deviation. The R5 projection-separation and R9 non-disclosure invariants are attested PASS across all aspects. One item is **conditional and content-freeze-gated** — `CHK-5A-121` / `CHK-5A-071` (`marketplace.*` POLICY-key registration, DD-6), confirmed by the Doc-5D Freeze Readiness Audit. DD-7 (`claim_vendor_profile`) is a tracked content-finalization blocker for that one contract, not a structural-conformance gate. No other unresolved checklist item remains.
+**Attestation result:** all applicable `[B]`/`[M]` checks **PASS**; `[m]` PASS, no deviation. The R5 projection-separation and R9 non-disclosure invariants are attested PASS across all aspects. The former DD-6 content-freeze gate is **cleared** — both `marketplace.*` POLICY keys are registered in Doc-3 §12.2 via approved Patch v1.2 (CHK-5A-121/071 PASS). DD-7 (`claim_vendor_profile`) remains a tracked content-finalization blocker for that one contract, not a structural-conformance gate. **No other unresolved checklist item remains.**
 
 ---
 

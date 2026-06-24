@@ -9,9 +9,10 @@ boundary R1 precedent). **Doc-5C (M1 Identity)** is **FROZEN** (`Doc-5C_SERIES_F
 42 contracts; User-primary/active-org surface; R1–R6). **Doc-5E (M3 RFQ — the moat)** is **FROZEN**
 (`Doc-5E_SERIES_FROZEN_v1.0`, 2026-06-24; §0–§9 + Appendix A; 38 contracts; matching/routing engine out-of-wire; R1–R7;
 non-disclosure + engine-execution attestations; `[ESC-RFQ-POLICY]` gate cleared by `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ`).
-**Doc-5D (M2 Marketplace)** is **STRUCTURE FROZEN** (`Doc-5D_Structure_v1.0_FROZEN`, 2026-06-24; 71 contracts =
-64 caller-facing + 7 out-of-wire; tri-actor Public/User/Admin; R1–R10) — **content passes next**. **Doc-5F…5M**
-gated by the Appendix A checklist. Application code has **not** started.
+**Doc-5D (M2 Marketplace)** is **FROZEN** (`Doc-5D_SERIES_FROZEN_v1.0`, 2026-06-25; §0–§10 + Appendix A; 71 contracts =
+64 caller-facing + 7 out-of-wire; tri-actor Public/User/Admin; R1–R10; R5 projection-separation + R9 non-disclosure attestations;
+DD-6 gate cleared by `Doc-3_Policy_Key_Registration_Patch_v1.2_Marketplace`; DD-7 tracked, `claim_vendor_profile` only).
+**Doc-5G (M5 Trust), Doc-5F…5M** gated by the Appendix A checklist. Application code has **not** started.
 
 This is the entry point for any implementation work. Read it first, then follow the order below.
 
@@ -84,7 +85,7 @@ is insufficient.
 | Which doc is canonical | `generatedDocs/CORPUS_INDEX.md`, `generatedDocs/00_AUTHORITY_MAP.md` |
 | API conventions | Doc-4A |
 | State machines | Doc-4M · Event catalog | Doc-4J · Cross-module flows | Doc-4L |
-| Current program | `generatedDocs/Doc-5D_Structure_v1.0_FROZEN.md` (M2 STRUCTURE FROZEN; content next) · `Doc-5E_SERIES_FROZEN_v1.0.md` (M3 RFQ FROZEN) · `Doc-5C_SERIES_FROZEN_v1.0.md` (M1 FROZEN) · `Doc-5B_SERIES_FROZEN_v1.0.md` (M0 FROZEN) · `Doc-5A_SERIES_FROZEN_v1.0.md` (metastandard FROZEN) · next: Doc-5F…5M |
+| Current program | `generatedDocs/Doc-5D_SERIES_FROZEN_v1.0.md` (M2 Marketplace FROZEN) · `Doc-5E_SERIES_FROZEN_v1.0.md` (M3 RFQ FROZEN) · `Doc-5C_SERIES_FROZEN_v1.0.md` (M1 FROZEN) · `Doc-5B_SERIES_FROZEN_v1.0.md` (M0 FROZEN) · `Doc-5A_SERIES_FROZEN_v1.0.md` (metastandard FROZEN) · next: Doc-5G (M5 Trust), Doc-5F…5M |
 
 ---
 

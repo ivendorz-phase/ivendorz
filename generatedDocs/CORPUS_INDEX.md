@@ -30,7 +30,7 @@ review/patch/audit trail is grouped by category.
 - **Authoritative:** `Doc-2_Domain_Model_And_Database_Blueprint_v1.0.2.md` + patches `Doc2_Patch_v1.0.2.md`, `Doc-2_Patch_v1.0.3.md` (effective v1.0.3)
 
 **Doc-3 — RFQ Procurement Engine & Operational Specification**
-- **Authoritative:** `Doc-3_RFQ_Procurement_Engine_And_Operational_Specification_v1.0.1.md` + patches `Doc-3_Patch_v1.0.2.md`, `Doc-3_Policy_Key_Registration_Patch_v1.0.md` (`core.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ.md` (`rfq.*` API-realization keys) (effective v1.0.2)
+- **Authoritative:** `Doc-3_RFQ_Procurement_Engine_And_Operational_Specification_v1.0.1.md` + patches `Doc-3_Patch_v1.0.2.md`, `Doc-3_Policy_Key_Registration_Patch_v1.0.md` (`core.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ.md` (`rfq.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.2_Marketplace.md` (`marketplace.*` keys) (effective v1.0.2)
 
 **Architecture-level patches / reconfirmation**
 - `Architecture_CD-MA-1_Patch_v1.0.md` · `Architecture_CD-MA-1_Patch_Verification_v1.0.md` · `Architecture_Freeze_Reconfirmation_v1.0.md`
@@ -151,8 +151,10 @@ review/patch/audit trail is grouped by category.
 | `Doc-5E_Structure_v1.0_FROZEN.md` · `Doc-5E_Content_v1.0_Pass1…3.md` | Doc-5E source (canonical TOC + §0–§9 + Appendix A) |
 | `Doc-5E_Structure_Proposal_v0.1.md` · `governanceReviews/Doc-5E_Freeze_Readiness_Audit_v1.0.md` | Doc-5E structure authoring history (v0.2; Hard Review) + freeze audit (`[ESC-RFQ-POLICY]` gate → cleared by Patch v1.1) |
 | `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ.md` | Additive Doc-3 §12.2 registration of 2 `rfq.*` API-realization keys; clears the Doc-5E freeze gate (Doc-4A §18.2) |
-| `Doc-5D_Structure_v1.0_FROZEN.md` (M2 `marketplace`) | **Doc-5D STRUCTURE FROZEN** — canonical TOC realizing Doc-4D (71 contracts: 64 caller-facing + 7 out-of-wire) on HTTP; first large public/anonymous read surface; tri-actor (Public/User/Admin); R1–R10 + DD-1…DD-8. Content passes next (3); DD-6 `marketplace.*` POLICY-key patch = content-freeze gate |
-| `Doc-5D_Structure_Proposal_v0.1.md` | Doc-5D structure authoring history (v0.2 + round-3 ADD-1/ADD-2; Hard Review — 4 MAJOR + 6 MINOR + 4 NITPICK resolved) |
+| `Doc-3_Policy_Key_Registration_Patch_v1.2_Marketplace.md` | Additive Doc-3 §12.2 registration of 2 `marketplace.*` API-realization keys; clears the Doc-5D DD-6 content-freeze gate (Doc-4A §18.2) |
+| `Doc-5D_SERIES_FROZEN_v1.0.md` (M2 `marketplace`) | **Doc-5D FROZEN** — M2 Marketplace & Discovery API realization freeze manifest; effective = `Doc-5D_Content_v1.0_Pass1…3` + `Doc-5D_Structure_v1.0_FROZEN` + resolved registers. Realizes Doc-4D (71 contracts); first large public/anonymous surface; tri-actor (Public/User/Admin); R1–R10; R5 projection-separation + R9 non-disclosure attestations |
+| `Doc-5D_Structure_v1.0_FROZEN.md` · `Doc-5D_Content_v1.0_Pass1…3.md` | Doc-5D source (canonical TOC + §0–§10 + Appendix A) |
+| `Doc-5D_Structure_Proposal_v0.1.md` · `governanceReviews/Doc-5D_Freeze_Readiness_Audit_v1.0.md` | Doc-5D structure authoring history (v0.2 + round-3 ADD-1/ADD-2; Hard Review) + freeze audit (DD-6 gate → cleared by Patch v1.2) |
 
 ---
 
