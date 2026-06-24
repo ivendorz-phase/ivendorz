@@ -223,7 +223,7 @@ Begins only after Doc-5A FROZEN. All artifacts conform to Doc-5A; Appendix A che
 | 1 | Doc-5B | M0 Platform Core | Audit, outbox, ID gen — foundational for all — **✅ FROZEN 2026-06-24** |
 | 2 | Doc-5C | M1 Identity | Auth, org context, permissions — prerequisite pattern — **✅ FROZEN 2026-06-24** |
 | 3 | Doc-5E | M3 RFQ | Platform moat — highest complexity, highest business value — **✅ FROZEN 2026-06-24** |
-| 4 | Doc-5D | M2 Marketplace | Vendor profile / discovery — large surface, feeds M3 |
+| 4 | Doc-5D | M2 Marketplace | Vendor profile / discovery — large surface, feeds M3 — **STRUCTURE FROZEN 2026-06-24; content next** |
 | 5 | Doc-5F | M4 Operations | Post-award, CRM — depends on M3 award flow |
 | 6 | Doc-5G | M5 Trust | Scores / verification — depends on M2 + M4 data |
 | 7 | Doc-5H | M6 Communication | Chat / notifications — cross-cutting delivery |

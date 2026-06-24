@@ -151,6 +151,8 @@ review/patch/audit trail is grouped by category.
 | `Doc-5E_Structure_v1.0_FROZEN.md` · `Doc-5E_Content_v1.0_Pass1…3.md` | Doc-5E source (canonical TOC + §0–§9 + Appendix A) |
 | `Doc-5E_Structure_Proposal_v0.1.md` · `governanceReviews/Doc-5E_Freeze_Readiness_Audit_v1.0.md` | Doc-5E structure authoring history (v0.2; Hard Review) + freeze audit (`[ESC-RFQ-POLICY]` gate → cleared by Patch v1.1) |
 | `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ.md` | Additive Doc-3 §12.2 registration of 2 `rfq.*` API-realization keys; clears the Doc-5E freeze gate (Doc-4A §18.2) |
+| `Doc-5D_Structure_v1.0_FROZEN.md` (M2 `marketplace`) | **Doc-5D STRUCTURE FROZEN** — canonical TOC realizing Doc-4D (71 contracts: 64 caller-facing + 7 out-of-wire) on HTTP; first large public/anonymous read surface; tri-actor (Public/User/Admin); R1–R10 + DD-1…DD-8. Content passes next (3); DD-6 `marketplace.*` POLICY-key patch = content-freeze gate |
+| `Doc-5D_Structure_Proposal_v0.1.md` | Doc-5D structure authoring history (v0.2 + round-3 ADD-1/ADD-2; Hard Review — 4 MAJOR + 6 MINOR + 4 NITPICK resolved) |
 
 ---
 
