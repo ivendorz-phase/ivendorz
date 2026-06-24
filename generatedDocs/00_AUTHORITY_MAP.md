@@ -73,7 +73,8 @@ and must conform upward.
 | `Doc-4A_Patch_C-05-204_v1.0.md` | RATIFIED | v1.0 | ✅ | Additive Doc-4A §22.1 C-05 clarification (reference_id on body-bearing responses; 204 exempt) |
 | `Doc-5B_SERIES_FROZEN_v1.0.md` (M0 `core` API realization) | FROZEN | v1.0 | ✅ | Realizes Doc-4B on HTTP; effective = `Doc-5B_Content_v1.0_Pass1…4` + `Doc-5B_Structure_v1.0_FROZEN` + resolved registers; out-of-wire boundary (R1) precedent; no ratification dependency. Gated by Doc-5A Appendix A |
 | `Doc-5B_Structure_v1.0_FROZEN.md` · `Doc-5B_Content_v1.0_Pass1…4.md` | FROZEN | v1.0 | ✅ | Doc-5B source (canonical TOC + §0–§7 + Appendix A); read via the freeze manifest |
-| `Doc-5C_Structure_v1.0_FROZEN.md` (M1 `identity` API realization) | STRUCTURE FROZEN | v1.0 | ✅ | Realizes Doc-4C (42 contracts) on HTTP; canonical TOC; §3 cross-cutting authz/context wire model; R1–R6 + DC-1…DC-5; content passes next |
+| `Doc-5C_SERIES_FROZEN_v1.0.md` (M1 `identity` API realization) | FROZEN | v1.0 | ✅ | Realizes Doc-4C (42 contracts) on HTTP; effective = `Doc-5C_Content_v1.0_Pass1…2` + `Doc-5C_Structure_v1.0_FROZEN` + resolved registers; User-primary/active-org surface; R1–R6; no ratification dependency. Gated by Doc-5A Appendix A |
+| `Doc-5C_Structure_v1.0_FROZEN.md` · `Doc-5C_Content_v1.0_Pass1…2.md` | FROZEN | v1.0 | ✅ | Doc-5C source (canonical TOC + §0–§8 + Appendix A); read via the freeze manifest |
 | `iVendorz_Master_Overview_v1.0.md` | NON-AUTHORITATIVE | v1.3 | — | Consolidated mirror |
 | `CORPUS_INDEX.md` · `00_AUTHORITY_MAP.md` | NON-AUTHORITATIVE | — | — | Navigation + authority pointers |
 | Context Packs / Primers / Status / Roadmap | NON-AUTHORITATIVE | various | — | Orientation only |

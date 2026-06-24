@@ -5,9 +5,9 @@
 **Implementation Governance** — **Doc-5A — API Realization Standards** is **FROZEN**
 (`Doc-5A_SERIES_FROZEN_v1.0`; freeze patches ratified 2026-06-24): §0–§12 + Appendices A–C complete.
 **Doc-5B (M0 `core`)** is **FROZEN** (`Doc-5B_SERIES_FROZEN_v1.0`, 2026-06-24; §0–§7 + Appendix A; out-of-wire
-boundary R1 precedent). **Doc-5C (M1 Identity)** is **STRUCTURE FROZEN** (`Doc-5C_Structure_v1.0_FROZEN`,
-2026-06-24; 42 contracts; R1–R6) — **content passes next**. Doc-5C…5M gated by the Appendix A checklist.
-Application code has **not** started.
+boundary R1 precedent). **Doc-5C (M1 Identity)** is **FROZEN** (`Doc-5C_SERIES_FROZEN_v1.0`, 2026-06-24; §0–§8 + Appendix A;
+42 contracts; User-primary/active-org surface; R1–R6). **Doc-5E (M3 RFQ) is next**; Doc-5E…5M gated by
+the Appendix A checklist. Application code has **not** started.
 
 This is the entry point for any implementation work. Read it first, then follow the order below.
 
@@ -80,7 +80,7 @@ is insufficient.
 | Which doc is canonical | `generatedDocs/CORPUS_INDEX.md`, `generatedDocs/00_AUTHORITY_MAP.md` |
 | API conventions | Doc-4A |
 | State machines | Doc-4M · Event catalog | Doc-4J · Cross-module flows | Doc-4L |
-| Current program | `generatedDocs/Doc-5B_SERIES_FROZEN_v1.0.md` (Doc-5B M0 FROZEN; §0–§7 + App A) · `generatedDocs/Doc-5A_SERIES_FROZEN_v1.0.md` (Doc-5A metastandard FROZEN). Next: Doc-5C (M1 Identity) |
+| Current program | `generatedDocs/Doc-5C_SERIES_FROZEN_v1.0.md` (Doc-5C M1 FROZEN; §0–§8 + App A) · `Doc-5B_SERIES_FROZEN_v1.0.md` (M0 FROZEN) · `Doc-5A_SERIES_FROZEN_v1.0.md` (metastandard FROZEN). Next: Doc-5E (M3 RFQ) |
 
 ---
 

@@ -4,7 +4,7 @@
 |---|---|
 | Document | Doc-5C — Identity & Organization (Module 1) — API Realization |
 | Pass | 2 of 2 — Sections §4, §5, §6, §7, §8 and Appendix A (final content pass) |
-| Status | ACTIVE — Content Pass 2 of 2; pending Independent Hard Review → then Doc-5C Freeze Audit |
+| Status | ACTIVE — Content Pass 2 of 2; Independent Hard Review + Board ruling applied (B-01, M-01, m-01/02/03, MAJ-01/02/03, MIN-01…04, O-01 dispositioned). Realization conventions board-selected; 0 open BLOCKER/MAJOR/MINOR → ready for Doc-5C Freeze Audit |
 | Structure | Conforms to `Doc-5C_Structure_v1.0_FROZEN.md` |
 | Realizes | The 35 caller-facing M1 endpoints (§4–§6), the Doc-4C out-of-wire boundary (§7), the Doc-5A Appendix A attestation (§8 + App A) |
 | Authority | `Doc-5_Program_Governance_Note_v1.0`; `Doc-5A_SERIES_FROZEN_v1.0` (FROZEN) governs this document |
@@ -43,13 +43,13 @@
 
 ### 4.2 Organization State Machine (§5.1)
 
-- The org lifecycle (`active ⇄ suspended`; `active → soft_deleted → active` restore) is realized as **legal transitions only** — each transition is its named command (`soft_delete_organization`, `restore_organization`, `set_organization_status`); **no transition is invented** (`Doc-4A §13`; **authoritative state authority `Doc-4M`**). An illegal transition is a `STATE` error → `409` (§4.4). Last Owner Protection / Ownership Succession (`Master Architecture §5.5`) are `BUSINESS` rules realized by their error class, bound by pointer (`Doc-4C §C5`).
-- **Cross-module cascade (DC-1):** org soft-delete's cascade to Module 2 (vendor profile → suspended) and Module 3 (RFQs → archived) is **out-of-wire** (§7/R6) — no `identity` event, no integration realized until DC-1 resolves. The in-module membership cascade is part of the same transaction (server-side, not a wire surface).
+- The org lifecycle (`active ⇄ suspended`; `active/suspended → soft_deleted`; `soft_deleted → active` restore — `Doc-4C §C5`, `Doc-2 §5.1`) is realized as **legal transitions only** — each transition is its named command (`soft_delete_organization`, `restore_organization`, `set_organization_status`); **no transition is invented** (`Doc-4A §13`; **authoritative state authority `Doc-4M`**). An illegal transition is a `STATE` error → `409` (§4.4). Last Owner Protection / Ownership Succession (`Master Architecture §5.5`) are `BUSINESS` rules realized by their error class, bound by pointer (`Doc-4C §C5`).
+- **Cross-module cascade (DC-1):** org soft-delete's cascade to Module 2 (vendor profile → suspended) and Module 3 (RFQs → archived) is **out-of-wire** (§7/R6) — no `identity` event, no integration realized until DC-1 resolves. The in-module membership cascade is part of the same transaction (server-side, not a wire surface). **The wire-realized cascade does not cross module boundaries** — only the in-module `identity.memberships` leg is in-transaction; every cross-module leg is out-of-wire and DC-1-blocked (ownership stays with each owning module).
 - **Binds:** `Doc-4M` (org §5.1); `Doc-4A §13`; `Doc-4C §C5`; DC-1 (§7).
 
 ### 4.3 Idempotency & Concurrency (§9)
 
-- Every §4 mutation declares `Idempotency: required` (`Doc-4C §C12.5`) → the **`Idempotency-Key` header is mandatory** (`Doc-5A §9`); replay within the POLICY-keyed window (intended `identity.*` dedup-window key, **`[DC-5]`** — by key, not finalized until registered) returns the cached original — same result, no duplicate audit record (`Doc-5A §9.7`; §14.3 joint rule; `Events-Produced: none` — no outbox leg, R6).
+- Every §4 mutation declares `Idempotency: required` (`Doc-4C §C12.5`) → the **`Idempotency-Key` header is mandatory** (`Doc-5A §9`); replay within the POLICY-keyed window (intended `identity.*` dedup-window key, **`[DC-5]`** — **referenced by intended name only; no key existence is implied**, and the contract is not finalized until the key is registered via Doc-3 §12.2) returns the cached original — same result, no duplicate audit record (`Doc-5A §9.7`; §14.3 joint rule; `Events-Produced: none` — no outbox leg, R6).
 - Updates declaring `Concurrency: optimistic` carry **`If-Match`** with `updated_at` (`Doc-5A §9`; `Doc-4C §C4/§C5`); a stale token is `CONFLICT` → `409`.
 - **Binds:** `Doc-5A §9`; `Doc-4C §C12.5`; DC-5.
 
@@ -74,6 +74,30 @@
 - Non-disclosure: protected-fact-gated failures collapse to an indistinguishable `404` (`Doc-5A §6.3`; `Doc-4A §12.4`).
 - Every mutation is **audited** server-side via Doc-4B `core.append_audit_record.v1` (`Doc-4C §C12.3`, Doc-2 §9 by pointer); some actions carry **`[ESC-IDN-AUDIT]`** (bound to the nearest Doc-2 §9 domain action; nothing invented). `Events-Produced: none` (R6).
 - **Binds:** `Doc-5A §6.3/§7`; `Doc-4C §C12.1/§C12.3`; Doc-2 §7/§9.
+
+### 4.6 Method Realization Conventions & Pass-1 Reconciliation
+
+- **(a) Soft-delete → `DELETE` (ADR-012 precedence).** `soft_delete_organization` and `delete_role` are **soft-delete commands**; `Doc-5A §5.2` maps the soft-delete command (ADR-012) to **`DELETE` on the item**, and this provision **takes precedence** over the general state-transition→`POST`-named rule for a soft-delete (both `Doc-5A §5.2` rows could apply; the explicit ADR-012 row governs). The inverse `restore_organization` is a domain command → `POST` named. No hard delete (`Doc-4C §C5/§C7`).
+- **(b) `update_user_2fa_settings` → `POST` named command [realization convention].** `Doc-4C §C4` declares this an update-command (`State Effects: none`; partial field change; optimistic `updated_at`), which `Doc-5A §5.2` maps to **`PATCH` on the item** — but the item `PATCH /identity/users/{id}` is **already** the realization of `update_user_profile`. `Doc-5A §5.2` is **silent on two distinct update-commands sharing one aggregate item** (a `PATCH`/`PATCH` collision). **This is not a method-rule deviation; it is a transport-addressing disambiguation** — Doc-5A §5.2 does not define how to realize **two distinct update contracts against the same aggregate item**, so there is no §5.2 rule to deviate from. Per Doc-5C §0.4 (a transport detail on which Doc-5A is silent **MAY** be fixed as a `[realization convention]` that contradicts nothing upstream), the **secondary** user update-command is realized as a **named command** `POST /identity/users/{id}/update_user_2fa_settings` — a unique, intention-revealing address (it is a security-sensitive 2FA-settings operation with its own `[ESC-IDN-AUDIT]` chain). The alternative — **merging** both into one user-update endpoint — would change the **Doc-4C contract structure** (two contracts → one) and is **out of Doc-5C's authority** (escalate; not taken). The compound token is not an abstract verb (`CHK-5A-036` holds).
+- **(c) Pass-1 §2 inventory reconciliation (m-02 — explicit delta).** Pass-2's §5.2-conformant realization supersedes the Pass-1 uniform-`POST` placeholders; the patched Pass-1 §2 rows are:
+
+  | Contract | Pass-1 placeholder | Pass-2 realized |
+  |---|---|---|
+  | `update_user_profile` | `POST …/update_user_profile` | **`PATCH /identity/users/{id}`** |
+  | `update_organization_profile` | `POST …/update_organization_profile` | **`PATCH /identity/organizations/{id}`** |
+  | `update_role` | `POST …/update_role` | **`PATCH /identity/roles/{id}`** |
+  | `upsert_buyer_profile` | `POST …/upsert_buyer_profile` | **`PATCH /identity/buyer_profiles`** (active-org singleton) |
+  | `update_workflow_settings` | `POST …/update_workflow_settings` | **`PATCH /identity/organization_workflow_settings`** (active-org singleton) |
+  | `create_organization` | `POST …/create_organization` | **`POST /identity/organizations`** (`201`) |
+  | `invite_member` | `POST …/invite_member` | **`POST /identity/memberships`** (`201`) |
+  | `create_role` | `POST …/create_role` | **`POST /identity/roles`** (`201`) |
+  | `create_delegation_grant` | `POST …/create_delegation_grant` | **`POST /identity/delegation_grants`** (`201`) |
+  | `soft_delete_organization` | `POST …/soft_delete_organization` | **`DELETE /identity/organizations/{id}`** |
+  | `delete_role` | `POST …/delete_role` | **`DELETE /identity/roles/{id}`** |
+  | `switch_active_organization` | `POST /identity/memberships/switch_active_organization` | **`POST /identity/active_context/switch_active_organization`** |
+
+  All other endpoints (state-transition/domain commands and reads) are unchanged from Pass-1. Pass-1 §2 has been patched to match these rows.
+- **Binds:** `Doc-5A §5.2`, §0.4; ADR-012; `Doc-4C §C4/§C5/§C7`.
 
 ---
 
@@ -105,9 +129,10 @@
 
 ### 5.2 State Machines & Role Semantics
 
-- Membership (`invited → pending → active`; `active ⇄ suspended`; `→ removed` terminal) and delegation (`draft → active`; `active ⇄ suspended`; `→ revoked`/`→ expired` terminal) lifecycles are realized as **legal transitions only**, each its named command — **no transition invented** (`Doc-4M` authoritative; `Doc-4A §13`). Illegal transition → `STATE` `409`.
-- Roles are **bundles**; authorization uses **slugs only** (`Doc-4A §6.2`). `list_permissions` reads the **platform-owned catalog** (read-only; the slug catalog is owned by Doc-2 §7, never extended — `Doc-4A §6.4`). `set_role_permissions` composes the N:N bundle (a workflow setting may add but never remove a required slug — enforced upstream).
-- **Binds:** `Doc-4M` (membership §5.2 / delegation §5.10); `Doc-4A §6.2/§6.4/§13`; `Doc-4C §C6/§C7/§C9`.
+- Membership (`invited → pending → active`; `active ⇄ suspended`; `→ removed` terminal) and delegation (`draft → active`; `active ⇄ suspended`; `→ revoked`/`→ expired` terminal) lifecycles are realized as **legal transitions only**, each its named command — **no transition invented** (`Doc-4A §13`). Illegal transition → `STATE` `409`.
+- **⚠ Cross-frozen-doc flag (delegation lifecycle) — flag-and-halt, not resolved here:** the **authoritative** delegation state machine is **`Doc-2 §5.10`** (rank-0) → **`Doc-4C §C9`** (`draft → active`; `active ⇄ suspended`; `→ revoked`/`→ expired`), which Doc-5C realizes. The `Doc-4M` M5 consolidation rows for delegation diverge (they show a `pending → active` acceptance step and omit `suspended`) — an apparent incomplete consolidation. Doc-5C binds the `Doc-2 §5.10`/`Doc-4C §C9` owner; the `Doc-4M` discrepancy is **flagged for a separate additive Doc-4M correction** (architecture-touching — Board/human; never a Doc-5C decision). **Doc-5C freeze does not depend on the Doc-4M correction**, because the authoritative delegation-lifecycle owner is **`Doc-2 §5.10` (rank-0) as adopted by `Doc-4C §C9`** — already realized here; the Doc-4M correction changes no Doc-5C realization. Membership/org lifecycles bind `Doc-4M` (no divergence).
+- Roles are **bundles**; authorization uses **slugs only** (`Doc-4A §6.2`). `list_permissions` reads the **platform-owned catalog** (read-only; the slug catalog is owned by Doc-2 §7, never extended — `Doc-4A §6.4`). `set_role_permissions` composes the N:N bundle via `add_slugs`/`remove_slugs` (**system-bundle slugs immutable; custom-bundle slug removal is an audited revocation** per `Doc-4C §C7` — not the §6.3/§C11 workflow-settings "never remove a required slug" rule, which governs `update_workflow_settings` only).
+- **Binds:** `Doc-4M` (membership §5.2 lifecycle); **delegation lifecycle = `Doc-2 §5.10` → `Doc-4C §C9`** (authoritative; Doc-4M M5 flagged above); `Doc-4A §6.2/§6.4/§13`; `Doc-4C §C6/§C7/§C9`.
 
 ### 5.3 Delegation Realization (R5)
 
@@ -143,7 +168,7 @@
   - `get_active_context` → `GET /identity/active_context` (a **principal-scoped context singleton**; no `{id}`).
   - `list_my_organizations` → `GET /identity/organizations`, **server-scoped to the principal's memberships** (not a client filter — `Doc-4A §9.7`); this is the principal-scoped read of the same `organizations` collection whose `POST` is `create_organization`.
   - `upsert_buyer_profile` / `update_workflow_settings` → `PATCH /identity/buyer_profiles` and `/identity/organization_workflow_settings` as **active-org singletons** (one per org; the active-org context resolves the target — §3.3); `upsert` creates on first call.
-- *Alternative the board may prefer: a dedicated `/identity/active_context` resource with a `PATCH` for the switch, and `{id}`-addressed buyer-profile/workflow rows.* Surfaced, not silently fixed.
+- **Realization selected by Doc-5C (board-reviewed).** The addressing above is the **active** realization. An earlier alternative (a dedicated `/identity/active_context` resource with `PATCH` for the switch, and `{id}`-addressed buyer-profile/workflow rows) is **documented for historical review only and is not an active candidate** unless an architecture review reopens the decision (`Doc-5_Program_Governance_Note_v1.0 §5`).
 - **Binds:** `Doc-5A §5.3/§7`; `Doc-4C §C8/§C10/§C11`; §3.3.
 
 ### 6.3 ORG-Settings Boundary
@@ -168,12 +193,12 @@
 
 ### 7.2 System Phase-2 Timers (no wire)
 
-- `identity.activate_membership.v1`, `identity.expire_invitation.v1`, `identity.expire_delegation_grant.v1` (System, 21.5, `Response: none`) are scheduler-triggered background workers — **no caller wire**. Timer/sweep windows are POLICY-keyed (`[DC-5]`). `expire_delegation_grant` acts on the literal `active → expired` edge only; the `suspended`-at-expiry case carries **`[ESC-IDN-DELEG-EXPIRY]`** (not resolved here).
+- `identity.activate_membership.v1`, `identity.expire_invitation.v1`, `identity.expire_delegation_grant.v1` (System, 21.5, `Response: none`) are scheduler-triggered background workers. **No HTTP endpoint exists for any of these three timer families** — no path, method, or status is realized; they are not caller-invocable. Timer/sweep windows are POLICY-keyed (`[DC-5]`, referenced by name only). `expire_delegation_grant` acts on the literal `active → expired` edge only; the `suspended`-at-expiry case carries **`[ESC-IDN-DELEG-EXPIRY]`** (not resolved here).
 - **Binds:** `Doc-4C §C6/§C9`; `Doc-5A §10.5/§11`; DC-5, `[ESC-IDN-DELEG-EXPIRY]`.
 
 ### 7.3 Dual-Audience Reads' Internal-Service Leg (no wire)
 
-- The internal-service (M3/M6) consumption of `get_buyer_profile` (Module 3 matching) and `get_workflow_settings` (Module 3 approval gate, Module 6 notifications) is **in-process, out-of-wire**; only the owning-org wire face is realized (§6). Consumers read via the in-process service, never the table (One Owner).
+- The internal-service (M3/M6) consumption of `get_buyer_profile` (Module 3 matching) and `get_workflow_settings` (Module 3 approval gate, Module 6 notifications) is **in-process, out-of-wire**; only the owning-org wire face is realized (§6). **Consumers access the in-process service interface only; no cross-module table access is permitted** (One Owner — `Doc-4A §4.1`/§4.3).
 - **Binds:** `Doc-4C §C10/§C11`; structure R1.
 
 ### 7.4 DC-1 Cross-Module Cascade / Teardown (no wire, blocked)
@@ -209,7 +234,7 @@
 
 ### 8.3 Doc-5C Coins Nothing
 
-- Doc-5C realizes the wire face of frozen Doc-4C contracts and **coins no** endpoint identity, HTTP status, header token, error class, `error_code`, permission slug, or POLICY key (`CHK-5A-121/154`; `Doc-4A §6.4`/§20.1). Genuine realization ambiguities (the §6.2 context/singleton addressing) are **surfaced**, not silently decided; carried `[DC-*]`/`[ESC-*]` are **escalated**, never invented (`CHK-5A-123`).
+- Doc-5C realizes the wire face of frozen Doc-4C contracts and **coins no** endpoint identity, HTTP status, header token, error class, `error_code`, permission slug, or POLICY key (`CHK-5A-121/154`; `Doc-4A §6.4`/§20.1). The realization-convention decisions (§4.6 method conventions; §6.2 context/singleton addressing) are **board-reviewed and selected**; earlier alternatives are retained for historical review only (`Doc-5_Program_Governance_Note_v1.0 §5`). Carried `[DC-*]`/`[ESC-*]` are **escalated**, never invented (`CHK-5A-123`).
 - **Binds:** `Doc-5A Appendix A`; `Doc-4A §6.4/§20.1`.
 
 ---
@@ -233,7 +258,7 @@ Per-band attestation of the realized M1 caller-facing surface (§4–§6) agains
 | CHK-5A-024 | B | PASS | `Authorization` present; `Iv-Active-Organization` on org-scoped ops, absent on self/Admin (§3.3/§4.5) |
 | CHK-5A-025 | M | PASS | `Idempotency-Key`/`If-Match` present exactly per §4.3/§5.4/§6.4 |
 | CHK-5A-030 | B | PASS | Every endpoint instantiates the §5.7 template — §4.1/§5.1/§6.1 |
-| CHK-5A-031 | B | PASS | Method per §5.2 — create→POST/201, update→PATCH, soft-delete→DELETE, state→POST named, read→GET |
+| CHK-5A-031 | B | **PASS (unconditional)** | Method per §5.2 — create→POST/201, update→PATCH, soft-delete→DELETE, state→POST named, read→GET. The `update_user_2fa_settings` named-command `POST` (§4.6b) is **not a method-rule deviation** — §5.2 defines no realization for **two distinct update contracts on one aggregate item**, so the named-command address is a **transport-addressing disambiguation** (§0.4), not an exception to a §5.2 rule. No PASS-WITH-EXCEPTION; this is PASS |
 | CHK-5A-032 | B | PASS | Paths follow §5.3 grammar |
 | CHK-5A-033 | B | PASS | State changes are named commands / typed methods, never arbitrary field replacement |
 | CHK-5A-034 | B | PASS | Input placement per §5.4; no prohibited field (org-selection/authz/attribution never input) |
@@ -289,4 +314,4 @@ Per-band attestation of the realized M1 caller-facing surface (§4–§6) agains
 
 ---
 
-*End of Doc-5C Content v1.0, Pass 2 (§4–§8 + Appendix A) — the final content pass. The 35 caller-facing M1 endpoints realized per the §5.2 method mapping (creates `POST`/`201`, updates `PATCH`, soft-deletes `DELETE`, state commands `POST` named, reads `GET`); state machines bound to Doc-4M; idempotency/concurrency/error/audit by pointer; the §C3 authorization root, System timers, dual-audience internal leg, and DC-1 cascade fenced out-of-wire (§7); Appendix A all applicable `[B]`/`[M]` PASS; two context/singleton addressing realizations flagged; carried `[DC-*]`/`[ESC-*]` escalated; nothing coined. Doc-5C content (§0–§8 + Appendix A) is complete; next is the Doc-5C Freeze Readiness Audit, conforming to `Doc-5C_Structure_v1.0_FROZEN.md`.*
+*End of Doc-5C Content v1.0, Pass 2 (§4–§8 + Appendix A) — the final content pass. The 35 caller-facing M1 endpoints realized per the §5.2 method mapping (creates `POST`/`201`, updates `PATCH`, soft-deletes `DELETE`, state commands `POST` named, reads `GET`); state machines bound to Doc-4M; idempotency/concurrency/error/audit by pointer; the §C3 authorization root, System timers, dual-audience internal leg, and DC-1 cascade fenced out-of-wire (§7); Appendix A all applicable `[B]`/`[M]` PASS; method + context/singleton addressing conventions board-reviewed and selected (§4.6/§6.2); carried `[DC-*]`/`[ESC-*]` escalated; nothing coined. Doc-5C content (§0–§8 + Appendix A) is complete; next is the Doc-5C Freeze Readiness Audit, conforming to `Doc-5C_Structure_v1.0_FROZEN.md`.*
