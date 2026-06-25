@@ -70,7 +70,7 @@ Two governing rules shape this document (the Doc-5B/5C/5D precedent):
 - **Dependencies:** `Doc-5A §6.3/§7`; `Doc-4A §5/§5.3/§6/§6B/§7.5`; `Doc-4C §C3/§C8` (consumed authorization root); `Doc-4F §F4` (non-disclosure). **Detail:** cross-cutting wire-model declaration; bound, not redefined; no endpoint instantiation.
 
 ## §4 — Buyer Private CRM Surface Realization (BC-OPS-1)
-- **Purpose:** the §F4 buyer-private CRM commands + reads — private-vendor records (create / update / archive; `active ⇄ archived`), notes & ratings, **buyer-vendor-status** set/clear (append-only Approved / Conditional / Blacklisted history — **never disclosed, never evented**, R5), vendor favorites, and vendor-link **confirm/dismiss** (the suggestion entity is Admin-owned — DF-5; Operations writes its own row); buyer-org-private reads (`get_private_vendor`, `list_private_vendors`, `get_buyer_supplier_relationship`), each **declaring Buyer-Org-Private disclosure scope** (§3 rule); idempotency/concurrency (§9); error mapping (§6) with non-disclosure `NOT_FOUND` collapse; `[ESC-OPS-AUDIT]` on the un-enumerated CRM mutations. The CRM-status read-service is out-of-wire (§9/R5).
+- **Purpose:** the §F4 buyer-private CRM commands + reads — private-vendor records (create / update / archive; `active ⇄ archived`), notes & ratings, **buyer-vendor-status** set/clear (append-only Approved / Conditional / Blacklisted history — **never disclosed, never evented**, R5), vendor favorites, and vendor-link **confirm/dismiss** (the suggestion entity is Admin-owned — DF-5; Operations writes its own row); buyer-org-private reads (`get_private_vendor`, `list_private_vendors`, `get_buyer_supplier_relationship`), each **declaring Buyer-Org-Private disclosure scope** (§3 rule); idempotency/concurrency (§9); error mapping (§6) with non-disclosure `NOT_FOUND` collapse; **top-level `reference_id` (C-05) — the Doc-5F nominated declaration point, cross-cutting to §5–§8** (`Doc-4A §22.1 C-05`, clarified by `PATCH-D4A-C05-204`: body-bearing responses only, `204` exempt; `CHK-5A-042` [B]); `[ESC-OPS-AUDIT]` on the un-enumerated CRM mutations. The CRM-status read-service is out-of-wire (§9/R5).
 - **Dependencies:** `Doc-5A §5/§6/§9`; `Doc-4F §F4`; `Doc-4M` (cross-module state-map index; edges defined in Doc-2/Doc-4F); `Doc-2 §3.5/§10.5/§10.11`. **Detail:** command + private-read realization.
 
 ## §5 — Procurement Engagement & Commercial Documents Surface Realization (BC-OPS-2)
@@ -117,7 +117,7 @@ Two governing rules shape this document (the Doc-5B/5C/5D precedent):
 | **DF-8** | Platform Core — `core.allocate_human_reference` / audit-write / outbox / storage, consumed | Consumed via Doc-4B mechanisms by pointer; never re-implemented; no Core surface realized | **No** |
 | `[ESC-OPS-SLUG]` | A required Operations action may lack a Doc-2 §7 slug | Interim binding to the nearest existing `can_*` slug by pointer; channel: Doc-2 §7 additive; no slug invented | **No** |
 | `[ESC-OPS-AUDIT]` | CRM / lead / finance-record / counterparty-grant mutations not separately enumerated in Doc-2 §9 | Bound by pointer to the nearest Doc-2 §9 domain action; **interim**, not finalized; channel: Doc-2 §9 additive enumeration | **No** |
-| `[ESC-OPS-POLICY]` | No `operations` POLICY namespace key registered (dedup / limit windows) | Windows referenced by **platform-default key name** by pointer; channel: Doc-3 §12.2 additive; **`[ESC-OPS-POLICY]`-keyed contracts not finalized until registered** | **Tracked** — per-contract finalization; not a structural gate |
+| `[ESC-OPS-POLICY]` | No `operations` POLICY namespace key registered (dedup window / list page-size) | Referenced by **intended key name** by pointer; resolved via the **Doc-3 §12.2 additive registration patch** (precedent `core.*` v1.0 / `rfq.*` v1.1 / `marketplace.*` v1.2 / `trust.*` v1.3; Doc-4A §18.2), human/Board-approved; not invented (`CHK-5A-121/123`). **`[ESC-OPS-POLICY]`-keyed contracts not finalized until registered** | **Structure: No. Content: YES** — `CHK-5A-121` content-freeze gate (Doc-5E/5D/5G precedent): the content Freeze Audit **blocks** if any referenced `operations.*` key is absent from Doc-3 §12.2 (the `operations` POLICY namespace must be created — none exists today). Resolve via the registration patch first |
 
 ## Fences / Out of scope
 
@@ -146,6 +146,9 @@ Cross-module realization (owning module's Doc-5x — §1.x) · any other module'
 | Event posture: outbox emission (R10), no webhook; emitter mapping deferred to content | ✅ — R10 |
 | Carried DF-1…DF-8 + `[ESC-OPS-*]` registered by pointer; none resolved here | ✅ |
 | Nothing coined; `operations` route + `ops_` codes bound to registries | ✅ — R3/R4 |
+| `[ESC-OPS-POLICY]` flagged CHK-5A-121 content-freeze gate (additive Doc-3 §12.2 `operations.*` patch; `operations` namespace must be created) | ✅ — ADD-1 (Doc-5E/5D/5G precedent) |
+| Top-level `reference_id` (C-05) nominated declaration point present (§4, cross-cutting §5–§8) | ✅ — ADD-2 (CHK-5A-042 [B]; pre-empts Doc-5D Pass-2 blocker) |
+| Partition independently verified at freeze: 50 = 46 caller-facing + 4 out-of-wire; §4(14)/§5(13)/§6(4)/§7(11)/§8(4) | ✅ — grep-counted vs Doc-4F PassB |
 
 ---
 
@@ -163,6 +166,8 @@ Cross-module realization (owning module's Doc-5x — §1.x) · any other module'
 | **m-04** `generate_document` enqueue trigger imprecise ("template activation" unconfirmed) | **NITPICK** *(Board-downgraded from MINOR)* | **FIXED** — R9 binds the enqueue trigger to `Doc-4F §F7.3` by pointer; exact command mapping deferred to content. |
 | **NP-01** self-audit header "(pre-review)" | NITPICK | **APPLIED** — changed to "(post-review v0.2)". |
 | **NP-02** DF-4/DF-6/DF-7 text partly from extraction | NITPICK | **APPLIED** — carried-items table flags "confirm verbatim at content"; DF-3…DF-8 grep-verified during review. |
+| **ADD-1** (round-2, post-Doc-5G) `[ESC-OPS-POLICY]` posture stale vs the Doc-5E/5D/5G content-freeze-gate precedent | MAJOR | **FIXED** — `[ESC-OPS-POLICY]` now foreshadows the additive Doc-3 §12.2 `operations.*` registration patch (precedent `core.*` v1.0 / `rfq.*` v1.1 / `marketplace.*` v1.2 / `trust.*` v1.3; Doc-4A §18.2) and flags it a **CHK-5A-121 content-freeze gate** (non-gate for structure freeze; the `operations` POLICY namespace must be created). |
+| **ADD-2** (round-2) `reference_id` (C-05) declaration point unnominated | MINOR | **FIXED** — §4 purpose now nominates the top-level `reference_id` (C-05) declaration point, cross-cutting §5–§8 (CHK-5A-042 [B]); pre-empts the Doc-5D Pass-2 retrofit. |
 
 ---
 

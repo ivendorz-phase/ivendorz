@@ -30,7 +30,7 @@ review/patch/audit trail is grouped by category.
 - **Authoritative:** `Doc-2_Domain_Model_And_Database_Blueprint_v1.0.2.md` + patches `Doc2_Patch_v1.0.2.md`, `Doc-2_Patch_v1.0.3.md` (effective v1.0.3)
 
 **Doc-3 — RFQ Procurement Engine & Operational Specification**
-- **Authoritative:** `Doc-3_RFQ_Procurement_Engine_And_Operational_Specification_v1.0.1.md` + patches `Doc-3_Patch_v1.0.2.md`, `Doc-3_Policy_Key_Registration_Patch_v1.0.md` (`core.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ.md` (`rfq.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.2_Marketplace.md` (`marketplace.*` keys) (effective v1.0.2)
+- **Authoritative:** `Doc-3_RFQ_Procurement_Engine_And_Operational_Specification_v1.0.1.md` + patches `Doc-3_Patch_v1.0.2.md`, `Doc-3_Policy_Key_Registration_Patch_v1.0.md` (`core.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ.md` (`rfq.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.2_Marketplace.md` (`marketplace.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.3_Trust.md` (`trust.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.4_Operations.md` (`operations.*` keys) (effective v1.0.2)
 
 **Architecture-level patches / reconfirmation**
 - `Architecture_CD-MA-1_Patch_v1.0.md` · `Architecture_CD-MA-1_Patch_Verification_v1.0.md` · `Architecture_Freeze_Reconfirmation_v1.0.md`
@@ -155,8 +155,12 @@ review/patch/audit trail is grouped by category.
 | `Doc-5D_SERIES_FROZEN_v1.0.md` (M2 `marketplace`) | **Doc-5D FROZEN** — M2 Marketplace & Discovery API realization freeze manifest; effective = `Doc-5D_Content_v1.0_Pass1…3` + `Doc-5D_Structure_v1.0_FROZEN` + resolved registers. Realizes Doc-4D (71 contracts); first large public/anonymous surface; tri-actor (Public/User/Admin); R1–R10; R5 projection-separation + R9 non-disclosure attestations |
 | `Doc-5D_Structure_v1.0_FROZEN.md` · `Doc-5D_Content_v1.0_Pass1…3.md` | Doc-5D source (canonical TOC + §0–§10 + Appendix A) |
 | `Doc-5D_Structure_Proposal_v0.1.md` · `governanceReviews/Doc-5D_Freeze_Readiness_Audit_v1.0.md` | Doc-5D structure authoring history (v0.2 + round-3 ADD-1/ADD-2; Hard Review) + freeze audit (DD-6 gate → cleared by Patch v1.2) |
-| `Doc-5G_Structure_v1.0_FROZEN.md` (M5 `trust`) | **Doc-5G STRUCTURE FROZEN** — canonical TOC realizing Doc-4G (40 contracts: 34 caller-facing + 6 out-of-wire) on HTTP; the governance-signal owner; multi-actor (Public/User/Admin); R1–R12 (score-computation + governance/Billing firewalls); DG-1…DG-8; SR-1 reconciled to 40. Content passes next (3); `[ESC-TRUST-POLICY]` wire-referenced keys + `reference_id` = content-freeze obligations |
-| `Doc-5G_Structure_Proposal_v0.1.md` | Doc-5G structure authoring history (Hard Review — SR-1 40-contract reconciliation + ADD-1 POLICY-key gate split + ADD-2 reference_id declaration point) |
+| `Doc-5G_SERIES_FROZEN_v1.0.md` (M5 `trust`) | **Doc-5G FROZEN** — M5 Trust & Verification (the governance-signal owner) API realization freeze manifest; effective = `Doc-5G_Content_v1.0_Pass1…3` + `Doc-5G_Structure_v1.0_FROZEN` + resolved registers. Realizes Doc-4G (40 contracts); multi-actor (Public/User/Admin); R1–R12; score-computation + governance/Billing firewall + non-disclosure attestations |
+| `Doc-5G_Structure_v1.0_FROZEN.md` · `Doc-5G_Content_v1.0_Pass1…3.md` | Doc-5G source (canonical TOC + §0–§9 + Appendix A) |
+| `Doc-5G_Structure_Proposal_v0.1.md` · `governanceReviews/Doc-5G_Freeze_Readiness_Audit_v1.0.md` | Doc-5G structure authoring history (Hard Review — SR-1 reconciliation + ADD-1/ADD-2) + freeze audit (`[ESC-TRUST-POLICY]` gate → cleared by Patch v1.3) |
+| `Doc-3_Policy_Key_Registration_Patch_v1.3_Trust.md` | Additive Doc-3 §12.2 registration of 2 `trust.*` API-realization keys; clears the Doc-5G `[ESC-TRUST-POLICY]` gate (Doc-4A §18.2) |
+| `Doc-5F_Structure_v1.0_FROZEN.md` (M4 `operations`) | **Doc-5F STRUCTURE FROZEN** — canonical TOC realizing Doc-4F (50 contracts: 46 caller-facing + 4 out-of-wire) on HTTP; post-award ERP-Lite; two-sided tenant User (no Admin/public); R1–R10 (non-disclosure load-bearing, money-boundary, async doc-gen); DF-1…DF-8. Content passes next (3); `[ESC-OPS-POLICY]` (create `operations.*` namespace) + `reference_id` = content-freeze obligations |
+| `Doc-5F_Structure_Proposal_v0.1.md` · `generatedDocs/Doc-5F_Structure_Independent_Hard_Review_v1.0.md` | Doc-5F structure authoring history (v0.2 Board Hard Review + round-2 ADD-1/ADD-2; partition independently verified 50=46+4) |
 
 ---
 

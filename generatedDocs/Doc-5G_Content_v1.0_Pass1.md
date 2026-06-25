@@ -4,7 +4,7 @@
 |---|---|
 | Document | Doc-5G — Trust & Verification (Module 5) — API Realization |
 | Pass | 1 of 3 — §0, §1, §2 (the 34-endpoint caller-facing inventory) and §3 (cross-cutting wire model) |
-| Status | ACTIVE — Content Pass 1 of 3; §0–§3. Plan-review (M5G-01/02, m5G-01…04, N5G-01…03) + Pass-1 review (m-01/02/03, N-01…05) folded in. Conforms to `Doc-5G_Structure_v1.0_FROZEN.md` |
+| Status | ACTIVE — Content Pass 1 of 3; §0–§3. Plan-review (M5G-01/02, m5G-01…04, N5G-01…03) + Pass-1 review (m-01/02/03, N-01…05) folded in. **Independent Hard Review applied:** MINOR-01 §2.6 `+Location` on create corrected; MINOR-02 §2.6 cursor-pagination statement + O-01 `submit_review` engagement-gate resolution added; MINOR-03 §0.4 candidate-count clarified to four; MINOR-04 §3.6 disclosure-scope mutual-exclusivity + exactly-one rule added; MINOR-05 rows 3/5 event tokens replaced with pure `Doc-2 §8` pointer; O-02 §3.4 `staff_can_verify` slug replaced with `[ESC-TRUST-SLUG]` pointer; NP-01 row 14 "suppressed while frozen"; NP-02 §0.3 Pass-1 scope sentence added; NP-03 §2 header inventory-completeness clause added; NP-04 §3.7 service-interface-only constraint added. **0 open BLOCKER/MAJOR/MINOR.** Conforms to `Doc-5G_Structure_v1.0_FROZEN.md` |
 | Module | Module 5 — Trust & Verification (`trust` schema) — the governance-signal owner |
 | Realizes | `Doc-4G` (M5 contracts, FROZEN — 40 contracts: 34 caller-facing + 6 out-of-wire) on the bound HTTP transport |
 | Authority | `Doc-5_Program_Governance_Note_v1.0`; **`Doc-5A_SERIES_FROZEN_v1.0` (FROZEN) governs this document** |

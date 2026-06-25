@@ -2,11 +2,11 @@
 
 | Field | Value |
 |---|---|
-| Status | **PROPOSAL v0.1 — Board pre-authoring findings incorporated** (1 BLOCKER + 4 MAJOR + 6 MINOR + 7 NITPICK folded into the R-list / section map / partition; §Board-Findings Map). Structure only. Pre-incorporates the Doc-5D/5F structure-review lessons |
+| Status | **PROPOSAL v0.2 — Independent Hard Review applied; 2 MINOR + 2 NITPICK resolved** (Board pre-authoring findings incorporated: 1 BLOCKER + 4 MAJOR + 6 MINOR + 7 NITPICK; §Board-Findings Map). Freeze-ready → Structure FROZEN. Structure only |
 | Module | Module 6 — Communication (`communication` schema; the delivery-only transport / fan-out layer) |
 | Realizes | `Doc-4H` (M6 contracts, FROZEN — **23 contracts**, PassB BC-COMM-1…4 per-Contract-ID blocks) on the bound HTTP transport |
 | Authority | `Doc-5_Program_Governance_Note_v1.0`; **`Doc-5A_SERIES_FROZEN_v1.0` (FROZEN) governs this document** |
-| Precedent (informational, not authority) | `Doc-5B` (M0) out-of-wire boundary (R1); `Doc-5C` (M1) cross-cutting context/non-disclosure wire model; `Doc-5F` (M4) two-sided actor + route/token split + state-map sharpening. Force derives from `Doc-5A §1.3/§5/§7/§11` |
+| Precedent (informational, not authority) | `Doc-5B` (M0) out-of-wire boundary (R1); `Doc-5C` (M1) cross-cutting context/non-disclosure wire model; `Doc-5D` (M2) per-read disclosure-scope rule + per-command actor-side rule (§3 origin); `Doc-5F` (M4) two-sided actor + route/token split + state-map sharpening. Force derives from `Doc-5A §1.3/§5/§7/§11` |
 | Conforms To | `Master_System_Architecture_v1.0_FINAL`, `ADR_Compendium_v1`, Doc-2 v1.0.3, Doc-3 v1.0.2, Doc-4A v1.0 (FROZEN), Doc-4B v1.0 (FROZEN — Core/Realtime consumed), Doc-4C v1.0 (FROZEN — Identity consumed), Doc-4H v1.0 (FROZEN), Doc-4M v1.0 (FROZEN — cross-module state-machine index; communication edges defined in Doc-2 §3.7/§10.7 + Doc-4H), Doc-5A v1.0 (FROZEN) |
 | Contains | Structure only — section map, surface partition (with section-pointer column), ratified realization decisions, the carried freeze-gate dependencies. No endpoints, paths, status tables, schemas, or contract bodies |
 | Audience | Architecture Board · API Governance Board · Doc-5H content authors (human + AI) · AI Coding Supervisor · backend, QA |
@@ -28,7 +28,7 @@ Two governing rules shape this document (the Doc-5B/5C/5F precedent):
 - **R6 — Delivery/governance firewall (DH-5/DH-6).** A delivery outcome is an **observability fact, never a score/eligibility/business signal**; M6 computes/owns no score; **no entitlement / plan / commercial state gates delivery in a way that touches trust, eligibility, or routing fairness.** **Notification read/archive state cannot influence prioritization, matching, or trust** — it is a per-recipient inbox fact only. Realized as §3 wire constraints, never a gating header/param.
 - **R7 — RFQ scrub-rule seam (DH-3).** On an `rfq_clarification` thread, `comm.send_message` **reads the RFQ-owned raw-contact-scrub rule via the RFQ service and applies it content-side** at message-write; content rejected by the rule → `BUSINESS` error; `context_id` (`rfq_id`) is a bare UUID (no ownership transfer). **M6 cannot cache, copy, extend, or override the RFQ scrub rule** — it reads by service at write-time and applies the rule's verdict only; the rule definition remains wholly RFQ-owned (`Doc-4E`), no procurement decision made here.
 - **R8 — Provider-webhook inbound boundary + delivery-aggregate ownership.** The **`Outbound Log` aggregate (channel structures `email_logs` / `sms_logs` / `whatsapp_logs`, VO `DeliveryStatus`) is M6-owned** (`communication` schema; `Doc-2 §10.7`; `Doc-4H` BC-COMM-3 "Owned Aggregate: Outbound Log"). **A provider callback mutates only M6-owned state** — the provider → webhook → M6 path writes M6's own Outbound Log; it is **never** a Platform-Core-owned read-model M6 mirrors (ownership stays in M6, not M0/infra). `comm.update_delivery_status` is driven by an **inbound provider callback — an email/SMS/WhatsApp infra signal, explicitly NOT a Doc-2 §8 domain event**; forward-only `queued → sent → delivered | failed` (retry `failed → queued`, no new state). The webhook **ingress is infrastructure**, not an M6 caller wire; the contract is out-of-wire (§8). **Flag-and-halt if a caller/tenant wire is proposed.**
-- **R9 — Realtime chat = delivery channel, not an API surface.** `comm.send_message` / `comm.get_messages` are the caller wire; **realtime push (Supabase Realtime, DH-8 backing) is a delivery channel** (`Doc-5A §10/§15.7` — realtime = delivery channel), not a separate contract; `comm.get_messages` (Query) is the **source of truth**. **Realtime carries observations only and has no state-transition authority** — no message creation, mutation, or acknowledgement occurs through realtime; every state change is a §4 caller command.
+- **R9 — Realtime chat = delivery channel, not an API surface.** `comm.send_message` / `comm.get_messages` are the caller wire; **realtime push (Supabase Realtime, DH-8 backing) is a delivery channel** (`Doc-5A §10` / `Doc-4A §15.7` — realtime = delivery channel), not a separate contract; `comm.get_messages` (Query) is the **source of truth**. **Realtime carries observations only and has no state-transition authority** — no message creation, mutation, or acknowledgement occurs through realtime; every state change is a §4 caller command.
 - **R10 — Non-disclosure firewall.** Thread / message / notification / ticket / delivery reads are participant / recipient / scope-gated; a non-participant / non-recipient / out-of-scope read collapses to a uniform `NOT_FOUND` (`Doc-5A §6.3/§7`; `Doc-4A §7.5`); no cross-tenant leakage.
 - **R11 — No emitted event surface; M6 is a consumer.** Unlike M2/M4, M6 emits **no** Doc-2 §8 event (delivery-only; `[ESC-COMM-EVENT]` — none today). The Doc-5A §11 outbox-emission surface is **N/A**; the provider webhook is **inbound infra**, not an M6-emitted webhook. No caller webhook/push surface (`Doc-5A §11.3`).
 - **R12 — Append-only & no-destructive-close (Invariant #8).** Messages, delivery logs, and ticket messages are **append-only — never overwritten or hard-deleted**. `close_thread` closes the thread (`open → closed`) and **does not delete message history**; `archive_notification` advances inbox state (`read → archived`) and **does not delete the notification**. **Delivery logs are never caller-writable** — written only by the §8 System contracts. Thread/ticket close is **soft**, not delete.
@@ -54,13 +54,15 @@ Two governing rules shape this document (the Doc-5B/5C/5F precedent):
 
 ### Section-level count reconciliation
 
-| Doc-5H § | BC | Caller-facing | Out-of-wire (§8) | Total |
+| Doc-5H § | BC | Caller-facing | Routed to §8 (out-of-wire)¹ | Total |
 |---|---|---|---|---|
 | §4 | BC-COMM-1 Messaging | 8 | 0 | 8 |
 | §5 | BC-COMM-2 Notifications | 4 | 1 | 5 |
 | §6 | BC-COMM-3 Delivery Tracking | 1 | 3 | 4 |
 | §7 | BC-COMM-4 Support | 6 | 0 | 6 |
 | **Total** | | **19** | **4** | **23** |
+
+> ¹ "Routed to §8" column counts contracts from this BC that are assigned to §8 (out-of-wire boundary section), **not** owned by the row's §-section. Counted here for BC-completeness verification only. The partition table (authoritative) assigns all 4 out-of-wire contracts to §8.
 
 ---
 
@@ -93,7 +95,7 @@ Two governing rules shape this document (the Doc-5B/5C/5F precedent):
 - **Dependencies:** `Doc-5A §5/§6/§9`; `Doc-4H §H6`; `Doc-2 §10.7`. **Detail:** delivery-read realization + ownership statement.
 
 ## §7 — Support Communications Surface Realization (BC-COMM-4)
-- **Purpose:** the §H7 support surface — `create_ticket`, `update_ticket`, `add_ticket_message` (append-only — R12), `close_ticket` (`resolved → closed`) and reads — **two-sided User(opener, `can_raise_support_ticket`) / Admin(staff, `staff_can_support`)**; ticket machine `open → in_progress → resolved → closed` (Doc-4M; per-command actor-side declared — §3 rule: User own-org legs vs Staff governance legs). **The support-ticket aggregate stays M6-owned** — Admin acts via `staff_can_support` as an authorized actor, but ownership never transfers to Admin (M8) (m-COMM-03). **Ticket messages inherit ticket scope** (§3/N-05). Idempotency/concurrency; error mapping with `NOT_FOUND` collapse; `[ESC-COMM-AUDIT]`.
+- **Purpose:** the §H7 support surface — `create_ticket`, `update_ticket`, `add_ticket_message` (append-only — R12), `close_ticket` (`resolved → closed`) and reads — **two-sided User(opener, `can_raise_support_ticket`) / Admin(staff, `staff_can_support`)**; ticket machine `open → in_progress → resolved → closed` (Doc-2 §3.7 / Doc-4H §H13; Doc-4M = index only — §3; per-command actor-side declared — §3 rule: User own-org legs vs Staff governance legs). **The support-ticket aggregate stays M6-owned** — Admin acts via `staff_can_support` as an authorized actor, but ownership never transfers to Admin (M8) (m-COMM-03). **Ticket messages inherit ticket scope** (§3/N-05). Idempotency/concurrency; error mapping with `NOT_FOUND` collapse; `[ESC-COMM-AUDIT]`.
 - **Dependencies:** `Doc-5A §5/§6/§9`; `Doc-4H §H7`; `Doc-4M`; `Doc-2 §3.7`. **Detail:** two-sided command + read realization.
 
 ## §8 — Out-of-Wire Boundary (notification fan-out · delivery dispatch / provider-webhook / retry · internal legs)
@@ -159,7 +161,7 @@ Cross-module realization (owning module's Doc-5x — §1.x) · any other module'
 
 ---
 
-## Structure self-audit (pre-review)
+## Structure self-audit (post-review v0.2)
 
 | Check | Result |
 |---|---|
@@ -186,4 +188,4 @@ Cross-module realization (owning module's Doc-5x — §1.x) · any other module'
 
 ---
 
-*End of Doc-5H Structure Proposal v0.1. Structure only; Board pre-authoring findings (1 BLOCKER + 4 MAJOR + 6 MINOR + 7 NITPICK) incorporated. On any conflict, Doc-5A (FROZEN) and the frozen corpus win; flag-and-halt. The `[REC-COMM-OWNERSHIP]` freeze-gate is satisfied in-doc (ownership explicit, confirmed against Doc-4H BC-COMM-3 / Doc-2 §10.7) — reconfirm verbatim at the structure-freeze audit. Next: Independent Hard Review → Structure Patch → promote to `Doc-5H_Structure_v1.0_FROZEN`; then compressed content passes (Pass-1 = §0–§3 + inventory; Pass-2 = §4–§5; Pass-3 = §6–§9 + Appendix A), each conforming to this structure.*
+*End of Doc-5H Structure Proposal v0.2. Structure only; Board pre-authoring findings (1 BLOCKER + 4 MAJOR + 6 MINOR + 7 NITPICK) + Independent Hard Review patch (2 MINOR + 2 NITPICK) applied. On any conflict, Doc-5A (FROZEN) and the frozen corpus win; flag-and-halt. The `[REC-COMM-OWNERSHIP]` freeze-gate is satisfied in-doc (ownership explicit, confirmed against Doc-4H BC-COMM-3 / Doc-2 §10.7) — reconfirm verbatim at the structure-freeze audit. Next: promote to `Doc-5H_Structure_v1.0_FROZEN`; then compressed content passes (Pass-1 = §0–§3 + inventory; Pass-2 = §4–§5; Pass-3 = §6–§9 + Appendix A), each conforming to this structure.*
