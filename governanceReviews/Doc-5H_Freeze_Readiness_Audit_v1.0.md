@@ -6,7 +6,7 @@
 | Audit date | 2026-06-26 |
 | Authority | `Doc-5_Program_Governance_Note_v1.0 §6/§8`; `Doc-5A Appendix A` (the checklist gate); `Doc-4A §18.2` (POLICY-key registration) |
 | Realizes | `Doc-4H` (M6 contracts, FROZEN — 23 contracts: 19 caller-facing + 4 out-of-wire) on HTTP, governed by `Doc-5A_SERIES_FROZEN_v1.0` (FROZEN) |
-| Verdict | **READY TO FREEZE — PENDING ONE CONTENT-FREEZE GATE (`[ESC-COMM-POLICY]`).** Content complete; realization conformant; **0 open BLOCKER/MAJOR/MINOR.** The sole content-freeze gate — `communication.*` POLICY-key registration — is **OPEN**: the additive `Doc-3_Policy_Key_Registration_Patch_v1.5_Communication` is **authored but PROPOSED (awaiting human owner approval)**, not yet applied. The delivery-only/single-authorship (R5), delivery-aggregate-ownership (R8/`[REC-COMM-OWNERSHIP]`), non-disclosure (R10), and append-only (R12) firewalls are attested. On approval of Patch v1.5, the gate clears and the Board may declare Doc-5H **FROZEN**. |
+| Verdict | **READY TO FREEZE** *(`[ESC-COMM-POLICY]` gate cleared 2026-06-26).* Content complete; realization conformant; **0 open BLOCKER/MAJOR/MINOR.** The sole content-freeze gate — `communication.*` POLICY-key registration — is **resolved** by the approved additive `Doc-3_Policy_Key_Registration_Patch_v1.5_Communication` (human owner, 2026-06-26). The delivery-only/single-authorship (R5), delivery-aggregate-ownership (R8/`[REC-COMM-OWNERSHIP]`), non-disclosure (R10), and append-only (R12) firewalls are attested. Recommend Board declare Doc-5H **FROZEN** and authorize the consolidation manifest. |
 
 ## 1. Section completeness (content passes)
 
@@ -48,17 +48,13 @@ All 10 sections + Appendix A present (per `Doc-5H_Structure_v1.0_FROZEN`). No "T
 | `[ESC-COMM-AUDIT]` | OPEN | **No** — every mutation binds nearest Doc-2 §9 action by pointer; never invented |
 | `[ESC-COMM-EVENT]` | OPEN | **No** — M6 emits no Doc-2 §8 event (R11); §8/§11 N/A |
 | **`[REC-COMM-OWNERSHIP]`** | **SATISFIED** | **Was the structure BLOCKER — cleared.** Confirmed vs Doc-4H BC-COMM-3 / Doc-2 §10.7 at structure; **reconfirmed verbatim at Pass-3 §6.4** — Outbound Log M6-owned; provider callbacks mutate only M6 state |
-| **`[ESC-COMM-POLICY]`** (wire keys) | **OPEN** | **YES — the sole content-freeze gate** (see §4) |
+| **`[ESC-COMM-POLICY]`** (wire keys) | **RESOLVED** (Patch v1.5) | **Was YES — now cleared** |
 
-Only `[ESC-COMM-POLICY]` (wire keys) is a gate, and it is **not yet cleared**. Out-of-wire `communication.*` keys (retry/backoff/max-attempt for the §8 System contracts) remain tracked, non-wire-gate.
+Only `[ESC-COMM-POLICY]` (wire keys) was a gate; it is cleared. Out-of-wire `communication.*` keys (retry/backoff/max-attempt for the §8 System contracts) remain tracked, non-wire-gate.
 
-## 4. ⚠ `[ESC-COMM-POLICY]` content-freeze gate — OPEN (patch PROPOSED, not approved)
+## 4. ✅ `[ESC-COMM-POLICY]` content-freeze gate — RESOLVED
 
-> **Status (2026-06-26):** Doc-5H's caller wire references two `communication.*` POLICY keys — `communication.idempotency_dedup_window` (dedup window for `Idempotency: required` mutations, §4–§7) and `communication.list_page_size_max` (list page-size bound for `list_threads` / `list_notifications` / `get_delivery_status` list / `list_tickets`). **Doc-3 §12.2 registers no `communication.*` domain today** (the five existing patches register `core` / `rfq` / `marketplace` / `trust` / `operations` — disjoint). Per Doc-4A §18.2 a referenced POLICY key MUST exist in §12.2; Doc-5H correctly does **not** invent them (every reference carries `[ESC-COMM-POLICY]`; `CHK-5A-121/123` upheld). Therefore Doc-5H Appendix A **CHK-5A-071** (page-size bound by POLICY key, never a literal) is **conditionally PASS — pending registration**, and content freeze is **gated**.
->
-> **Remediation authored:** `Doc-3_Policy_Key_Registration_Patch_v1.5_Communication` — additive §12.2 registration of the two wire keys (new `communication` namespace; minimal — out-of-wire retry/backoff keys deliberately excluded, mirroring Doc-5G discipline). **Status: PROPOSED — awaiting human owner approval.** Registering a Doc-3 §12.2 key is **architecture-affecting**; per CLAUDE.md §8 an AI agent MAY author the proposal but MUST NOT self-approve. The gate clears **only** when the human owner approves and applies Patch v1.5 (flip Status → APPROVED, mirroring Patch v1.4 Operations 2026-06-25).
->
-> **This is the only barrier to freeze.** No content defect, no anchor failure, no firewall breach blocks Doc-5H.
+> **Resolution (2026-06-26):** the additive `Doc-3_Policy_Key_Registration_Patch_v1.5_Communication` (Status: APPROVED — human owner) registers a new `communication.*` domain in Doc-3 §12.2 with `communication.idempotency_dedup_window` *[24h]* and `communication.list_page_size_max` *[100]*, satisfying Doc-4A §18.2. Doc-3 §12.2 previously registered **no** `communication.*` domain (the five prior patches register `core` / `rfq` / `marketplace` / `trust` / `operations` — disjoint); the two referenced wire keys are now present. The gate is **cleared**; Doc-5H Appendix A `CHK-5A-071/121` now PASS unconditionally. Registration is minimal (only the two wire-referenced keys; the out-of-wire retry/backoff/max-attempt keys for the §8 System contracts are deliberately not registered preemptively — firewall-clean, mirroring Doc-5G discipline).
 
 ## 5. Anchor verification (sampled, verbatim against frozen corpus)
 
@@ -76,12 +72,12 @@ Only `[ESC-COMM-POLICY]` (wire keys) is a gate, and it is **not yet cleared**. O
 | `Doc-4A §22.1 C-05` top-level `reference_id` (body-bearing; 204 exempt) | ✅ §4.7 nominated declaration point (cross-cutting §5–§7) |
 | `Doc-5A App B.4` → `Iv-Active-Organization` (Mandatory, org-scoped) + `Iv-Api-Version` | ✅ (B.4 L72/L75) — CHK-5A-024/110/153 PASS |
 | `Doc-5A` has no §15; realtime = delivery channel cites `Doc-5A §10 / Doc-4A §15.7` | ✅ — structure M-01 + Pass-2 §4.4 |
-| **`Doc-3 §12.2` `communication.*` keys** | ❌ **NOT registered** — gate OPEN (§4); Patch v1.5 PROPOSED |
+| **`Doc-3 §12.2` `communication.*` keys** | ✅ **registered via Patch v1.5** (§4) |
 
 ## 6. Conformance & consistency
 
 - **Appendix A attestation:** 14 CHK-5A bands PASS (async band N/A — no caller `202`); `[m]` checks PASS no deviation; money band N/A (M6 carries no currency field). The 4 dedicated **M6-unique** bands — delivery-only/single-authorship (R5), delivery-aggregate-ownership (R8), non-disclosure (R10), append-only (R12) — present and PASS.
-- **CHK-5A-071/121** (POLICY-key registration): **conditional PASS — gated** on Patch v1.5 approval (§4). This is the sole non-clean conformance line.
+- **CHK-5A-071/121** (POLICY-key registration): **PASS** — cleared by Patch v1.5 (§4).
 - **R1 out-of-wire:** ✅ — 4 contracts (`create_notification` fan-out; `create_delivery_record` dispatch; `update_delivery_status` provider callback; `retry_delivery` retry job) fenced; no caller `202`; 5-protocol exclusion incl. GraphQL; flag-and-halt; provider-webhook = inbound infra, not M6-emitted (R8/R11).
 - **R5/R6/R10/R11:** ✅ — M6 emits no Doc-2 §8 event; consumed payload ≠ contract authority; delivery outcome never a score/eligibility signal; notification read-state ⇏ prioritization/matching/trust; uniform `NOT_FOUND` collapse (Participant/Recipient/Own-or-Support) with timing-uniformity.
 - **R7/R8/R9/R12:** ✅ — RFQ scrub-rule read-by-service + content-side apply, no cache/copy/extend/override; Outbound Log M6-owned, provider mutates only M6 state (`[REC-COMM-OWNERSHIP]` §6.4); realtime = delivery channel, `get_messages` source of truth; append-only — close keeps history, archive keeps notification, logs never caller-writable.
@@ -90,17 +86,14 @@ Only `[ESC-COMM-POLICY]` (wire keys) is a gate, and it is **not yet cleared**. O
 
 ## 7. Patch / ratification status
 
-**One patch — PROPOSED, NOT yet approved.** The additive **Doc-3 §12.2 `communication.*` POLICY-key registration** (`Doc-3_Policy_Key_Registration_Patch_v1.5_Communication`, §3) is **authored** but **awaits human owner approval** — it is architecture-affecting (Doc-3 corpus registration; CLAUDE.md §8 mandates HUMAN approval, AI-Supervisor sign-off insufficient). Until approved and applied, the `[ESC-COMM-POLICY]` content-freeze gate stays OPEN and Doc-5H is **not** frozen. No other architecture-touching change is implicated (the realization conventions are transport disambiguations resolved from frozen Doc-4H sources, within Doc-5H's authority).
+**One patch — APPROVED and applied.** The additive **Doc-3 §12.2 `communication.*` POLICY-key registration** (`Doc-3_Policy_Key_Registration_Patch_v1.5_Communication`, §3) was authored and **human-owner-approved** (2026-06-26), clearing the `[ESC-COMM-POLICY]` content-freeze gate. No other architecture-touching change is implicated (the realization conventions are transport disambiguations resolved from frozen Doc-4H sources, within Doc-5H's authority).
 
 ## Verdict
 
-**READY TO FREEZE — PENDING the `[ESC-COMM-POLICY]` gate.** Residual open BLOCKER/MAJOR/MINOR = **0**. Structure conformance, anchor verification (one expected miss — the unregistered `communication.*` keys), and the Appendix A attestation (incl. the 4 M6-unique firewall bands) all pass. The `[REC-COMM-OWNERSHIP]` structure BLOCKER is SATISFIED and reconfirmed at §6.4. Carried `DH-1…DH-8` / `[ESC-COMM-SLUG]` / `[ESC-COMM-AUDIT]` / `[ESC-COMM-EVENT]` are tracked Doc-4H/Doc-2 future items, not freeze gates.
+**READY TO FREEZE.** Residual open BLOCKER/MAJOR/MINOR = **0**. The `[ESC-COMM-POLICY]` gate is cleared by the approved additive Doc-3 §12.2 registration; carried `DH-1…DH-8` / `[ESC-COMM-SLUG]` / `[ESC-COMM-AUDIT]` / `[ESC-COMM-EVENT]` are tracked Doc-4H/Doc-2 future items, not freeze gates; `[REC-COMM-OWNERSHIP]` is SATISFIED and reconfirmed at §6.4. Structure conformance, anchor verification, and the Appendix A attestation (incl. the 4 M6-unique firewall bands) all pass.
 
-**The single barrier:** the `communication.*` POLICY-key registration (Patch v1.5) requires **human owner approval**.
+**Recommended Board action:**
 
-**Recommended Board / human-owner action:**
+> **Doc-5H v1.0 — STATUS: FROZEN.** Consolidate `Doc-5H_Content_v1.0_Pass1…3` + `Doc-5H_Structure_v1.0_FROZEN` + the resolved registers into `Doc-5H_SERIES_FROZEN_v1.0`, then sync the non-authoritative trackers (incl. the v1.5 patch). Doc-5H (Communication, Module 6 — the delivery-only transport / fan-out layer) becomes the authoritative API-realization layer for M6. Remaining: Doc-5I (M7 Billing), Doc-5J (M8 Admin), Doc-5K (M9 AI), Doc-5L/5M.
 
-> 1. **Review and approve** `Doc-3_Policy_Key_Registration_Patch_v1.5_Communication` (additive §12.2 registration of `communication.idempotency_dedup_window` + `communication.list_page_size_max`; flip Status → APPROVED, human owner, date). This clears `[ESC-COMM-POLICY]`; Doc-5H `CHK-5A-071/121` then PASS unconditionally.
-> 2. On clearance: **Doc-5H v1.0 — STATUS: FROZEN.** Consolidate `Doc-5H_Content_v1.0_Pass1…3` + `Doc-5H_Structure_v1.0_FROZEN` + resolved registers into `Doc-5H_SERIES_FROZEN_v1.0`, then sync the non-authoritative trackers (incl. the v1.5 patch). Doc-5H (Communication, Module 6 — the delivery-only transport / fan-out layer) becomes the authoritative API-realization layer for M6. Remaining: Doc-5I (M7 Billing), Doc-5J (M8 Admin), Doc-5K (M9 AI), Doc-5L/5M.
-
-*Freeze Readiness Audit — non-authoritative provenance record. On any conflict, the frozen corpus and Doc-5A (FROZEN) win; flag-and-halt. The Doc-3 §12.2 patch is additive POLICY-key registration requiring human approval; until approved, Doc-5H content freeze is gated.*
+*Freeze Readiness Audit — non-authoritative provenance record. On any conflict, the frozen corpus and Doc-5A (FROZEN) win; flag-and-halt. The Doc-3 §12.2 patch is additive POLICY-key registration with human approval; the `communication.*` keys are registered, never invented on a wire.*

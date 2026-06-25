@@ -4,12 +4,12 @@
 |---|---|
 | Patch ID | Doc-3-Policy-Key-Registration-Patch-v1.5-Communication |
 | Applies To | `Doc-3_RFQ_Procurement_Engine_And_Operational_Specification_v1.0.1.md` — §12.2 POLICY key inventory (additive domain block only) |
-| Patch Authority | API Governance Board / **human owner approval REQUIRED** — clears the **`[ESC-COMM-POLICY]`** content-freeze gate (`Doc-5H_Structure_v1.0_FROZEN` §9; `CHK-5A-121/071`) for Doc-5H content freeze |
+| Patch Authority | API Governance Board / human owner approval (2026-06-26); clears the **`[ESC-COMM-POLICY]`** content-freeze gate (`Doc-5H_Structure_v1.0_FROZEN` §9; `CHK-5A-121/071`) for Doc-5H content freeze |
 | Patch Type | **Additive registration only** — registers two `communication.*` POLICY keys referenced by the frozen-candidate Doc-5H (Module 6) wire realization. No validation-semantic, routing, trust, procurement, money, delivery-firewall, or ownership change. No existing key modified or removed. |
 | Sole Purpose | Satisfy **Doc-4A §18.2** ("a POLICY key MUST exist in Doc-3 §12.2") for the two `communication.*` API-realization-infrastructure keys referenced by Doc-5H under the `[ESC-COMM-POLICY]` marker. |
 | Conforms To | Master_System_Architecture_v1.0_FINAL.md, ADR_Compendium_v1.md, Doc-2 v1.0.3, Doc-3 v1.0.2, Doc-4A v1.0 (FROZEN), Doc-4H v1.0 (FROZEN), Doc-5A v1.0 (FROZEN) |
 | Linked Document | `Doc-5H_Structure_v1.0_FROZEN.md` (§9 carried-item `[ESC-COMM-POLICY]`); `Doc-5H_Content_v1.0_Pass1…3` (CHK-5A-071/080/081/121) + `Doc-5H_Freeze_Readiness_Audit_v1.0`. Precedent: `…Patch_v1.0` (`core.*`), `…v1.1_RFQ` (`rfq.*`), `…v1.2_Marketplace` (`marketplace.*`), `…v1.3_Trust` (`trust.*`), `…v1.4_Operations` (`operations.*`). |
-| Status | **PROPOSED — awaiting human owner approval.** Architecture-affecting (Doc-3 §12.2 corpus registration); an AI agent MAY author this proposal but MUST NOT self-approve (CLAUDE.md §8 — architecture-affecting artifacts require HUMAN approval; code/AI-Supervisor review is insufficient). The `[ESC-COMM-POLICY]` content-freeze gate remains OPEN until this patch is human-approved and applied. |
+| Status | **APPROVED — additive Doc-3 §12.2 registration** (human owner, 2026-06-26). Architecture-affecting registration ratified by human owner per CLAUDE.md §8; the `[ESC-COMM-POLICY]` content-freeze gate is **CLEARED**. |
 
 ---
 
@@ -81,16 +81,16 @@ No other section of Doc-3 is touched. All existing §12.2 domains are unchanged.
 
 | Check | Result |
 |---|---|
-| Satisfies Doc-4A §18.2 (referenced key now registered in §12.2) | PASS (on approval) — both `communication.idempotency_dedup_window` and `communication.list_page_size_max` registered |
+| Satisfies Doc-4A §18.2 (referenced key now registered in §12.2) | PASS — both `communication.idempotency_dedup_window` and `communication.list_page_size_max` registered |
 | No key invented in a Doc-5 document (anti-invention CHK-5A-121/123) | PASS — Doc-5H uses the `[ESC-COMM-POLICY]` marker; this patch performs the registration |
 | Only wire-referenced keys registered | PASS — out-of-wire retry/backoff/dedup keys excluded (§2 scope note) |
 | Additive only; no existing key/domain/semantic touched | PASS |
 | All registered keys are POLICY; delivery-only/non-disclosure/governance firewalls preserved | PASS |
 | Doc-3 §12.2 affirmed as sole registration authority | PASS (§1) |
 | Registration style consistent with existing §12.2 | PASS (new domain row + detailed table) |
-| Clears the Doc-5H `[ESC-COMM-POLICY]` content-freeze gate | PASS **on human approval** — keys present ahead of Doc-5H content Freeze (CHK-5A-071/121) |
-| Human approval obtained | **PENDING** — architecture-affecting; requires human owner sign-off (CLAUDE.md §8) |
+| Clears the Doc-5H `[ESC-COMM-POLICY]` content-freeze gate | PASS — keys registered; Doc-5H CHK-5A-071/121 now PASS unconditionally |
+| Human approval obtained | PASS — human owner, 2026-06-26 (CLAUDE.md §8) |
 
 ---
 
-*Doc-3 POLICY Key Registration Patch v1.5 — additive §12.2 registration of 2 Module 6 `communication.*` API-realization keys (idempotent-replay dedup window · list page-size bound; new `communication` POLICY namespace). Clears the Doc-5H `[ESC-COMM-POLICY]` content-freeze gate (Doc-4A §18.2). No semantic, delivery, non-disclosure, governance, or ownership change. **Status: PROPOSED — awaiting human owner approval; not yet applied.** On approval, flip Status to APPROVED (human owner, date) and the gate clears.*
+*Doc-3 POLICY Key Registration Patch v1.5 — additive §12.2 registration of 2 Module 6 `communication.*` API-realization keys (idempotent-replay dedup window · list page-size bound; new `communication` POLICY namespace). Clears the Doc-5H `[ESC-COMM-POLICY]` content-freeze gate (Doc-4A §18.2). No semantic, delivery, non-disclosure, governance, or ownership change. Status: APPROVED (additive, human owner, 2026-06-26).*

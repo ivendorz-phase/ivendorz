@@ -163,6 +163,10 @@ review/patch/audit trail is grouped by category.
 | `Doc-5F_Structure_v1.0_FROZEN.md` · `Doc-5F_Content_v1.0_Pass1…3.md` | Doc-5F source (canonical TOC + §0–§10 + Appendix A) |
 | `Doc-5F_Structure_Proposal_v0.1.md` · `governanceReviews/Doc-5F_Freeze_Readiness_Audit_v1.0.md` | Doc-5F structure authoring history (Board Hard Review + round-2 ADD-1/ADD-2; partition independently verified 50=46+4) + freeze audit (`[ESC-OPS-POLICY]` gate → cleared by Patch v1.4) |
 | `Doc-3_Policy_Key_Registration_Patch_v1.4_Operations.md` | Additive Doc-3 §12.2 registration of 2 `operations.*` API-realization keys (new `operations` namespace); clears the Doc-5F `[ESC-OPS-POLICY]` gate (Doc-4A §18.2) |
+| `Doc-5H_SERIES_FROZEN_v1.0.md` (M6 `communication`) | **Doc-5H FROZEN** — M6 Communication (delivery-only transport / notification fan-out layer) API realization freeze manifest; effective = `Doc-5H_Content_v1.0_Pass1…3` + `Doc-5H_Structure_v1.0_FROZEN` + resolved registers. Realizes Doc-4H (23 contracts: 19 caller-facing + 4 out-of-wire); User+Admin (no public); R1–R12; delivery-only/single-authorship (R5) + delivery-aggregate-ownership (R8) + non-disclosure (R10) + append-only (R12) attestations |
+| `Doc-5H_Structure_v1.0_FROZEN.md` · `Doc-5H_Content_v1.0_Pass1…3.md` | Doc-5H source (canonical TOC + §0–§9 + Appendix A) |
+| `Doc-5H_Structure_Proposal_v0.1.md` · `Doc-5H_Structure_Freeze_Audit_v1.0.md` · `governanceReviews/Doc-5H_Freeze_Readiness_Audit_v1.0.md` | Doc-5H structure authoring history (Board pre-authoring + Independent Hard Review; partition verified 23=19+4) + structure + content freeze audits (`[ESC-COMM-POLICY]` gate → cleared by Patch v1.5; `[REC-COMM-OWNERSHIP]` satisfied) |
+| `Doc-3_Policy_Key_Registration_Patch_v1.5_Communication.md` | Additive Doc-3 §12.2 registration of 2 `communication.*` API-realization keys (new `communication` namespace); clears the Doc-5H `[ESC-COMM-POLICY]` gate (Doc-4A §18.2) |
 
 ---
 
