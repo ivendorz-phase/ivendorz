@@ -160,9 +160,15 @@ ratified. Authoritative blueprint lives in `generatedDocs/`.
 - **Non-authoritative orientation set (root):** `README.md` · `project_details.md` ·
   `REPOSITORY_STRUCTURE.md` (repository constitution) · this file. All mirror the corpus and
   are patched to match it.
-- **Current phase:** Implementation Governance. Next program = Doc-5 (API) · Doc-6 (DB) ·
-  Doc-7 (Frontend) · Doc-8 (Tests). **Active deliverable: Doc-5A — API Standards.**
-- **Status:** architecture = COMPLETE/FROZEN · implementation contracts (Doc-5…8) = NOT STARTED · code = NOT STARTED.
+- **Current phase:** Implementation Governance — **Doc-5 API Realization program** (Doc-6 DB ·
+  Doc-7 Frontend · Doc-8 Tests follow). **Doc-5A metastandard FROZEN** (gates 5B…5M via Appendix A).
+  Module realizations FROZEN: **Doc-5B (M0) · 5C (M1) · 5D (M2) · 5E (M3) · 5F (M4) · 5G (M5) ·
+  5H (M6) · 5I (M7, 2026-06-26) · 5K (M9, 2026-06-26).** **Doc-5J (M8 Admin) structure FROZEN**
+  (2026-06-26); **content NOT STARTED — the last open module.** **Active deliverable: Doc-5J Content
+  Pass-1** (§0–§3 + 32-token inventory); content-freeze gate = `admin.*` POLICY patch (next free
+  v1.7) + `reference_id` (C-05). Per-module ledger: `generatedDocs/Program_Status_And_Roadmap.md`.
+- **Status:** architecture = COMPLETE/FROZEN · Doc-5 API contracts = IN PROGRESS (9/10 module
+  realizations content-FROZEN; Doc-5J structure FROZEN, content pending) · Doc-6/7/8 = NOT STARTED · code = NOT STARTED.
 
 ---
 

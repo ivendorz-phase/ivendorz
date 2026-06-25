@@ -1,7 +1,7 @@
 # iVendorz — Architecture Corpus Index
 
 **Document type:** Navigation index for `generatedDocs/`. Non-authoritative.
-**Date:** 2026-06-23
+**Date:** 2026-06-26
 **Rule:** On any conflict, the **FROZEN** document wins. This index only points; it never restates.
 
 Each module family was produced through the staged-freeze lifecycle
@@ -30,7 +30,7 @@ review/patch/audit trail is grouped by category.
 - **Authoritative:** `Doc-2_Domain_Model_And_Database_Blueprint_v1.0.2.md` + patches `Doc2_Patch_v1.0.2.md`, `Doc-2_Patch_v1.0.3.md` (effective v1.0.3)
 
 **Doc-3 — RFQ Procurement Engine & Operational Specification**
-- **Authoritative:** `Doc-3_RFQ_Procurement_Engine_And_Operational_Specification_v1.0.1.md` + patches `Doc-3_Patch_v1.0.2.md`, `Doc-3_Policy_Key_Registration_Patch_v1.0.md` (`core.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ.md` (`rfq.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.2_Marketplace.md` (`marketplace.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.3_Trust.md` (`trust.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.4_Operations.md` (`operations.*` keys) (effective v1.0.2)
+- **Authoritative:** `Doc-3_RFQ_Procurement_Engine_And_Operational_Specification_v1.0.1.md` + patches `Doc-3_Patch_v1.0.2.md`, `Doc-3_Policy_Key_Registration_Patch_v1.0.md` (`core.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ.md` (`rfq.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.2_Marketplace.md` (`marketplace.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.3_Trust.md` (`trust.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.4_Operations.md` (`operations.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.5_Communication.md` (`communication.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.6_Billing.md` (`billing.*` keys) (effective v1.0.2)
 
 **Architecture-level patches / reconfirmation**
 - `Architecture_CD-MA-1_Patch_v1.0.md` · `Architecture_CD-MA-1_Patch_Verification_v1.0.md` · `Architecture_Freeze_Reconfirmation_v1.0.md`
@@ -96,6 +96,7 @@ review/patch/audit trail is grouped by category.
 
 ### Doc-4I — M7 Monetization
 - **FROZEN/authoritative:** `Doc-4I_FROZEN_v1.0.md`; freeze `Doc-4I_Final_Freeze_Audit_v1.0.md`; consolidation `Doc-4I_Module_Consolidation_Review_v1.0.md`
+- **Additive contract (human-approved, Doc-5I Board Gate 2):** `Doc-4I_ActivatePlan_Additive_Patch_v1.0.md` — `billing.activate_plan.v1` (§HB-1.1a); realizes the `Doc-2 §3.8` `draft→active` edge; Doc-4I count 32→33
 - Frozen sub-artifacts: `Doc-4I_PassA_v1.0_FROZEN.md` · `Doc-4I_PassB_Part1_v1.0_FROZEN.md` · `Doc-4I_PassB_Part2_v1.0_FROZEN.md`
 - PassB content: `Part1_BC-BILL-1_Plans_And_Entitlements` (+ `BC-BILL-1_2_3`) · `Part2_BC-BILL-4_5_6_v1.0.md`
 - Content/reviews/patches: `Doc-4I_PassA_Content_v1.0.md` · `Doc-4I_Structure/PassA/PassB_*_Independent_Hard_Review_v1.0.md` · `…_Patch_v1.0.md` · `…_Patch_Verification_v1.0.md`
@@ -167,6 +168,16 @@ review/patch/audit trail is grouped by category.
 | `Doc-5H_Structure_v1.0_FROZEN.md` · `Doc-5H_Content_v1.0_Pass1…3.md` | Doc-5H source (canonical TOC + §0–§9 + Appendix A) |
 | `Doc-5H_Structure_Proposal_v0.1.md` · `Doc-5H_Structure_Freeze_Audit_v1.0.md` · `governanceReviews/Doc-5H_Freeze_Readiness_Audit_v1.0.md` | Doc-5H structure authoring history (Board pre-authoring + Independent Hard Review; partition verified 23=19+4) + structure + content freeze audits (`[ESC-COMM-POLICY]` gate → cleared by Patch v1.5; `[REC-COMM-OWNERSHIP]` satisfied) |
 | `Doc-3_Policy_Key_Registration_Patch_v1.5_Communication.md` | Additive Doc-3 §12.2 registration of 2 `communication.*` API-realization keys (new `communication` namespace); clears the Doc-5H `[ESC-COMM-POLICY]` gate (Doc-4A §18.2) |
+| `Doc-5I_SERIES_FROZEN_v1.0.md` (M7 `billing`) | **Doc-5I FROZEN** — M7 Monetization / Billing (meters-and-charges; handles no buyer↔vendor money) API realization freeze manifest; effective = `Doc-5I_Content_v1.0_Pass1…3` + `Doc-5I_Structure_v1.0_FROZEN` + `Doc-5I_Structure_Additive_Patch_v1.0` + resolved registers. Realizes Doc-4I + `Doc-4I_ActivatePlan_Additive_Patch` = **33 contracts** (27 caller-facing + 6 out-of-wire); User+Admin+System (no public); R1–R11; billing-firewall (R5) + platform-invoice-≠-trade-invoice (R6/FIXED) + gateway-callback (R8) + entitlement-service-authority (R10) attestations |
+| `Doc-5I_Structure_v1.0_FROZEN.md` · `Doc-5I_Structure_Additive_Patch_v1.0.md` · `Doc-5I_Content_v1.0_Pass1…3.md` | Doc-5I source (canonical §0–§11 + Appendix A) + additive structure patch (Board Gates 1 & 2) |
+| `Doc-4I_ActivatePlan_Additive_Patch_v1.0.md` | Additive Doc-4I contract `billing.activate_plan.v1` (§HB-1.1a; human-approved Board Gate 2 → A); realizes `Doc-2 §3.8` `draft→active` |
+| `Doc-3_Policy_Key_Registration_Patch_v1.6_Billing.md` | Additive Doc-3 §12.2 registration of 2 `billing.*` API-realization keys (new `billing` namespace); clears the Doc-5I `[ESC-BILL-POLICY]` gate (Doc-4A §18.2) |
+| `Doc-5I_Structure_Proposal_v0.1.md` · `Doc-5I_Structure_Freeze_Audit_v1.0.md` · `Doc-5I_Content_Freeze_Audit_v1.0.md` · `Doc-5I_ESC_Board_Escalation_v1.0.md` | Doc-5I authoring history (structure Hard Review + Patch + freeze audit; content Pass-2 Hard Review/Re-Review + Content Independent Hard Review; ESC board escalation → Gates 1 & 2 → Option A) |
+| `Doc-5K_Content_v1.0_FROZEN.md` (M9 `ai`) | **Doc-5K FROZEN** — M9 AI Layer (reserved advisory / derived-artifact layer) API realization; consolidated Pass-1/2/3. Realizes Doc-4K (**16 contracts**: 8 caller-facing reads + 8 out-of-wire generate/expire); User read-only (AI-Agent/System out-of-wire; no public/Admin); R1–R9; advisory/non-authoritative + score-firewall + regenerable-cache (TTL hard-delete) + non-disclosure attestations; `[REC-AI-WIRE]` satisfied. Carried to implementation: `[ESC-AI-POLICY]` TTL keys |
+| `Doc-5K_Structure_v1.0_FROZEN.md` · `Doc-5K_Structure_Patch_CE-01_v1.0.md` · `Doc-5K_Content_v1.0_Pass1…3.md` | Doc-5K source (canonical §0–§6 + Appendix A) + structure patch CE-01 |
+| `Doc-5K_Structure_Proposal_v0.1.md` · `Doc-5K_Structure_Freeze_Audit_v1.0.md` · `Doc-5K_Content_Freeze_Audit_v1.0.md` | Doc-5K authoring history (Board pre-authoring + Independent Hard Review — REC-1 reconciled; structure + content freeze audits) |
+| `Doc-5J_Structure_v1.0_FROZEN.md` (M8 `admin`) | **Doc-5J structure FROZEN** — M8 Admin Operations canonical structure; realizes Doc-4J (**34 tokens**: 32 caller-facing + 2 out-of-wire); platform-staff Admin only (no tenant/public; no active-org); R1–R10; Admin-decides/owning-module-owns (R5) + Trust firewall (R8) + moat (R7) + single-event `VendorBanned` (R9). **Content NOT STARTED** (Pass-1 §0–§3 + inventory next). Content-freeze obligations: `[ESC-ADM-POLICY]` `admin.*` patch (next free = **v1.7**) + `reference_id` (C-05) |
+| `Doc-5J_Structure_Proposal_v0.1.md` · `Doc-5J_Structure_Independent_Hard_Review_v0.1.md` · `Doc-5J_Structure_Freeze_Audit_v1.0.md` | Doc-5J structure authoring history (Independent Hard Review — 3 MAJOR resolved; Structure Freeze Audit PASS) |
 
 ---
 
