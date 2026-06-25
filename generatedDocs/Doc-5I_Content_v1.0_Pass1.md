@@ -193,7 +193,7 @@ check_permission({
 }) → { permitted: boolean }
 ```
 
-If `permitted = false` → `403 FORBIDDEN` (never `404`; billing access denial is not a privacy concern).
+If `permitted = false` → `403` (error_class **`AUTHORIZATION`**, §3.8; never `404` for command access denial; the `404` collapse is the read-only non-disclosure pattern of §3.5).
 
 **Slug availability by actor:**
 
@@ -273,7 +273,7 @@ Per-edge attribution table:
 | Edge | Contract | Trigger | Note |
 |---|---|---|---|
 | new → `draft` | `billing.create_plan.v1` | Admin HTTP call (§4) | Initial state |
-| `draft` → `active` | `billing.update_plan.v1` | Admin HTTP call (§4) | Publish/activate mutation |
+| `draft` → `active` | `billing.update_plan.v1` | Admin HTTP call (§4) | Publish/activate edge — server-derived from update_plan publish semantics; **NOT** a caller-supplied lifecycle-state body field (`Doc-4A §9.7`). Activation-contract attribution carried `[ESC-BILL-ACTIVATE]` pending `Doc-4I §HB-1.2` verbatim confirmation |
 | `active`/`draft` → `retired` | `billing.retire_plan.v1` | Admin HTTP call (§4) | Terminal; irreversible |
 
 #### Controlling Organization (DF-BILL-1; `Doc-4I §H.3`)
@@ -282,7 +282,7 @@ The **Controlling Organization** is the Identity-resolved billing entity — the
 
 Ownership anchors: `subscriptions.organization_id`, `usage_ledger.organization_id`, `platform_invoices.organization_id`, `lead_credit_transactions.organization_id`, `reward_transactions.organization_id`.
 
-**Rule:** Any write to a billing aggregate that does not match the Controlling Organization resolved from the server-validated session is rejected → `403 FORBIDDEN` (authorization rejection — **not** `404 NOT_FOUND`, **not** `422 VALIDATION`; the `404` convention is reserved for the non-disclosure pattern on reads per §3.5). The `org_id` is never accepted from the caller's request body as an ownership claim — it is always server-derived.
+**Rule:** Any write to a billing aggregate that does not match the Controlling Organization resolved from the server-validated session is rejected → `403` (error_class **`AUTHORIZATION`**, §3.8 — **not** `404 NOT_FOUND`, **not** `400 VALIDATION`; the `404` collapse is reserved for the read-side non-disclosure pattern per §3.5). The `org_id` is **never** accepted from the caller's request (body, query, header) as an ownership or tenant-selection claim — it is always server-derived from `Iv-Active-Organization` (`Doc-4A §9.7` prohibited request fields; Invariant #5).
 
 ---
 
@@ -290,14 +290,14 @@ Ownership anchors: `subscriptions.organization_id`, `usage_ledger.organization_i
 
 **Source:** `Doc-5A §6.3/§7`; `Doc-4A §7.5`.
 
-For **Own-Org** scoped reads: if the requested resource exists but belongs to a **different org** (cross-tenant), the response **MUST** be `404 NOT_FOUND` — **not** `403 FORBIDDEN`. This is the non-disclosure convention: a tenant must not be able to confirm the existence of another tenant's billing data.
+For **Own-Org** scoped reads: if the requested resource exists but belongs to a **different org** (cross-tenant), the response **MUST** be `404` (`NOT_FOUND`) — **not** `403` (`AUTHORIZATION`). This is the non-disclosure convention: a tenant must not be able to confirm the existence of another tenant's billing data.
 
-| Scenario | Response |
+| Scenario | Response (class §3.8) |
 |---|---|
 | Resource exists, belongs to active org | `200 OK` with body |
 | Resource does not exist | `404 NOT_FOUND` |
 | Resource exists, belongs to a **different org** | `404 NOT_FOUND` (NOT `403`) |
-| Requesting user lacks `can_view_billing` | `403 FORBIDDEN` |
+| Requesting user lacks `can_view_billing` | `403 AUTHORIZATION` |
 | Admin reading any org's data | `200 OK` (Admin scope is platform-wide; non-disclosure does not apply to Admin) |
 
 **Platform-Public catalog reads** (`get_plan`, `list_plans`): non-disclosure does not apply — plans are platform-owned, not org-owned. Any authenticated User may read them.
@@ -350,4 +350,38 @@ For **Own-Org** scoped reads: if the requested resource exists but belongs to a 
 
 ---
 
-*Pass-1 patched (Hard Review resolved: m-01 Admin cross-cutting uniform; m-02 write-rejection 403; m-03 list_plans behavioral claim removed; m-04 cancel diagram corrected; NP-01/02/03 applied). §0–§3 + §2 inventory (26 endpoints) complete. §3 binding registers locked: 11 read scopes + 15 command actor-sides. Pass-2 covers §4 (BC-BILL-1), §5 (BC-BILL-2), §6 (BC-BILL-3).*
+### §3.8 Error-Class → HTTP Status (canonical; binds §4–§9)
+
+**Doc-5I coins no error class and no status mapping. The closed error-class set and its HTTP status are owned by `Doc-5A §6.2` (`Doc-4A §12.2`). Every error row in §4–§9 binds a class from this table. A module document MUST NOT map a class to a different status, nor return a class outside the closed set (`Doc-5A §6.2`).**
+
+| `error_class` | HTTP status | M7 usage |
+|---|---|---|
+| `VALIDATION` | `400` | Malformed body, wrong type, blank/enum/format failure, undeclared `filter`/`sort` field, `page_size` over POLICY max (SYNTAX category, `Doc-4A §11.2`) |
+| `AUTHORIZATION` | `403` | `check_permission` denied; Controlling-Org write mismatch (§3.4) |
+| `NOT_FOUND` | `404` | Resource absent; Own-Org cross-tenant non-disclosure collapse (§3.5) |
+| `STATE` | `409` | Illegal state-machine transition (R7) |
+| `CONFLICT` | `409` | Stale concurrency token / duplicate non-idempotent submit / `Idempotency-Key` reuse with a different body |
+| `BUSINESS` | `422` | A cited M7 business rule rejected the operation (e.g. one-active-subscription-per-org; cycle not offered by the plan) |
+| `REFERENCE` | `422` | A cited cross-reference (plan, entitlement) is missing/incompatible at use |
+| `QUOTA` | `403` | Entitlement exhausted (`retryable:false`; no `Retry-After`) |
+
+> Branch on `error_class`/`error_code`, never status alone (`Doc-4A §12.3`). Shared statuses: `400`=VALIDATION; `403`=AUTHORIZATION+QUOTA; `409`=STATE+CONFLICT; `422`=REFERENCE+BUSINESS. There is **no** `BAD_REQUEST` class and VALIDATION is **never** `422`. Each contract lists only the classes it can raise (`Doc-5A §5.7` Error-Status-Set fill grammar).
+
+---
+
+### §3.9 Response Envelope & Pagination (canonical; binds §4–§9)
+
+**Owned by `Doc-5A §5.5/§5.6/§8` (`Doc-4A §10.1–§10.5/§9.6/§22.1 C-05`). Restated once here; not repeated per contract.**
+
+- **Single-entity success** (`200`/`201`): `{ "result": <owning-module representation>, "reference_id": "<uuidv7>" }`. `201` also carries a standard `Location` response header.
+- **List success** (`200`): `{ "items": [ <representation> … ], "page_info": { "next_cursor": "<opaque>|null", "has_more": <boolean>, "total_count": <integer, optional> }, "reference_id": "<uuidv7>" }`.
+- **Error**: `{ "error": { "error_class", "error_code", "message", "field_errors"(VALIDATION only), "retryable" }, "reference_id": "<uuidv7>" }`.
+- **`reference_id`** is top-level on **every** response (success + error), platform-assigned, never caller-supplied (`Doc-4A §22.1 C-05`). It is a reserved envelope key — **no representation field may be named `reference_id`**.
+- **Pagination** (`Doc-5A §8`; `Doc-4A §9.6`): cursor-based only; params **`page_size`** + **`cursor`**; `page_size` min/max/default referenced by the `[ESC-BILL-POLICY]` page key, **never a literal**; `page_size` over max → `400 VALIDATION`. Filter/sort via the declared `filter`/`sort` allowlist grammar; undeclared field → `400 VALIDATION`.
+- **Prohibited request fields** (`Doc-4A §9.7`; forbidden in path/query/body/header): attribution, **tenant-selection (`org_id`)**, authorization, **lifecycle-state**, POLICY-override, soft-delete, `human_ref`-as-reference. Org context is always the server-validated `Iv-Active-Organization`.
+
+> In §4–§9, each **Response** block shows only the `<representation>` carried inside the §3.9 envelope; the `result`/`items`/`page_info`/`reference_id` wrapper is **not** repeated per contract. Each **error table** lists only the classes that contract can raise, at their §3.8 status.
+
+---
+
+*Pass-1 patched (Hard Review resolved: m-01 Admin cross-cutting uniform; m-02 write-rejection 403; m-03 list_plans behavioral claim removed; m-04 cancel diagram corrected; NP-01/02/03 applied). Pass-2 review back-patch: §3.4/§3.5 error tokens reconciled to `Doc-5A §6.2` classes (AUTHORIZATION not FORBIDDEN; VALIDATION→400 not 422); §3.8 canonical error-class→status table + §3.9 response-envelope/pagination/prohibited-fields added (binds §4–§9); plans draft→active edge marked `[ESC-BILL-ACTIVATE]` (no lifecycle body field). §0–§3 + §2 inventory (26 endpoints) complete. §3 binding registers locked: 11 read scopes + 15 command actor-sides + §3.8 error map + §3.9 envelope. Pass-2 covers §4 (BC-BILL-1), §5 (BC-BILL-2), §6 (BC-BILL-3).*
