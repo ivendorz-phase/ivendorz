@@ -31,8 +31,8 @@ Corpus navigation: `generatedDocs/CORPUS_INDEX.md` · `generatedDocs/00_AUTHORIT
 
 ## Current Phase
 
-**Implementation Governance — Doc-5 API Realization program.**
-Architecture (Doc-2/3/4): **COMPLETE/FROZEN.** Doc-5 (API): **IN PROGRESS.** Doc-6 (DB)/7 (FE)/8 (Tests): NOT STARTED. Code: NOT STARTED.
+**Implementation Governance.**
+Architecture (Doc-2/3/4): **COMPLETE/FROZEN.** **Doc-5 (API realization): COMPLETE/FROZEN** — all 10 module realizations (M0–M9). **Next program: Doc-6 (Database).** Doc-7 (FE)/8 (Tests): NOT STARTED. Code: NOT STARTED.
 
 ### Doc-5 Program Status
 
@@ -48,9 +48,9 @@ Architecture (Doc-2/3/4): **COMPLETE/FROZEN.** Doc-5 (API): **IN PROGRESS.** Doc
 | Doc-5H | M6 `communication` | **FROZEN** |
 | **Doc-5I** | **M7 `billing`** | **FROZEN 2026-06-26** |
 | Doc-5K | M9 `ai` | **FROZEN** (`Doc-5K_Content_v1.0_FROZEN`, 2026-06-26; 16 contracts = 8 read + 8 out-of-wire). **Not yet corpus-folded** (no index rows; `[ESC-AI-POLICY]` carried to implementation) |
-| Doc-5J | M8 `admin` | **STRUCTURE FROZEN** (`Doc-5J_Structure_v1.0_FROZEN`, 2026-06-26); **content NOT STARTED.** 34 contracts (32 + 2). Content-freeze gate: `admin.*` POLICY patch (next free = v1.7) + `reference_id` (C-05) |
+| Doc-5J | M8 `admin` | **FROZEN** (`Doc-5J_SERIES_FROZEN_v1.0`, 2026-06-26); 34 tokens (32 + 2). Admin-only; sole event `VendorBanned`; `[ESC-ADM-POLICY]` cleared by Doc-3 v1.7 |
 
-9 of 10 module realizations content-FROZEN (5B–5I + 5K); **Doc-5J structure FROZEN, content not started** = the last open module. **Live queue: Doc-5J content** (Doc-5K already folded). Detailed ledger: `Program_Status_And_Roadmap.md`.
+**Doc-5 API realization program — COMPLETE.** All 10 module realizations (M0–M9) content-FROZEN (5B–5K), gated by the FROZEN Doc-5A metastandard. **Next program: Doc-6 (Database).** Detailed ledger: `Program_Status_And_Roadmap.md`.
 
 ---
 
@@ -97,9 +97,12 @@ Structure Proposal → Independent Hard Review → Structure Patch → Structure
 
 ## Immediate Next Actions
 
-1. **Doc-5K corpus-fold** (it is FROZEN on disk but absent from the index): add Doc-5K rows to `CORPUS_INDEX.md` + `00_AUTHORITY_MAP.md`; optionally `Doc-3_Policy_Key_Registration_Patch_v1.7_AI` (closes `[ESC-AI-POLICY]` TTL/page keys) + a `Doc-5K_SERIES_FROZEN` manifest for peer-consistency. Mirrors the Doc-5I close-out.
-2. **Doc-5J — M8 Admin (the last open module):** structure **FROZEN** → **Content Pass-1** (§0–§3 + 32-token inventory) → Pass-2 (§4–§6) → Pass-3 (§7–§11 + Appendix A) → Hard Review → Content Freeze Audit → freeze → corpus-fold. 34 contracts (32 + 2 out-of-wire: `expire_ban`, `process_import_job`). Content-freeze gate: `admin.*` POLICY patch (next free = v1.7; confirm `admin.*` vs `moderation.*`) + `reference_id` (C-05, §4). M8 owns the authoritative event catalog; `VendorBanned` = sole Admin §8 event; platform-staff Admin only.
-3. **After Doc-5 complete:** Doc-6 (DB) · Doc-7 (Frontend) · Doc-8 (Tests).
+**Doc-5 API realization is COMPLETE (M0–M9 frozen).** Next program phases:
+1. **Doc-6 (Database):** Prisma schema realization — one schema per module (ratify "one Prisma namespace per module"); migrations; conforms to Doc-2 DB blueprint + each module's frozen Doc-5x contracts.
+2. **Doc-7 (Frontend):** Next.js App Router UI over the frozen API contracts.
+3. **Doc-8 (Tests):** conformance + contract + integration suites.
+
+*(Optional non-blocking tidy: add `Doc-5K_SERIES_FROZEN` + an `ai.*` Doc-3 patch for peer-parity; Doc-5K froze via `Content_v1.0_FROZEN` with `[ESC-AI-POLICY]` carried to implementation.)*
 
 ---
 

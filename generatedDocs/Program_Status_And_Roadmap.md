@@ -13,7 +13,7 @@
 | Doc-2 Domain Model & DB Blueprint v1.0.3 · Doc-3 RFQ & Operational Spec v1.0.2 | **FROZEN** |
 | Doc-4A API metastandard + Doc-4B…4M (all 10 modules + state/event/integration indexes) | **FROZEN** (`Doc-4_SERIES_FROZEN_v1.0`) |
 
-**The entire Doc-4 architecture corpus is FROZEN.** Current phase = **Doc-5 Implementation Contracts (API realization)**.
+**The entire Doc-4 architecture corpus is FROZEN.** **Doc-5 API realization program = COMPLETE** (all 10 module realizations FROZEN). Current phase → **Doc-6 (Database)**.
 
 ---
 
@@ -50,7 +50,7 @@ Each module = staged-freeze lifecycle: Structure Proposal → Independent Hard R
 | **5G** | M5 `trust` | 40 (34 + 6) | **FROZEN** (governance-signal owner; score firewall) |
 | **5H** | M6 `communication` | 23 (19 + 4) | **FROZEN** (delivery-only; append-only) |
 | **5I** | M7 `billing` | **33 (27 + 6)** | **FROZEN 2026-06-26** — see §4 |
-| **5J** | M8 `admin` | 34 (32 + 2) | **STRUCTURE FROZEN** (`Doc-5J_Structure_v1.0_FROZEN`, 2026-06-26) — proposal v0.2 → Hard Review (3 MAJOR resolved) → Structure Freeze Audit PASS → FROZEN. **Content NOT STARTED** (Pass-1 next). Content-freeze obligations: `admin.*` POLICY patch (next free = v1.7) + `reference_id` (C-05) |
+| **5J** | M8 `admin` | 34 (32 + 2) | **FROZEN** (`Doc-5J_SERIES_FROZEN_v1.0`, 2026-06-26) — structure + content (Pass-1/2/3) + Content Freeze Audit PASS. Admin-only; single event `VendorBanned`; Admin-decides/owning-module-owns; `[ESC-ADM-POLICY]` cleared by Doc-3 v1.7 |
 | **5K** | M9 `ai` | 16 (8 read + 8 out-of-wire) | **FROZEN** (structure + `Doc-5K_Content_v1.0_FROZEN`, 2026-06-26; Structure Patch CE-01 applied). Advisory-only; no score/§8 event; `[REC-AI-WIRE]` honored. **Not yet corpus-folded** (no index/authority rows; `[ESC-AI-POLICY]` TTL-key registration carried to implementation — Doc-3 patch not yet made) |
 
 **Doc-3 POLICY patches (additive §12.2):** v1.0 (`core`) · v1.1 (`rfq`) · v1.2 (`marketplace`) · v1.3 (`trust`) · v1.4 (`operations`) · v1.5 (`communication`) · **v1.6 (`billing`)** — each registers `<ns>.idempotency_dedup_window` + `<ns>.list_page_size_max`, clearing that module's `[ESC-*-POLICY]` gate.
@@ -68,9 +68,15 @@ Each module = staged-freeze lifecycle: Structure Proposal → Independent Hard R
 
 ## 5. Live work queue
 
-1. **Doc-5K corpus-fold (close-out).** Doc-5K is FROZEN on disk but **not folded into the corpus**: (a) optional `Doc-3_Policy_Key_Registration_Patch_v1.7_AI` to register `ai.*` TTL/page POLICY keys (closes `[ESC-AI-POLICY]`; froze as carried-to-implementation); (b) add Doc-5K rows to `CORPUS_INDEX.md` + `00_AUTHORITY_MAP.md`; (c) optional `Doc-5K_SERIES_FROZEN` manifest for peer-consistency. Mirrors the Doc-5I close-out.
-2. **Doc-5J — M8 Admin (`admin`).** Structure **FROZEN** → **Content Pass-1** (§0–§3 + inventory) → Pass-2 (§4–§6) → Pass-3 (§7–§11 + Appendix A) → Hard Review → Content Freeze Audit → freeze → corpus-fold. 34 contracts (32 caller + 2 out-of-wire: `expire_ban` + `process_import_job`). M8 = moderation/ban/approval/import/config; authoritative event catalog owner; `VendorBanned` = sole Admin §8 event. Content-freeze gate: register `admin.*` POLICY keys via additive Doc-3 patch (**next free = v1.7**; confirm `admin.*` vs `moderation.*` set per Doc-4J Appendix B); + `reference_id` (C-05, §4).
-3. **After Doc-5 (API) complete:** Doc-6 (DB) · Doc-7 (Frontend) · Doc-8 (Tests) → Development Decomposition → Build → Implementation.
+**Doc-5 API realization program — COMPLETE.** All 10 module realizations (M0–M9) content-FROZEN: 5B/5C/5D/5E/5F/5G/5H/5I/5J/5K, gated by the FROZEN Doc-5A metastandard. Doc-3 POLICY patches v1.0–v1.7 applied (one namespace per module).
+
+Next program phases:
+1. **Doc-6 (Database)** — Prisma schema realization (one schema per module; ratify "one Prisma namespace per module"); migrations.
+2. **Doc-7 (Frontend)** — Next.js App Router UI composition over the frozen API contracts.
+3. **Doc-8 (Tests)** — conformance + contract + integration test suites.
+4. Then: Development Decomposition → Build Roadmap → Implementation.
+
+*(Optional corpus tidy: Doc-5K uses `Doc-5K_Content_v1.0_FROZEN` rather than a `SERIES_FROZEN` manifest, and carries `[ESC-AI-POLICY]` TTL keys to implementation — both deliberate at its freeze; a `Doc-5K_SERIES_FROZEN` + `ai.*` Doc-3 patch could be added for peer-parity if desired, non-blocking.)*
 
 ---
 
