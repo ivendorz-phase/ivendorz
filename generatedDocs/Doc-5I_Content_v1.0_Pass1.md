@@ -298,7 +298,8 @@ For **Own-Org** scoped reads: if the requested resource exists but belongs to a 
 | Resource does not exist | `404 NOT_FOUND` |
 | Resource exists, belongs to a **different org** | `404 NOT_FOUND` (NOT `403`) |
 | Requesting user lacks `can_view_billing` | `403 AUTHORIZATION` |
-| Admin reading any org's data | `200 OK` (Admin scope is platform-wide; non-disclosure does not apply to Admin) |
+| Admin reading the **platform catalog** (`get_plan`/`list_plans`, `Doc-4I §HB-1.x` User/Admin) | `200 OK` (catalog is platform-owned; non-disclosure N/A) |
+| Admin attempting an **org-scoped** read (subscription/usage/lead/invoice/reward) | Not an actor — `Doc-4I §HB-2.5/3.3/4.2/5.4/6.3` = User-only; see [ESC-BILL-ADMINSCOPE] |
 
 **Platform-Public catalog reads** (`get_plan`, `list_plans`): non-disclosure does not apply — plans are platform-owned, not org-owned. Any authenticated User may read them.
 
@@ -312,15 +313,17 @@ For **Own-Org** scoped reads: if the requested resource exists but belongs to a 
 |---|---|---|
 | `billing.get_plan.v1` | **Platform-Public** | Any authenticated User reads; Admin unrestricted; `NOT_FOUND` only if `plan_id` does not exist |
 | `billing.list_plans.v1` | **Platform-Public** | Any authenticated User reads active plans; Admin platform-wide; filtered states (e.g. retired) declared in §4 per `Doc-4I §HB-1.2` |
-| `billing.get_subscription.v1` | **Own-Org** | User reads own active org's subscription; cross-org → `NOT_FOUND`; Admin reads any org (§3 cross-cutting grant) |
-| `billing.list_subscription_events.v1` | **Own-Org** | Parent subscription must belong to active org; cross-org → `NOT_FOUND`; Admin reads any org (§3 cross-cutting grant) |
-| `billing.get_usage.v1` | **Own-Org** | User reads own org's usage ledger; cross-org → `NOT_FOUND`; Admin reads any org (§3 cross-cutting grant) |
-| `billing.get_lead_balance.v1` | **Own-Org** | User reads own org's lead credit account (singleton per org); Admin reads any org (§3 cross-cutting grant) |
-| `billing.list_lead_transactions.v1` | **Own-Org** | User reads own org's lead credit transaction history; Admin reads any org (§3 cross-cutting grant) |
-| `billing.get_platform_invoice.v1` | **Own-Org** | User reads own org's platform invoices; cross-org → `NOT_FOUND`; Admin reads any org (§3 cross-cutting grant) |
-| `billing.list_platform_invoices.v1` | **Own-Org** | User reads own org's platform invoice list; Admin reads any org (§3 cross-cutting grant) |
-| `billing.get_reward_balance.v1` | **Own-Org** | User reads own org's reward account balance (singleton per org); Admin reads any org (§3 cross-cutting grant) |
-| `billing.list_referrals.v1` | **Own-Org** | User reads own org's referral records; Admin reads any org (§3 cross-cutting grant) |
+| `billing.get_subscription.v1` | **Own-Org** | **User-only** (`Doc-4I §HB-2.5`, slug `can_view_billing`); cross-org → `NOT_FOUND`. No Admin actor — see [ESC-BILL-ADMINSCOPE] |
+| `billing.list_subscription_events.v1` | **Own-Org** | **User-only** (`Doc-4I §HB-2.5`); parent subscription must belong to active org; cross-org → `NOT_FOUND` |
+| `billing.get_usage.v1` | **Own-Org** | **User-only** (`Doc-4I §HB-3.3`); cross-org → `NOT_FOUND` |
+| `billing.get_lead_balance.v1` | **Own-Org** | **User-only** (`Doc-4I §HB-4.2`); own org's lead credit account (singleton per org) |
+| `billing.list_lead_transactions.v1` | **Own-Org** | **User-only** (`Doc-4I §HB-4.2`); own org's lead credit transaction history |
+| `billing.get_platform_invoice.v1` | **Own-Org** | **User-only** (`Doc-4I §HB-5.4`); own org's platform invoices; cross-org → `NOT_FOUND` |
+| `billing.list_platform_invoices.v1` | **Own-Org** | **User-only** (`Doc-4I §HB-5.4`); own org's platform invoice list |
+| `billing.get_reward_balance.v1` | **Own-Org** | **User-only** (`Doc-4I §HB-6.3`); own org's reward account balance (singleton per org) |
+| `billing.list_referrals.v1` | **Own-Org** | **User-only** (`Doc-4I §HB-6.3`); own org's referral records |
+
+> **[ESC-BILL-ADMINSCOPE] (corpus conflict — Flag-and-Halt):** the frozen structure §3 cross-cutting grant "Admin reads any org" **conflicts with frozen `Doc-4I`**, which declares **Actor: User** (not User/Admin) on every org-scoped read — `§HB-2.5` (subscription), `§HB-3.3` (usage), `§HB-4.2` (lead), `§HB-5.4` (invoice), `§HB-6.3` (reward). **Doc-4I outranks the Doc-5I structure** (authority order). Therefore these nine reads are realized **User-only**; Admin is **not** an actor. The structure §3 grant is re-scoped to the platform-owned **catalog** reads (`get_plan`/`list_plans`, `Doc-4I §HB-1.x` = User/Admin) only. Adding an Admin actor to any org-scoped read requires an **additive Doc-4I/structure patch with human approval** — never realized here. Escalated; not resolved locally.
 
 ---
 
@@ -364,8 +367,10 @@ For **Own-Org** scoped reads: if the requested resource exists but belongs to a 
 | `BUSINESS` | `422` | A cited M7 business rule rejected the operation (e.g. one-active-subscription-per-org; cycle not offered by the plan) |
 | `REFERENCE` | `422` | A cited cross-reference (plan, entitlement) is missing/incompatible at use |
 | `QUOTA` | `403` | Entitlement exhausted (`retryable:false`; no `Retry-After`) |
+| `DEPENDENCY` | `503` | Owning-module/Identity/Doc-4B transient (`retryable:true`) — applies to every mutation/read per `Doc-4I §11` |
+| `SYSTEM` | `500` | Unexpected (`retryable:true`; no cause detail beyond `reference_id`) |
 
-> Branch on `error_class`/`error_code`, never status alone (`Doc-4A §12.3`). Shared statuses: `400`=VALIDATION; `403`=AUTHORIZATION+QUOTA; `409`=STATE+CONFLICT; `422`=REFERENCE+BUSINESS. There is **no** `BAD_REQUEST` class and VALIDATION is **never** `422`. Each contract lists only the classes it can raise (`Doc-5A §5.7` Error-Status-Set fill grammar).
+> Branch on `error_class`/`error_code`, never status alone (`Doc-4A §12.3`). Shared statuses: `400`=VALIDATION; `403`=AUTHORIZATION+QUOTA; `409`=STATE+CONFLICT; `422`=REFERENCE+BUSINESS; `503`=DEPENDENCY; `500`=SYSTEM. `DEPENDENCY`/`SYSTEM` are not restated in §4–§9 per-contract error tables — they apply universally. `RATE_LIMITED (429)` and `ASYNC_PENDING` are defined upstream (`Doc-5A §6.2`) but **not used by M7 today**. There is **no** `BAD_REQUEST` class and VALIDATION is **never** `422`. Each contract lists only the classes it can raise (`Doc-5A §5.7` Error-Status-Set fill grammar).
 
 ---
 

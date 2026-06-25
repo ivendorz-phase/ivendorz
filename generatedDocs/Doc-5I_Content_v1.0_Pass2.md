@@ -23,6 +23,7 @@ Every contract in §4–§6 obeys these without per-contract restatement:
 - **Pagination** — list params are **`page_size`** + **`cursor`**; `page_size` bounds are the `[ESC-BILL-POLICY]` page key (referenced, never a literal); over-max → `400 VALIDATION`. List filters use the declared `filter` allowlist grammar.
 - **Prohibited request fields** (`Doc-4A §9.7`) — no `org_id`/tenant-selection, no lifecycle-state flag, no attribution/authorization/POLICY-override field in any request. Org context = server-validated `Iv-Active-Organization`.
 - **Representation fields** are owned by the Doc-4I PassB contract declarations by reference (`Doc-4A §10.1`); any field not traced to `Doc-4I §HB-x.y` is carried `[ESC-BILL-FIELD]` and flag-and-halt — never reshaped or invented here.
+- **Money [realization convention]:** Doc-4I declares `price`/`amount` as `numeric` with no unit; Doc-5I realizes them as **minor units of the stored `currency`** (ISO 4217) — a wire convention, not a Doc-4I-stated unit.
 
 ---
 
@@ -34,7 +35,8 @@ BC-BILL-1 governs the plan catalog and entitlement definitions. Plans carry a st
 
 **Wire constraints specific to §4 (supplement §3.3):**
 - Plans at `retired` state are terminal and immutable — no field update, no re-activation, no un-retire. Any attempt → `409 STATE`.
-- The `draft → active` activation edge is driven by `update_plan` **publish semantics, server-derived** — **not** by a caller-supplied lifecycle-state field (`Doc-4A §9.7`; §3.9). The activation-contract attribution is carried **`[ESC-BILL-ACTIVATE]`** pending `Doc-4I §HB-1.2` verbatim confirmation (which BC-BILL-1 contract realizes the edge); flag-and-halt — no activation flag coined. Activating an already-`active` plan is an idempotent no-op (return current state).
+- `is_active` (Doc-4I §HB-1.1) is a **marketing-visibility** bool — a valid create/update input — **distinct from** `status` (the `draft→active→retired` machine). It does **not** change `status`.
+- The `status` `draft → active` edge (`Doc-2 §3.8`) has **no realizing Doc-4I BC-BILL-1 contract** — `create_plan`→`draft`, `update_plan` mutates marketing fields, `retire_plan`→`retired`; none drives `draft→active`. Carried **`[ESC-BILL-ACTIVATE]`** (flag-and-halt) — no activation flag or contract coined here.
 - Entitlement definitions are catalog records — updating an entitlement does **not** retroactively alter active subscriptions already resolved against an older bundle snapshot.
 - **Disclosure scope:** `get_plan` / `list_plans` → **Platform-Public** (§3.6). Admin reads any state (including `retired`, `draft`); User reads active plans by default.
 - **Actor side:** all 6 catalog mutation commands → **Admin** (`[ESC-BILL-SLUG]`; §3.7).
@@ -63,28 +65,21 @@ BC-BILL-1 governs the plan catalog and entitlement definitions. Plans carry a st
 ```json
 {
   "name":          "string — plan display name (required)",
-  "description":   "string | null — plan description",
-  "billing_cycle": "monthly | annual | lifetime (required)",
-  "price_amount":  "integer — minor units of the stored currency (required; 0 = free)",
-  "currency":      "string (ISO 4217; BDT today, stored per value field — multi-currency-ready per Doc-2)"
+  "billing_cycle": "enum<monthly|annual> (required; Doc-4I §HB-1.1)",
+  "price":         "numeric — minor units of the stored currency (required; ≥ 0)",
+  "currency":      "string (ISO 4217; BDT today, stored per value field — multi-currency-ready per Doc-2)",
+  "is_active":     "bool (optional) — marketing-visibility flag (Doc-4I §HB-1.1); NOT the lifecycle status, does NOT drive draft→active"
 }
 ```
 
-**Response `201`:**
+> Inputs are `Doc-4I §HB-1.1` (create) verbatim. `description` is **not** a Doc-4I plan field — not accepted. `is_active` is marketing visibility, **distinct from** `status` (the `draft→active→retired` machine).
+
+**Response `201`** — representation = `Doc-4I §HB-1.1` output, carried in the §3.9 `result`+`reference_id` envelope (`201` adds `Location`). The create output is **minimal** per Doc-4I; the full plan is read via `get_plan`:
 
 ```json
 {
-  "id":            "UUIDv7",
-  "human_ref":     "string (year-scoped; prefix per M0 ID-gen registry — not coined here)",
-  "name":          "string",
-  "description":   "string | null",
-  "billing_cycle": "monthly | annual | lifetime",
-  "price_amount":  "integer (minor units)",
-  "currency":      "string (ISO 4217)",
-  "state":         "draft",
-  "entitlements":  [],
-  "created_at":    "ISO 8601",
-  "updated_at":    "ISO 8601"
+  "plan_id": "UUIDv7",
+  "status":  "draft"
 }
 ```
 
@@ -92,9 +87,11 @@ BC-BILL-1 governs the plan catalog and entitlement definitions. Plans carry a st
 
 | Class (§3.8) | Status | When |
 |---|---|---|
-| `VALIDATION` | `400` | Malformed body / wrong type; `price_amount` < 0; `billing_cycle` not in enum; `name` blank |
+| `VALIDATION` | `400` | Malformed body / wrong type; `price` < 0; `billing_cycle` not in enum; `name` blank |
 | `AUTHORIZATION` | `403` | Actor is not Admin (`[ESC-BILL-SLUG]` check failed) |
 | `CONFLICT` | `409` | Duplicate `Idempotency-Key` with a different body |
+
+(Create enters `draft`; no `REFERENCE` row — no prior entity referenced. `Doc-4I §HB-1.1`.)
 
 ---
 
@@ -116,26 +113,27 @@ BC-BILL-1 governs the plan catalog and entitlement definitions. Plans carry a st
 ```json
 {
   "name":          "string | undefined",
-  "description":   "string | null | undefined",
-  "billing_cycle": "monthly | annual | lifetime | undefined",
-  "price_amount":  "integer | undefined",
-  "currency":      "string (ISO 4217) | undefined"
+  "billing_cycle": "enum<monthly|annual> | undefined",
+  "price":         "numeric | undefined",
+  "currency":      "string (ISO 4217) | undefined",
+  "is_active":     "bool | undefined — marketing-visibility flag (Doc-4I §HB-1.1); NOT the lifecycle status",
+  "expected_status": "enum<draft|active|retired> (required; optimistic-concurrency assertion — Doc-4I §HB-1.1 / Doc-4A §14; mismatch → 409 CONFLICT)"
 }
 ```
 
-> **No lifecycle-state field is accepted in this body** (`Doc-4A §9.7`; §3.9). `update_plan` mutates catalog metadata only. The `draft → active` activation edge is server-derived via publish semantics, carried `[ESC-BILL-ACTIVATE]` (§4.1) — never an `is_active`/state flag. Editing a `retired` plan → `409 STATE` (terminal).
+> **No `status` lifecycle field is accepted** (`Doc-4A §9.7`; §3.9): `expected_status` is a concurrency assertion, not a target state. `is_active` (Doc-4I §HB-1.1) is a **marketing-visibility** bool, **not** the `status` machine — it does **not** drive `draft→active`. The `draft→active` lifecycle edge (`Doc-2 §3.8`) has **no realizing Doc-4I contract** — carried `[ESC-BILL-ACTIVATE]` (§4.1), flag-and-halt. `description` is not a Doc-4I field. Editing a `retired` plan → `409 STATE` (terminal).
 
-**Response `200`:** plan representation (same shape as `create_plan` response), carried in the §3.9 envelope.
+**Response `200`** — `Doc-4I §HB-1.1` output (minimal), §3.9 envelope: `{ "plan_id": "UUIDv7", "status": "draft | active | retired" }`. Full plan via `get_plan`.
 
 **Errors:**
 
 | Class (§3.8) | Status | When |
 |---|---|---|
-| `VALIDATION` | `400` | Malformed body; `price_amount` < 0; enum value invalid |
+| `VALIDATION` | `400` | Malformed body; `price` < 0; enum value invalid |
 | `AUTHORIZATION` | `403` | Not Admin |
-| `NOT_FOUND` | `404` | `plan_id` does not exist |
-| `STATE` | `409` | Mutation attempted on a `retired` plan (terminal) |
-| `CONFLICT` | `409` | Lost optimistic-lock race (concurrent update) |
+| `REFERENCE` | `422` | `plan_id` does not resolve in the catalog (`Doc-4I §HB-1.1` stage-7 REFERENCE — not a `404`) |
+| `STATE` | `409` | Mutation attempted from `retired` (terminal) |
+| `CONFLICT` | `409` | `expected_status` mismatch / lost optimistic-lock race |
 
 ---
 
@@ -152,9 +150,15 @@ BC-BILL-1 governs the plan catalog and entitlement definitions. Plans carry a st
 | Audit | `[ESC-BILL-AUDIT]` — nearest: `Doc-2 §9` plan-catalog retired |
 | Events | None |
 
-**Request body:** `{}` (empty; idempotency key in header is sufficient)
+**Request body:**
 
-**Response `200`:** full plan object with `state: "retired"`.
+```json
+{
+  "expected_status": "enum<draft|active|retired> (required; optimistic-concurrency assertion — Doc-4I §HB-1.1; mismatch → 409 CONFLICT)"
+}
+```
+
+**Response `200`** — `Doc-4I §HB-1.1` output, §3.9 envelope: `{ "plan_id": "UUIDv7", "status": "retired" }`.
 
 > `retired` is **terminal and irreversible** (`Doc-2 §3.8`; §3.4/R7). Existing active subscriptions on this plan continue until expiry — retirement prevents **new** subscriptions, does not cancel existing ones.
 
@@ -163,8 +167,9 @@ BC-BILL-1 governs the plan catalog and entitlement definitions. Plans carry a st
 | Class (§3.8) | Status | When |
 |---|---|---|
 | `AUTHORIZATION` | `403` | Not Admin |
-| `NOT_FOUND` | `404` | `plan_id` does not exist |
-| `STATE` | `409` | Plan already `retired` (terminal; `Idempotency-Key` distinguishes re-send from duplicate) |
+| `REFERENCE` | `422` | `plan_id` does not resolve in the catalog (`Doc-4I §HB-1.1` stage-7 — not a `404`) |
+| `STATE` | `409` | Plan already `retired` (terminal; forbidden from `retired`) |
+| `CONFLICT` | `409` | `expected_status` mismatch (lost race) |
 
 ---
 
@@ -185,22 +190,22 @@ BC-BILL-1 governs the plan catalog and entitlement definitions. Plans carry a st
 
 ```json
 {
-  "entitlement_id": "UUIDv7 — the entitlement definition to associate (required)"
+  "entitlement_id": "UUIDv7 — the entitlement to associate (required)",
+  "value_jsonb":    "jsonb — bundle value (required; presence/shape only; Doc-4I §HB-1.2)"
 }
 ```
 
-**Response `200`:** full plan object with updated `entitlements` array (includes newly bundled item).
+**Response `200`** — `Doc-4I §HB-1.2` output, §3.9 envelope: `{ "plan_id": "UUIDv7", "entitlement_id": "UUIDv7" }`. Full bundle via `get_plan`.
 
-> Bundling an entitlement to a `retired` plan → `409 STATE`. Bundling a non-existent `entitlement_id` → `404 NOT_FOUND`. Re-bundling an already-bundled entitlement → idempotent `200` (no duplicate; returns current plan state).
+> Inputs/output = `Doc-4I §HB-1.2` verbatim (PK `plan_id`+`entitlement_id`, `value_jsonb`). **Upsert on the PK** — re-bundling the same entitlement is **idempotent** (duplicate PK = no new row; `200`). No retired-plan STATE guard is defined by Doc-4I §HB-1.2.
 
 **Errors:**
 
 | Class (§3.8) | Status | When |
 |---|---|---|
-| `VALIDATION` | `400` | `entitlement_id` missing or malformed UUID |
+| `VALIDATION` | `400` | `entitlement_id` malformed; `value_jsonb` absent |
 | `AUTHORIZATION` | `403` | Not Admin |
-| `NOT_FOUND` | `404` | `plan_id` or `entitlement_id` does not exist |
-| `STATE` | `409` | Plan is `retired` (no mutation on terminal plans) |
+| `REFERENCE` | `422` | `plan_id` or `entitlement_id` does not resolve in the catalog (`Doc-4I §HB-1.2` stage-7 — not a `404`) |
 
 ---
 
@@ -221,24 +226,21 @@ BC-BILL-1 governs the plan catalog and entitlement definitions. Plans carry a st
 
 ```json
 {
-  "key":         "string — feature entitlement key, e.g. 'rfq_submissions_per_month' (required; unique)",
-  "type":        "boolean | numeric | enum (required)",
-  "value":       "boolean | integer | string — must match type (required)",
-  "description": "string | null"
+  "slug":          "string — entitlement slug, e.g. 'rfq_submissions_per_month' (required; UNIQUE; Doc-4I §HB-1.3)",
+  "type":          "enum<boolean|numeric|enum> (required)",
+  "default_value": "jsonb (optional) — default per type (presence/shape only; Doc-4I §HB-1.3)"
 }
 ```
 
-**Response `201`:**
+> Inputs = `Doc-4I §HB-1.3` verbatim. Field is `default_value` (jsonb), not `value`; no `description` field.
+
+**Response `201`** — `Doc-4I §HB-1.3` output, §3.9 `result`+`reference_id` envelope (`201` adds `Location`):
 
 ```json
 {
-  "id":          "UUIDv7",
-  "key":         "string",
-  "type":        "boolean | numeric | enum",
-  "value":       "boolean | integer | string",
-  "description": "string | null",
-  "created_at":  "ISO 8601",
-  "updated_at":  "ISO 8601"
+  "entitlement_id": "UUIDv7",
+  "slug":           "string",
+  "type":           "boolean | numeric | enum"
 }
 ```
 
@@ -246,9 +248,9 @@ BC-BILL-1 governs the plan catalog and entitlement definitions. Plans carry a st
 
 | Class (§3.8) | Status | When |
 |---|---|---|
-| `VALIDATION` | `400` | `value` type mismatch against `type`; `key` blank; invalid `type` enum |
+| `VALIDATION` | `400` | `slug` blank; invalid `type` enum; malformed `default_value` |
 | `AUTHORIZATION` | `403` | Not Admin |
-| `CONFLICT` | `409` | `key` already exists (entitlement keys are globally unique) |
+| `BUSINESS` | `422` | `slug` already exists (UNIQUE — `Doc-4I §HB-1.3` stage-8 BUSINESS, not `409`) |
 
 ---
 
@@ -269,25 +271,23 @@ BC-BILL-1 governs the plan catalog and entitlement definitions. Plans carry a st
 
 ```json
 {
-  "key":         "string | undefined",
-  "type":        "boolean | numeric | enum | undefined",
-  "value":       "boolean | integer | string | undefined",
-  "description": "string | null | undefined"
+  "type":          "enum<boolean|numeric|enum> | undefined",
+  "default_value": "jsonb | undefined"
 }
 ```
 
-> Updating `key` → uniqueness check applies. Updating `type`/`value` does **not** retroactively alter active subscription entitlement snapshots (snapshots are taken at purchase time).
+> `Doc-4I §HB-1.3` processing: update mutates `type`/`default_value` (the `slug` is the catalog identity — not mutated here; no `description` field). Changes do **not** retroactively alter active-subscription entitlement snapshots (snapshots are taken at purchase time).
 
-**Response `200`:** full entitlement object.
+**Response `200`** — `Doc-4I §HB-1.3` output, §3.9 envelope: `{ "entitlement_id": "UUIDv7", "slug": "string", "type": "boolean | numeric | enum" }`.
 
 **Errors:**
 
 | Class (§3.8) | Status | When |
 |---|---|---|
-| `VALIDATION` | `400` | `value` type mismatch; `key` blank |
+| `VALIDATION` | `400` | invalid `type` enum; malformed `default_value` |
 | `AUTHORIZATION` | `403` | Not Admin |
-| `NOT_FOUND` | `404` | `entitlement_id` does not exist |
-| `CONFLICT` | `409` | `key` change collides with an existing key |
+| `REFERENCE` | `422` | `entitlement_id` does not resolve (`Doc-4I §HB-1.3` stage-7 — not a `404`) |
+| `CONFLICT` | `409` | Lost optimistic-lock race (`Doc-4I §HB-1.3` stage-6) |
 
 ---
 
@@ -308,32 +308,29 @@ BC-BILL-1 governs the plan catalog and entitlement definitions. Plans carry a st
 | Audit | Not audited (`Doc-5A §17.1`) |
 | Events | None |
 
-**Response `200`:**
+**Response `200`** — representation = `Doc-4I §HB-1.4` `plan` output, in the §3.9 `result`+`reference_id` envelope:
 
 ```json
 {
-  "id":            "UUIDv7",
-  "human_ref":     "string (year-scoped; prefix per M0 ID-gen registry — not coined here)",
+  "plan_id":       "UUIDv7",
   "name":          "string",
-  "description":   "string | null",
-  "billing_cycle": "monthly | annual | lifetime",
-  "price_amount":  "integer (minor units)",
+  "billing_cycle": "monthly | annual",
+  "price":         "numeric (minor units)",
   "currency":      "string (ISO 4217)",
-  "state":         "draft | active | retired",
+  "status":        "draft | active | retired",
+  "is_active":     "boolean",
   "entitlements":  [
     {
-      "id":    "UUIDv7",
-      "key":   "string",
-      "type":  "boolean | numeric | enum",
-      "value": "boolean | integer | string"
+      "entitlement_id": "UUIDv7",
+      "slug":           "string",
+      "type":           "boolean | numeric | enum",
+      "value":          "boolean | integer | string"
     }
-  ],
-  "created_at":    "ISO 8601",
-  "updated_at":    "ISO 8601"
+  ]
 }
 ```
 
-> User reads any plan regardless of state (Platform-Public). `draft` and `retired` plans are visible to all authenticated users; use `state` field to filter client-side.
+> User reads any plan regardless of status (Platform-Public). `draft` and `retired` plans are visible to all authenticated users; use `status`/`is_active` to filter client-side. Fields are `Doc-4I §HB-1.4` output verbatim — no `human_ref`/`description`/timestamp added (not in the Doc-4I output; would require a Doc-4I output extension, `[ESC-BILL-FIELD]`).
 
 **Errors:**
 
@@ -353,7 +350,7 @@ BC-BILL-1 governs the plan catalog and entitlement definitions. Plans carry a st
 | Actor | User / Admin |
 | Slug | Authentication only (Platform-Public catalog; §3.6) |
 | Disclosure scope | Platform-Public (§3.6) |
-| Pagination | Cursor-based (`Doc-5A §8`): `?cursor=&limit=` |
+| Pagination | Cursor-based (`Doc-5A §8`): `?cursor=&page_size=` |
 | Audit | Not audited |
 | Events | None |
 
@@ -363,20 +360,18 @@ BC-BILL-1 governs the plan catalog and entitlement definitions. Plans carry a st
 |---|---|---|
 | `cursor` | string | Opaque cursor from previous `page_info.next_cursor` |
 | `page_size` | integer | Bounds referenced by `[ESC-BILL-POLICY]` page key (never a literal); over-max → `400 VALIDATION` |
-| `filter` | string | Declared allowlist grammar (`Doc-5A §8`). Allowed dimension: `state ∈ {draft,active,retired}` — default selection per `Doc-4I §HB-1.2`; undeclared field → `400 VALIDATION` |
+| `filter` | object | Declared allowlist (`Doc-4I §HB-1.4` / `Doc-4A §9.6`): `{ billing_cycle?, is_active?, status? }`; undeclared field → `400 VALIDATION` |
 
-**Response `200`** (list representation, carried in the §3.9 `items`/`page_info`/`reference_id` envelope — items are plan summaries; use `get_plan` for the full `entitlements` bundle):
+**Response `200`** (list representation = `Doc-4I §HB-1.4` `items`, carried in the §3.9 `items`/`page_info`/`reference_id` envelope; use `get_plan` for the full `entitlements` bundle):
 
 ```json
 {
-  "id":            "UUIDv7",
-  "human_ref":     "string (year-scoped human ref; prefix per ID-gen registry)",
+  "plan_id":       "UUIDv7",
   "name":          "string",
-  "billing_cycle": "monthly | annual | lifetime",
-  "price_amount":  "integer (minor units)",
+  "billing_cycle": "monthly | annual",
+  "price":         "numeric (minor units)",
   "currency":      "string (ISO 4217)",
-  "state":         "draft | active | retired",
-  "entitlement_count": "integer"
+  "status":        "draft | active | retired"
 }
 ```
 
@@ -390,9 +385,9 @@ BC-BILL-2 is the **sole subscription lifecycle authority** (R7). The subscriptio
 
 **Wire constraints specific to §5 (supplement §3.3):**
 - An org may have at most **one active subscription** at a time (Doc-4I module invariant). `purchase_subscription` while an `active` subscription exists → `409 CONFLICT`.
-- `cancel_subscription` sets `auto_renew = false` — **state stays `active`**; the subscription runs to `current_period_end`. State machine is unchanged at this moment (§3.4/R7).
+- `cancel_subscription` sets `auto_renew = false` — **`status` stays `active`**; the subscription runs to its period end. The state machine is unchanged at this moment (§3.4/R7).
 - `purchase_subscription` emits `SubscriptionPurchased` immediately via outbox (`Doc-4B`) — the event fires at pending_payment creation, **not** at payment confirmation (R9; §3.4).
-- **Disclosure scope:** `get_subscription` / `list_subscription_events` → **Own-Org** (§3.6); Admin reads any org.
+- **Disclosure scope:** `get_subscription` / `list_subscription_events` → **Own-Org**, **User-only** (`Doc-4I §HB-2.5`; no Admin actor — §3.6 [ESC-BILL-ADMINSCOPE]).
 - **Actor side:** `purchase_subscription` / `cancel_subscription` → **User** (`can_manage_billing`; §3.7).
 
 ---
@@ -418,42 +413,34 @@ BC-BILL-2 is the **sole subscription lifecycle authority** (R7). The subscriptio
 
 ```json
 {
-  "plan_id":       "UUIDv7 — the plan to subscribe to (required; must be state=active)",
-  "billing_cycle": "monthly | annual | lifetime (required; must match a cycle offered by the plan)"
+  "plan_id":    "UUIDv7 — the plan to subscribe to (required; must resolve to an active plan — Doc-4I §HB-2.1)",
+  "auto_renew": "bool (optional; default true; Doc-4I §HB-2.1)"
 }
 ```
 
-**Response `201`:**
+> Inputs = `Doc-4I §HB-2.1` (`plan_id`, `auto_renew`). `billing_cycle` is **not** a caller input — carried by the plan (`Doc-4I §HB-1.4`); duplicating it would be a payload-duplication field (`Doc-4A §9.7`). Org = server-resolved Controlling Organization (§3.4), never a request field.
+
+**Response `201`** — `Doc-4I §HB-2.1` output, §3.9 `result`+`reference_id` envelope (`201` adds `Location`):
 
 ```json
 {
-  "id":                   "UUIDv7",
-  "human_ref":            "string (year-scoped; prefix per M0 ID-gen registry — not coined here)",
-  "organization_id":      "UUIDv7 (server-resolved Controlling Organization; §3.4)",
-  "plan_id":              "UUIDv7",
-  "plan_snapshot":        { "name": "string", "billing_cycle": "...", "price_amount": "integer (minor units)", "currency": "string (ISO 4217)" },
-  "billing_cycle":        "monthly | annual | lifetime",
-  "state":                "pending_payment",
-  "current_period_start": "ISO date",
-  "current_period_end":   "ISO date",
-  "auto_renew":           true,
-  "purchased_at":         "ISO 8601",
-  "cancelled_at":         null,
-  "expired_at":           null
+  "subscription_id": "UUIDv7",
+  "status":          "pending_payment",
+  "plan_id":         "UUIDv7"
 }
 ```
 
-> State is `pending_payment` at creation. `billing.record_payment.v1` (§10/R8) drives `pending_payment → active` when the payment gateway confirms. `SubscriptionPurchased` is emitted regardless (pending-payment creation = intent confirmed).
+> Status is `pending_payment` at creation. `billing.record_payment.v1` (§10/R8) drives `pending_payment → active` when the payment gateway confirms. `SubscriptionPurchased` is emitted regardless (pending-payment creation = intent confirmed). Period/snapshot/timestamp fields are not in the Doc-4I output; read the full head via `get_subscription`.
 
 **Errors:**
 
 | Class (§3.8) | Status | When |
 |---|---|---|
-| `VALIDATION` | `400` | Malformed body; `plan_id`/`billing_cycle` missing or malformed |
+| `VALIDATION` | `400` | Malformed body; `plan_id` missing or malformed |
 | `AUTHORIZATION` | `403` | `can_manage_billing` check failed |
-| `NOT_FOUND` | `404` | `plan_id` does not exist |
+| `STATE` | `409` | Org already has an `active` subscription — one-active-per-org (`Doc-4I §HB-2.1` stage-6 STATE; partial UNIQUE WHERE status='active') |
 | `CONFLICT` | `409` | Duplicate `Idempotency-Key` with a different body |
-| `BUSINESS` | `422` | Org already has an `active` subscription (one-active-per-org invariant); `plan_id` is `draft`/`retired`; `billing_cycle` not offered by the plan |
+| `REFERENCE` | `422` | `plan_id` does not resolve to an **active** plan — missing/`draft`/`retired` (`Doc-4I §HB-2.1` stage-7 — not a `404`) |
 
 ---
 
@@ -470,25 +457,24 @@ BC-BILL-2 is the **sole subscription lifecycle authority** (R7). The subscriptio
 | Audit | `[ESC-BILL-AUDIT]` — nearest: `Doc-2 §9` Financial / subscription cancelled |
 | Events | **None** — cancel is not an event-producing operation (R9/`Doc-4I §H.7`) |
 
-**Request body:** `{}` (idempotency key in header)
-
-**Response `200`:**
+**Request body:**
 
 ```json
 {
-  "id":                   "UUIDv7",
-  "human_ref":            "string (year-scoped; prefix per M0 ID-gen registry — not coined here)",
-  "organization_id":      "UUIDv7",
-  "plan_id":              "UUIDv7",
-  "billing_cycle":        "monthly | annual | lifetime",
-  "state":                "active",
-  "current_period_end":   "ISO date (subscription runs until this date)",
-  "auto_renew":           false,
-  "cancelled_at":         "ISO 8601 (timestamp of this cancel call)"
+  "expected_status": "enum<active> (required; optimistic-concurrency assertion — Doc-4I §HB-2.2; mismatch → 409 CONFLICT)"
 }
 ```
 
-> **State stays `active`** after cancel. `auto_renew` set to `false`. The `expire_subscription` System job (§10) fires at `current_period_end` and drives `active → expired` independently. Cancelling an already-cancelled (auto_renew=false) subscription is idempotent — returns current state, no error.
+**Response `200`** — `Doc-4I §HB-2.2` output, §3.9 envelope:
+
+```json
+{
+  "subscription_id": "UUIDv7",
+  "status":          "active"
+}
+```
+
+> **Status stays `active`** after cancel; `auto_renew` is set to `false` (not a state change — `Doc-4I §HB-2.2`). The `expire_subscription` System job (§10) fires at period end and drives `active → expired` independently. Cancelling an already-cancelled (`auto_renew=false`) subscription is idempotent — returns current status, no error. Period/`auto_renew` detail is read via `get_subscription`.
 
 **Errors:**
 
@@ -496,7 +482,8 @@ BC-BILL-2 is the **sole subscription lifecycle authority** (R7). The subscriptio
 |---|---|---|
 | `AUTHORIZATION` | `403` | `can_manage_billing` check failed |
 | `NOT_FOUND` | `404` | `subscription_id` absent or belongs to a different org (§3.5 non-disclosure) |
-| `STATE` | `409` | Subscription not `active` (`pending_payment` or `expired`) — cancel applies only to an active subscription |
+| `STATE` | `409` | Subscription not `active` (`pending_payment`/`expired`) — cancel applies only to an active subscription (`Doc-4I §HB-2.2`) |
+| `CONFLICT` | `409` | `expected_status` mismatch (lost race; `Doc-4I §HB-2.2`) |
 
 ---
 
@@ -510,37 +497,26 @@ BC-BILL-2 is the **sole subscription lifecycle authority** (R7). The subscriptio
 |---|---|
 | Token | `billing.get_subscription.v1` |
 | Method | `GET` |
-| Path | `/billing/subscriptions/{subscription_id}` |
-| Actor | User (`can_view_billing`) / Admin |
-| Disclosure scope | Own-Org; cross-org → `NOT_FOUND` (§3.5/§3.6); Admin reads any |
+| Path | `/billing/subscriptions/{subscription_id}` (path id optional per `Doc-4I §HB-2.5`; omitted → the actor's Controlling-Org subscription — realized as `GET /billing/subscriptions/current`) |
+| Actor | **User** (`can_view_billing`) — `Doc-4I §HB-2.5` is User-only; **no Admin actor** ([ESC-BILL-ADMINSCOPE], §3.6) |
+| Disclosure scope | Own-Org; cross-org → `NOT_FOUND` (§3.5/§3.6) |
 | Audit | Not audited (`Doc-5A §17.1`) |
 | Events | None |
 
-**Response `200`:**
+**Response `200`** — representation = `Doc-4I §HB-2.5` `subscription` output, §3.9 `result`+`reference_id` envelope:
 
 ```json
 {
-  "id":                   "UUIDv7",
-  "human_ref":            "string (year-scoped; prefix per M0 ID-gen registry — not coined here)",
-  "organization_id":      "UUIDv7",
-  "plan_id":              "UUIDv7",
-  "plan_snapshot":        {
-    "name":          "string",
-    "billing_cycle": "monthly | annual | lifetime",
-    "price_amount":  "integer (minor units)",
-    "currency":      "string (ISO 4217)",
-    "entitlements":  [{ "key": "string", "type": "...", "value": "..." }]
-  },
-  "billing_cycle":        "monthly | annual | lifetime",
-  "state":                "pending_payment | active | expired",
-  "current_period_start": "ISO date",
-  "current_period_end":   "ISO date",
-  "auto_renew":           "boolean",
-  "purchased_at":         "ISO 8601",
-  "cancelled_at":         "ISO 8601 | null",
-  "expired_at":           "ISO 8601 | null"
+  "subscription_id": "UUIDv7",
+  "plan_id":         "UUIDv7",
+  "status":          "pending_payment | active | expired",
+  "period_start":    "ISO date",
+  "period_end":      "ISO date",
+  "auto_renew":      "boolean"
 }
 ```
+
+> Fields are `Doc-4I §HB-2.5` output verbatim. `human_ref`/`organization_id`/`plan_snapshot`/timestamps are **not** in the Doc-4I output — adding them needs a Doc-4I output extension (`[ESC-BILL-FIELD]`), never reshaped here.
 
 **Errors:**
 
@@ -558,8 +534,8 @@ BC-BILL-2 is the **sole subscription lifecycle authority** (R7). The subscriptio
 | Token | `billing.list_subscription_events.v1` |
 | Method | `GET` |
 | Path | `/billing/subscriptions/{subscription_id}/events` |
-| Actor | User (`can_view_billing`) / Admin |
-| Disclosure scope | Own-Org; parent subscription must belong to active org → `NOT_FOUND` if cross-org (§3.5/§3.6); Admin reads any |
+| Actor | **User** (`can_view_billing`) — `Doc-4I §HB-2.5` is User-only; **no Admin actor** ([ESC-BILL-ADMINSCOPE], §3.6) |
+| Disclosure scope | Own-Org; parent subscription must belong to active org → `NOT_FOUND` if cross-org (§3.5/§3.6) |
 | Pagination | Cursor-based (`Doc-5A §8`) |
 | Audit | Not audited |
 | Events | None |
@@ -575,16 +551,12 @@ BC-BILL-2 is the **sole subscription lifecycle authority** (R7). The subscriptio
 
 ```json
 {
-  "id":              "UUIDv7",
-  "subscription_id": "UUIDv7",
-  "event_type":      "purchased | activated | cancelled | renewed | expired",
-  "occurred_at":     "ISO 8601",
-  "actor":           "string (user_id or 'system')",
-  "metadata":        "object | null"
+  "event_type":  "string (e.g. purchased | activated | cancelled | renewed | expired)",
+  "occurred_at": "ISO 8601"
 }
 ```
 
-> Events are append-only and immutable (`Doc-2 §10.8` / Invariant #8). Ordered descending by `occurred_at`. `event_type=activated` is sourced from the `record_payment` transition (§10/R8); `renewed`/`expired` from the §10 System jobs — these are subscription-history projections, **not** caller-emitted events (only the 3 R9 `Doc-2 §8` events exist). `subscription_id` absent or cross-org → `404 NOT_FOUND` on the parent lookup.
+> Item shape = `Doc-4I §HB-2.5` `items` verbatim (`{ event_type, occurred_at }`). Events are append-only and immutable (`Doc-2 §10.8` / Invariant #8), ordered descending by `occurred_at`. `event_type=activated` is sourced from the `record_payment` transition (§10/R8); `renewed`/`expired` from the §10 System jobs — subscription-history projections, **not** caller-emitted events (only the 3 R9 `Doc-2 §8` events exist). `subscription_id` absent or cross-org → `404 NOT_FOUND` on the parent lookup.
 
 **Errors:**
 
@@ -605,7 +577,7 @@ BC-BILL-3 governs the usage ledger. **Only 1 contract has a caller wire** — `g
 - Usage ledger is **append-only** — no mutation surface is exposed to callers (`Doc-2 §10.8`; Invariant #8).
 - `enforce_quota` is an internal gate — **never a routing, eligibility, or procurement signal** (R5/R10/BF-2). Its result is not surfaced in any `get_usage` response field.
 - Usage data is metering-only: it meters commercial consumption (RFQ responses, lead access, ad launches); it **never gates trust/verification/matching** (R5/BF-1/BF-3).
-- **Disclosure scope:** `get_usage` → **Own-Org** (§3.6); Admin reads any org.
+- **Disclosure scope:** `get_usage` → **Own-Org**, **User-only** (`Doc-4I §HB-3.3`; no Admin actor — §3.6 [ESC-BILL-ADMINSCOPE]).
 - **Actor side:** `get_usage` is a read (no command actor-side applies).
 - `record_usage` and `enforce_quota` out-of-wire declaration: **§10 is the authority** — no wire in any protocol; Flag-and-Halt if a wire is proposed (R1/R10).
 
@@ -622,12 +594,10 @@ BC-BILL-3 governs the usage ledger. **Only 1 contract has a caller wire** — `g
 | Token | `billing.get_usage.v1` |
 | Method | `GET` |
 | Path | `/billing/usage` |
-| Actor | User (`can_view_billing`) / Admin |
-| Disclosure scope | Own-Org (§3.6); org = Controlling Organization resolved from server-validated `Iv-Active-Organization` (§3.4). Admin "reads any org" (§3 grant) is realized **server-side** — `[ESC-BILL-ADMINSCOPE]` (see note); **no caller-supplied `org_id`** (`Doc-4A §9.7`; §3.9) |
+| Actor | **User** (`can_view_billing`) — `Doc-4I §HB-3.3` is User-only; **no Admin actor** ([ESC-BILL-ADMINSCOPE], §3.6) |
+| Disclosure scope | Own-Org (§3.6); org = Controlling Organization from server-validated `Iv-Active-Organization` (§3.4); **no caller-supplied `org_id`** (`Doc-4A §9.7`; §3.9) |
 | Audit | Not audited (`Doc-5A §17.1`) |
 | Events | None |
-
-> **`[ESC-BILL-ADMINSCOPE]` (flag-and-halt):** the mechanism by which platform-staff Admin reads another org's **ID-less singleton** ledger (usage here; lead-account / reward-account in Pass-3) is **undefined in the frozen structure §3** — tenant-selection via request `org_id` is prohibited. Escalated; resolve once and apply uniformly to all org-singleton reads. Until resolved, the Admin singleton-read leg is provisional; the User Own-Org leg below is final.
 
 **Query parameters** (§3.9 grammar):
 
@@ -635,38 +605,27 @@ BC-BILL-3 governs the usage ledger. **Only 1 contract has a caller wire** — `g
 |---|---|---|
 | `cursor` | string | Opaque cursor from previous `page_info.next_cursor` |
 | `page_size` | integer | Bounds referenced by `[ESC-BILL-POLICY]` page key (never a literal); over-max → `400 VALIDATION` |
-| `filter` | string | Declared allowlist grammar (`Doc-5A §8`). Allowed dimension: `period` (`YYYY-MM`; default = current billing period); a future `period` → `422 BUSINESS`; undeclared field → `400 VALIDATION` |
+| `filter` | object | Declared allowlist (`Doc-4I §HB-3.3` / `Doc-4A §9.6`): `{ quota_key?, period? }` (`period` = `YYYY-MM`, default current period); future `period` → `422 BUSINESS`; undeclared field → `400 VALIDATION` |
 
-**Response `200`** (representation carried in the §3.9 envelope; `entries` is a list payload → `items`/`page_info`/`reference_id` envelope shape):
+**Response `200`** — representation = `Doc-4I §HB-3.3` output (this read **is** a list: `items` = usage rows, with a `totals` facet), in the §3.9 list envelope (`items` + `page_info` + `reference_id`); `totals` is a list facet (`Doc-4A §10.3`):
 
 ```json
 {
-  "organization_id":  "UUIDv7 (Controlling Organization; §3.4)",
-  "period_start":     "ISO date",
-  "period_end":       "ISO date",
-  "totals": {
-    "rfq_response":   "integer — total RFQ responses recorded this period",
-    "lead_access":    "integer — total lead-access debits this period",
-    "ad_launch":      "integer — total ad-launch events this period"
-  },
-  "entries": [
+  "items": [
     {
-      "id":           "UUIDv7",
-      "source":       "rfq_response | lead_access | ad_launch",
-      "quantity":     "integer",
-      "unit_cost":    "integer (minor units of the stored currency; 0 for quota-included usage)",
-      "source_ref":   "UUIDv7 | null (RFQ ID, lead ID, ad ID — bare ref; no cross-module data)",
-      "recorded_at":  "ISO 8601"
+      "quota_key": "string",
+      "amount":    "numeric",
+      "period":    "YYYY-MM",
+      "source":    "string (metering source — e.g. rfq_response | lead_access | ad_launch)"
     }
-  ]
+  ],
+  "totals": { "quota_key": "string", "used": "numeric" },
+  "page_info": { "next_cursor": "string | null", "has_more": "boolean" },
+  "reference_id": "UUIDv7"
 }
 ```
 
-> `source_ref` is a **bare UUIDv7 reference only** — no cross-module entity data embedded (One Module, One Owner). Renamed from `reference_id` to avoid collision with the reserved top-level envelope key (`Doc-4A §22.1 C-05`; §3.9). Callers resolve the referenced entity via the owning module's endpoint.
->
-> `entries` are append-only and immutable. `totals` are derived aggregates (sum of `entries` by `source` for the period) — computed at read time.
->
-> All representation fields trace to `Doc-4I §HB-3.1/§HB-3.3`; any untraced field is carried `[ESC-BILL-FIELD]` (§4.0). Past `period` with no entries → `200`, empty `entries`, `totals` 0.
+> Item/`totals` shape = `Doc-4I §HB-3.3` output verbatim. Usage rows are append-only and immutable (`Doc-2 §10.8`; Invariant #8). No `organization_id`/`unit_cost`/`source_ref`/`recorded_at` field is added — none is in the Doc-4I output; any need escalates `[ESC-BILL-FIELD]` (§4.0), never reshaped here. Past `period` with no rows → `200`, empty `items`.
 
 **Errors:**
 
@@ -678,4 +637,8 @@ BC-BILL-3 governs the usage ledger. **Only 1 contract has a caller wire** — `g
 
 ---
 
-*Pass-2 patched per Hard Review v1.0. Resolved: B-01 (`BAD_REQUEST` class removed); B-02 (`VALIDATION`→`400`, business rules→`422 BUSINESS`); B-03 (`page_size`+`cursor`; page bounds via `[ESC-BILL-POLICY]`); B-04 (`org_id` removed; admin singleton-scope escalated `[ESC-BILL-ADMINSCOPE]`); B-05 (`is_active` removed; activation `[ESC-BILL-ACTIVATE]`); M-01 (`AUTHORIZATION` not `FORBIDDEN`); M-02/M-03 (envelope + `page_info` via §3.9/§4.0); M-04 (fields traced to Doc-4I; usage `reference_id`→`source_ref`); m-01..m-03 + n-01..n-03. Canonical error-class (§3.8) + envelope (§3.9) added to Pass-1. §4 (8 contracts), §5 (4), §6 (1) = 13 realized. Pass-3 covers §7 (BC-BILL-4), §8 (BC-BILL-5), §9 (BC-BILL-6), §10 (Out-of-Wire), §11 (Conformance), Appendix A — and must resolve `[ESC-BILL-ADMINSCOPE]` for lead-account/reward-account singletons.*
+*Pass-2 patched per Hard Review v1.0 + Focused Re-Review v1.0 (5 BLOCKERs).*
+*Hard Review: B-01 (`BAD_REQUEST` removed); B-02 (`VALIDATION`→`400`, business→`422 BUSINESS`); B-03 (`page_size`+`cursor`; bounds via `[ESC-BILL-POLICY]`); B-04 (`org_id` removed); B-05 (no `status` lifecycle field in body); M-01 (`AUTHORIZATION`); M-02/M-03 (envelope + `page_info` via §3.9/§4.0); m/n items.*
+*Doc-4I field/error trace (correction round): `billing_cycle` enum = `monthly|annual` (`lifetime` was invented — removed); invented `description` removed (plans + entitlements); entitlement `value`→`default_value` (Doc-4I §HB-1.3); `is_active` **restored** as the Doc-4I §HB-1.1 marketing-visibility bool (distinct from `status`; B-05 over-fix reversed); `bundle` gains required `value_jsonb` (§HB-1.2); `auto_renew` added to purchase (§HB-2.1). Error reclass to Doc-4I validation tables: catalog-command missing id → `REFERENCE 422` (not 404); duplicate entitlement `slug` → `BUSINESS 422` (not 409); one-active-per-org → `STATE 409` (not 422); plan/entitlement lost race + `expected_status` mismatch → `CONFLICT 409`. `draft→active` confirmed to have **no** Doc-4I contract → `[ESC-BILL-ACTIVATE]` (real gap, not authoring).*
+*Re-Review: **RR-B1** — all 9 org-scoped reads corrected to **User-only** per `Doc-4I §HB-2.5/3.3/4.2/5.4/6.3`; Admin actor removed; structure §3 "Admin reads any org" grant re-scoped to catalog reads + escalated as corpus conflict `[ESC-BILL-ADMINSCOPE]` (Pass-1 §3.6). **RR-B2** — every representation aligned to Doc-4I `§HB` outputs verbatim: `state`→`status`, `price_amount`→`price`, entitlement `key`→`slug`, plan `is_active` output, command outputs minimized (`{id,status}`), get_usage rewritten to `Doc-4I §HB-3.3` (`items{quota_key,amount,period,source}`+`totals`); untraced fields escalated `[ESC-BILL-FIELD]`. RR-m1 (`[ESC-BILL-ACTIVATE]` = update_plan wire-intent), RR-m2 (get_usage = list+facet), RR-m3 (`page_token`§22.3→`cursor`), RR-m4 (`subscription_id` optional → `/current`). `expected_status` concurrency assertions added (update/retire plan, cancel sub).*
+*§4 (8) + §5 (4) + §6 (1) = 13 realized. Open gates for content freeze: `[ESC-BILL-ADMINSCOPE]` (corpus conflict — human approval) · `[ESC-BILL-ACTIVATE]` · `[ESC-BILL-FIELD]` · `[ESC-BILL-POLICY]` page key. Pass-3: §7 (BC-BILL-4), §8 (BC-BILL-5), §9 (BC-BILL-6), §10 (Out-of-Wire), §11, Appendix A — author §7/§8/§9 reads User-only + field-traced from the start.*
