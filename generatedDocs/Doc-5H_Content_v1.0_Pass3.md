@@ -3,294 +3,241 @@
 | Field | Value |
 |---|---|
 | Document | Doc-5H — Communication (Module 6) — API Realization |
-| Pass | 3 of 3 — §6 Delivery Tracking (BC-COMM-3, 1) · §7 Support Communications (BC-COMM-4, 6) · §8 Out-of-Wire Boundary (4) · §9 Conformance & Carried Items · Appendix A |
-| Status | ACTIVE — Content Pass 3 of 3; §6–§9 + Appendix A. 0 open BLOCKER/MAJOR/MINOR. Conforms to `Doc-5H_Structure_v1.0_FROZEN.md`; builds on Pass-1 (§0–§3 + inventory) and Pass-2 (§4–§5) |
-| Realizes | the §6–§7 caller-facing surfaces on HTTP — method/path (§5.2/§5.3), request inputs (§5.4), success status (§5.5), state machine (Doc-4M index / Doc-2 §3.7 edges), idempotency/concurrency (§9), error-status set (§6), audit, disclosure scope per read, actor side per command, non-disclosure; the §8 out-of-wire boundary declaration; the §9 conformance attestation + carried-items register; Appendix A per-band attestation |
+| Pass | 3 of 3 — §6 Delivery Tracking (BC-COMM-3, 1 caller-facing) · §7 Support Communications (BC-COMM-4, 6) · §8 Out-of-Wire Boundary (4) · §9 Conformance & Carried Items · Appendix A |
+| Status | ACTIVE — Content Pass 3 of 3; 0 open BLOCKER/MAJOR/MINOR. Conforms to `Doc-5H_Structure_v1.0_FROZEN.md`; builds on Pass-1 (§0–§3 + inventory) and Pass-2 (§4–§5; 4 MINOR + 1 NITPICK resolved) |
+| Realizes | the §6–§7 caller-facing surfaces on HTTP; §8 out-of-wire boundary declaration; §9 + Appendix A conformance attestation |
 | Authority | `Doc-5_Program_Governance_Note_v1.0`; `Doc-5A_SERIES_FROZEN_v1.0` (FROZEN) governs this document |
-| Contains | The §5.7 realization of each §6–§7 caller-facing surface; §8 out-of-wire boundary; §9 conformance + carried items; Appendix A. No contract bodies, representations, error codes, POLICY keys, slugs, audit actions, or Doc-4H rules restated — bound by pointer |
-| Audience | Architecture / API Governance Boards · Doc-5H authors · AI Coding Supervisor · backend, QA |
+| Contains | The §5.7 realization (grouped form) of §6–§7 caller-facing surfaces; §8 5-protocol fence for 4 out-of-wire contracts; §9 carried-items register + CHK-5A attestation summary; Appendix A conformance bands. No contract bodies, representations, error codes, POLICY keys, slugs, audit actions, or events restated; all by pointer |
 
-> **Realize, never re-decide.** Doc-4H fixed the contracts; Doc-2 §3.7/§10.7 + Doc-4M own the state machines; Doc-5A fixed the wire mechanics. §6–§9 + Appendix A realize the **wire face** per `Doc-5A §5/§6/§7/§9/§10/§17` and re-decide nothing. Error codes, representations, POLICY keys, slugs, audit actions, state edges, and the (empty) M6 event set are bound **by pointer, never restated**. The §3 cross-cutting model (User/Admin · `check_permission` sole authority · disclosure-scope + actor-side rules · delivery-only firewall · realtime = channel · non-disclosure · state-map index) governs every endpoint here; **every read declares its disclosure scope and every command its actor side** (§3.3). Transport-level choices are **[realization convention]**.
+> **Realize, never re-decide.** Doc-4H fixed the contracts; Doc-2 §3.7/§10.7 + Doc-4M own the state machines; Doc-5A fixed the wire mechanics. §6–§7 realize the **wire face** per `Doc-5A §5/§6/§7/§9` and re-decide nothing. The §3 cross-cutting model (User/Admin · `check_permission` sole authority · disclosure-scope + actor-side rules · delivery-only firewall · non-disclosure) governs every endpoint here; **every read declares its disclosure scope** (§3.3). The `[REC-COMM-OWNERSHIP]` gate is **reconfirmed verbatim** at §6.4 as required by the structure freeze mandate.
 
-**Dependency realization path:** `Doc-5A §5/§6/§7/§9/§10/§17`; `Doc-4H §H6/§H7`; `Doc-4M`; `Doc-2 §3.7/§10.7`; §3 (Pass-1).
+**Dependency realization path:** `Doc-5A §5/§6/§7/§9`; `Doc-4H §H6/§H7/§H13`; `Doc-4M`; `Doc-2 §3.7/§10.7`; §3 (Pass-1).
 
 ---
 
 ## §6 — Delivery Tracking Surface Realization (BC-COMM-3)
 
 ### 6.1 Endpoint Realization (§5.2/§5.3; inventory §2.4)
-- `get_delivery_status` → `GET /communication/delivery_records/{id}` → `200`.
-- **Actor:** User (own-record, `Iv-Active-Organization` server-validated) / Admin (`staff_can_support`, no org context — `Doc-5A §7.3`).
-- Inputs per §5.4: `{id}` = `UUIDv7` in path; no body; **no prohibited input** — actor/org-selection/authz/state/attribution are **never** a wire field (`Doc-4A §9.7`).
-- The 3 write-path contracts (`create_delivery_record`, `update_delivery_status`, `retry_delivery`) have **no caller wire** — §8.
-- **Binds:** `Doc-5A §5.2/§5.3/§5.4/§5.5`; `Doc-4H §H6`.
+- Methods: `get_delivery_status` → `GET /communication/delivery-records/{delivery_record_id}` (get-by-ID, `200`) and `GET /communication/delivery-records` (list with allowlisted filters, `200`) — single contract covering both modes. The three write-path contracts (`create_delivery_record`, `update_delivery_status`, `retry_delivery`) are **out-of-wire** (§8); noted here for BC-COMM-3 completeness only.
+- Inputs per §5.4: `{delivery_record_id}` = `UUIDv7` in path (get mode); `source_event_id` and `channel` as allowlisted query params (list mode, `Doc-4A §9.6`); `page_size` within `[ESC-COMM-POLICY]` bound; keyset `cursor` (`Doc-5A §8`). No prohibited input (`Doc-4A §9.7`).
+- **Binds:** `Doc-5A §5.2/§5.3/§5.4/§5.5/§8`; `Doc-4H §H6`.
 
-### 6.2 Delivery Aggregate Ownership (`[REC-COMM-OWNERSHIP]` — reconfirmed verbatim)
-The **`Outbound Log` aggregate** (`email_logs` / `sms_logs` / `whatsapp_logs`, VO `DeliveryStatus`) is **M6-owned** — confirmed against `Doc-4H` BC-COMM-3 ("Owned Aggregate: Outbound Log") + `Doc-2 §10.7`. **Provider callbacks (R8) mutate only M6-owned state** — the provider → webhook → M6 path writes M6's own Outbound Log; the `Outbound Log` is **never** a Platform-Core-owned read-model that M6 mirrors (ownership stays in M6, not M0/infra). `comm.update_delivery_status` is the out-of-wire contract for this ingress (§8/R8); the M6-owned aggregate is the structure it writes.
-
-**`[REC-COMM-OWNERSHIP]` is SATISFIED** — the `Outbound Log` aggregate's M6 ownership is explicit here per the FROZEN structure's "reconfirm verbatim at content" obligation. (§9.2 entry confirms.) **Binds:** `Doc-4H` BC-COMM-3; `Doc-2 §10.7`; R8.
+### 6.2 Delivery State Machine (Doc-4M index; Doc-2 §10.7 edges)
+- The **Outbound Log** delivery lifecycle is **forward-only** `queued → sent → delivered | failed` with frozen retry `failed → queued` (re-dispatch — no new state). `delivered` and `failed` are terminal per attempt; retry is a separate out-of-wire contract (§8). Backward/illegal advance → `STATE` → `409`. **No state invented** (`Doc-4M` = cross-module state-map index; edges `Doc-2 §10.7`; `Doc-4A §13`). **Append-only — delivery logs are never overwritten or hard-deleted** (R12).
+- `get_delivery_status` is a read; it does not transition state. Write-path state transitions (`queued → sent → delivered | failed`; `failed → queued`) are System effects realized in §8.
+- **Binds:** `Doc-4M`; `Doc-4A §13`; `Doc-4H §H6`; `Doc-2 §10.7`.
 
 ### 6.3 Disclosure Class per Read (§3.3 binding rule)
-- `get_delivery_status` → **Own-or-Support** scope: the requesting User reads **only** a delivery record belonging to their own active org; Admin (`staff_can_support`) reads any record.
-- A cross-tenant / out-of-scope read **collapses to a uniform `NOT_FOUND`** — no timing side-channel (`Doc-5A §6.3/§7`; `Doc-4A §7.5`; §3.6/R10).
-- **Binds:** §3.3/§3.6; `Doc-4H §H6`; R10.
+- `get_delivery_status` → **Own-or-Support** scope: a **User** reads **own delivery records only** (records whose recipient resolves to the active org/user); an **Admin** (`staff_can_support`) reads delivery records in staff scope. A non-recipient / unauthorized read **collapses to `NOT_FOUND`** (§3.6/R10; `Doc-5A §6.3/§7`; `Doc-4A §7.5/§12.4`) — existence never confirmed via `AUTHORIZATION`. Timing-uniformity: not-authorized / not-exist responses identical.
+- Delivery-read slug carries `[ESC-COMM-SLUG]` (no distinct Doc-2 §7 recipient delivery-read slug; interim own-record / `staff_can_support` scope by pointer; **never invented**).
+- **Binds:** §3.3/§3.6; `Doc-4H §H6`; `[ESC-COMM-SLUG]`.
 
-### 6.4 Firewall, Audit & Error (§6.2/§17.1)
-- **Delivery outcome is observability only — it is never a score/eligibility/business signal** (R6/DH-5); the result of `get_delivery_status` is never consumed as a governance input, trigger, or matching signal.
-- Delivery logs are **append-only** (R12/Invariant #8); **never caller-writable** — written exclusively by §8 System contracts (`create_delivery_record`, `update_delivery_status`, `retry_delivery`). No caller write path exists for delivery records.
-- Read: **not audited** (`Doc-5A §17.1`).
-- Error classes per `Doc-5A §6.2` (by pointer); codes `Doc-4H §H6` register (`comm_` namespace, `Doc-4A Appendix B.2`): `AUTHORIZATION` → `403` (else `404` collapse §3.6/R10), `NOT_FOUND` → `404`.
-- **No `Doc-2 §8` event emitted** (R11).
-- **Binds:** `Doc-5A §6.2/§17.1`; `Doc-4H §H6`; R6/R8/R12.
+### 6.4 Delivery-Aggregate Ownership Reconfirmation (`[REC-COMM-OWNERSHIP]` — gate satisfied)
+> **Verbatim reconfirmation (structure freeze mandate):** The **`Outbound Log` aggregate** (channel structures `email_logs` / `sms_logs` / `whatsapp_logs`; VO `DeliveryStatus`) is **M6-owned** — `Doc-2 §10.7`; `Doc-4H` BC-COMM-3 ("Owned Aggregate: Outbound Log"; Part-3 §HB-3.5). **A provider callback mutates only M6-owned Outbound Log state** — the provider → webhook → M6 path writes M6's own channel-log rows only; these rows are never a Platform-Core-owned read-model that M6 mirrors; ownership stays in M6, not M0/infra (R8). `comm.update_delivery_status` is driven by an inbound provider callback — an **email/SMS/WhatsApp infra signal, explicitly NOT a Doc-2 §8 domain event** (H.7 / R8). **`[REC-COMM-OWNERSHIP]` gate: SATISFIED in-doc.** Reconfirmed verbatim at this content pass as required by the structure freeze mandate.
+- **Binds:** R8; `Doc-4H §H6`; BC-COMM-3 Part-3 §HB-3.5 (M6-owned); `Doc-2 §10.7`.
+
+### 6.5 Idempotency, Error & Audit
+- `get_delivery_status` is a pure query: `Idempotency: not-applicable` (`Doc-5A §9` / `Doc-4A §14.1`); side-effect-free; pagination per `Doc-5A §8` / `Doc-4A §22.3`.
+- Error classes per `Doc-5A §6.2` (by pointer; codes `Doc-4H §H6`, `comm_` namespace): `VALIDATION` → `400`, `AUTHORIZATION` → `403` (else `NOT_FOUND` collapse per §3.6/R10), `NOT_FOUND` → `404`. No `STATE`/`CONFLICT`/`REFERENCE`/`BUSINESS` on this read surface.
+- **Reads not audited** (`Doc-5A §17.1`). **Delivery logs are never caller-writable** (R12) — only System write-path contracts (§8) write to `email_logs`/`sms_logs`/`whatsapp_logs`. A delivery outcome is observability only, never a score/eligibility signal (R6).
+- **Binds:** `Doc-5A §6/§8/§9/§17.1`; `Doc-4H §H6`; `[ESC-COMM-SLUG]`, `[ESC-COMM-POLICY]`.
 
 ---
 
 ## §7 — Support Communications Surface Realization (BC-COMM-4)
 
 ### 7.1 Endpoint Realization (§5.2/§5.3; inventory §2.5)
-Methods, paths **[rc]**, and success statuses:
-
-| Contract | Method · Path **[rc]** | Actor | Active-org | Success |
-|---|---|---|---|---|
-| `comm.create_ticket.v1` | `POST /communication/tickets` | User | Y | `201` |
-| `comm.update_ticket.v1` | `POST /communication/tickets/{id}/update_ticket` | User / Admin | Y / **N** | `200` |
-| `comm.add_ticket_message.v1` | `POST /communication/tickets/{id}/messages` | User / Admin | Y / **N** | `201` |
-| `comm.close_ticket.v1` | `POST /communication/tickets/{id}/close_ticket` | User / Admin | Y / **N** | `200` |
-| `comm.get_ticket.v1` | `GET /communication/tickets/{id}` | User / Admin | Y / **N** | `200` |
-| `comm.list_tickets.v1` | `GET /communication/tickets` | User / Admin | Y / **N** | `200` |
-
-- Inputs per §5.4: `{id}` = `UUIDv7` in path; Request-Contract fields in body; **no prohibited input** (`Doc-4A §9.7`). `create_ticket` body carries `subject` + opener message in-transaction; `add_ticket_message` body carries the message payload. `update_ticket` body carries permitted meta-fields and/or the target state (legal transitions only — §7.2).
+- Methods:
+  - `create_ticket` → `POST /communication/tickets` (`201` + `Location` → `/communication/tickets/{ticket_id}`)
+  - `update_ticket` → `POST /communication/tickets/{id}/update_ticket` (`200` — named state command)
+  - `add_ticket_message` → `POST /communication/tickets/{id}/ticket-messages` (`201` — no `Location` header; ticket message has no standalone GET URL **[rc]**; observable via `get_ticket`)
+  - `close_ticket` → `POST /communication/tickets/{id}/close_ticket` (`200` — named terminal command)
+  - `get_ticket` → `GET /communication/tickets/{id}` (`200`)
+  - `list_tickets` → `GET /communication/tickets` (`200`)
+- Inputs per §5.4: `{id}` = `UUIDv7` in path; request-contract fields in body; no prohibited input (`Doc-4A §9.7`). `list_tickets` filter `status` ∈ enum is an allowlisted query param (`Doc-4A §9.6`). `update_ticket` body carries `target_status` (declared command parameter — not a prohibited lifecycle-state field; the prohibition is on *caller-asserting* state, not on the command's own declared transition parameter).
+- **Two-sided actor declared (§3.3 per-command rule):** all commands and reads are **User / Admin (Either, with per-transition authority** — see §7.3).
 - **Binds:** `Doc-5A §5.2/§5.3/§5.4/§5.5`; `Doc-4H §H7`.
 
-### 7.2 Ticket State Machine (Doc-4M index; Doc-2 §3.7 / Doc-4H §H13 edges)
-- Ticket machine: **`open → in_progress → resolved → closed`** (terminal). `create_ticket` creates in `open`. `update_ticket` drives `open → in_progress` and `in_progress → resolved` (Staff-gated state transitions; User may update metadata fields per Doc-4H §H7 without advancing state). `close_ticket` drives `resolved → closed`.
-- **No transition invented** (`Doc-4M` = cross-module state-map index; edges sourced from `Doc-2 §3.7` / `Doc-4H §H13`; `Doc-4A §13`). Illegal transition → **`STATE` → `409`**; concurrent write collision → **`CONFLICT` → `409`** (`Doc-5A §9.5`).
-- **`close_ticket` closes the ticket (`resolved → closed`) and does not delete message history** (R12).
-- **Binds:** `Doc-4M`; `Doc-4A §13`; `Doc-4H §H7/§H13`; `Doc-2 §3.7`.
+### 7.2 Ticket State Machine (Doc-2 §3.7 / Doc-4H §H13)
+- The **Support Ticket** machine is `open → in_progress → resolved → closed` (`closed` terminal). **No transition invented** (`Doc-4M` = cross-module state-map index; edges `Doc-2 §3.7` / aggregate `Doc-2 §10.7`; `Doc-4H §H13`; `Doc-4A §13`). Illegal sequence → `STATE` → `409`.
+- `close_ticket` drives the dedicated `resolved → closed` terminal; only a `resolved` ticket is closable (`STATE` if not). `closed → closed` is an idempotent no-op.
+- `add_ticket_message` is blocked if the ticket is `closed` (`STATE` → `409`).
+- **`ticket_messages` is append-only — never overwritten or hard-deleted** (R12). `close_ticket` closes the ticket and does not delete message history (R12).
+- **Binds:** `Doc-4M`; `Doc-4A §13`; `Doc-4H §H7/§H13`; `Doc-2 §3.7/§10.7`.
 
-### 7.3 Per-Command Actor-Side Rule (§3.3 binding rule)
-BC-COMM-4 is **two-sided: User (opener, `can_raise_support_ticket`) + Admin (staff, `staff_can_support`)**. Per-command declaration (binding — §3.3):
+### 7.3 Two-Sided Actor Wire Model (§3 per-command actor-side rule)
+BC-COMM-4 is the **only two-sided surface** in Doc-5H — **User** (`can_raise_support_ticket`, own-org, `Iv-Active-Organization` server-validated) and **Admin** (`staff_can_support`, platform-staff, no active org context — `Doc-4A §5.6`). **Explicit actor→transition authority** (R2/H.5; `Doc-2 §3.7`):
 
-| Contract | Actor side |
-|---|---|
-| `create_ticket` | **User** (`can_raise_support_ticket` opener; creates the ticket + initial message in-transaction) |
-| `update_ticket` | **Either** (User may update non-state metadata on own ticket; Admin/Staff advances state and updates meta) |
-| `add_ticket_message` | **Either** (User continues thread on own ticket; Admin/Staff responds) |
-| `close_ticket` | **Either** (User closes from `resolved` accepting resolution; Admin/Staff closes) |
-| `get_ticket` | **Either** (User reads own org's ticket; Admin `staff_can_support` reads any) |
-| `list_tickets` | **Either** (User lists own org's tickets; Admin `staff_can_support` lists any) |
+| Command | User authority | Admin authority |
+|---|---|---|
+| `create_ticket` | `can_raise_support_ticket` (own org, enters `open`) | n/a |
+| `update_ticket` | `can_raise_support_ticket` — **`resolved → closed` ONLY** (own ticket); requesting `open → in_progress` / `in_progress → resolved` → **`AUTHORIZATION`** (staff-only transition; actor-denied, not a sequence error) | `staff_can_support` — `open → in_progress`, `in_progress → resolved`, `resolved → closed` |
+| `add_ticket_message` | `can_raise_support_ticket` (own-org ticket, not `closed`) | `staff_can_support` (staff scope, ticket not `closed`) |
+| `close_ticket` | `can_raise_support_ticket` (own `resolved` ticket) | `staff_can_support` (`resolved` ticket in scope) |
+| `get_ticket` / `list_tickets` | `can_raise_support_ticket` (own-org scope) | `staff_can_support` (staff scope) |
 
-- User: `Iv-Active-Organization` server-validated (§3.1); Admin: no org context (`Doc-5A §7.3`).
-- **The support-ticket aggregate stays M6-owned** — Admin acts via `staff_can_support` as an authorized governance actor; **ownership never transfers to Admin (M8)** (FROZEN structure §7).
-- Ticket messages **inherit ticket scope** — no independent participant scope (§3).
-- **Binds:** §3.3; `Doc-4H §H7`; `Doc-5A §7.2/§7.3`; `Doc-2 §7`.
+**The Support Ticket aggregate stays M6-owned** — Admin acts via `staff_can_support` as an authorized actor; ownership never transfers to M8 Admin (m-COMM-03). Ticket messages inherit ticket scope (§3/N-05); no independent scope on `ticket_messages`. **`check_permission` sole authority; no shadow path** (§3.2).
+- **Binds:** §3.2/§3.3; `Doc-4H §H7`; `Doc-2 §3.7/§7`; `Doc-4C §C3`.
 
 ### 7.4 Disclosure Class per Read (§3.3 binding rule)
-- `get_ticket` / `list_tickets` → **Own-or-Support** scope: User reads only own org's ticket(s); Admin (`staff_can_support`) reads any ticket.
-- **Ticket messages inherit ticket scope** (§3; no independent participant lookup for messages on a ticket).
-- A cross-org / non-authorized read **collapses to a uniform `NOT_FOUND`** (§3.6/R10).
-- **Binds:** §3.3/§3.6; `Doc-4H §H7`; `Doc-5A §6.3/§7`.
+- `get_ticket` / `list_tickets` → **Own-or-Support** scope (User own-org tickets; Admin `staff_can_support` staff scope). An out-of-scope get **collapses to `NOT_FOUND`** (§3.6/R10); list scopes its result set — out-of-scope tickets never enumerated. `ticket_messages` returned within `get_ticket` (inherit ticket scope; §3/N-05). **No private-RFQ read for Support Staff** (`Doc-4H §H7` H.5).
+- **Binds:** §3.3/§3.6; `Doc-4H §H7`; `Doc-4A §7.5/§12.4`.
 
-### 7.5 Append-Only Messages (R12)
-- `add_ticket_message` is **append-only** — messages never overwritten or hard-deleted (R12/Invariant #8; `Doc-2 §3.7`).
-- **`close_ticket` closes the ticket but does not delete message history** (R12).
-- No caller-facing delete surface for ticket messages or tickets exists (soft-close is terminal; ticket aggregate retained for audit).
-- **Binds:** R12; Invariant #8; `Doc-2 §3.7`.
-
-### 7.6 Idempotency, Concurrency, Error & Audit
-- All mutations declare `Idempotency: required` → **`Idempotency-Key` mandatory** (`Doc-5A §9`); dedup window **`[ESC-COMM-POLICY]`** (no `communication` POLICY namespace key registered; referenced by platform-default key name only; channel `Doc-3 §12.2` additive).
-- State transitions (`update_ticket`, `close_ticket`) assert the **expected source state**; stale/illegal state → `STATE` → `409`; concurrent write collision → `CONFLICT` → `409` (`Doc-5A §9.5`). Idempotent replay within the dedup window returns the cached original (no duplicate audit).
-- Error classes per `Doc-5A §6.2` (by pointer); codes `Doc-4H §H7` register (`comm_` namespace, `Doc-4A Appendix B.2`): `VALIDATION` → `400`, `AUTHORIZATION` → `403` (else `404` collapse §3.6/R10), `NOT_FOUND` → `404`, `STATE` → `409`, `CONFLICT` → `409`, `REFERENCE` → `422`, `BUSINESS` → `422`.
-- Mutations **audited** via `core.append_audit_record.v1`; support-ticket audit actions carry **`[ESC-COMM-AUDIT]`** (Doc-2 §9 enumerates no Communication audit domain; bound to nearest §9 action by pointer; **never invented**).
-- Reads not audited (`Doc-5A §17.1`).
-- **No `Doc-2 §8` event emitted** (R11).
-- Authorization server-side via `check_permission` (§3.2): User `can_raise_support_ticket`; Admin `staff_can_support`; no shadow path.
+### 7.5 Idempotency, Concurrency, Error & Audit
+- All BC-COMM-4 mutations (`create_ticket`, `update_ticket`, `add_ticket_message`, `close_ticket`) declare `Idempotency: required` → **`Idempotency-Key` mandatory** (`Doc-5A §9`); dedup window `[ESC-COMM-POLICY]` (no key invented); replay within window returns the cached original — same result, no duplicate audit, no duplicate row.
+- State commands (`update_ticket`, `close_ticket`) enforce the expected transition from current ticket status; optional lost race → **`CONFLICT` → `409`** (distinct from `STATE`; no explicit `expected_status` or `updated_at` token in the BC-COMM-4 request schemas — OCC is contract-internal per `Doc-4H §H7`). `add_ticket_message` on a `closed` ticket → `STATE` → `409`. A User requesting a staff-only transition (`open → in_progress` / `in_progress → resolved`) → **`AUTHORIZATION`** (not `STATE`) — explicit in `Doc-4H §H7` H.5/§HB-4.2.
+- Error classes per `Doc-5A §6.2` (by pointer; codes `Doc-4H §H7`, `comm_` namespace): `VALIDATION` → `400`, `AUTHORIZATION` → `403` (else `404` collapse, §3.6/R10), `NOT_FOUND` → `404`, `STATE` → `409`, `CONFLICT` → `409`, `REFERENCE` → `422`.
+- Reads (`get_ticket`, `list_tickets`) not audited (`Doc-5A §17.1`). Mutations audited via Doc-4B `core.append_audit_record.v1`; ticket audit actions carry **`[ESC-COMM-AUDIT]`** (Doc-2 §9 enumerates no Communication audit domain; nearest §9 action by pointer; **never invented**). **BC-COMM-4 emits no `Doc-2 §8` event** (R11/H.7). Authorization server-side via `check_permission`; own-or-support scope (§3.2/§7.3/§7.4).
 - **Binds:** `Doc-5A §6/§9/§17.1`; `Doc-4H §H7`; `Doc-2 §7/§9`; `[ESC-COMM-AUDIT]`, `[ESC-COMM-POLICY]`.
 
 ---
 
-## §8 — Out-of-Wire Boundary (notification fan-out · delivery dispatch / provider-webhook / retry · internal legs)
+## §8 — Out-of-Wire Boundary
 
-The following **4 System contracts have no HTTP wire in any protocol**:
+The following **4 contracts have no HTTP wire in any protocol** (R1; `Doc-5A §1.3/§11`; `Doc-5B/5C/5F R1` precedent). They are in-process services, background workers, or event consumers driven by other modules' outbox events, internal fan-out, or provider callbacks. **Flag-and-halt if any caller wire in any protocol is proposed for them** — doing so is an architecture change.
 
-| Contract | Nature | §8 declaration |
-|---|---|---|
-| `comm.create_notification.v1` | System event-consumer fan-out from other modules' Doc-2 §8 events; idempotent on `source_event_id` (R5/R1) | **No wire** — background event consumer; never caller-initiated |
-| `comm.create_delivery_record.v1` | System dispatch job → M6-owned Outbound Log channel entry (R8) | **No wire** — background dispatch job |
-| `comm.update_delivery_status.v1` | **Provider-webhook callback — email/SMS/WhatsApp infra signal; explicitly NOT a Doc-2 §8 domain event** (R8); forward-only `queued → sent → delivered \| failed` | **No wire** — infrastructure callback; not an M6-emitted webhook (R11) |
-| `comm.retry_delivery.v1` | System retry job (`failed → queued`) | **No wire** — background retry job |
+**Protocol fence (binding): no REST endpoint · no SSE stream · no WebSocket · no Webhook emitted · no GraphQL.** No future protocol addition is permitted without a Doc-5A amendment and Architecture Board approval (Gov-Note §5). Implementation is code / Doc-6.
 
-**Protocol fence:** the above 4 contracts have **no caller wire in any protocol — no REST endpoint, no SSE stream, no WebSocket, no Webhook, no GraphQL. Flag-and-halt if any wire surface in any protocol is proposed** for them (an architecture change requiring a frozen-doc amendment — `Gov-Note §7`).
+| Contract | BC | Actor | Nature | §8 rationale |
+|---|---|---|---|---|
+| `comm.create_notification.v1` | BC-COMM-2 | System | Event-consumer fan-out from other modules' Doc-2 §8 events → creates `notifications` rows; idempotent on `source_event_id` | R5: System event-consumer, never caller-initiated; emitting module authors the Doc-2 §8 event (single-authorship) |
+| `comm.create_delivery_record.v1` | BC-COMM-3 | System | Dispatch job from BC-COMM-2 fan-out → creates `<channel>_logs` row at `queued`; idempotent on `(source_event_id, recipient_ref, channel)` | R1/R8: System dispatch job; no tenant caller wire |
+| `comm.update_delivery_status.v1` | BC-COMM-3 | System | **Inbound provider-webhook callback (email/SMS/WhatsApp infra signal)** → advances Outbound Log `queued → sent → delivered | failed`; idempotent on `(delivery_record_id, provider_ref, target_status)` | R8: provider callback is infra, **NOT a Doc-2 §8 domain event**; webhook ingress is infrastructure, not an M6-emitted webhook (R11) |
+| `comm.retry_delivery.v1` | BC-COMM-3 | System | Retry job → re-dispatches a `failed` record to `queued`; bounded by retry/backoff POLICY (`[ESC-COMM-POLICY]`); budget exhausted → `RATE_LIMITED` | R1/R8: System retry job; no tenant caller wire |
 
-**Non-contract mechanisms also out-of-wire (not counted contracts):**
-- **Realtime push (Supabase Realtime, DH-8):** a **delivery channel** (`Doc-5A §10` / `Doc-4A §15.7`), **not** a contract or API surface (R9); §4 caller commands own state transitions; `comm.get_messages` is the source of truth; no realtime wire surface here.
-- **Dual-audience read internal-service leg:** in-process mechanism; zero wire; counted as zero contracts per MA-COMM-01 (§1.2/Pass-1).
-
-Implementation of all 4 out-of-wire contracts is code / Doc-6.
-**Binds:** `Doc-4H §H5/§H6`; `Doc-5A §1.3/§5/§11`; R1/R5/R8/R9/R11.
+**Additional §8 notes:**
+- **Realtime push (Supabase Realtime; DH-8 backing) is a delivery channel, not a contract** (R9) — not listed here because it has no Doc-4H contract; appears in §4.4 as a delivery channel for message observations only.
+- **Provider-webhook ingress is infrastructure** — NOT an M6-emitted webhook (R11); `comm.update_delivery_status.v1` consumes it as a System effect on M6-owned Outbound Log state only.
+- **`[REC-COMM-OWNERSHIP]`** reconfirmed at §6.4: provider callbacks mutate only M6-owned Outbound Log rows — never a cross-module write.
+- **Binds:** `Doc-4H §H5/§H6`; PassA DH-1…8; `Doc-5A §1.3/§11`; R1/R5/R8/R11.
 
 ---
 
 ## §9 — Conformance & Carried Items
 
-### 9.1 Conformance Statement
-Doc-5H realized across **Pass-1** (§0–§3 + inventory), **Pass-2** (§4–§5), and **Pass-3** (§6–§9 + Appendix A), conforming to `Doc-5H_Structure_v1.0_FROZEN.md` and `Doc-5A_SERIES_FROZEN_v1.0` throughout. **Doc-5H coins nothing** — no endpoint, status, header, error class, permission slug, POLICY key, or event. Per-band attestation in Appendix A; overall status: 0 open BLOCKER/MAJOR/MINOR across all three passes.
+### 9.1 CHK-5A Attestation Summary
+
+Doc-5H passes the Doc-5A Appendix A conformance gate (`Doc-5_Program_Governance_Note_v1.0 §6`). Full per-band attestation in **Appendix A**. Summary:
+
+| CHK-5A group | Status | Notes |
+|---|---|---|
+| Wire encoding (010–015) | ✅ | JSON/UTF-8; snake_case; no bare money; UUIDv7 IDs; frozen enums only |
+| Transport envelope (020–025) | ✅ | §4 envelope; registered headers; no forbidden header; `Iv-Active-Organization` on org-scoped ops; `Idempotency-Key` on mutations |
+| Endpoint realization (030–036) | ✅ | Methods per §5.2; paths per §5.3 `communication` namespace; named state commands; input placement per §5.4; success statuses from §5.5 family |
+| Error model (040–045) | ✅ | Error class → HTTP per §6; canonical envelope; `reference_id` on all body-bearing responses (C-05, §4.7); `comm_` namespace codes; `retryable` per class |
+| Non-disclosure (050–053) | ✅ | Participant/Recipient/Own-or-Support reads scope-gated; `NOT_FOUND` collapse; timing-uniformity; no cross-tenant leak |
+| Authorization (060–063) | ✅ | Bearer = authentication only; `Iv-Active-Organization` server-validated; no client-asserted authz; `check_permission` sole authority (§3.2) |
+| Filter/pagination (070–073) | ✅ | Cursor-only pagination; `[ESC-COMM-POLICY]` page-size; allowlisted filter fields only (`Doc-4A §9.6`); soft-deleted rows excluded |
+| Idempotency (080–083) | ✅ | `Idempotency-Key` on all mutations; dedup → same result, no duplicate audit; state-assertion OCC per contract |
+| Async operations (090–095) | N/A | No M6 caller-facing async surfaces; out-of-wire System jobs are code-layer concerns |
+| Event / outbox surface (100–103) | ✅ | M6 emits no Doc-2 §8 event (R11); no external push/webhook surface defined; provider-webhook is inbound infra (R8); event catalog not restated (§3/R4) |
+| API versioning (110–114) | ✅ | `Iv-Api-Version` header only; no URL path versioning; contract identities stable |
+| General (120–124) | ✅ | No restatement; nothing coined; transport choices marked **[rc]**; flag-and-halt on missing authority; no invented webhook |
+| Provenance (131–134) | ✅ | All 19 caller-facing endpoints trace to frozen Doc-4H BC-COMM-1…4; every surface under `communication/` namespace; no undefined aggregate |
+| Ownership (141–144) | ✅ | Resources under `communication/`; no foreign-aggregate mutation; cross-module via contracts only; no ownership contradiction with Doc-2/Doc-4H |
+| Registry (151–154) | ✅ | Route `communication` in `Doc-5A App B.1`; `comm_` codes in `Doc-4A App B.2`; no self-assigned namespace token |
 
 ### 9.2 Carried Items Register
 
-| ID | Item | Doc-5H handling | Freeze gate? |
+Carried items from Doc-4H PassA HA-8/HA-10 — resolved only via their named channels, never in Doc-5H. Status unchanged from structure registration.
+
+| ID | Item | Doc-5H handling | Gate |
 |---|---|---|---|
-| **DH-1** | Identity — `check_permission` / org / active-org / `staff_can_support` / notification rules read, consumed | Auth resolved server-side via Identity (`Doc-4C §C3/§C8`); `check_permission` sole authority (§3.2/Pass-1); no shadow authz; no Identity surface realized | **No** |
-| **DH-2** | Marketplace — consume §8 events for fan-out; vendor refs by UUID | Events consumed by §8 fan-out consumer (`create_notification`); no Marketplace surface realized | **No** |
-| **DH-3** | RFQ — consume §8 events; **read scrub-rule by service, apply content-side**; host `rfq_clarification` thread | `send_message` reads+applies rule at write-time (R7/§4.3/Pass-2); rule stays RFQ-owned (`Doc-4E`); no cache/copy/extend/override; no procurement decision | **No** |
-| **DH-4** | Operations — consume §8 events for party fan-out | §8 consumer; no Operations surface realized | **No** |
-| **DH-5** | Trust firewall — consume §8 events; compute/own no score | §8 consumer; delivery outcome never a score/eligibility signal (R6/§6.4); notification read-state firewalled from trust (§5.4/Pass-2); no Trust surface realized | **No** |
-| **DH-6** | Billing — consume §8 events; no paid-plan delivery gating touching trust/eligibility | §8 consumer; firewall as §3 wire constraint (R6/Pass-1); no Billing surface realized | **No** |
-| **DH-7** | Admin — consume §8 events; moderation/ban is Admin's | §8 consumer; ticket aggregate stays M6-owned, Admin acts via `staff_can_support` not as owner (R2/§7.3); no Admin surface realized | **No** |
-| **DH-8** | Platform Core — audit-write / outbox / UUIDv7 / POLICY / flags / **Realtime backing**, consumed | Consumed via Doc-4B mechanisms by pointer; Realtime = delivery channel (R9/§3.5/Pass-1); never re-implemented | **No** |
-| `[ESC-COMM-AUDIT]` | Doc-2 §9 no Communication audit domain — every mutation carries it | Bound to nearest Doc-2 §9 action by pointer; **interim, not finalized**; channel: Doc-2 §9 additive | **No** |
-| `[ESC-COMM-POLICY]` | No `communication` POLICY namespace key (dedup / retry / backoff / rate / page) | Platform-default key names by pointer (no key restated inline); channel: Doc-3 §12.2 additive; **`[ESC-COMM-POLICY]`-keyed contracts not finalized until registered** | **Tracked** — per-contract finalization; not a structural gate |
-| `[ESC-COMM-SLUG]` | No distinct notification-recipient-read slug in Doc-2 §7 | Interim recipient / `staff_can_support` scope by pointer; channel: Doc-2 §7 additive; no slug invented | **No** |
-| `[ESC-COMM-EVENT]` | M6 emits no Doc-2 §8 event today | §11 N/A (R11/§8); if ever required, additive Doc-2 §8 patch; **never coin an event in Doc-5H** | **No** |
-| **`[REC-COMM-OWNERSHIP]`** | Delivery-aggregate ownership must be explicit (BLOCKER BC-COMM-01 at structure review) | **SATISFIED** — confirmed verbatim at §6.2: `Outbound Log` aggregate M6-owned per `Doc-4H` BC-COMM-3 ("Owned Aggregate: Outbound Log") + `Doc-2 §10.7`; provider callbacks mutate only M6 state (R8). Reconfirmed at content per FROZEN structure "reconfirm verbatim at content" requirement | **Satisfied** |
+| **DH-1** | Identity — `check_permission` / org / `staff_can_support` / active-org context (consumed) | Resolved server-side via Identity (`Doc-4C §C3/§C8`); `check_permission` sole authority (§3.2); no Identity surface realized | No |
+| **DH-2** | Marketplace — §8 events consumed for notification fan-out; vendor refs bare UUID | §8 consumer; no Marketplace surface realized | No |
+| **DH-3** | RFQ — §8 events; scrub-rule by service, apply content-side; `rfq_clarification` thread | `send_message` reads+applies rule (R7/§4.3); rule stays RFQ-owned; no procurement decision | No |
+| **DH-4** | Operations — §8 events consumed for party fan-out | §8 consumer; no Operations surface realized | No |
+| **DH-5** | Trust firewall — §8 events; compute/own no score | §8 consumer; delivery outcome never a score/eligibility signal (R6/§6.5); no Trust surface | No |
+| **DH-6** | Billing — §8 events; no paid-plan delivery gating touching trust/eligibility | §8 consumer; firewall as §3 wire constraint (R6); no Billing surface | No |
+| **DH-7** | Admin — §8 events; moderation/ban is Admin's | §8 consumer; ticket aggregate stays M6-owned, Admin acts via `staff_can_support` (§7.3/m-COMM-03) | No |
+| **DH-8** | Platform Core — audit/outbox/UUIDv7+human-ref/POLICY/flags/Realtime backing (consumed) | Consumed via Doc-4B mechanisms by pointer; Realtime = delivery channel (R9/§4.4) | No |
+| `[ESC-COMM-AUDIT]` | No Communication audit domain in Doc-2 §9 | Bound by pointer to nearest §9 action; interim; channel: Doc-2 §9 additive | No |
+| `[ESC-COMM-POLICY]` | No `communication` POLICY namespace keys registered (dedup/retry/backoff/rate/page) | Platform-default key names referenced by pointer; channel: Doc-3 §12.2 additive | Tracked — per-contract finalization |
+| `[ESC-COMM-SLUG]` | No distinct recipient/delivery-read slug in Doc-2 §7 | Interim Own-or-Support / recipient scope by pointer; channel: Doc-2 §7 additive; no slug invented | No |
+| `[ESC-COMM-EVENT]` | M6 emits no Doc-2 §8 event today | §8 N/A (R11); if ever required, additive Doc-2 §8 patch; **never coin an event in Doc-5H** | No |
+| **`[REC-COMM-OWNERSHIP]`** | Delivery-aggregate ownership (BLOCKER BC-COMM-01) | **SATISFIED** — confirmed at structure (vs Doc-4H BC-COMM-3 / Doc-2 §10.7) and **reconfirmed verbatim at §6.4** — Outbound Log M6-owned; provider callbacks mutate only M6 state | Gate: **SATISFIED** |
 
 ---
 
 ## Appendix A — Doc-5H Conformance Attestation
 
-Per-band pass/fail against `Doc-5A Appendix A` (`CHK-5A-xxx`) for the realized M6 surface (Pass-1 §0–§3 + inventory; Pass-2 §4–§5; Pass-3 §6–§9). Evidence by pointer to the realized section; no rules restated.
-
-### A.1 — Out-of-Wire Boundary (`Doc-5A §1.3/§5/§11`)
-
-| Band | Status | Evidence |
-|---|---|---|
-| Out-of-wire contracts declared, no wire in any protocol | **PASS** | §8: 4 contracts; protocol fence (5 protocols stated); flag-and-halt noted |
-| Internal-service-only contracts = 0; dual-audience leg = mechanism (CHK-5A-046) | **PASS** | §1.2/Pass-1 MA-COMM-01: count exactly 19 caller + 4 out = 23; 0 internal-service-only |
-| Realtime declared delivery channel, not a contract/endpoint | **PASS** | §3.5/Pass-1; §4.4/Pass-2; §8 (R9) |
-
-### A.2 — Actor & Authorization (`Doc-5A §7`)
-
-| Band | Status | Evidence |
-|---|---|---|
-| Actor model declared; **no public/anonymous** | **PASS** | §3.1/Pass-1: User + Admin only; System out-of-wire; explicit declaration |
-| `Iv-Active-Organization` server-validated for User | **PASS** | §3.1/Pass-1: server-validated, never client-trusted (`Doc-4A §5.3`) |
-| `check_permission` sole authorization authority; no shadow path | **PASS** | §3.2/Pass-1: sole authority declared; no parallel authz path |
-| Existing Doc-2 §7 slugs bound; none invented | **PASS** | §3.2/Pass-1: `can_use_messaging`, `can_raise_support_ticket`, `staff_can_support` bound; `[ESC-COMM-SLUG]` carried for notification-read slug |
-
-### A.3 — Method Mapping & Path Grammar (`Doc-5A §5.2/§5.3`)
-
-| Band | Status | Evidence |
-|---|---|---|
-| Query → `GET`/`200` | **PASS** | 7 read endpoints: §2.2–§2.5/Pass-1; §4.1/Pass-2; §6.1; §7.1 |
-| Create command → `POST` collection / `201` + `Location` **[rc]** | **PASS** | `create_thread`, `create_ticket` → 201; `send_message`, `add_thread_participant`, `add_ticket_message` → 201 (append child) |
-| State/domain command → `POST /{id}/{command-name}` / `200` | **PASS** | `close_thread`, `update_ticket`, `close_ticket`, `mark_notification_read`, `archive_notification` → POST named cmd/200 |
-| Soft removal → `DELETE` / `200` (audit retained) | **PASS** | `remove_thread_participant` → DELETE/200/R12 |
-| Path prefix `communication` (never `comm.`) | **PASS** | All paths `/communication/…`; **[realization convention]** marked; R3 |
-| Path grammar `/{module}/{resource}[/{id}][/{cmd}]` | **PASS** | All paths conform; `{id}` = UUIDv7; command sub-resources named |
-
-### A.4 — Request Structure (`Doc-5A §5.4`)
-
-| Band | Status | Evidence |
-|---|---|---|
-| No prohibited inputs (actor/org/state/attribution never wire fields) | **PASS** | §4.1/Pass-2; §5.1/Pass-2; §6.1; §7.1: `Doc-4A §9.7` compliance declared |
-| `{id}` = UUIDv7 in path | **PASS** | All path IDs UUIDv7 per Doc-4B `core.allocate_id.v1` |
-
-### A.5 — Success Status & Response Envelope (`Doc-5A §5.5/§6`)
-
-| Band | Status | Evidence |
-|---|---|---|
-| Status family `200`/`201`+Location/`204` per spec; none invented | **PASS** | All endpoints: creates 201+Location, state cmds/reads 200 |
-| Top-level `reference_id` C-05 (`Doc-4A §22.1` / CHK-5A-042) | **PASS** | Declared at §4.7/Pass-2 as cross-cutting for all body-bearing responses in §4–§7; `204` body-exempt per `Doc-4A_Patch_C-05-204_v1.0` |
-
-### A.6 — Error Mapping (`Doc-5A §6.2`)
-
-| Band | Status | Evidence |
-|---|---|---|
-| Error class → HTTP status per §6.2 | **PASS** | §4.6/Pass-2; §5.5/Pass-2; §6.4; §7.6: VALIDATION→400, AUTH→403/404, NOT_FOUND→404, STATE→409, CONFLICT→409, REFERENCE→422, BUSINESS→422 |
-| Non-disclosure `NOT_FOUND` collapse; no timing side-channel | **PASS** | §3.6/Pass-1; §4.5/Pass-2; §5.3/Pass-2; §6.3; §7.4: all reads scope-gated; non-scope → NOT_FOUND (R10) |
-
-### A.7 — Idempotency & Concurrency (`Doc-5A §9`)
-
-| Band | Status | Evidence |
-|---|---|---|
-| `Idempotency-Key` mandatory on all mutations | **PASS** | §4.6/Pass-2; §5.5/Pass-2; §7.6: all mutations declare Idempotency-Key; dedup `[ESC-COMM-POLICY]` |
-| State transitions assert expected source state; stale → STATE/CONFLICT → 409 | **PASS** | §4.2/Pass-2; §5.2/Pass-2; §7.2/§7.6: `close_thread`, `update_ticket`, `close_ticket`, notification cmds all assert source state |
-| All concurrency-bearing contracts listed (CHK-5A-122) | **PASS** | State-machine contracts with expected-state assertion: `close_thread`, `mark_notification_read`, `archive_notification`, `update_ticket`, `close_ticket` — all declared |
-
-### A.8 — Pagination (`Doc-5A §8`)
-
-| Band | Status | Evidence |
-|---|---|---|
-| List endpoints paginated; filters as query params; page-size `[ESC-COMM-POLICY]` | **PASS** | `list_threads`, `list_notifications`, `list_tickets` paginate per §8; status/type filters as query params |
-
-### A.9 — Outbox / Events (`Doc-5A §11`)
-
-| Band | Status | Evidence |
-|---|---|---|
-| M6 emits no Doc-2 §8 event; §11 N/A | **PASS** | R11; §3.4/Pass-1; §4.6/Pass-2; §5.5/Pass-2; §6.4; §7.6; §8: `[ESC-COMM-EVENT]` none today |
-| No caller webhook/push surface | **PASS** | §8: provider webhook = inbound infra (R8/R11); no M6-emitted webhook; no caller push surface |
-
-### A.10 — Audit (`Doc-5A §17`)
-
-| Band | Status | Evidence |
-|---|---|---|
-| Mutations audited via `core.append_audit_record.v1`; `[ESC-COMM-AUDIT]` carried | **PASS** | §4.6/Pass-2; §5.5/Pass-2; §7.6: all mutations audited by pointer; `[ESC-COMM-AUDIT]` for un-enumerated Communication domain |
-| Reads not audited (`§17.1`) | **PASS** | §4.6/Pass-2; §5.5/Pass-2; §6.4; §7.6: reads declared not audited |
-
-### A.11 — POLICY Keys (`Doc-5A §12` / `Doc-3 §12.2`)
-
-| Band | Status | Evidence |
-|---|---|---|
-| POLICY keys by pointer only; none restated inline | **TRACKED** | `[ESC-COMM-POLICY]`: no `communication` namespace key registered; platform-default names by pointer; channel `Doc-3 §12.2` additive. Finalization required before content freeze |
-
-### A.12 — Anti-Invention (CHK-5A-121 / CHK-5A-154)
-
-| Band | Status | Evidence |
-|---|---|---|
-| No endpoint coined (CHK-5A-121) | **PASS** | All 19 caller-facing endpoints realize existing Doc-4H PassB tokens verbatim |
-| No status / header / error-class coined | **PASS** | Statuses per `Doc-5A §5.5`; error codes per `comm_` namespace (`Doc-4A App B.2`) |
-| No slug / POLICY-key / event coined | **PASS** | Slugs bind Doc-2 §7; POLICY keys by pointer; no event coined (R11/R4) |
-| Route namespace `communication` matches App B.1 verbatim (CHK-5A-154) | **PASS** | R3: route = `communication` (`Doc-5A App B.1` line 41); token = `comm.` (`Doc-4H`); `comms` = non-authoritative shorthand only |
+Doc-5H attests the following bands against the Doc-5A Appendix A CHK-5A-xxx checklist. All bands PASS. Every check binds an existing obligation by pointer — no rule restated. Appendix A contains attestations only; no normative behavior is defined here.
 
 ---
 
-### A.M6-1 — Delivery-Only / Single-Authorship Band (R5)
+### A.1 Wire Encoding Band (CHK-5A-010…015) — PASS
+JSON/UTF-8 (CHK-5A-010); `snake_case` fields (CHK-5A-011); no bare money scalar — M6 carries no monetary amounts (CHK-5A-012 N/A); ISO 8601 timestamps (CHK-5A-013); all IDs are `UUIDv7`; `human_ref` only where a declared lookup/display applies (CHK-5A-014); all enum values drawn from Doc-2 frozen definitions — no invented value (CHK-5A-015).
 
-| Assertion | Status | Evidence |
-|---|---|---|
-| M6 emits no Doc-2 §8 event | **PASS** | R11; §3.4/Pass-1; `[ESC-COMM-EVENT]` none today; §9.2 |
-| `create_notification` is System event-consumer; never caller-initiated | **PASS** | §8; R1/R5: out-of-wire; flag-and-halt if wire proposed |
-| M6 authors no notification-production contract for another module | **PASS** | R5; §1.3/Pass-1 dependency boundary |
-| Consumed event payload = observational input only; never API-contract authority | **PASS** | R5; §3.4/Pass-1: rendered as notification text; no owned read-model field derived from payload |
+### A.2 Transport Envelope Band (CHK-5A-020…025) — PASS
+Single §4 envelope (CHK-5A-020); only registered standard headers carried (CHK-5A-021); `Iv-` prefix for registered tokens only — `Iv-Active-Organization` (CHK-5A-022); no forbidden header in any M6 surface (CHK-5A-023); `Authorization` mandatory; `Iv-Active-Organization` present on all org-scoped operations (CHK-5A-024); `Idempotency-Key` present when contract declares `Idempotency: required` (CHK-5A-025).
 
-### A.M6-2 — Delivery-Aggregate-Ownership Band (R8 / `[REC-COMM-OWNERSHIP]`)
+### A.3 Endpoint Realization Band (CHK-5A-030…036) — PASS
+Every M6 endpoint instantiates the §5.7 template (CHK-5A-030); HTTP method per §5.2 mapping — creates `POST`/`201`, append children `POST`/`201`, state commands `POST` named/`200`, soft-remove `DELETE`/`200`, reads `GET`/`200` (CHK-5A-031); all paths conform to §5.3 grammar under `communication` namespace (CHK-5A-032); every state-changing operation is a named command sub-resource (`close_thread`, `close_ticket`, `update_ticket`, `mark_notification_read`, `archive_notification`) — no arbitrary field replacement (CHK-5A-033); inputs placed per §5.4 (CHK-5A-034); success statuses from §5.5 family (CHK-5A-035); `update_ticket` appears at named-command sub-resource position `/tickets/{id}/update_ticket` (not a bare collection or item path — the named command at sub-resource level is per §5.3 state-command convention) (CHK-5A-036).
 
-| Assertion | Status | Evidence |
-|---|---|---|
-| `Outbound Log` aggregate is M6-owned | **PASS** | §6.2: confirmed against `Doc-4H` BC-COMM-3 ("Owned Aggregate: Outbound Log") + `Doc-2 §10.7` |
-| Provider callbacks mutate only M6-owned state; not a Core read-model M6 mirrors | **PASS** | §6.2/R8: provider → webhook → M6 writes M6's own Outbound Log; ownership stays in M6 not M0/infra |
-| `update_delivery_status` = inbound infra; NOT a Doc-2 §8 domain event | **PASS** | §8/R8: explicitly declared NOT a domain event; forward-only; out-of-wire |
-| `[REC-COMM-OWNERSHIP]` satisfied and reconfirmed at content | **PASS** | §6.2 (verbatim reconfirm) + §9.2 (register entry) — per FROZEN structure obligation |
+### A.4 Error Model Band (CHK-5A-040…045, 050–053) — PASS
+Every error maps class → HTTP per §6 (CHK-5A-040); canonical §6 error envelope (CHK-5A-041); top-level `reference_id` (platform-assigned `UUIDv7`) on all body-bearing responses — declared at §4.7 for all M6 surfaces (CHK-5A-042); `error_code` within `comm_` namespace (CHK-5A-043); `retryable` per §6 class (CHK-5A-044); `RATE_LIMITED` realized per `Doc-4A §19` where applicable (`retry_delivery` — §8) (CHK-5A-045). Non-access / not-found: indistinguishable in status (CHK-5A-050), body (CHK-5A-051), and timing (CHK-5A-052); excluded / routing-excluded rows undetectable (CHK-5A-053).
 
-### A.M6-3 — Non-Disclosure Band (R10)
+### A.5 Authorization Band (CHK-5A-060…063) — PASS
+`Authorization` bearer = authentication token only; authorization derived server-side from `check_permission` (CHK-5A-060); `Iv-Active-Organization` server-validated per §3/§7; never accepted from client body or header as trusted input (CHK-5A-061); no authorization assertion from any header/input (`Doc-4A §9.7`) (CHK-5A-062); actor-type / delegation context resolved server-side; delegation not applicable on any M6 surface (`Doc-4H` H.3 on every BC) (CHK-5A-063).
 
-| Assertion | Status | Evidence |
-|---|---|---|
-| All 7 reads declare disclosure scope per §3.3 binding rule | **PASS** | §4.5/Pass-2 Participant (threads/messages); §5.3/Pass-2 Recipient (notifications); §6.3 Own-or-Support (delivery); §7.4 Own-or-Support (tickets) |
-| Non-scope read → uniform `NOT_FOUND`; no timing side-channel | **PASS** | §3.6/Pass-1; §4.5/Pass-2; §5.3/Pass-2; §6.3; §7.4 (R10; `Doc-5A §6.3/§7`; `Doc-4A §7.5`) |
-| No cross-tenant leakage | **PASS** | NOT_FOUND collapse on all out-of-scope reads; no existence signal |
-| Notification read/archive state never influences prioritization/matching/trust | **PASS** | §5.4/Pass-2: read-state firewall (R6/DH-5) |
+### A.6 Filter/Pagination Band (CHK-5A-070…073) — PASS
+Cursor-based (opaque `cursor`) pagination only; no offset/index (CHK-5A-070); page-size bound referenced by `[ESC-COMM-POLICY]` key only — no literal (CHK-5A-071); filter/sort fields drawn from declared allowlists (`Doc-4A §9.6`): `list_notifications` (`status`), `get_delivery_status` (`source_event_id`, `channel`), `list_tickets` (`status`) (CHK-5A-072); soft-deleted / non-disclosed / out-of-scope rows excluded from items, counts, and totals (CHK-5A-073).
 
-### A.M6-4 — Append-Only Band (R12)
+### A.7 Idempotency Band (CHK-5A-080…083) — PASS
+`Idempotency-Key` carried on all mutation contracts (`Idempotency: required`) (CHK-5A-080); duplicate request within dedup window → same result, no duplicate audit record, no duplicate row (CHK-5A-081); optimistic concurrency: `close_thread` uses `expected_status` OCC (`Doc-4A §14`); BC-COMM-4 ticket commands carry optional CONFLICT on lost race (`Doc-4H §H7`) (CHK-5A-082); retry semantics aligned to `retryable` signal (CHK-5A-083).
 
-| Assertion | Status | Evidence |
-|---|---|---|
-| Thread messages never overwritten or hard-deleted | **PASS** | §4.2/Pass-2; R12/Invariant #8 |
-| `close_thread` retains message history | **PASS** | §4.2/Pass-2: `open → closed` only; no history deletion (R12) |
-| `archive_notification` retains notification | **PASS** | §5.2/Pass-2: `read → archived`; notification not deleted (R12) |
-| Ticket messages append-only; `close_ticket` retains them | **PASS** | §7.5; R12: append-only declared; close retains |
-| Delivery logs append-only; never caller-writable | **PASS** | §6.4; §8: exclusively §8 System write path; no caller write surface (R12) |
+### A.8 Async Operations Band (CHK-5A-090…095) — N/A
+No M6 caller-facing async (`202`) surfaces. Out-of-wire System contracts (§8) are in-process / background-job execution — a code-layer concern, not a Doc-5H wire concern. CHK-5A-090…095 not applicable to this module.
+
+### A.9 Event / Outbox Surface Band (CHK-5A-100…103) — PASS
+No event-driven completion surface (CHK-5A-100); no external webhook / SSE / socket push surface defined — provider-webhook is inbound infra, not M6-emitted; Realtime is a delivery channel, not a contract (CHK-5A-101); event receipt not treated as completion authority (CHK-5A-102); event catalog (Doc-2 §8) not restated — M6 emits no event; consumed events referenced by pointer only (CHK-5A-103).
+
+### A.10 API Versioning Band (CHK-5A-110…114) — PASS
+Surface version carried via `Iv-Api-Version` only; no URL-path or query versioning (CHK-5A-110); breaking change bumps surface version, additive/editorial does not (CHK-5A-111); contract identities stable (`comm.<operation>.v1`) (CHK-5A-112); deprecation per `Doc-4A §20.4`; `Removal-Window` by POLICY key (CHK-5A-113); domain change (entity/state/event/permission/POLICY) precedes contract — no surface-version bump as domain proxy (CHK-5A-114).
+
+### A.11 General Band (CHK-5A-120…124) — PASS
+No normative content restated; every rule bound by pointer (CHK-5A-120); nothing coined — no new entity / state / event / permission / POLICY key / error class / status / header invented (CHK-5A-121); transport-level choices marked **[rc]** (CHK-5A-122); missing authority → flag-and-halt; escalations carried by marker (CHK-5A-123); no invented external webhook / push surface (CHK-5A-124).
+
+### A.12 Provenance Band (CHK-5A-131…134) — PASS
+All 19 caller-facing M6 endpoints identify owning module (Communication, M6) and section (§4–§7) (CHK-5A-131); every endpoint traces to a frozen Doc-4H BC-COMM-1…4 contract (CHK-5A-132); no endpoint references an undefined aggregate — all aggregates (Thread/messages, Notification, Outbound Log, Support Ticket/ticket_messages) are frozen in Doc-2 §10.7 / Doc-4H (CHK-5A-133); contract identities stable under §12 (CHK-5A-134).
+
+### A.13 Ownership Band (CHK-5A-141…144) — PASS
+All M6 resources appear under `communication/` route namespace only (CHK-5A-141); no foreign-aggregate mutation — M6 contracts write only to M6-owned tables (`communication` schema: threads, messages, thread_participants, notifications, email_logs/sms_logs/whatsapp_logs, support_tickets, ticket_messages) (CHK-5A-142); cross-module interaction via approved channels (Identity via `check_permission` — consumed; RFQ scrub-rule via RFQ service — consumed; Doc-4B audit/outbox — consumed; never a foreign-namespace endpoint) (CHK-5A-143); no ownership contradiction with Doc-2 / Doc-4H (CHK-5A-144).
+
+### A.14 Registry Band (CHK-5A-151…154) — PASS
+Route prefix `communication` exists in `Doc-5A App B.1` (CHK-5A-151); `comm_` error-code prefix in `Doc-4A App B.2` (CHK-5A-152); standard header `Iv-Active-Organization` in `Doc-5A App B.4` (CHK-5A-153); no self-assigned namespace/registry token — new registrations via Doc-5A amendment only (CHK-5A-154).
 
 ---
 
-*End of Doc-5H Content v1.0, Pass 3 (§6–§9 + Appendix A). Delivery tracking (`get_delivery_status` Own-or-Support; M6-owned `Outbound Log` aggregate ownership confirmed at §6.2 — `[REC-COMM-OWNERSHIP]` SATISFIED); support communications (BC-COMM-4: 6 endpoints, two-sided User(opener)/Admin(staff), ticket `open → in_progress → resolved → closed` per Doc-2 §3.7/Doc-4H §H13 no edge invented, per-command actor-side declared per §3.3, append-only messages, M6-owned aggregate); out-of-wire boundary (4 contracts declared, 5-protocol fence, flag-and-halt); conformance + carried items (DH-1…DH-8 PASS, ESC items registered, `[ESC-COMM-POLICY]` TRACKED, `[REC-COMM-OWNERSHIP]` SATISFIED); Appendix A (12 standard bands PASS, `[ESC-COMM-POLICY]` TRACKED, 4 M6-unique bands all PASS); 0 open BLOCKER/MAJOR/MINOR; nothing coined; all references by pointer. Doc-5H (Pass-1 + Pass-2 + Pass-3) structurally complete against `Doc-5H_Structure_v1.0_FROZEN.md`. Next: Freeze Readiness Audit.*
+### A.15 M6-Unique Attestation Bands
+
+#### Delivery-Only / Single-Authorship Band (R5 / MA-COMM-04) — PASS
+- M6 emits **no** Doc-2 §8 domain event (§8; R11; `[ESC-COMM-EVENT]` — none today).
+- M6 authors **no** notification-production contract for another module — `comm.create_notification.v1` is a System event-consumer from other modules' events, never a caller-initiated production surface.
+- A consumed event payload is **observational input only** — M6 renders it as notification text; it never becomes an M6 API-contract authority or owned read-model field (no ownership leakage from the source module — R5/MA-COMM-04).
+
+#### Delivery-Aggregate Ownership Band (R8 / BLOCKER BC-COMM-01) — PASS
+- The **Outbound Log aggregate** (`email_logs` / `sms_logs` / `whatsapp_logs`; VO `DeliveryStatus`) is **M6-owned** (`Doc-2 §10.7`; `Doc-4H` BC-COMM-3; §6.4 verbatim reconfirmation).
+- Provider callbacks (`comm.update_delivery_status.v1`) mutate **only M6-owned Outbound Log state** — these are not Platform-Core-owned read-models that M6 mirrors; ownership stays in M6.
+- `comm.update_delivery_status.v1` is driven by an inbound infra provider signal — **explicitly NOT a Doc-2 §8 domain event** (R8); no event ownership transferred.
+- **`[REC-COMM-OWNERSHIP]` gate: SATISFIED** (structure freeze + §6.4 verbatim content reconfirmation).
+
+#### Non-Disclosure Firewall Band (R10) — PASS
+- Thread reads (`get_thread`, `list_threads`, `get_messages`) → **Participant** scope; non-participant → `NOT_FOUND`.
+- Notification reads (`get_notification`, `list_notifications`) → **Recipient** scope; non-recipient → `NOT_FOUND`.
+- Delivery reads (`get_delivery_status`) → **Own-or-Support** scope; non-authorized → `NOT_FOUND`.
+- Ticket reads (`get_ticket`, `list_tickets`) → **Own-or-Support** scope; out-of-scope → `NOT_FOUND`.
+- All collapses to uniform `NOT_FOUND` — no existence/timing side-channel (`Doc-5A §6.3/§7`; `Doc-4A §7.5/§12.4`); timing-uniformity throughout.
+- **Notification read/archive state** is a per-recipient inbox fact only — cannot influence prioritization, matching, or trust (R6).
+
+#### Append-Only Band (R12) — PASS
+- **Messages** (`messages` rows in BC-COMM-1) — append-only; never overwritten or hard-deleted.
+- **`close_thread`** closes the thread (`open → closed`) and **does not delete message history**.
+- **`archive_notification`** advances inbox state (`read → archived`) and **does not delete the notification**.
+- **Delivery logs** (`email_logs` / `sms_logs` / `whatsapp_logs`) — append-only; **never caller-writable** — written only by System contracts in §8.
+- **Ticket messages** (`ticket_messages`) — append-only; never overwritten; appending blocked when ticket is `closed` (`STATE`).
+- **`close_ticket`** closes the ticket (`resolved → closed`) and does not delete ticket message history.
+
+---
+
+*End of Doc-5H Content v1.0, Pass 3 (§6–§9 + Appendix A). §6 (Delivery Tracking, BC-COMM-3): `get_delivery_status` realized as dual-mode GET (by-ID + list) under `communication/delivery-records`; Own-or-Support disclosure scope; `[REC-COMM-OWNERSHIP]` reconfirmed verbatim at §6.4 — Outbound Log M6-owned, provider callbacks mutate only M6 state (R8); read unaudited; delivery logs never caller-writable (R12); forward-only FSM `queued → sent → delivered | failed` / retry `failed → queued`. §7 (Support, BC-COMM-4): 6 contracts realized; ticket machine `open → in_progress → resolved → closed` (terminal) — Doc-2 §3.7 / Doc-4H §H13 / §10.7 edges; two-sided User / Admin with explicit actor→transition authority (User → `resolved → closed` only; User requesting staff-only transition → `AUTHORIZATION`, not `STATE`); Support Ticket stays M6-owned (m-COMM-03); `create_ticket` → POST/201+Location; `add_ticket_message` → POST/201 no Location (no standalone message GET); `close_ticket` dedicated `resolved → closed` terminal; `ticket_messages` append-only; blocked on `closed` ticket. §8: 4 out-of-wire contracts declared with 5-protocol fence; provider-webhook inbound infra not M6-emitted (R8/R11); Realtime = delivery channel not a contract (R9). §9 + Appendix A: all 15 CHK-5A bands PASS (async N/A); `[REC-COMM-OWNERSHIP]` gate SATISFIED; 4 M6-unique bands (delivery-only/single-authorship, aggregate-ownership, non-disclosure, append-only) PASS; carried items DH-1…DH-8 + `[ESC-COMM-*]` registered by pointer; nothing coined; no Doc-2 §8 event emitted (R11). Doc-5H Content v1.0 complete — all 3 passes (§0–§9 + Appendix A) realized. Next: Doc-5H Freeze Readiness Audit.*
