@@ -7,7 +7,8 @@
 | Pass-3 scope | §7 BC-BILL-4 Lead Credits (4) · §8 BC-BILL-5 Platform Invoicing (4 wire + record_payment out-of-wire) · §9 BC-BILL-6 Rewards & Referrals (5) · §10 Out-of-Wire Boundary (6) · §11 Conformance · Appendix A |
 | Builds on | `Doc-5I_Content_v1.0_Pass1.md` (§0–§3 binding registers — §3.8 error map, §3.9 envelope) · `Doc-5I_Content_v1.0_Pass2.md` (§4–§6) |
 | Authority | `Doc-5A_SERIES_FROZEN_v1.0`; `Doc-4I_FROZEN_v1.0` (§HB-4/5/6 + §H conventions); `Doc-5I_Structure_v1.0_FROZEN.md` |
-| Carried ESC (unchanged) | `[ESC-BILL-ADMINSCOPE]` · `[ESC-BILL-ACTIVATE]` · `[ESC-BILL-POLICY]` · `[ESC-BILL-FIELD]` · `[ESC-BILL-SLUG]` · `[ESC-BILL-AUDIT]` · `[ESC-BILL-EVENT]` — **none resolved here; ADMINSCOPE & ACTIVATE not locally fixed** |
+| Carried ESC | `[ESC-BILL-ADMINSCOPE]` **RESOLVED** (Board Gate 1 → A) · `[ESC-BILL-ACTIVATE]` **RESOLVED** (Board Gate 2 → A, `billing.activate_plan.v1`) · remaining non-gating: `[ESC-BILL-POLICY]` · `[ESC-BILL-FIELD]` · `[ESC-BILL-SLUG]` · `[ESC-BILL-AUDIT]` · `[ESC-BILL-EVENT]` |
+| Board dispositions applied | `Doc-5I_Structure_Additive_Patch_v1.0.md` + `Doc-4I_ActivatePlan_Additive_Patch_v1.0.md` — partition now **27 caller + 6 out = 33** |
 
 > **Cross-cutting §3 binds all sections below (Pass-1).** Error-class→status → §3.8; response envelope + pagination + prohibited request fields → §3.9; actor model → §3.1; `check_permission` → §3.2; billing firewall → §3.3; state machines → §3.4; non-disclosure `NOT_FOUND` → §3.5; disclosure scopes → §3.6; actor sides → §3.7. Realize-never-redecide; every field/output/error traces to `Doc-4I §HB-x` verbatim.
 
@@ -523,8 +524,8 @@ BC-BILL-6 owns the Reward Account (`reward_accounts` head + append-only `reward_
 
 | ID | Item | Channel | Freeze gate? |
 |---|---|---|---|
-| `[ESC-BILL-ADMINSCOPE]` | Structure §3 "Admin reads any org" **conflicts** with `Doc-4I §HB-2.5/3.3/4.2/5.4/6.3` (reads User-only). Doc-4I outranks Doc-5I structure | **Corpus conflict** — additive Doc-4I/structure patch with **human approval**; not locally fixed | **Yes** |
-| `[ESC-BILL-ACTIVATE]` | `status` `draft→active` edge (Doc-2 §3.8) has **no realizing Doc-4I BC-BILL-1 contract** | Doc-4I additive (a publish/activate contract or explicit attribution) — **human approval**; not locally fixed | **Yes** |
+| `[ESC-BILL-ADMINSCOPE]` | Structure §3 "Admin reads any org" conflicted with `Doc-4I §HB-2.5/3.3/4.2/5.4/6.3` (reads User-only) | **RESOLVED — Board Gate 1 → A:** §3 grant re-scoped to catalog reads only (`Doc-5I_Structure_Additive_Patch_v1.0.md` Patch 1); org-scoped reads User-only | Closed |
+| `[ESC-BILL-ACTIVATE]` | `status` `draft→active` edge (Doc-2 §3.8) had no realizing Doc-4I contract | **RESOLVED — Board Gate 2 → A:** additive `billing.activate_plan.v1` (`Doc-4I_ActivatePlan_Additive_Patch_v1.0.md §HB-1.1a`); realized §4 | Closed |
 | `[ESC-BILL-POLICY]` | No `billing` POLICY key (page-size, dedup, dunning, refund, reward/referral rules) | Doc-3 §12.2 additive | Tracked (per-contract; not structural) |
 | `[ESC-BILL-FIELD]` | Representation fields beyond Doc-4I `§HB` outputs (e.g. plan `description`, subscription `plan_snapshot`/timestamps) | Doc-4I output extension; never reshaped in Doc-5I | Tracked |
 | `[ESC-BILL-SLUG]` | No Doc-2 §7 slug for Admin catalog governance / reward redemption | Doc-2 §7 additive; no slug invented | No |
@@ -532,7 +533,7 @@ BC-BILL-6 owns the Reward Account (`reward_accounts` head + append-only `reward_
 | `[ESC-BILL-EVENT]` | Lead-access (Operations) + ad/microsite (Marketplace) metering signals have no §8 emission event | Doc-2 §8 additive if later required; never coined | No |
 | DF-BILL-1…8 | Identity / Marketplace / RFQ / Operations / Trust-boundary / Communication / Admin / Platform Core | Per `Doc-4I PassA §A8/§A10` channels; consumed/by-pointer; no surface realized | No |
 
-> Doc-5I coins nothing. `[ESC-BILL-ADMINSCOPE]` and `[ESC-BILL-ACTIVATE]` are **content-freeze gates** carried unchanged from Pass-2 — both are frozen-corpus matters requiring human-approved additive patches, explicitly **not** resolved locally.
+> Doc-5I coins nothing. `[ESC-BILL-ADMINSCOPE]` and `[ESC-BILL-ACTIVATE]` were the two content-freeze gates — **both now RESOLVED** by human-approved additive patches (Board Gates 1 & 2 → Option A): `Doc-5I_Structure_Additive_Patch_v1.0.md` (§3 re-scope) and `Doc-4I_ActivatePlan_Additive_Patch_v1.0.md` (`billing.activate_plan.v1`). No content-freeze gate remains open.
 
 ---
 
@@ -543,9 +544,9 @@ Per-band attestation for the realized M7 surface is recorded in §11.1 (attestat
 - Standard bands — anti-invention · path grammar · error map · envelope · pagination · prohibited request fields · non-disclosure · events — **PASS**.
 - M7-unique bands — **billing-firewall** · **platform-invoice-≠-trade-invoice** · **gateway-callback** · **entitlement-service-authority** — **PASS**.
 
-**Partition closure:** 26 caller-facing realized (§4: 8 · §5: 4 · §6: 1 · §7: 4 · §8: 4 · §9: 5) + 6 out-of-wire declared (§10) = **32 Doc-4I contracts** — each assigned exactly once; partition table (`Doc-5I_Structure_v1.0_FROZEN.md`) authoritative.
+**Partition closure:** **27** caller-facing realized (§4: **9** · §5: 4 · §6: 1 · §7: 4 · §8: 4 · §9: 5) + 6 out-of-wire declared (§10) = **33 contracts** (32 frozen Doc-4I + 1 additive `billing.activate_plan.v1`, Board Gate 2) — each assigned exactly once; partition per `Doc-5I_Structure_v1.0_FROZEN.md` + `Doc-5I_Structure_Additive_Patch_v1.0.md`.
 
-**Open content-freeze gates:** `[ESC-BILL-ADMINSCOPE]`, `[ESC-BILL-ACTIVATE]` (human-approved additive patch), `[ESC-BILL-POLICY]` (Doc-3 §12.2). A Content Freeze Audit follows once these are dispositioned.
+**Content-freeze gates:** both RESOLVED (Board Gates 1 & 2 → Option A). Remaining carried items are non-gating (`[ESC-BILL-POLICY]`, `[ESC-BILL-FIELD]`, `[ESC-BILL-SLUG]`, `[ESC-BILL-AUDIT]`, `[ESC-BILL-EVENT]` — resolved only via their named Doc-2/Doc-3 channels, never in Doc-5I). Content Freeze Audit proceeds.
 
 ---
 

@@ -4,7 +4,7 @@
 |---|---|
 | Document | Doc-5I Content v1.0 Pass-2 |
 | Status | **Pass-2 patched (Hard Review v1.0: 5 BLOCKER · 4 MAJOR · 4 MINOR · 3 NITPICK resolved)** |
-| Pass-2 scope | §4 BC-BILL-1 Plans & Entitlements (8 contracts) · §5 BC-BILL-2 Subscriptions (4 contracts) · §6 BC-BILL-3 Usage & Quota (1 contract) |
+| Pass-2 scope | §4 BC-BILL-1 Plans & Entitlements (**9 contracts** — incl. additive `activate_plan`, Board Gate 2) · §5 BC-BILL-2 Subscriptions (4 contracts) · §6 BC-BILL-3 Usage & Quota (1 contract) |
 | Builds on | `Doc-5I_Content_v1.0_Pass1.md` (patched) — §3 binding registers govern all disclosure scopes + actor sides below |
 | Structure anchor | `Doc-5I_Structure_v1.0_FROZEN.md` — partition table is authoritative |
 | Authority | `Doc-5A_SERIES_FROZEN_v1.0`; `Doc-4I_FROZEN_v1.0`; `Doc-5I_Structure_v1.0_FROZEN.md` |
@@ -27,7 +27,7 @@ Every contract in §4–§6 obeys these without per-contract restatement:
 
 ---
 
-## §4 — Plans & Entitlements Surface Realization (BC-BILL-1, 8 caller-facing)
+## §4 — Plans & Entitlements Surface Realization (BC-BILL-1, 9 caller-facing)
 
 ### §4.1 Section Purpose & Wire Constraints
 
@@ -36,10 +36,10 @@ BC-BILL-1 governs the plan catalog and entitlement definitions. Plans carry a st
 **Wire constraints specific to §4 (supplement §3.3):**
 - Plans at `retired` state are terminal and immutable — no field update, no re-activation, no un-retire. Any attempt → `409 STATE`.
 - `is_active` (Doc-4I §HB-1.1) is a **marketing-visibility** bool — a valid create/update input — **distinct from** `status` (the `draft→active→retired` machine). It does **not** change `status`.
-- The `status` `draft → active` edge (`Doc-2 §3.8`) has **no realizing Doc-4I BC-BILL-1 contract** — `create_plan`→`draft`, `update_plan` mutates marketing fields, `retire_plan`→`retired`; none drives `draft→active`. Carried **`[ESC-BILL-ACTIVATE]`** (flag-and-halt) — no activation flag or contract coined here.
+- The `status` `draft → active` edge (`Doc-2 §3.8`) is realized by **`billing.activate_plan.v1`** (`Doc-4I_ActivatePlan_Additive_Patch_v1.0.md §HB-1.1a`; Board Gate 2 → Option A) — an explicit Admin publish command, `expected_status=draft`, no lifecycle body field. `create_plan`→`draft`, `activate_plan`→`active`, `retire_plan`→`retired`; `update_plan` = marketing-config only. **`[ESC-BILL-ACTIVATE]` RESOLVED.**
 - Entitlement definitions are catalog records — updating an entitlement does **not** retroactively alter active subscriptions already resolved against an older bundle snapshot.
 - **Disclosure scope:** `get_plan` / `list_plans` → **Platform-Public** (§3.6). Admin reads any state (including `retired`, `draft`); User reads active plans by default.
-- **Actor side:** all 6 catalog mutation commands → **Admin** (`[ESC-BILL-SLUG]`; §3.7).
+- **Actor side:** all 7 catalog mutation commands (incl. `activate_plan`) → **Admin** (`[ESC-BILL-SLUG]`; §3.7).
 
 ---
 
@@ -169,6 +169,43 @@ BC-BILL-1 governs the plan catalog and entitlement definitions. Plans carry a st
 | `AUTHORIZATION` | `403` | Not Admin |
 | `REFERENCE` | `422` | `plan_id` does not resolve in the catalog (`Doc-4I §HB-1.1` stage-7 — not a `404`) |
 | `STATE` | `409` | Plan already `retired` (terminal; forbidden from `retired`) |
+| `CONFLICT` | `409` | `expected_status` mismatch (lost race) |
+
+---
+
+#### `billing.activate_plan.v1` *(additive — Board Gate 2 → Option A)*
+
+| Field | Value |
+|---|---|
+| Token | `billing.activate_plan.v1` |
+| Method · Path | `POST /billing/plans/{plan_id}/activate-plan` |
+| Actor | Admin (`[ESC-BILL-SLUG]`) |
+| Success | `200 OK` |
+| Idempotency | `Idempotency-Key` required |
+| Audit | `[ESC-BILL-AUDIT]` — plan activation not §9-enumerated; nearest by pointer (`§HB-1.1a`) |
+| Events | None (`Doc-2 §8` unchanged; BC-BILL-1 emits nothing) |
+| Authority | `Doc-4I_ActivatePlan_Additive_Patch_v1.0.md §HB-1.1a` (realizes the `Doc-2 §3.8` `draft → active` edge) |
+
+**Request body:**
+
+```json
+{
+  "expected_status": "draft (required; optimistic-concurrency assertion — §HB-1.1a / Doc-4A §14; must be draft; mismatch → 409 CONFLICT)"
+}
+```
+
+> Explicit publish command — the sole owner of the `draft → active` edge. No lifecycle body field (`Doc-4A §9.7`); `expected_status` is a concurrency assertion. `is_active` (marketing visibility) is unrelated to this transition.
+
+**Response `200`** — `§HB-1.1a` output, §3.9 envelope: `{ "plan_id": "UUIDv7", "status": "active" }`.
+
+**Errors:**
+
+| Class (§3.8) | Status | When |
+|---|---|---|
+| `VALIDATION` | `400` | `expected_status` ≠ `draft` / malformed |
+| `AUTHORIZATION` | `403` | Not Admin |
+| `REFERENCE` | `422` | `plan_id` does not resolve (`§HB-1.1a` stage-7 — not a `404`) |
+| `STATE` | `409` | source not `draft` (already `active`/`retired`) |
 | `CONFLICT` | `409` | `expected_status` mismatch (lost race) |
 
 ---
@@ -641,4 +678,4 @@ BC-BILL-3 governs the usage ledger. **Only 1 contract has a caller wire** — `g
 *Hard Review: B-01 (`BAD_REQUEST` removed); B-02 (`VALIDATION`→`400`, business→`422 BUSINESS`); B-03 (`page_size`+`cursor`; bounds via `[ESC-BILL-POLICY]`); B-04 (`org_id` removed); B-05 (no `status` lifecycle field in body); M-01 (`AUTHORIZATION`); M-02/M-03 (envelope + `page_info` via §3.9/§4.0); m/n items.*
 *Doc-4I field/error trace (correction round): `billing_cycle` enum = `monthly|annual` (`lifetime` was invented — removed); invented `description` removed (plans + entitlements); entitlement `value`→`default_value` (Doc-4I §HB-1.3); `is_active` **restored** as the Doc-4I §HB-1.1 marketing-visibility bool (distinct from `status`; B-05 over-fix reversed); `bundle` gains required `value_jsonb` (§HB-1.2); `auto_renew` added to purchase (§HB-2.1). Error reclass to Doc-4I validation tables: catalog-command missing id → `REFERENCE 422` (not 404); duplicate entitlement `slug` → `BUSINESS 422` (not 409); one-active-per-org → `STATE 409` (not 422); plan/entitlement lost race + `expected_status` mismatch → `CONFLICT 409`. `draft→active` confirmed to have **no** Doc-4I contract → `[ESC-BILL-ACTIVATE]` (real gap, not authoring).*
 *Re-Review: **RR-B1** — all 9 org-scoped reads corrected to **User-only** per `Doc-4I §HB-2.5/3.3/4.2/5.4/6.3`; Admin actor removed; structure §3 "Admin reads any org" grant re-scoped to catalog reads + escalated as corpus conflict `[ESC-BILL-ADMINSCOPE]` (Pass-1 §3.6). **RR-B2** — every representation aligned to Doc-4I `§HB` outputs verbatim: `state`→`status`, `price_amount`→`price`, entitlement `key`→`slug`, plan `is_active` output, command outputs minimized (`{id,status}`), get_usage rewritten to `Doc-4I §HB-3.3` (`items{quota_key,amount,period,source}`+`totals`); untraced fields escalated `[ESC-BILL-FIELD]`. RR-m1 (`[ESC-BILL-ACTIVATE]` = update_plan wire-intent), RR-m2 (get_usage = list+facet), RR-m3 (`page_token`§22.3→`cursor`), RR-m4 (`subscription_id` optional → `/current`). `expected_status` concurrency assertions added (update/retire plan, cancel sub).*
-*§4 (8) + §5 (4) + §6 (1) = 13 realized. Open gates for content freeze: `[ESC-BILL-ADMINSCOPE]` (corpus conflict — human approval) · `[ESC-BILL-ACTIVATE]` · `[ESC-BILL-FIELD]` · `[ESC-BILL-POLICY]` page key. Pass-3: §7 (BC-BILL-4), §8 (BC-BILL-5), §9 (BC-BILL-6), §10 (Out-of-Wire), §11, Appendix A — author §7/§8/§9 reads User-only + field-traced from the start.*
+*§4 (9, incl. additive `activate_plan`) + §5 (4) + §6 (1) = 14 realized. Board dispositions applied: Gate 1 (ADMINSCOPE → catalog-only Admin reads; org-scoped reads User-only) · Gate 2 (ACTIVATE → `billing.activate_plan.v1`). Both ESC gates RESOLVED. Remaining carried (non-gating): `[ESC-BILL-FIELD]`, `[ESC-BILL-POLICY]`, `[ESC-BILL-SLUG]`, `[ESC-BILL-AUDIT]`, `[ESC-BILL-EVENT]`.*

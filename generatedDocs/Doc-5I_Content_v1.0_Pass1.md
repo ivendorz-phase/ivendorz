@@ -121,6 +121,7 @@ All 26 endpoints instantiate the `Doc-5A §5.7` contract template. Paths use **h
 | 1 | `billing.create_plan.v1` | `POST` | `/billing/plans` | Admin | `201` |
 | 2 | `billing.update_plan.v1` | `POST` | `/billing/plans/{plan_id}/update-plan` | Admin | `200` |
 | 3 | `billing.retire_plan.v1` | `POST` | `/billing/plans/{plan_id}/retire-plan` | Admin | `200` |
+| 3a | `billing.activate_plan.v1` *(additive — Gate 2; Doc-4I ActivatePlan patch)* | `POST` | `/billing/plans/{plan_id}/activate-plan` | Admin | `200` |
 | 4 | `billing.bundle_plan_entitlement.v1` | `POST` | `/billing/plans/{plan_id}/bundle-plan-entitlement` | Admin | `200` |
 | 5 | `billing.create_entitlement.v1` | `POST` | `/billing/entitlements` | Admin | `201` |
 | 6 | `billing.update_entitlement.v1` | `POST` | `/billing/entitlements/{entitlement_id}/update-entitlement` | Admin | `200` |
@@ -260,12 +261,15 @@ Per-edge attribution table:
 
 ```
   create_plan (Admin, §4)
-  ──────────────► draft ──── update_plan (Admin, §4; activate) ──► active
+  ──────────────► draft ──── activate_plan (Admin, §4) ──────────► active
                     │                                                   │
                     └──── retire_plan (Admin, §4) ──────────────────► retired (terminal)
                                         ▲
                                         │
                                    (from active)
+
+  update_plan (Admin, §4): marketing-config mutation only — NOT a status edge.
+  is_active (bool): marketing-visibility flag — NOT the status machine.
 ```
 
 Per-edge attribution table:
@@ -273,7 +277,7 @@ Per-edge attribution table:
 | Edge | Contract | Trigger | Note |
 |---|---|---|---|
 | new → `draft` | `billing.create_plan.v1` | Admin HTTP call (§4) | Initial state |
-| `draft` → `active` | `billing.update_plan.v1` | Admin HTTP call (§4) | Publish/activate edge — server-derived from update_plan publish semantics; **NOT** a caller-supplied lifecycle-state body field (`Doc-4A §9.7`). Activation-contract attribution carried `[ESC-BILL-ACTIVATE]` pending `Doc-4I §HB-1.2` verbatim confirmation |
+| `draft` → `active` | `billing.activate_plan.v1` | Admin HTTP call (§4) | **Explicit publish contract** (`Doc-4I_ActivatePlan_Additive_Patch_v1.0.md §HB-1.1a`; Board Gate 2 → Option A). `expected_status=draft`; **no** lifecycle body field (`Doc-4A §9.7`). `[ESC-BILL-ACTIVATE]` **RESOLVED** |
 | `active`/`draft` → `retired` | `billing.retire_plan.v1` | Admin HTTP call (§4) | Terminal; irreversible |
 
 #### Controlling Organization (DF-BILL-1; `Doc-4I §H.3`)
@@ -323,7 +327,7 @@ For **Own-Org** scoped reads: if the requested resource exists but belongs to a 
 | `billing.get_reward_balance.v1` | **Own-Org** | **User-only** (`Doc-4I §HB-6.3`); own org's reward account balance (singleton per org) |
 | `billing.list_referrals.v1` | **Own-Org** | **User-only** (`Doc-4I §HB-6.3`); own org's referral records |
 
-> **[ESC-BILL-ADMINSCOPE] (corpus conflict — Flag-and-Halt):** the frozen structure §3 cross-cutting grant "Admin reads any org" **conflicts with frozen `Doc-4I`**, which declares **Actor: User** (not User/Admin) on every org-scoped read — `§HB-2.5` (subscription), `§HB-3.3` (usage), `§HB-4.2` (lead), `§HB-5.4` (invoice), `§HB-6.3` (reward). **Doc-4I outranks the Doc-5I structure** (authority order). Therefore these nine reads are realized **User-only**; Admin is **not** an actor. The structure §3 grant is re-scoped to the platform-owned **catalog** reads (`get_plan`/`list_plans`, `Doc-4I §HB-1.x` = User/Admin) only. Adding an Admin actor to any org-scoped read requires an **additive Doc-4I/structure patch with human approval** — never realized here. Escalated; not resolved locally.
+> **[ESC-BILL-ADMINSCOPE] — RESOLVED (Board Gate 1 → Option A).** The frozen structure §3 cross-cutting grant "Admin reads any org" conflicted with frozen `Doc-4I` (Actor: User on every org-scoped read — `§HB-2.5` subscription, `§HB-3.3` usage, `§HB-4.2` lead, `§HB-5.4` invoice, `§HB-6.3` reward). Per authority order Doc-4I wins. Disposition (`Doc-5I_Structure_Additive_Patch_v1.0.md` Patch 1): the §3 Admin-read grant is **re-scoped to the platform-owned catalog reads only** (`get_plan`/`list_plans`, `Doc-4I §HB-1.4` = User/Admin); the **nine org-scoped reads are User-only** (as realized here). No admin singleton-read mechanism introduced; tenant isolation preserved (`Doc-4A §9.7`; Invariant #5). Adding an Admin actor to an org-scoped read would still require an additive Doc-4I patch (not taken).
 
 ---
 
