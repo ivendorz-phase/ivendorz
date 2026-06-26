@@ -172,18 +172,18 @@ ratified. Authoritative blueprint lives in `generatedDocs/`.
   Doc-2 §10.1; CR1–CR10 + **CR4′** column-scoped immutability (5 triggers); human-ref allocator;
   18 `core.*` POLICY keys seeded; Appendix A 37/37 (0 FAIL); DR-6-CORE resolved (the foundation
   every module references). **`Doc-7A` (Frontend metastandard) FROZEN** and **`Doc-8A` (Test &
-  Conformance metastandard) STRUCTURE FROZEN (2026-06-26)** — three sibling implementation-contract
+  Conformance metastandard) FROZEN (2026-06-26; structure + content)** — three sibling implementation-contract
   programs (DB/FE/Test) now run in parallel, each gated by its Appendix A. **Doc-8A** = the test
   analog of Doc-5A/6A/7A (R1–R12; test-discipline partition Doc-8B…8G with Doc-8B Foundation/Harness
-  frozen first; cross-cutting conformance-concern allocation table; Appendix A 9 `CHK-8-xxx` bands;
-  conformance harness yet subordinate to its oracle — a red test = code defect or corpus defect
-  (`[ESC-8-CORPUS]`), never weaken the assertion; coins nothing). **Next: Doc-6C (M1 `identity`)** ·
-  6D…6K · Doc-7B/7C then 7D…7H · Doc-8A content passes then Doc-8B…8G. Per-module ledger:
+  frozen first; cross-cutting conformance-concern allocation assert-once; Appendix A **39 `CHK-8-xxx`
+  checks / 9 bands**; conformance harness yet subordinate to its oracle — a red test = code defect or
+  corpus defect (`[ESC-8-CORPUS]`), never weaken the assertion; coins nothing). **Next: Doc-6C (M1 `identity`)** ·
+  6D…6K · Doc-7B/7C then 7D…7H · Doc-8B then 8C…8G. Per-module ledger:
   `generatedDocs/Program_Status_And_Roadmap.md`.
 - **Status:** architecture = COMPLETE/FROZEN · Doc-5 API contracts = COMPLETE/FROZEN (M0–M9) ·
   Doc-6 DB = STARTED (Doc-6A + Doc-6B M0 `core` FROZEN; Doc-6C…6K NOT STARTED) ·
   Doc-7 FE = STARTED (Doc-7A FROZEN; Doc-7B…7H NOT STARTED) ·
-  Doc-8 Test = STARTED (Doc-8A structure FROZEN; content passes + Doc-8B…8G NOT STARTED) ·
+  Doc-8 Test = STARTED (Doc-8A metastandard FROZEN; Doc-8B…8G NOT STARTED) ·
   code = NOT STARTED.
 
 ---

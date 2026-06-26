@@ -95,7 +95,63 @@ The 7 `identity.*` keys are read from `core.system_configuration` (Doc-6B §3.4)
 The dedup store (idempotency-key → result, within window) is realized per the owning-module design (Doc-6A §10.3); the window durations are the keys above.
 
 ### §6.2 Structural migration order (forward-only, non-destructive — Doc-6A §11)
-`CREATE SCHEMA identity` → enums (`user_status`, `org_status`, `verification_level`, `membership_state`, `permission_space`, `rfq_approval_mode`, `delegation_grant_status`) → the **9 tables** (users, organizations, permissions, roles, role_permissions, organization_workflow_settings, buyer_profiles, memberships, delegation_grants) → **the deferred `memberships_role_fk` ALTER** (after roles — DDL-1, Pass-1) → partial-unique-live + Band-H indexes → **RLS enable + policies** (every tenant-owned/dual-party/platform-owned table) → **seeds** (permissions §5.1, then roles §5.2, then role_permissions composition). Codegen → `generated-contracts-registry/` (gitignored — Doc-6A §11.4). Non-destructive; `human_ref` for organizations via `core.allocate_human_ref('ORG', year)` in the create-org service.
+`CREATE SCHEMA identity` → enums (`user_status`, `org_status`, `verification_level`, `membership_state`, `permission_space`, `rfq_approval_mode`, `delegation_grant_status`) → the **9 tables** (users, organizations, permissions, roles, role_permissions, organization_workflow_settings, buyer_profiles, memberships, delegation_grants) → **the deferred `memberships_role_fk` ALTER** (after roles — DDL-1, Pass-1) → partial-unique-live + Band-H indexes → **RLS enable + policies — the consolidated DDL for all 9 tables in §6.2a** (+ the inline organizations/roles/delegation policies) → **seeds** (permissions §5.1, then roles §5.2, then role_permissions composition). (Order note HQ-005: `roles` precedes `memberships` here so `memberships.role_id` — a plain uuid, FK deferred — and the role seed are valid; `permissions`+`roles` precede `role_permissions`.) Codegen → `generated-contracts-registry/` (gitignored — Doc-6A §11.4). Non-destructive; `human_ref` for organizations via `core.allocate_human_ref('ORG', year)` in the create-org service.
+
+### §6.2a — Consolidated RLS policy DDL (all 9 tables — HQ-001/002/003/004)
+Every `identity` table's RLS realized as **explicit DDL** (the §3.x prose is the spec; this is the realization). Pattern: **read scope may be wider than write scope → split** (`FOR SELECT` + `FOR INSERT/UPDATE/DELETE`); a table whose read == write scope may use one `FOR ALL`. GUCs are server-set (§2.1). `organizations` (read, §3.2), `roles` (§3.4), `delegation_grants` (§3.9) DDL already inline; below completes the rest + the writes.
+
+```sql
+-- users (platform-owned): self or staff (read=write self → split kept explicit)
+ALTER TABLE identity.users ENABLE ROW LEVEL SECURITY;
+CREATE POLICY users_self_read   ON identity.users FOR SELECT
+  USING (id = current_setting('app.user_id', true)::uuid OR current_setting('app.is_platform_staff', true)::boolean IS TRUE);
+CREATE POLICY users_self_update ON identity.users FOR UPDATE
+  USING      (id = current_setting('app.user_id', true)::uuid OR current_setting('app.is_platform_staff', true)::boolean IS TRUE)
+  WITH CHECK (id = current_setting('app.user_id', true)::uuid OR current_setting('app.is_platform_staff', true)::boolean IS TRUE);
+-- (INSERT at provisioning / DELETE-anonymize = System/staff)
+
+-- organizations: WRITE policy (read = membership-based, §3.2). Create/update an org = active-org or staff
+CREATE POLICY organizations_write ON identity.organizations FOR UPDATE
+  USING      (id = current_setting('app.active_org', true)::uuid OR current_setting('app.is_platform_staff', true)::boolean IS TRUE)
+  WITH CHECK (id = current_setting('app.active_org', true)::uuid OR current_setting('app.is_platform_staff', true)::boolean IS TRUE);
+
+-- memberships: READ must include own-memberships across ALL orgs (HQ-003) — else the organizations
+--   membership EXISTS-subquery (which runs UNDER memberships RLS) would see only the active org and
+--   defeat list_my_organizations. Write = active org / staff.
+ALTER TABLE identity.memberships ENABLE ROW LEVEL SECURITY;
+CREATE POLICY memberships_read   ON identity.memberships FOR SELECT
+  USING (user_id = current_setting('app.user_id', true)::uuid                  -- own memberships, ANY org (drives the org EXISTS — HQ-003)
+         OR organization_id = current_setting('app.active_org', true)::uuid     -- active-org roster (app-layer gates who may list)
+         OR current_setting('app.is_platform_staff', true)::boolean IS TRUE);
+CREATE POLICY memberships_insert ON identity.memberships FOR INSERT WITH CHECK (organization_id = current_setting('app.active_org', true)::uuid OR current_setting('app.is_platform_staff', true)::boolean IS TRUE);
+CREATE POLICY memberships_update ON identity.memberships FOR UPDATE USING (organization_id = current_setting('app.active_org', true)::uuid OR current_setting('app.is_platform_staff', true)::boolean IS TRUE) WITH CHECK (organization_id = current_setting('app.active_org', true)::uuid OR current_setting('app.is_platform_staff', true)::boolean IS TRUE);
+CREATE POLICY memberships_delete ON identity.memberships FOR DELETE USING (organization_id = current_setting('app.active_org', true)::uuid OR current_setting('app.is_platform_staff', true)::boolean IS TRUE);
+
+-- permissions (platform catalog): read-open; write staff-only
+ALTER TABLE identity.permissions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY permissions_read        ON identity.permissions FOR SELECT USING (true);
+CREATE POLICY permissions_staff_write ON identity.permissions FOR ALL
+  USING (current_setting('app.is_platform_staff', true)::boolean IS TRUE) WITH CHECK (current_setting('app.is_platform_staff', true)::boolean IS TRUE);
+  -- FOR ALL safe: SELECT is OR'd with the permissive read-open policy (permissive-OR); write gate = staff
+
+-- role_permissions (tenant + NULL system): read active_org/NULL/staff; write active_org/staff (split — read wider than write)
+ALTER TABLE identity.role_permissions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY role_permissions_read   ON identity.role_permissions FOR SELECT
+  USING (organization_id = current_setting('app.active_org', true)::uuid OR organization_id IS NULL OR current_setting('app.is_platform_staff', true)::boolean IS TRUE);
+CREATE POLICY role_permissions_insert ON identity.role_permissions FOR INSERT WITH CHECK (organization_id = current_setting('app.active_org', true)::uuid OR current_setting('app.is_platform_staff', true)::boolean IS TRUE);
+CREATE POLICY role_permissions_delete ON identity.role_permissions FOR DELETE USING (organization_id = current_setting('app.active_org', true)::uuid OR current_setting('app.is_platform_staff', true)::boolean IS TRUE);
+
+-- organization_workflow_settings + buyer_profiles (single-org tenant: read==write scope → FOR ALL safe)
+ALTER TABLE identity.organization_workflow_settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY ows_tenant ON identity.organization_workflow_settings FOR ALL
+  USING      (organization_id = current_setting('app.active_org', true)::uuid OR current_setting('app.is_platform_staff', true)::boolean IS TRUE)
+  WITH CHECK (organization_id = current_setting('app.active_org', true)::uuid OR current_setting('app.is_platform_staff', true)::boolean IS TRUE);
+ALTER TABLE identity.buyer_profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY buyer_profiles_tenant ON identity.buyer_profiles FOR ALL
+  USING      (organization_id = current_setting('app.active_org', true)::uuid OR current_setting('app.is_platform_staff', true)::boolean IS TRUE)
+  WITH CHECK (organization_id = current_setting('app.active_org', true)::uuid OR current_setting('app.is_platform_staff', true)::boolean IS TRUE);
+```
+**Consistency note (HQ-002):** tables whose **read scope > write scope** split (`memberships`, `roles`, `role_permissions`, `delegation_grants`, `permissions`, `organizations`); single-scope tenant tables (`ows`, `buyer_profiles`) keep one `FOR ALL` (no representative-read concern). **Recursion (HQ-003):** the `organizations` read subquery on `memberships` runs under `memberships_read`, which includes `user_id = app.user_id` → the user's cross-org memberships are visible → `list_my_organizations` works; `memberships_read` never references `organizations` RLS → no recursion. The §3.4 `roles_write` `FOR ALL` is **superseded** by splitting here only if needed — retained as `FOR ALL` is permissive-OR-safe (read covered by `roles_read`); for cross-table consistency the **split form above is canonical**.
 
 ### §6.3 Carried
 `DR-6-CORE` (consumed — `core.allocate_human_ref`/`system_configuration`/audit/outbox) · `DR-6-STATE` (§4) · `DR-6-API` (Band H) · `DR-6-MKT` (`vendor_profile_id`) · `[ESC-6-POLICY]` **CLEARED** (Doc-3 v1.9) · `[ESC-6-SCHEMA]`/`[ESC-6-API]` none.
@@ -170,4 +226,22 @@ Reviewer: independent (Architecture Board / DDD / Security / DBA). Verified CORR
 
 ---
 
-*End of Doc-6C Content Pass-3 (§3.9 · §6 · §7 + Appendix A) — Independent Hard Review applied; 0 open BLOCKER/MAJOR/MINOR. Realizes the dual-party `delegation_grants` (both-read/controlling-write RLS, M2 bare-UUID, §5.10, refresh-on-revocation) + the 7-key v1.9 POLICY binding + the full migration order + the Appendix-A attestation (0 FAIL). With Pass-1+2, all 9 `identity` tables realized. Columns verbatim Doc-2 §10.2; states §5 verbatim; slugs/bundles by pointer; coins nothing. Next: Content Hard Review (cross-pass) → Content Freeze Audit → `Doc-6C_SERIES_FROZEN`.*
+## Content Hard Review — cross-pass (Pass-1+2+3) Disposition
+
+Final pre-freeze cross-pass review (whole `identity` schema + v1.9 patch as one unit). Verified CORRECT: 9-table set, columns verbatim (Doc-2 §10.2), 3 state sets (§5.1/§5.2/§5.10), 45-slug + bundle pointer (Doc-2 §7/A-08), 7 v1.9 keys, sole cross-module ref (`vendor_profile_id` bare UUID), migration dependency order, auth boundary, coin-nothing.
+
+| Finding | Sev | Disposition |
+|---|---|---|
+| **HQ-001** RLS prose-only for 6 tables (users/memberships/permissions/role_permissions/ows/buyer_profiles) — not executable DDL | BLOCKER | **FIXED** — added **§6.2a consolidated RLS DDL** for all 9 tables (ENABLE RLS + explicit policies). |
+| **HQ-003** organizations membership-EXISTS subquery defeated by memberships' own `=active_org` RLS → `list_my_organizations` broken | MAJOR (real correctness bug) | **FIXED** — `memberships_read` now includes `user_id = app.user_id` (own memberships across all orgs visible inside the subquery); recursion-safe (memberships RLS never references organizations). |
+| **HQ-002** roles `FOR ALL` vs delegation split inconsistency | MAJOR | **FIXED** — §6.2a canonical: read>write tables split (memberships/roles/role_permissions/delegation/permissions/organizations); single-scope (ows/buyer_profiles) keep `FOR ALL`. |
+| **HQ-005** migration order roles-vs-memberships | MAJOR | **CLARIFIED (already correct)** — order note added: roles precedes memberships (role_id plain uuid, FK deferred); permissions+roles precede role_permissions. |
+| **HQ-006** 37-check count "= 41 not 37" | MAJOR | **REJECTED (false)** — recount: 5 + (4×7) + 1 + 3 = 5+28+1+3 = **37** (seven 4s). Tally correct. |
+| **HQ-004** role_permissions RLS precision | MINOR | **FIXED** — explicit DDL in §6.2a. |
+| **HQ-008** Appendix-A prose-vs-DDL | NIT | **RESOLVED** by HQ-001 (RLS now DDL). |
+
+**Net:** 1 BLOCKER (RLS DDL completeness) + the real **HQ-003 correctness bug** (memberships RLS defeating org-visibility) fixed; consistency (HQ-002) unified; 1 MAJOR rejected as a false miscount; clarifications applied. The cross-pass gate earned its keep — HQ-001 + HQ-003 were invisible to the per-pass reviews. **0 open BLOCKER/MAJOR/MINOR — FREEZE-READY.**
+
+---
+
+*End of Doc-6C Content Pass-3 (§3.9 · §6 · §7 + Appendix A) — Independent Hard Review + cross-pass Content Hard Review applied; 0 open BLOCKER/MAJOR/MINOR. Realizes the dual-party `delegation_grants` (both-read/controlling-write RLS, M2 bare-UUID, §5.10, refresh-on-revocation) + the 7-key v1.9 POLICY binding + the full migration order + the Appendix-A attestation (0 FAIL). With Pass-1+2, all 9 `identity` tables realized. Columns verbatim Doc-2 §10.2; states §5 verbatim; slugs/bundles by pointer; coins nothing. Next: Content Hard Review (cross-pass) → Content Freeze Audit → `Doc-6C_SERIES_FROZEN`.*
