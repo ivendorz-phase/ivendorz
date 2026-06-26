@@ -171,9 +171,10 @@ ratified. Authoritative blueprint lives in `generatedDocs/`.
   **`Doc-6B` (M0 `core`) FROZEN (2026-06-26):** 5 platform-owned tables (DDL+Prisma) realizing
   Doc-2 §10.1; CR1–CR10 + **CR4′** column-scoped immutability (5 triggers); human-ref allocator;
   18 `core.*` POLICY keys seeded; Appendix A 37/37 (0 FAIL); DR-6-CORE resolved (the foundation
-  every module references). **`Doc-7A` (Frontend metastandard) FROZEN** and **`Doc-8A` (Test &
+  every module references). **`Doc-7` (Frontend program, all 8 surfaces 7A–7H) COMPLETE/FROZEN
+  (2026-06-26; `Doc-7_SERIES_FROZEN_v1.0`)** and **`Doc-8A` (Test &
   Conformance metastandard) FROZEN (2026-06-26; structure + content)** — three sibling implementation-contract
-  programs (DB/FE/Test) now run in parallel, each gated by its Appendix A. **Doc-8A** = the test
+  programs (DB/FE/Test); Doc-7 is now complete, Doc-6/Doc-8 continue, each gated by its Appendix A. **Doc-8A** = the test
   analog of Doc-5A/6A/7A (R1–R12; test-discipline partition Doc-8B…8G with Doc-8B Foundation/Harness
   frozen first; cross-cutting conformance-concern allocation assert-once; Appendix A **39 `CHK-8-xxx`
   checks / 9 bands**; conformance harness yet subordinate to its oracle — a red test = code defect or
@@ -194,11 +195,17 @@ ratified. Authoritative blueprint lives in `generatedDocs/`.
   (gate-excluded never written to `matching_results`; `rfq_routing_log` aggregate-only + no vendor policy; matching/log/comparison
   buyer-side-only); RFQ §5.4 (13) + Quotation §5.5 (6) state machines; one-active-quotation partial-unique; `rfq_versions.is_immutable`-
   once-quoted; two human_refs (RFQ-…/QTN-…); reads M2 matching-attrs via service, owns matching; Appendix A 37/37; carries
-  `[ESC-RFQ-AUDIT]`/`[ESC-RFQ-SCHEMA-RULES]`. **Next: Doc-6F (M4 `operations`, the CRM/blacklist owning side + money-record
-  boundary)** · 6G…6K · Doc-7B/7C then 7D…7H · Doc-8D then 8E…8G. Per-module ledger: `generatedDocs/Program_Status_And_Roadmap.md`.
+  `[ESC-RFQ-AUDIT]`/`[ESC-RFQ-SCHEMA-RULES]`. **`Doc-6F` (M4 `operations`) FROZEN (2026-06-26):** 19 tables / 6 groupings (DDL+Prisma+RLS)
+  realizing Doc-2 §10.5 — **the blacklist's owning side** (`buyer_vendor_statuses` + private CRM strictly `organization_id`-tenant —
+  **no vendor, no admin-all**; non-disclosure byte-equivalence in-scope CHK-6-022; served to M3 via CRM service only); **two-sided engagement
+  party-column RLS** (`active_org IN (buyer_organization_id, vendor_controlling_org_id)`); **money-record boundary — no funds custody**
+  (`trade_invoices ≠ billing.platform_invoices`; no balance/gateway/escrow; money facts immutable); governance signal #5 never mutates
+  platform scores; versioned post-award docs; idempotent `VendorInvited` lead; human_refs ENG-/DOC-/INV-; Appendix A 37/37; carries
+  `[ESC-OPS-AUDIT]`. **Next: Doc-6G (M5 `trust`, the governance-signal owner — the firewall's authoritative side)** · 6H…6K ·
+  **Doc-7 COMPLETE (7A–7H frozen)** · Doc-8D then 8E…8G (8G Frontend/E2E now unblocked by Doc-7). Per-module ledger: `generatedDocs/Program_Status_And_Roadmap.md`.
 - **Status:** architecture = COMPLETE/FROZEN · Doc-5 API contracts = COMPLETE/FROZEN (M0–M9) ·
-  Doc-6 DB = STARTED (Doc-6A + Doc-6B M0 `core` + Doc-6C M1 `identity` + Doc-6D M2 `marketplace` + Doc-6E M3 `rfq` FROZEN; Doc-6F…6K NOT STARTED) ·
-  Doc-7 FE = STARTED (Doc-7A FROZEN; Doc-7B…7H NOT STARTED) ·
+  Doc-6 DB = STARTED (Doc-6A + Doc-6B M0 `core` + Doc-6C M1 `identity` + Doc-6D M2 `marketplace` + Doc-6E M3 `rfq` + Doc-6F M4 `operations` FROZEN; Doc-6G…6K NOT STARTED) ·
+  Doc-7 FE = **COMPLETE/FROZEN (7A–7H all frozen; `Doc-7_SERIES_FROZEN_v1.0`)** ·
   Doc-8 Test = STARTED (Doc-8A metastandard FROZEN; Doc-8B…8G NOT STARTED) ·
   code = NOT STARTED.
 

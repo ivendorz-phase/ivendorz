@@ -1,6 +1,6 @@
 # iVendorz — New-Chat Continuation Primer
 
-> Read this at every session start before any work. Orients a fresh chat to current program state. No prior session memory — everything needed is in the files referenced below. Updated: **2026-06-26** (Doc-5I FROZEN).
+> Read this at every session start before any work. Orients a fresh chat to current program state. No prior session memory — everything needed is in the files referenced below. Updated: **2026-06-26** (Doc-7 Frontend program COMPLETE — 7A–7H FROZEN).
 
 ---
 
@@ -32,7 +32,7 @@ Corpus navigation: `generatedDocs/CORPUS_INDEX.md` · `generatedDocs/00_AUTHORIT
 ## Current Phase
 
 **Implementation Governance.**
-Architecture (Doc-2/3/4): **COMPLETE/FROZEN.** **Doc-5 (API realization): COMPLETE/FROZEN** — all 10 module realizations (M0–M9). **Doc-6 (Database): STARTED — `Doc-6A` (metastandard) + `Doc-6B` (M0 `core`) + `Doc-6C` (M1 `identity`, + Doc-3 v1.9 `identity.*` POLICY) + `Doc-6D` (M2 `marketplace`, first public/anonymous surface) + `Doc-6E` (M3 `rfq`, the moat — dual-sided grant-row RLS + blacklist-undetectable) FROZEN; next = `Doc-6F` (M4 `operations`, the CRM/blacklist owning side + money-record boundary).** **Doc-7 (Frontend): STARTED — `Doc-7A` (metastandard) FROZEN (2026-06-26); next = `Doc-7B` (Design System) + `Doc-7C` (App Shell), frozen first per DR-7-SHELL, then surfaces Doc-7D…7H.** **Doc-8 (Test & Conformance): STARTED — `Doc-8A` (metastandard) FROZEN (2026-06-26; structure + content §0–§12 + Appendix A 39 `CHK-8-xxx`); next = `Doc-8B` (Test Foundation & Harness), frozen first per DR-8-HARNESS, then discipline suites Doc-8C…8G. Doc-8 is the conformance harness yet subordinate to its oracle — a red test = code defect or corpus defect (`[ESC-8-CORPUS]`), never weaken the assertion.** Code: NOT STARTED.
+Architecture (Doc-2/3/4): **COMPLETE/FROZEN.** **Doc-5 (API realization): COMPLETE/FROZEN** — all 10 module realizations (M0–M9). **Doc-6 (Database): STARTED — `Doc-6A` (metastandard) + `Doc-6B` (M0 `core`) + `Doc-6C` (M1 `identity`, + Doc-3 v1.9 `identity.*` POLICY) + `Doc-6D` (M2 `marketplace`, first public/anonymous surface) + `Doc-6E` (M3 `rfq`, the moat — dual-sided grant-row RLS + blacklist-undetectable) + `Doc-6F` (M4 `operations`, the blacklist's owning side — no vendor/no admin-all CRM + two-sided party-column engagement + money-record boundary, no funds custody) FROZEN; next = `Doc-6G` (M5 `trust`, the governance-signal owner — the firewall's authoritative side).** **Doc-7 (Frontend): COMPLETE — all 8 surfaces `Doc-7A`–`Doc-7H` FROZEN (2026-06-26; `Doc-7_SERIES_FROZEN_v1.0`):** 7A metastandard · 7B Design System · 7C App Shell · 7D Public · 7E Account/Identity · 7F Buyer (moat) · 7G Vendor · 7H Admin. Realizes the frozen Doc-5 surface + Doc-4M on Next.js 15 App Router; coins nothing; carries program-level `[ESC-7-API]` (file-upload grant) + `[ESC-IDN-DELEG-EXPIRY]` + `[ESC-7-API-PRODDETAIL/CATNAV/ADS]`. **Doc-8 (Test & Conformance): STARTED — `Doc-8A` (metastandard) FROZEN (2026-06-26; structure + content §0–§12 + Appendix A 39 `CHK-8-xxx`); next = `Doc-8B` (Test Foundation & Harness), frozen first per DR-8-HARNESS, then discipline suites Doc-8C…8G. Doc-8 is the conformance harness yet subordinate to its oracle — a red test = code defect or corpus defect (`[ESC-8-CORPUS]`), never weaken the assertion.** Code: NOT STARTED.
 
 **Authoring loop (every deliverable, Board-mandated):** Pass → Hard Review as Board → Fix (Patch) → short closure check (fixed? y/n; if not, re-fix) → next pass. Each a separate artifact; freeze only at 0 open BLOCKER/MAJOR/MINOR.
 
@@ -100,10 +100,10 @@ Structure Proposal → Independent Hard Review → Structure Patch → Structure
 ## Immediate Next Actions
 
 **Doc-5 API realization is COMPLETE (M0–M9 frozen). Doc-6 Database program STARTED — `Doc-6A` metastandard + `Doc-6B` (M0 `core`) + `Doc-6C` (M1 `identity`) + `Doc-6D` (M2 `marketplace`) FROZEN.** Next:
-1. **Doc-6F (M4 `operations`):** next per-module schema; gated by Doc-6A Appendix A (`CHK-6-xxx`, 10 bands / 37 checks). Post-award docs (LOI/PO/challan/invoice/payment/WCC) + finance records + **the private Vendor CRM** (`buyer_vendor_statuses` — the blacklist's owning side, non-disclosure invariant, served to M3 routing via CRM service only) + two-sided engagement (party columns + RLS) + the money-record boundary (no funds custody). Then Doc-6G…6K.
+1. **Doc-6G (M5 `trust`):** next per-module schema; gated by Doc-6A Appendix A (`CHK-6-xxx`, 10 bands / 37 checks). The **governance-signal owner** — Trust/Performance/Verification/Financial-Tier (the platform-wide signals M2 reflects and M4 never mutates); the firewall's authoritative side; scores auto-calculated under the System actor, never hand-edited; verification records + fraud signals + public reviews. Then Doc-6H…6K.
    - Doc-6A is the DB metastandard (the Doc-5A analog): R1–R12 + §2.5 attribution + Appendix B Global Conventions Registry. Doc-6B…6K **realize** its conventions, coin nothing. **Doc-6B (M0 `core`) + Doc-6C (M1 `identity`) + Doc-6D (M2 `marketplace`) FROZEN** — `core` (5 platform tables, CR4′, allocator, DR-6-CORE) → `identity` (9 tables, first org-anchor RLS, dual-party, 3 machines) → `marketplace` (21 tables, first public/anonymous tri-actor RLS, capability matrix, score firewall, first-real-FTS; carries `[ESC-6-DD7]`/`[ESC-MKT-AUDIT]`/`[ESC-6-SCHEMA-SHOWCASE]`). Per-module carried gates: `[ESC-6-SCHEMA/POLICY/API]`.
-2. **Doc-7 (Frontend):** Next.js App Router UI over the frozen API contracts (design track may run in parallel now).
-3. **Doc-8 (Tests):** conformance + contract + integration suites (incl. RLS byte-equivalence gate).
+2. **Doc-7 (Frontend): COMPLETE** — all 8 surfaces (7A–7H) FROZEN (`Doc-7_SERIES_FROZEN_v1.0`); Next.js App Router UI over the frozen Doc-5 surface; coins nothing. Unblocks Doc-8G (Frontend/E2E).
+3. **Doc-8 (Tests):** conformance + contract + integration suites (incl. RLS byte-equivalence gate) — Doc-8A…8F frozen; 8G (Frontend/E2E) now unblocked by Doc-7.
 
 *(Tidy DONE: `Doc-5K_SERIES_FROZEN_v1.0` + `Doc-3 …v1.8_AI` added — all 10 modules have a freeze manifest + cleared POLICY gate.)*
 
