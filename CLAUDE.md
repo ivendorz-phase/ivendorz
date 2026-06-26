@@ -216,10 +216,14 @@ ratified. Authoritative blueprint lives in `generatedDocs/`.
   `operations` FK; the trade flow untouched); **the billing firewall** (no billing state gates trust/eligibility/routing/matching);
   **entitlements (boolean/numeric/enum), never plan-name** (Financial Tier ≠ Subscription Plan); subscription §5.7 + one-active partial-unique
   + 3 §8 events; `record_payment`=gateway callback (not §8); append-only ledgers + column-scoped invoices/payments; money-vs-points; Appendix A
-  37/37; carries `[ESC-BILL-AUDIT]`. **Next: Doc-6J (M8 `admin`, the authoritative event catalog — Admin decides, owning module owns)** · 6K ·
+  37/37; carries `[ESC-BILL-AUDIT]`. **`Doc-6J` (M8 `admin`) FROZEN (2026-06-26):** 10 tables / 5 groupings (DDL+Prisma+RLS) realizing Doc-2 §10.9 —
+  **the authoritative event catalog (Doc-4J)**; **"Admin decides, owning module owns"** (M8 writes no owning-module authoritative table; ban→M2,
+  verification→M5, link→M4, import→M2 via event/service); the ban authority (`ban_actions` emits `VendorBanned`); **`link_suggestions` never
+  vendor-visible** (A-03; CHK-6-022 in-scope); append-only `import_rows`; no event coined; no human_ref (CHK-6-002 N/A); Appendix A 37/37; carries
+  `[ESC-ADMIN-AUDIT]`/`[ESC-ADMIN-SCHEMA-OUTREACH]`. **Next: Doc-6K (M9 `ai`, the FINAL Doc-6 module — regenerable derived artifacts only; sole `ai.*` TTL hard-delete exception)** ·
   **Doc-7 COMPLETE (7A–7H frozen)** · Doc-8D then 8E…8G (8G Frontend/E2E now unblocked by Doc-7). Per-module ledger: `generatedDocs/Program_Status_And_Roadmap.md`.
 - **Status:** architecture = COMPLETE/FROZEN · Doc-5 API contracts = COMPLETE/FROZEN (M0–M9) ·
-  Doc-6 DB = STARTED (Doc-6A + Doc-6B M0 `core` + Doc-6C M1 `identity` + Doc-6D M2 `marketplace` + Doc-6E M3 `rfq` + Doc-6F M4 `operations` + Doc-6G M5 `trust` + Doc-6H M6 `communication` + Doc-6I M7 `billing` FROZEN; Doc-6J…6K NOT STARTED) ·
+  Doc-6 DB = STARTED (Doc-6A + Doc-6B M0 `core` + Doc-6C M1 `identity` + Doc-6D M2 `marketplace` + Doc-6E M3 `rfq` + Doc-6F M4 `operations` + Doc-6G M5 `trust` + Doc-6H M6 `communication` + Doc-6I M7 `billing` + Doc-6J M8 `admin` FROZEN; only Doc-6K M9 `ai` NOT STARTED) ·
   Doc-7 FE = **COMPLETE/FROZEN (7A–7H all frozen; `Doc-7_SERIES_FROZEN_v1.0`)** ·
   Doc-8 Test = STARTED (Doc-8A metastandard FROZEN; Doc-8B…8G NOT STARTED) ·
   code = NOT STARTED.
