@@ -184,6 +184,20 @@ review/patch/audit trail is grouped by category.
 
 ---
 
+## 5b. Doc-6 Program (Database Realization — current phase)
+
+> The persistence sibling of the Doc-5 API program. **Doc-6A is the metastandard** (the DB analog of Doc-5A); it governs the per-module schema realizations Doc-6B…6K via Appendix A (`CHK-6-xxx`). Realizes Doc-2 v1.0.3 (the binding *what*-authority) on PostgreSQL/Supabase + Prisma `multiSchema`. Consistent-with (not conformant-to) the frozen Doc-5 surface (governance §8).
+
+| File | Purpose |
+|------|---------|
+| `Doc-6A_SERIES_FROZEN_v1.0.md` | **Doc-6A FROZEN** — DB Realization Metastandard freeze manifest; effective = `Doc-6A_Structure_v1.0_FROZEN` + `Doc-6A_Content_v1.0_Pass1…4` + freeze audits. Fixes R1–R12 + §2.5 realization-choice attribution; Appendix A = 10 bands / 37 `CHK-6-xxx` checks (per-module freeze gate); Appendix B = Global Conventions Registry (base model · Prisma/PG type catalog · cross-cutting shared-enum catalog · naming registry). R3(b) one-Prisma-namespace-per-module Board-ratified. Coins nothing |
+| `Doc-6A_Structure_v1.0_FROZEN.md` · `Doc-6A_Content_v1.0_Pass1…4.md` | Doc-6A source (canonical §0–§13 + Appendix A/B); Pass-1 §0–§4 · Pass-2 §5–§9 · Pass-3 §10–§13 + App A · Pass-4 App B + App A Band J |
+| `Doc-6A_Structure_Proposal_v0.1.md` · `Doc-6A_Structure_Freeze_Audit_v1.0.md` · `Doc-6A_Content_Freeze_Audit_v1.0.md` | Doc-6A authoring history (Structure Proposal v0.2 Independent Hard Review + Structure Freeze Audit; per-pass content reviews + full cross-pass Content Hard Review + Content Freeze Audit PASS) |
+
+**Carried into Doc-6B…6K (per-module gates):** `DR-6-CORE` (M0 owns outbox/audit/id/config) · `DR-6-API` (Doc-5 persistability cross-check) · `DR-6-STATE` (state machines as columns + enforcement) · `[ESC-6-SCHEMA]` (additive Doc-2 patch) · `[ESC-6-POLICY]` (additive Doc-3 §12.2 patch — incl. open **M1 `identity`** namespace, a Doc-6C cross-check) · `[ESC-6-API]` (Board → additive Doc-2 patch). **Next:** Doc-6B (M0 `core`).
+
+---
+
 ## 6. Program Status, Roadmap & Context Packs
 
 | File | Purpose |

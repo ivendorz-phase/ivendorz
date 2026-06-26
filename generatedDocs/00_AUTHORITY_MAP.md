@@ -107,6 +107,9 @@ and must conform upward.
 | `Doc-5J_SERIES_FROZEN_v1.0.md` (M8 `admin` API realization) | FROZEN | v1.0 | ✅ | Realizes Doc-4J (**34 tokens**: 32 caller-facing + 2 out-of-wire) on HTTP; effective = `Doc-5J_Content_v1.0_Pass1…3` + `Doc-5J_Structure_v1.0_FROZEN` + resolved registers; the platform-staff governance/operations layer — **Admin only** (no tenant User/public; no active-org; no delegation); R1–R10; Admin-decides/owning-module-owns (R5) + non-disclosure (R6) + procurement-moat (R7) + Trust/score firewall (R8) + single-event `VendorBanned` (R9) attestations. Applied dependency: `Doc-3_Policy_Key_Registration_Patch_v1.7_Admin`. Gated by Doc-5A Appendix A |
 | `Doc-5J_Structure_v1.0_FROZEN.md` · `Doc-5J_Content_v1.0_Pass1…3.md` | FROZEN | v1.0 | ✅ | Doc-5J source (canonical §0–§11 + Appendix A); read via the freeze manifest |
 | `Doc-5J_Structure_Proposal_v0.1.md` · `Doc-5J_Structure_Independent_Hard_Review_v0.1.md` · `Doc-5J_Structure_Freeze_Audit_v1.0.md` · `Doc-5J_Content_Independent_Hard_Review_v1.0.md` · `Doc-5J_Content_Freeze_Audit_v1.0.md` | PROVENANCE | v0.2 | — | Doc-5J authoring history (structure Hard Review — 3 MAJOR resolved + Freeze Audit; content Independent Hard Review — 2 MINOR + 3 NITPICK resolved + Content Freeze Audit PASS) |
+| `Doc-6A_SERIES_FROZEN_v1.0.md` (Database Realization Metastandard) | FROZEN | v1.0 | ✅ | The DB-program metastandard (the Doc-5A analog); realizes Doc-2 v1.0.3 on PostgreSQL/Supabase + Prisma `multiSchema`; effective = `Doc-6A_Structure_v1.0_FROZEN` + `Doc-6A_Content_v1.0_Pass1…4` + freeze audits; fixes R1–R12 + §2.5 realization-choice attribution; Appendix A = 10 bands / 37 `CHK-6-xxx` checks (per-module freeze gate); Appendix B = Global Conventions Registry; R3(b) one-Prisma-namespace-per-module Board-ratified; coins nothing. **Consistent-with (not conformant-to) the Doc-5 surface** (governance §8); the *what*-authority is Doc-2. Governs Doc-6B…6K |
+| `Doc-6A_Structure_v1.0_FROZEN.md` · `Doc-6A_Content_v1.0_Pass1…4.md` | FROZEN | v1.0 | ✅ | Doc-6A source (canonical §0–§13 + Appendix A/B); read via the freeze manifest |
+| `Doc-6A_Structure_Proposal_v0.1.md` · `Doc-6A_Structure_Freeze_Audit_v1.0.md` · `Doc-6A_Content_Freeze_Audit_v1.0.md` | PROVENANCE | v0.2 | — | Doc-6A authoring history (Structure Independent Hard Review — 2 MAJOR resolved, R3(b) ratified + Structure Freeze Audit; per-pass content reviews + full cross-pass Content Hard Review + Content Freeze Audit PASS) |
 | `iVendorz_Master_Overview_v1.0.md` | NON-AUTHORITATIVE | v1.3 | — | Consolidated mirror |
 | `CORPUS_INDEX.md` · `00_AUTHORITY_MAP.md` | NON-AUTHORITATIVE | — | — | Navigation + authority pointers |
 | Context Packs / Primers / Status / Roadmap | NON-AUTHORITATIVE | various | — | Orientation only |
@@ -127,6 +130,7 @@ and must conform upward.
 | Event catalog | Doc-4J |
 | Cross-module event flows | Doc-4L |
 | Outbox ownership & transactional write model | Doc-2 / Doc-4B / Doc-4J / Doc-4L |
+| Physical DB realization conventions (Prisma/`multiSchema`, migrations, indexes, constraints, RLS realization, naming) | Doc-6A (realizes Doc-2; Doc-2 remains the *what*-authority) |
 
 ---
 

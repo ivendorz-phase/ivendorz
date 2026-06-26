@@ -13,7 +13,7 @@
 | Doc-2 Domain Model & DB Blueprint v1.0.3 · Doc-3 RFQ & Operational Spec v1.0.2 | **FROZEN** |
 | Doc-4A API metastandard + Doc-4B…4M (all 10 modules + state/event/integration indexes) | **FROZEN** (`Doc-4_SERIES_FROZEN_v1.0`) |
 
-**The entire Doc-4 architecture corpus is FROZEN.** **Doc-5 API realization program = COMPLETE** (all 10 module realizations FROZEN). Current phase → **Doc-6 (Database)**.
+**The entire Doc-4 architecture corpus is FROZEN.** **Doc-5 API realization program = COMPLETE** (all 10 module realizations FROZEN). **Current phase → Doc-6 (Database): the metastandard `Doc-6A` is FROZEN (2026-06-26)**; next deliverable = `Doc-6B` (M0 `core`).
 
 ---
 
@@ -66,15 +66,32 @@ Each module = staged-freeze lifecycle: Structure Proposal → Independent Hard R
 
 ---
 
+## 4b. Doc-6 Database Realization program (CURRENT PHASE)
+
+Staged-freeze, mirroring Doc-5: a metastandard (Doc-6A — the Doc-5A analog) + per-module schema realizations Doc-6B…6K (letter map B=M0…K=M9). Realizes Doc-2 v1.0.3 (the binding *what*-authority) on PostgreSQL/Supabase + Prisma `multiSchema`. Consistent-with (not conformant-to) the frozen Doc-5 surface (governance §8).
+
+| Doc-6 | Scope | Status |
+|---|---|---|
+| **6A** | DB Realization Metastandard | **FROZEN 2026-06-26** (`Doc-6A_SERIES_FROZEN_v1.0`) — R1–R12 + §2.5 attribution; Appendix A = 10 bands / 37 `CHK-6-xxx`; Appendix B = Global Conventions Registry; R3(b) one-Prisma-namespace-per-module Board-ratified. Coins nothing |
+| 6B | M0 `core` schema | NEXT — `outbox_events`/`audit_records`/`id_sequences`/`system_configuration` (DR-6-CORE) |
+| 6C…6K | M1…M9 schemas | NOT STARTED |
+
+**Carried into Doc-6B…6K (per-module gates):** `DR-6-CORE/API/STATE` · `[ESC-6-SCHEMA]` · `[ESC-6-POLICY]` (incl. open M1 `identity` namespace — no v1.x patch; Doc-6C cross-check) · `[ESC-6-API]`.
+
+---
+
 ## 5. Live work queue
 
-**Doc-5 API realization program — COMPLETE.** All 10 module realizations (M0–M9) content-FROZEN: 5B/5C/5D/5E/5F/5G/5H/5I/5J/5K, gated by the FROZEN Doc-5A metastandard. Doc-3 POLICY patches v1.0–v1.7 applied (one namespace per module).
+**Doc-5 API realization program — COMPLETE.** All 10 module realizations (M0–M9) content-FROZEN: 5B/5C/5D/5E/5F/5G/5H/5I/5J/5K, gated by the FROZEN Doc-5A metastandard. Doc-3 POLICY patches v1.0–v1.8 applied (one namespace per registered module; M1 identity none).
 
-Next program phases:
-1. **Doc-6 (Database)** — Prisma schema realization (one schema per module; ratify "one Prisma namespace per module"); migrations.
-2. **Doc-7 (Frontend)** — Next.js App Router UI composition over the frozen API contracts.
-3. **Doc-8 (Tests)** — conformance + contract + integration test suites.
-4. Then: Development Decomposition → Build Roadmap → Implementation.
+**Doc-6 Database program — STARTED.** `Doc-6A` (metastandard) FROZEN 2026-06-26.
+
+Next:
+1. **Doc-6B (M0 `core`)** — first per-module schema realization (DR-6-CORE) — the tables every module depends on.
+2. **Doc-6C…6K** — remaining module schemas, dependency order, each gated by Doc-6A Appendix A.
+3. **Doc-7 (Frontend)** — Next.js App Router UI composition over the frozen API contracts (design track may run in parallel now).
+4. **Doc-8 (Tests)** — conformance + contract + integration suites (incl. the RLS positive/negative/cross-tenant byte-equivalence gate — Doc-6A §4.4/§11.5).
+5. Then: Development Decomposition → Build Roadmap → Implementation.
 
 *(Corpus tidy DONE: `Doc-5K_SERIES_FROZEN_v1.0` manifest added for peer-parity; `Doc-3 …v1.8_AI` registers the `ai.*` keys and clears `[ESC-AI-POLICY]`. All 10 modules now have a `SERIES_FROZEN` (or `Content_v1.0_FROZEN`) manifest + a cleared POLICY gate.)*
 

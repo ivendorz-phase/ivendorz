@@ -163,11 +163,16 @@ ratified. Authoritative blueprint lives in `generatedDocs/`.
 - **Current phase:** Implementation Governance. **Doc-5 API Realization program = COMPLETE** —
   **Doc-5A metastandard FROZEN** (gates 5B…5M via Appendix A) + **all 10 module realizations
   content-FROZEN: Doc-5B (M0) · 5C (M1) · 5D (M2) · 5E (M3) · 5F (M4) · 5G (M5) · 5H (M6) ·
-  5I (M7) · 5J (M8, 2026-06-26) · 5K (M9).** Doc-3 POLICY patches v1.0–v1.7 applied (one namespace
-  per module). **Next program: Doc-6 (Database)** · Doc-7 (Frontend) · Doc-8 (Tests). Per-module
+  5I (M7) · 5J (M8, 2026-06-26) · 5K (M9).** Doc-3 POLICY patches v1.0–v1.8 applied (one namespace
+  per registered module; M1 identity none). **Doc-6 (Database) program STARTED — metastandard
+  `Doc-6A` FROZEN (2026-06-26):** the DB analog of Doc-5A (R1–R12 + §2.5 realization-choice
+  attribution; Appendix A = 10 bands / 37 `CHK-6-xxx` per-module freeze gate; Appendix B Global
+  Conventions Registry; R3(b) one-Prisma-namespace-per-module Board-ratified; coins nothing).
+  **Next: Doc-6B (M0 `core`)** · then 6C…6K · Doc-7 (Frontend) · Doc-8 (Tests). Per-module
   ledger: `generatedDocs/Program_Status_And_Roadmap.md`.
 - **Status:** architecture = COMPLETE/FROZEN · Doc-5 API contracts = COMPLETE/FROZEN (M0–M9) ·
-  Doc-6/7/8 = NOT STARTED · code = NOT STARTED.
+  Doc-6 DB = STARTED (Doc-6A metastandard FROZEN; Doc-6B…6K NOT STARTED) · Doc-7/8 = NOT STARTED ·
+  code = NOT STARTED.
 
 ---
 
