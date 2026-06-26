@@ -164,11 +164,12 @@ One M0-owned function, **parameterized by the protected-column set** (passed as 
 -- [§2.5] M0-owned shared function (Doc-6A §6.3 names it; realized here)
 CREATE FUNCTION core.raise_immutable_violation() RETURNS trigger
 LANGUAGE plpgsql AS $$
-DECLARE col text; o jsonb := to_jsonb(OLD); n jsonb := to_jsonb(NEW);
+DECLARE col text; o jsonb; n jsonb;
 BEGIN
-  IF TG_OP = 'DELETE' THEN
-    RAISE EXCEPTION 'core: % is append-only; DELETE forbidden (CR4'')', TG_TABLE_NAME;
+  IF TG_OP = 'DELETE' THEN                               -- DELETE branch first; on a DELETE-only trigger
+    RAISE EXCEPTION 'core: % is append-only; DELETE forbidden (CR4'')', TG_TABLE_NAME;  -- (empty TG_ARGV) this raises and the FOREACH never runs
   END IF;
+  o := to_jsonb(OLD); n := to_jsonb(NEW);               -- only reached on UPDATE (OLD/NEW both populated)
   -- TG_ARGV = the protected (immutable) column names; any change raises.
   -- `->` (jsonb) compares by value across all column types (jsonb-safe — RR-F6).
   FOREACH col IN ARRAY TG_ARGV LOOP
@@ -209,6 +210,29 @@ END $$;
 - **`core.audit_records`** — `BEFORE UPDATE OR DELETE`: `audit_records_block_payload_mutation` (generic, protecting the full payload+identity set: `audit_id, actor_id, actor_type, organization_id, entity_type, entity_id, action, old_value, new_value, event_time, ip_address, user_agent, created_at`) **+** `audit_records_archive_set_once` (the set-once guard). Mutable: `archived_at` (set-once), `updated_at`. DELETE blocked.
 - **`core.outbox_events`** — `BEFORE UPDATE OR DELETE`: `outbox_events_block_payload_mutation` (generic, protecting `{id, aggregate_id, event_name, event_version, payload_jsonb, created_at}`) **+** `outbox_events_status_forward_only` (the forward-only guard). Mutable: `status` (forward-only), `dispatched_at`, `attempts`, `updated_at`. DELETE blocked.
 - Trigger names [§2.5] (Doc-6A B.4 naming family).
+
+**Trigger attachments [§2.5]** (events are load-bearing — the OLD-deref guards attach `BEFORE UPDATE` only, so they never fire on INSERT; the payload-mutation guard covers `DELETE`):
+```sql
+-- core.audit_records
+CREATE TRIGGER audit_records_block_payload_mutation
+  BEFORE UPDATE OR DELETE ON core.audit_records FOR EACH ROW
+  EXECUTE FUNCTION core.raise_immutable_violation(
+    'audit_id','actor_id','actor_type','organization_id','entity_type','entity_id',
+    'action','old_value','new_value','event_time','ip_address','user_agent','created_at');
+CREATE TRIGGER audit_records_archive_set_once
+  BEFORE UPDATE ON core.audit_records FOR EACH ROW
+  EXECUTE FUNCTION core.audit_archive_set_once();
+
+-- core.outbox_events
+CREATE TRIGGER outbox_events_block_payload_mutation
+  BEFORE UPDATE OR DELETE ON core.outbox_events FOR EACH ROW
+  EXECUTE FUNCTION core.raise_immutable_violation(
+    'id','aggregate_id','event_name','event_version','payload_jsonb','created_at');
+CREATE TRIGGER outbox_events_status_forward_only
+  BEFORE UPDATE ON core.outbox_events FOR EACH ROW
+  EXECUTE FUNCTION core.outbox_status_forward_only();
+```
+(BEFORE-ROW triggers on the partitioned `audit_records` parent propagate to all partitions — PG 11+.) The `id_sequences` DELETE-block trigger is attached in §3.3 (Pass-2). RLS enable + the §2.2 platform-staff policy are applied to all 5 tables in the §5.1 migration (Pass-2).
 
 ### §4.2 Consumed-by-all obligations (CR9 — referenced, not re-authored)
 The audit-write (Doc-4B §17), transactional-outbox-write (§16.2), UUIDv7 + human-ref allocation (§8 / §3.3 Pass-2), POLICY resolution (§18), and flag evaluation are **Doc-4B contracts realized as code**. Doc-6B realizes the **tables** they target; it does not re-author the write logic. Other Doc-6x reference `core.*` by **bare UUID** — no cross-schema FK (Doc-6A §5.3).

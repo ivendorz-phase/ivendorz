@@ -23,7 +23,7 @@ CREATE TABLE core.id_sequences (
   next_value  bigint      NOT NULL DEFAULT 1,          -- [Doc-2 §10.1] monotonic counter
   created_at  timestamptz NOT NULL DEFAULT now(),      -- [Doc-6A R5]
   updated_at  timestamptz NOT NULL DEFAULT now(),      -- [Doc-6A R5] advances on allocation
-  CONSTRAINT id_sequences_pkey PRIMARY KEY (entity_type, year)  -- [Doc-2/CR3] composite PK; name [§2.5]
+  CONSTRAINT id_sequences_pkey PRIMARY KEY (entity_type, year)  -- [Doc-2/CR3] composite PK; column order (entity_type, year) per allocation access pattern; name [§2.5]
 );
 ```
 - **Allocation (Doc-2 §10.11 — row-locked, gap-tolerant):** a `SECURITY DEFINER` function locks the `(entity_type, year)` row, increments, returns the formatted ref. Concurrency-safe; on caller rollback the consumed value is **not** reclaimed (gap-tolerant, never reused). The format `TYPE-YEAR-XXXXX` (zero-padded) is the realization of Doc-6A §3.2 (`human_ref`). Function name/padding width are [§2.5].
@@ -31,7 +31,8 @@ CREATE TABLE core.id_sequences (
 ```sql
 -- [§2.5] M0-owned allocator (Doc-4B §8 human-ref obligation realized as code)
 CREATE FUNCTION core.allocate_human_ref(p_entity_type text, p_year integer)
-RETURNS text LANGUAGE plpgsql SECURITY DEFINER AS $$   -- SECURITY DEFINER: runs as M0 owner (RR-P2-001)
+RETURNS text LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = core, pg_temp AS $$   -- SECURITY DEFINER + pinned search_path (RR-P2-001 / cross-pass F-008: no injection)
 DECLARE v bigint;
 BEGIN
   INSERT INTO core.id_sequences (entity_type, year) VALUES (p_entity_type, p_year)
@@ -47,6 +48,11 @@ BEGIN
 END $$;
 ```
 - **Not soft-deletable; `next_value` mutable; but DELETE-blocked (RR-P2-005):** `next_value`/`updated_at` mutate by design (the counter, via the allocator) — no immutability trigger on UPDATE. **DELETE is blocked** by `id_sequences_block_delete` (`BEFORE DELETE`, using `core.raise_immutable_violation()` with an **empty** protected-column set → DELETE branch only): deleting a sequence row would permit ref **reuse**, violating Doc-2 §10.11 "never reused." No soft-delete tuple (SD=NO).
+```sql
+CREATE TRIGGER id_sequences_block_delete                 -- [§2.5] (cross-pass F-001)
+  BEFORE DELETE ON core.id_sequences FOR EACH ROW
+  EXECUTE FUNCTION core.raise_immutable_violation();     -- empty TG_ARGV → DELETE-only block (UPDATE/allocator permitted)
+```
 - **UUIDv7 machine-ID** is a **separate** mechanism (Doc-4B §8 ID service) — this table is only the human-ref counter (CR6).
 - **RLS:** platform-staff backstop (§2.2); allocation is via the `SECURITY DEFINER` function, not direct table writes.
 - **Prisma [§2.5]:**
@@ -134,7 +140,7 @@ model FeatureFlag {
 ## §5 — POLICY Seed & Migration
 
 ### §5.1 Structural migration (forward-only; Doc-6A §11)
-The `core` schema migrates **first** in the program (every module depends on it — DR-6-CORE). Forward-only, non-destructive (Doc-6A §11.2). Order within the `core` migration: (1) `CREATE SCHEMA core`; (2) enums `core.actor_type`, `core.outbox_status`; (3) the shared functions `core.raise_immutable_violation()`, `core.outbox_status_forward_only()`, `core.audit_archive_set_once()`, `core.allocate_human_ref()`; (4) the 5 tables (+ `audit_records` monthly partitions, boundaries materialized here — Pass-1 §3.1); (5) indexes; (6) the immutability/guard triggers; (7) RLS enable + platform-staff policies; (8) the POLICY seed (§5.2). Codegen → `generated-contracts-registry/` (GENERATED, gitignored — Doc-6A §11.4).
+The `core` schema migrates **first** in the program (every module depends on it — DR-6-CORE). Forward-only, non-destructive (Doc-6A §11.2). Order within the `core` migration: (1) `CREATE SCHEMA core`; (2) enums `core.actor_type`, `core.outbox_status`; (3) the shared functions `core.raise_immutable_violation()`, `core.outbox_status_forward_only()`, `core.audit_archive_set_once()`, `core.allocate_human_ref()`; (4) the 5 tables (+ `audit_records` monthly partitions, boundaries materialized here — Pass-1 §3.1); (5) indexes; (6) the immutability/guard triggers with their event bindings (F-004) — `audit_records_block_payload_mutation` + `outbox_events_block_payload_mutation` (`BEFORE UPDATE OR DELETE`), `audit_records_archive_set_once` + `outbox_events_status_forward_only` (`BEFORE UPDATE`), `id_sequences_block_delete` (`BEFORE DELETE`); DDL in §4.1 (Pass-1) + §3.3; (7) RLS enable + the §2.2 platform-staff policy applied to **all 5** tables; (8) the POLICY seed (§5.2). Codegen → `generated-contracts-registry/` (GENERATED, gitignored — Doc-6A §11.4).
 
 ### §5.2 POLICY seed (the 18 registered `core.*` keys — Doc-3 v1.0)
 Idempotent forward-only seed migration; **upsert on `key`** (re-run safe — Doc-6A §9.5). Seeds **verbatim** from `Doc-3_Policy_Key_Registration_Patch_v1.0` (key, value_type, start value) — **none coined, no default invented** (Doc-6A §9; Doc-3 is authority):
@@ -178,7 +184,7 @@ ON CONFLICT (key) DO UPDATE
 | D CHK-6-033 only `ai.*` TTL hard-delete | **PASS (N/A by design)** | `core` hard-deletes nothing; not the `ai` schema |
 | **E** CHK-6-040 transactional write+emit | **PASS** | §3.2/§4 outbox one-transaction (Doc-6A §7.1) |
 | E CHK-6-041 no event coined; consumer effects own-schema | **PASS** | Doc-2 §8/Doc-4J/Doc-4L by pointer |
-| E CHK-6-042 audit append-only, immutable; redaction-as-new; cols per §9 | **PASS** | §3.1 + §4.1 (CR4′) |
+| E CHK-6-042 audit append-only, immutable; redaction-as-new; cols per §9 | **PASS** | §3.1 + §4.1 (CR4′); cols per §9 verbatim — physical `event_time` realizes the logical `timestamp` ([§2.5] reserved-word-avoidance, F-005), `archived_at` realizes the §10.1 archive-flag concept |
 | E CHK-6-043 audited-action coverage; none coined | **PASS** | config/flag changes audited via the **Doc-4B §17 audit-write obligation** (code, CR9 — core supplies the rows + the audit table; the write mechanism is realized in Doc-4B, not here); actions by pointer, none coined |
 | **F** CHK-6-050 multi-currency NUMERIC+currency | **N/A** | no monetary column in `core` |
 | **G** CHK-6-060 `system_configuration` realized; keys seeded; none coined | **PASS** | §3.4/§5.2 — 18 `core.*` keys (Doc-3 v1.0) |
@@ -223,4 +229,22 @@ Reviewer: independent (Architecture Board / DDD / Security / DBA). Verified CORR
 
 ---
 
-*End of Doc-6B Content Pass-2 (§3.3 · §3.4 · §3.5 · §5 · §6 + Appendix A) — Independent Hard Review applied; 0 open BLOCKER/MAJOR/MINOR. Realizes the 3 keyed tables + the human-ref allocator + the 18-key POLICY seed + the migration order + full Appendix-A attestation (0 FAIL). Columns verbatim Doc-2 §10.1; keys verbatim Doc-3 v1.0; physical specifics §2.5-attributed; coins nothing. With Pass-1, Doc-6B content is complete (all 5 `core` tables). Next: Content Hard Review (full Pass-1+2) → Content Freeze Audit → `Doc-6B_SERIES_FROZEN`.*
+## Content Hard Review — cross-pass (Pass-1 + Pass-2) Disposition
+
+Final pre-freeze cross-pass review (whole `core` schema as one unit). Verified CORRECT: structure completeness (5/5 tables, CR1–CR10 + CR4′), cross-pass coherence (4 functions defined before use; migration order sound), column/key fidelity (all columns verbatim Doc-2 §9/§10.1; 18 keys verbatim Doc-3 v1.0), Appendix-A honesty (37 checks, 0 FAIL), §2.5 attribution, coin-nothing, DDL correctness (jsonb-safe `->`; forward-only + set-once OLD-safe on UPDATE; composite PK; partition-key⊆PK).
+
+| Finding | Sev | Disposition |
+|---|---|---|
+| **F-001** CREATE TRIGGER attachments missing (functions defined, not attached) | BLOCKER | **FIXED** — 5 `CREATE TRIGGER` statements added (4 in §4.1 Pass-1: audit+outbox; 1 in §3.3: id_sequences) with load-bearing event bindings (OLD-deref guards = `BEFORE UPDATE` only → INSERT-safe; payload guards = `BEFORE UPDATE OR DELETE`). |
+| **F-008** `SECURITY DEFINER` without pinned `search_path` (injection footgun) | MINOR | **FIXED** — `SET search_path = core, pg_temp` added to `allocate_human_ref`. |
+| **F-002** empty-TG_ARGV / DELETE-branch clarity | MINOR | **FIXED** — comment: DELETE branch raises before FOREACH; UPDATE-only path sets o/n. |
+| **F-004** migration step (6) lacked trigger event bindings | MINOR | **FIXED** — §5.1 step (6) now lists each trigger + its event. |
+| **F-005** CHK-6-042 didn't acknowledge `event_time` rename | MINOR | **FIXED** — evidence cites the `timestamp`→`event_time` §2.5 mapping + `archived_at` concept. |
+| **F-003** lpad width 6 attribution | MINOR | **ALREADY TAGGED** — `[§2.5] width 6 → ORG-2026-000001` inline. |
+| **F-006/F-007** naming-cite / PK-order comments | NIT | **APPLIED** — plain-unique already `[§2.5]`-tagged; PK column-order note added. |
+
+**Net:** 1 BLOCKER fixed (trigger DDL now realized + event-bound), 1 security MINOR fixed (search_path), MINOR/NIT applied. Schema is now complete and functional. **0 open BLOCKER/MAJOR/MINOR — FREEZE-READY.**
+
+---
+
+*End of Doc-6B Content Pass-2 (§3.3 · §3.4 · §3.5 · §5 · §6 + Appendix A) — Independent Hard Review + cross-pass Content Hard Review applied; 0 open BLOCKER/MAJOR/MINOR. Realizes the 3 keyed tables + the human-ref allocator + the 18-key POLICY seed + the migration order + full Appendix-A attestation (0 FAIL). Columns verbatim Doc-2 §10.1; keys verbatim Doc-3 v1.0; physical specifics §2.5-attributed; coins nothing. With Pass-1, Doc-6B content is complete (all 5 `core` tables). Next: Content Hard Review (full Pass-1+2) → Content Freeze Audit → `Doc-6B_SERIES_FROZEN`.*
