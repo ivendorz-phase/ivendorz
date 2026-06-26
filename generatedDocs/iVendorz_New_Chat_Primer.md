@@ -1,6 +1,6 @@
 # iVendorz — New-Chat Continuation Primer
 
-> Read this at every session start before any work. Orients a fresh chat to current program state. No prior session memory — everything needed is in the files referenced below. Updated: **2026-06-26** (Doc-7 Frontend program COMPLETE — 7A–7H FROZEN).
+> Read this at every session start before any work. Orients a fresh chat to current program state. No prior session memory — everything needed is in the files referenced below. Updated: **2026-06-26** (all programs Doc-2…Doc-8 COMPLETE/FROZEN; **Development Decomposition produced** — phase = Development Decomposition → Build Roadmap → Implementation).
 
 ---
 
@@ -32,7 +32,7 @@ Corpus navigation: `generatedDocs/CORPUS_INDEX.md` · `generatedDocs/00_AUTHORIT
 ## Current Phase
 
 **Implementation Governance.**
-Architecture (Doc-2/3/4): **COMPLETE/FROZEN.** **Doc-5 (API realization): COMPLETE/FROZEN** — all 10 module realizations (M0–M9). **Doc-6 (Database): COMPLETE/FROZEN — `Doc-6A` (metastandard) + `Doc-6B`…`Doc-6K` (M0–M9 schemas) all FROZEN 2026-06-26.** `core` · `identity` · `marketplace` (first public/anonymous; tri-actor) · `rfq` (the moat — dual-sided grant-row RLS + blacklist-undetectable) · `operations` (the blacklist's owning side + money-record boundary, no funds custody) · `trust` (the governance-signal owner — System-written scores, public band via M2 reflection) · `communication` (delivery-only; participant-grant RLS) · `billing` (the platform's own revenue; `platform_invoices ≠ trade_invoices`; billing firewall; entitlements not plan-name) · `admin` (the authoritative event catalog; Admin decides, owning module owns) · `ai` (regenerable derived artifacts only; the sole `ai.*` TTL hard-delete exception; never source of truth). Every per-module schema passed Doc-6A Appendix A (37/37). All carried `[ESC-*]` on named channels.** **Doc-7 (Frontend): COMPLETE — all 8 surfaces `Doc-7A`–`Doc-7H` FROZEN (2026-06-26; `Doc-7_SERIES_FROZEN_v1.0`):** 7A metastandard · 7B Design System · 7C App Shell · 7D Public · 7E Account/Identity · 7F Buyer (moat) · 7G Vendor · 7H Admin. Realizes the frozen Doc-5 surface + Doc-4M on Next.js 15 App Router; coins nothing; carries program-level `[ESC-7-API]` (file-upload grant) + `[ESC-IDN-DELEG-EXPIRY]` + `[ESC-7-API-PRODDETAIL/CATNAV/ADS]`. **Doc-8 (Test & Conformance): STARTED — `Doc-8A` (metastandard) FROZEN (2026-06-26; structure + content §0–§12 + Appendix A 39 `CHK-8-xxx`); next = `Doc-8B` (Test Foundation & Harness), frozen first per DR-8-HARNESS, then discipline suites Doc-8C…8G. Doc-8 is the conformance harness yet subordinate to its oracle — a red test = code defect or corpus defect (`[ESC-8-CORPUS]`), never weaken the assertion.** Code: NOT STARTED.
+Architecture (Doc-2/3/4): **COMPLETE/FROZEN.** **Doc-5 (API realization): COMPLETE/FROZEN** — all 10 module realizations (M0–M9). **Doc-6 (Database): COMPLETE/FROZEN — `Doc-6A` (metastandard) + `Doc-6B`…`Doc-6K` (M0–M9 schemas) all FROZEN 2026-06-26.** `core` · `identity` · `marketplace` (first public/anonymous; tri-actor) · `rfq` (the moat — dual-sided grant-row RLS + blacklist-undetectable) · `operations` (the blacklist's owning side + money-record boundary, no funds custody) · `trust` (the governance-signal owner — System-written scores, public band via M2 reflection) · `communication` (delivery-only; participant-grant RLS) · `billing` (the platform's own revenue; `platform_invoices ≠ trade_invoices`; billing firewall; entitlements not plan-name) · `admin` (the authoritative event catalog; Admin decides, owning module owns) · `ai` (regenerable derived artifacts only; the sole `ai.*` TTL hard-delete exception; never source of truth). Every per-module schema passed Doc-6A Appendix A (37/37). All carried `[ESC-*]` on named channels.** **Doc-7 (Frontend): COMPLETE — all 8 surfaces `Doc-7A`–`Doc-7H` FROZEN (2026-06-26; `Doc-7_SERIES_FROZEN_v1.0`):** 7A metastandard · 7B Design System · 7C App Shell · 7D Public · 7E Account/Identity · 7F Buyer (moat) · 7G Vendor · 7H Admin. Realizes the frozen Doc-5 surface + Doc-4M on Next.js 15 App Router; coins nothing; carries program-level `[ESC-7-API]` (file-upload grant) + `[ESC-IDN-DELEG-EXPIRY]` + `[ESC-7-API-PRODDETAIL/CATNAV/ADS]`. **Doc-8 (Test & Conformance): COMPLETE/FROZEN (2026-06-26; `Doc-8_SERIES_FROZEN_v1.0`) — all 7 deliverables `Doc-8A`…`8G`** (metastandard + harness + 5 discipline suites; the conformance fabric, authored-not-run). Doc-8 is the conformance harness yet subordinate to its oracle — a red test = code defect or corpus defect (`[ESC-8-CORPUS]`), never weaken the assertion. **All design+realization+verification programs are COMPLETE/FROZEN.** **Next phase: Development Decomposition → Build Roadmap → Implementation (Code).** **Development Decomposition PRODUCED** (`Development_Decomposition_v1.0.md`, 2026-06-26) — the non-authoritative bridge to buildable work (engineering streams · per-module work packages · dependency-ordered waves M0→M1→{M2/M5/M6/M7}→M3→{M4/M8}→M9 · acceptance gates). Code: NOT STARTED.
 
 **Authoring loop (every deliverable, Board-mandated):** Pass → Hard Review as Board → Fix (Patch) → short closure check (fixed? y/n; if not, re-fix) → next pass. Each a separate artifact; freeze only at 0 open BLOCKER/MAJOR/MINOR.
 
@@ -52,7 +52,7 @@ Architecture (Doc-2/3/4): **COMPLETE/FROZEN.** **Doc-5 (API realization): COMPLE
 | Doc-5K | M9 `ai` | **FROZEN** (`Doc-5K_SERIES_FROZEN_v1.0` + `Doc-5K_Content_v1.0_FROZEN`, 2026-06-26; 16 = 8 read + 8 out-of-wire). Advisory-only; no score/§8 event; `[ESC-AI-POLICY]` cleared by Doc-3 v1.8; corpus-folded |
 | Doc-5J | M8 `admin` | **FROZEN** (`Doc-5J_SERIES_FROZEN_v1.0`, 2026-06-26); 34 tokens (32 + 2). Admin-only; sole event `VendorBanned`; `[ESC-ADM-POLICY]` cleared by Doc-3 v1.7 |
 
-**Doc-5 API realization program — COMPLETE.** All 10 module realizations (M0–M9) content-FROZEN (5B–5K), gated by the FROZEN Doc-5A metastandard. **Next program: Doc-6 (Database).** Detailed ledger: `Program_Status_And_Roadmap.md`.
+**Doc-5 API realization program — COMPLETE.** All 10 module realizations (M0–M9) content-FROZEN (5B–5K), gated by the FROZEN Doc-5A metastandard. **Doc-6/7/8 also COMPLETE/FROZEN; next phase = Development Decomposition (produced) → Build Roadmap → Implementation.** Detailed ledger: `Program_Status_And_Roadmap.md`.
 
 ---
 
@@ -91,21 +91,20 @@ Structure Proposal → Independent Hard Review → Structure Patch → Structure
 | `generatedDocs/Doc-5A_Content_v1.0_Pass11.md` | Appendix A — `CHK-5A-xxx` checklist (freeze gate) |
 | `generatedDocs/Doc-5A_Content_v1.0_Pass3.md` · `Pass5.md` | §5.6 envelope / §6.2 error map · §8 pagination grammar |
 | `generatedDocs/Program_Status_And_Roadmap.md` | Detailed per-module ledger + live work queue |
-| `generatedDocs/Doc-5I_SERIES_FROZEN_v1.0.md` | Latest completed module (worked freeze example) |
-| `generatedDocs/Doc-5J_Structure_Proposal_v0.1.md` | Next deliverable (M8 Admin) |
+| `generatedDocs/Doc-5I_SERIES_FROZEN_v1.0.md` | A worked module freeze example |
+| `generatedDocs/Development_Decomposition_v1.0.md` | **Current deliverable** — Development Decomposition (frozen corpus → buildable work) |
 | `IMPLEMENTATION_START_HERE.md` · `CLAUDE.md` | Developer/AI entry point · AI-agent rules |
 
 ---
 
 ## Immediate Next Actions
 
-**Doc-5 API realization is COMPLETE (M0–M9 frozen). Doc-6 Database program STARTED — `Doc-6A` metastandard + `Doc-6B` (M0 `core`) + `Doc-6C` (M1 `identity`) + `Doc-6D` (M2 `marketplace`) FROZEN.** Next:
-1. **Doc-6 Database program is COMPLETE/FROZEN** (Doc-6A + Doc-6B…6K, M0–M9). The full physical schema oracle now exists. **Next program work: Doc-8 persistence/RLS conformance** — Doc-8D (Persistence/Migration/RLS) is fully unblocked (all 10 module schemas + the RLS/byte-equivalence/immutability targets frozen); then code implementation per `IMPLEMENTATION_START_HERE.md`.
-   - Doc-6A is the DB metastandard (the Doc-5A analog): R1–R12 + §2.5 attribution + Appendix B Global Conventions Registry. Doc-6B…6K **realize** its conventions, coin nothing. **Doc-6B (M0 `core`) + Doc-6C (M1 `identity`) + Doc-6D (M2 `marketplace`) FROZEN** — `core` (5 platform tables, CR4′, allocator, DR-6-CORE) → `identity` (9 tables, first org-anchor RLS, dual-party, 3 machines) → `marketplace` (21 tables, first public/anonymous tri-actor RLS, capability matrix, score firewall, first-real-FTS; carries `[ESC-6-DD7]`/`[ESC-MKT-AUDIT]`/`[ESC-6-SCHEMA-SHOWCASE]`). Per-module carried gates: `[ESC-6-SCHEMA/POLICY/API]`.
-2. **Doc-7 (Frontend): COMPLETE** — all 8 surfaces (7A–7H) FROZEN (`Doc-7_SERIES_FROZEN_v1.0`); Next.js App Router UI over the frozen Doc-5 surface; coins nothing. Unblocks Doc-8G (Frontend/E2E).
-3. **Doc-8 (Tests):** conformance + contract + integration suites (incl. RLS byte-equivalence gate) — Doc-8A…8F frozen; 8G (Frontend/E2E) now unblocked by Doc-7.
+**All design + realization + verification programs are COMPLETE/FROZEN (2026-06-26):** Doc-2/3/4 (architecture) · Doc-5A…5K (API) · Doc-6A…6K (DB) · Doc-7A…7H (FE) · Doc-8A…8G (Test). The full design+realization+verification corpus is frozen; the Doc-8 conformance fabric is authored-not-run, gating the eventual Code. **Phase = Development Decomposition → Build Roadmap → Implementation (Code).** Next:
+1. **Development Decomposition — PRODUCED** (`Development_Decomposition_v1.0.md`, 2026-06-26): the non-authoritative bridge from the frozen corpus to buildable work — engineering streams · per-module work packages (uniform WP template + Build Artifact Checklist) · cross-cutting work · repository bootstrap (Wave 0) · walking skeleton · **dependency-ordered implementation waves** (M0→M1 serial → M2/M5/M6/M7 parallel → M3 moat → M4/M8 → M9) · parallelization plan · acceptance gates (Doc-8 bands A–I) · engineering risks + build-time rollback · milestones. No dates/estimates; coins nothing. Registered in `CORPUS_INDEX.md` §5e + `00_AUTHORITY_MAP.md`.
+2. **Build Roadmap** — sequence the decomposition's milestones into executable engineering work (no code yet).
+3. **Implementation (Code)** — Next.js + Supabase + Prisma + Inngest, gated by the Doc-8 conformance fabric.
 
-*(Tidy DONE: `Doc-5K_SERIES_FROZEN_v1.0` + `Doc-3 …v1.8_AI` added — all 10 modules have a freeze manifest + cleared POLICY gate.)*
+*(Corpus tidy DONE: all 10 modules have a freeze manifest + cleared POLICY gate; Doc-6/7/8 all series-frozen; Development Decomposition produced and indexed.)*
 
 ---
 

@@ -1,24 +1,19 @@
 # IMPLEMENTATION — START HERE
 
 **Audience:** developers and AI coding agents (Claude Code, Cursor, Antigravity, Windsurf).
-**Status:** the architecture program is **COMPLETE / FROZEN**. The project is in
-**Implementation Governance** — **Doc-5A — API Realization Standards** is **FROZEN**
-(`Doc-5A_SERIES_FROZEN_v1.0`; freeze patches ratified 2026-06-24): §0–§12 + Appendices A–C complete.
-**Doc-5B (M0 `core`)** is **FROZEN** (`Doc-5B_SERIES_FROZEN_v1.0`, 2026-06-24; §0–§7 + Appendix A; out-of-wire
-boundary R1 precedent). **Doc-5C (M1 Identity)** is **FROZEN** (`Doc-5C_SERIES_FROZEN_v1.0`, 2026-06-24; §0–§8 + Appendix A;
-42 contracts; User-primary/active-org surface; R1–R6). **Doc-5E (M3 RFQ — the moat)** is **FROZEN**
-(`Doc-5E_SERIES_FROZEN_v1.0`, 2026-06-24; §0–§9 + Appendix A; 38 contracts; matching/routing engine out-of-wire; R1–R7;
-non-disclosure + engine-execution attestations; `[ESC-RFQ-POLICY]` gate cleared by `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ`).
-**Doc-5D (M2 Marketplace)** is **FROZEN** (`Doc-5D_SERIES_FROZEN_v1.0`, 2026-06-25; §0–§10 + Appendix A; 71 contracts =
-64 caller-facing + 7 out-of-wire; tri-actor Public/User/Admin; R1–R10; R5 projection-separation + R9 non-disclosure attestations;
-DD-6 gate cleared by `Doc-3_Policy_Key_Registration_Patch_v1.2_Marketplace`; DD-7 tracked, `claim_vendor_profile` only).
-**Doc-5G (M5 Trust — governance-signal owner)** is **FROZEN** (`Doc-5G_SERIES_FROZEN_v1.0`, 2026-06-25; §0–§9 + Appendix A;
-40 contracts = 34 caller-facing + 6 out-of-wire; multi-actor Public/User/Admin; R1–R12 score-computation + governance/Billing
-firewall + non-disclosure attestations; `[ESC-TRUST-POLICY]` gate cleared by `Doc-3_Policy_Key_Registration_Patch_v1.3_Trust`;
-SR-1 reconciled to 40). **Doc-5F (M4 Operations)** is **FROZEN** (`Doc-5F_SERIES_FROZEN_v1.0`, 2026-06-25; §0–§10 + Appendix A;
-50 contracts = 46 caller-facing + 4 out-of-wire; two-sided tenant User, no Admin/public; R1–R10 non-disclosure-load-bearing (R5) +
-money-boundary (R8) + async doc-gen attestations; `[ESC-OPS-POLICY]` gate cleared by `Doc-3_Policy_Key_Registration_Patch_v1.4_Operations`,
-new `operations` namespace). **Doc-5H…5M** gated by the Appendix A checklist. Application code has **not** started.
+**Status (2026-06-26):** the **entire design + realization + verification corpus is COMPLETE / FROZEN.**
+
+- **Architecture:** Doc-2 v1.0.3 · Doc-3 v1.0.2 · Doc-4A…4M — **FROZEN** (`Doc-4_SERIES_FROZEN_v1.0`).
+- **API realization (Doc-5):** `Doc-5A` metastandard + `Doc-5B`…`Doc-5K` (M0–M9) — **all FROZEN**.
+- **Database realization (Doc-6):** `Doc-6A` metastandard + `Doc-6B`…`Doc-6K` (M0–M9) — **all FROZEN**.
+- **Frontend realization (Doc-7):** `Doc-7A`…`Doc-7H` — **all FROZEN** (`Doc-7_SERIES_FROZEN_v1.0`).
+- **Test & conformance (Doc-8):** `Doc-8A`…`Doc-8G` — **all FROZEN** (`Doc-8_SERIES_FROZEN_v1.0`; the conformance fabric, authored-not-run, gates the eventual Code).
+
+**Current phase: Development Decomposition → Build Roadmap → Implementation (Code).** The
+**Development Decomposition** has been produced (`generatedDocs/Development_Decomposition_v1.0.md`) —
+the non-authoritative bridge translating the frozen corpus into buildable work (engineering streams,
+per-module work packages, dependency-ordered build waves, acceptance gates). **Application code has
+not started**, and is gated by the Doc-8 conformance fabric.
 
 This is the entry point for any implementation work. Read it first, then follow the order below.
 
@@ -48,8 +43,8 @@ This is the entry point for any implementation work. Read it first, then follow 
 | 3 | [REPOSITORY_STRUCTURE.md](REPOSITORY_STRUCTURE.md) | Folder shape, boundaries, forbidden patterns |
 | 4 | [generatedDocs/CORPUS_INDEX.md](generatedDocs/CORPUS_INDEX.md) + [00_AUTHORITY_MAP.md](generatedDocs/00_AUTHORITY_MAP.md) | Find the canonical document for your task |
 | 5 | `generatedDocs/Doc-4A_Structure_v1.0_FROZEN.md` | API conventions (mandatory before contract work) |
-| 6 | The owning module's frozen contract (Doc-4B…4M) | The rules for the module you're touching |
-| 7 | `generatedDocs/Doc-5_Program_Governance_Note_v1.0.md` | Current implementation-contracts program |
+| 6 | The owning module's frozen contracts (Doc-4B…4M + its Doc-5x API + Doc-6x DB + Doc-7x FE + Doc-8x test) | The rules for the module you're touching |
+| 7 | `generatedDocs/Development_Decomposition_v1.0.md` | Current phase — how the frozen corpus decomposes into buildable work (streams, work packages, waves, gates) |
 
 ---
 
@@ -91,7 +86,8 @@ is insufficient.
 | Which doc is canonical | `generatedDocs/CORPUS_INDEX.md`, `generatedDocs/00_AUTHORITY_MAP.md` |
 | API conventions | Doc-4A |
 | State machines | Doc-4M · Event catalog | Doc-4J · Cross-module flows | Doc-4L |
-| Current program | `generatedDocs/Doc-5F_SERIES_FROZEN_v1.0.md` (M4 Operations FROZEN) · `Doc-5G_SERIES_FROZEN_v1.0.md` (M5 FROZEN) · `Doc-5D_SERIES_FROZEN_v1.0.md` (M2 FROZEN) · `Doc-5E_SERIES_FROZEN_v1.0.md` (M3 FROZEN) · `Doc-5C_SERIES_FROZEN_v1.0.md` (M1 FROZEN) · `Doc-5B_SERIES_FROZEN_v1.0.md` (M0 FROZEN) · `Doc-5A_SERIES_FROZEN_v1.0.md` (metastandard FROZEN) · next: Doc-5H…5M |
+| Current phase | `generatedDocs/Development_Decomposition_v1.0.md` (decomposition → Build Roadmap → Code) · all module realizations FROZEN (Doc-5/6/7) + the Doc-8 conformance fabric (`Doc-8_SERIES_FROZEN_v1.0`) |
+| Per-module ledger | `generatedDocs/Program_Status_And_Roadmap.md` · `CORPUS_INDEX.md` · `00_AUTHORITY_MAP.md` |
 
 ---
 

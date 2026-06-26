@@ -269,6 +269,19 @@ review/patch/audit trail is grouped by category.
 
 ---
 
+## 5e. Implementation Planning (Development Decomposition — current phase)
+
+> The bridge from the frozen corpus to application code. **Non-authoritative**; decomposes
+> only — coins no architecture/API/schema/UI/event/permission/route/module/state/contract.
+> The corpus's declared phase sequence is **Development Decomposition → Build Roadmap →
+> Implementation (Code)**; this is the first step.
+
+| File | Purpose |
+|------|---------|
+| `Development_Decomposition_v1.0.md` | **Development Decomposition** — translates the frozen corpus (Doc-2…Doc-8) into buildable work: engineering streams · per-module work packages (uniform WP template + Build Artifact Checklist) · cross-cutting work · repository bootstrap (Wave 0) · walking skeleton · **dependency-ordered implementation waves** (M0→M1 serial → M2/M5/M6/M7 parallel → M3 moat → M4/M8 → M9) · parallelization plan · acceptance gates (Doc-8 bands A–I) · engineering risks + build-time rollback · milestones. No dates/estimates. Every item traces by pointer to a frozen authority; gaps → `[ESC-*]`. **Next:** the Build Roadmap |
+
+---
+
 ## 6. Program Status, Roadmap & Context Packs
 
 | File | Purpose |
