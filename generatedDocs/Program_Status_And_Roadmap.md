@@ -13,7 +13,7 @@
 | Doc-2 Domain Model & DB Blueprint v1.0.3 · Doc-3 RFQ & Operational Spec v1.0.2 | **FROZEN** |
 | Doc-4A API metastandard + Doc-4B…4M (all 10 modules + state/event/integration indexes) | **FROZEN** (`Doc-4_SERIES_FROZEN_v1.0`) |
 
-**The entire Doc-4 architecture corpus is FROZEN.** **Doc-5 API realization program = COMPLETE** (all 10 module realizations FROZEN). **Current phase → Doc-6 (Database): the metastandard `Doc-6A` is FROZEN (2026-06-26)**; next deliverable = `Doc-6B` (M0 `core`).
+**The entire Doc-4 architecture corpus is FROZEN.** **Doc-5 API realization program = COMPLETE** (all 10 module realizations FROZEN). **Current phase → Implementation-contract realization across three parallel sibling programs:** Doc-6 (Database — `Doc-6A` + `Doc-6B` FROZEN; next `Doc-6C`), Doc-7 (Frontend — `Doc-7A` FROZEN; next `Doc-7B`/`7C`), and Doc-8 (Test & Conformance — `Doc-8A` structure FROZEN 2026-06-26; next Doc-8A content passes → `Doc-8B`). All gated by their Appendix A.
 
 ---
 
@@ -87,8 +87,8 @@ Staged-freeze, mirroring Doc-5/Doc-6: a metastandard (Doc-7A — the Doc-5A/Doc-
 
 | Doc-7 | Scope | Status |
 |---|---|---|
-| **7A** | Frontend Realization Metastandard | **STRUCTURE FROZEN 2026-06-26** (`Doc-7A_Structure_v1.0_FROZEN`) — R1–R12; surface partition; Appendix A = 9 `CHK-7-xxx` bands (per-surface freeze gate); coins nothing. Independent Hard Review (2 MAJOR + 3 MINOR + 2 NIT resolved, 1 REJECTED) + Structure Freeze Audit PASS. **Content passes NEXT** |
-| 7B | Design System & Component Kit *(frozen first)* | NOT STARTED — shared shadcn/ui kit, tokens/theme, presentation boundary, a11y/i18n/currency baseline, shared embedded components |
+| **7A** | Frontend Realization Metastandard | **FROZEN 2026-06-26** (`Doc-7A_SERIES_FROZEN_v1.0`) — structure + content §0–§12 + Appendix A (**25 `CHK-7-xxx` checks / 10 bands A–J**); R1–R12; surface partition; **§3.7 wired-contracts-only boundary**; coins nothing. Structure + 3 content passes each: Pass → Board Hard Review → Patch → closure check PASS; Structure + Content Freeze Audits PASS |
+| 7B | Design System & Component Kit *(frozen first)* | **STRUCTURE FROZEN 2026-06-26** (`Doc-7B_Structure_v1.0_FROZEN`) — BR1–BR12; presentation-only kit (primitives→app components); defines shared embedded components (trust badge/billing/AI panel/thread presentation; **notification center = Doc-7C**); microsite theme-override; applicable Appendix A subset declared. Hard Review (1 MAJOR + 3 MINOR + 1 NIT) + Structure Freeze Audit PASS. **Content passes NEXT** |
 | 7C | App Shell & Data Layer *(frozen second)* | NOT STARTED — App Router skeleton, active-org context boundary + switcher, typed Doc-5 API-client, notification center |
 | 7D | Public Surface (anonymous) | NOT STARTED — realizes `Doc-5D` public/anon |
 | 7E | Account & Identity Shell | NOT STARTED — realizes `Doc-5C` mgmt screens + `Doc-5I` account/billing |
@@ -100,17 +100,37 @@ Staged-freeze, mirroring Doc-5/Doc-6: a metastandard (Doc-7A — the Doc-5A/Doc-
 
 ---
 
+## 4d. Doc-8 Test & Conformance Realization program (STARTED — Doc-8A structure FROZEN 2026-06-26)
+
+Staged-freeze, mirroring Doc-5/6/7: a metastandard (Doc-8A — the Doc-5A/6A/7A analog) + **test-discipline-partitioned** realizations Doc-8B…8G. Realizes the full frozen *what*-corpus (Doc-2 v1.0.3 · Doc-3 v1.0.2 · Doc-4A…4M + the 12 invariants/5 firewalled signals/moat — the **test oracle**) and the realization contracts under test (`Doc-5A…5K` API · `Doc-6A…6K` DB · `Doc-7A…7H` FE) as deterministic, isolated, CI-gating conformance suites. **Doc-8 is the conformance harness yet subordinate to its oracle** (governance §3/§8 rule 5): a red test = code defect (fix it) or corpus defect (`[ESC-8-CORPUS]`, flag-and-halt) — never weaken the assertion. Partition departs from the backend-module letter map by intent (the Doc-7 precedent) — by verification discipline, since one conformance concern spans many modules.
+
+| Doc-8 | Scope | Status |
+|---|---|---|
+| **8A** | Test & Conformance Realization Metastandard | **STRUCTURE FROZEN 2026-06-26** (`Doc-8A_Structure_v1.0_FROZEN`) — R1–R12; test-discipline partition; cross-cutting conformance-concern allocation table; Appendix A = 9 `CHK-8-xxx` bands (per-suite freeze gate); inherits the RLS byte-equivalence gate (`Doc-6A R8/§4`) + migration gate (`Doc-6A §11`). Independent Hard Review (2 MAJOR + 2 MINOR + 2 NIT + 1 OBS resolved, 1 REJECTED) + Structure Freeze Audit PASS. Coins nothing. **Content passes NEXT** |
+| 8B | Test Foundation & Harness *(frozen first)* | NOT STARTED — runner, ephemeral test DB, fixtures/factories, multi-tenant seeding (≥2 orgs), seeded clock + deterministic UUIDv7 provider, out-of-wire mock boundary, CI merge-gate |
+| 8C | Contract & API Conformance | NOT STARTED — realizes `Doc-5A…5K` (envelope/pagination/error/idempotency/prohibited-field/actor-scope); **oracle-ready now** (Doc-5 frozen) |
+| 8D | Persistence, Migration & RLS Conformance | NOT STARTED — realizes `Doc-6A…6K` (schema constraints + immutability + migration + the load-bearing RLS positive/negative/cross-tenant byte-equivalence gate); awaits Doc-6 |
+| 8E | Domain, Invariant & State-Machine Conformance | NOT STARTED — realizes Doc-2/3/4M + 12 invariants + firewall + moat; **oracle-ready now** |
+| 8F | Integration & Event-Flow Conformance | NOT STARTED — realizes Doc-2 §8 / Doc-4J / Doc-4L (transactional write+emit, outbox→Inngest); awaits Doc-6 outbox table |
+| 8G | Frontend & E2E Conformance | NOT STARTED — realizes `Doc-7B…7H` (component/a11y/visual-regression/e2e + UI non-disclosure byte-equivalence); awaits Doc-7 |
+
+**Carried into Doc-8A content + Doc-8B…8G (per-suite gates):** `DR-8-HARNESS` (8B frozen first) · `DR-8-CONTRACT` (Doc-5/6/7 testability cross-check) · `DR-8-STATE` (Doc-4M drives state suites) · `DR-8-RLS` (mandatory byte-equivalence band) · `[ESC-8-TOOLING]` (test-framework ratification — Board; candidates Vitest/Playwright/pgTAP, not coined) · `[ESC-8-API]` · `[ESC-8-CORPUS]` (corpus defect — flag-and-halt) · `[ESC-8-POLICY]` · `[ESC-8-SCOPE]`. **Per-suite oracle-readiness:** 8A/8B/8C/8E ready now; 8D/8F/8G await Doc-6/7.
+
+---
+
 ## 5. Live work queue
 
 **Doc-5 API realization program — COMPLETE.** All 10 module realizations (M0–M9) content-FROZEN: 5B/5C/5D/5E/5F/5G/5H/5I/5J/5K, gated by the FROZEN Doc-5A metastandard. Doc-3 POLICY patches v1.0–v1.8 applied (one namespace per registered module; M1 identity none).
 
 **Doc-6 Database program — STARTED.** `Doc-6A` (metastandard) + `Doc-6B` (M0 `core`) FROZEN 2026-06-26.
+**Doc-7 Frontend program — STARTED.** `Doc-7A` (metastandard) FROZEN.
+**Doc-8 Test & Conformance program — STARTED.** `Doc-8A` (metastandard) STRUCTURE FROZEN 2026-06-26; content passes next.
 
 Next:
 1. **Doc-6C (M1 `identity`)** — next per-module schema; first org-tenant-anchored (RLS load-bearing) + `human_ref`-carrying tables; resolves the open `[ESC-6-POLICY]` identity-namespace question.
 2. **Doc-6D…6K** — remaining module schemas, dependency order, each gated by Doc-6A Appendix A.
-3. **Doc-7 (Frontend)** — Next.js App Router UI composition over the frozen API contracts (design track may run in parallel now).
-4. **Doc-8 (Tests)** — conformance + contract + integration suites (incl. the RLS positive/negative/cross-tenant byte-equivalence gate — Doc-6A §4.4/§11.5).
+3. **Doc-7B/7C** (Design System + App Shell, frozen first) then Doc-7D…7H surface docs.
+4. **Doc-8A content passes** (§0–§12 + Appendix A check IDs) → **Doc-8B** (Test Foundation & Harness, frozen first) → discipline suites Doc-8C…8G. Per-suite oracle-readiness governs freeze order: 8C/8E ready now (Doc-5 + Doc-2/3/4M frozen); 8D/8F/8G freeze as Doc-6/7 freeze. The RLS positive/negative/cross-tenant byte-equivalence gate is `Doc-6A R8/§4`; migration gate `Doc-6A §11`.
 5. Then: Development Decomposition → Build Roadmap → Implementation.
 
 *(Corpus tidy DONE: `Doc-5K_SERIES_FROZEN_v1.0` manifest added for peer-parity; `Doc-3 …v1.8_AI` registers the `ai.*` keys and clears `[ESC-AI-POLICY]`. All 10 modules now have a `SERIES_FROZEN` (or `Content_v1.0_FROZEN`) manifest + a cleared POLICY gate.)*
