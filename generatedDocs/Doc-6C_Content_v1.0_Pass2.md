@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | **CONTENT Pass-2** (realizes §3.4 `roles` · §3.5 `permissions` · §3.6 `role_permissions` · §3.7 `organization_workflow_settings` · §3.8 `buyer_profiles` + §4 state machines + §5 permission/role seed) — awaiting Hard Review → Pass-3 |
+| Status | **CONTENT Pass-2 — Independent Hard Review applied** (0 BLOCKER + 4 MAJOR + 3 MINOR + 2 NITPICK dispositioned; §Review Disposition). Realizes §3.4–§3.8 + §4 + §5. Next: Pass-3 |
 | Date | 2026-06-26 |
 | Builds on | Pass-1 (§0–§2 posture/RLS · users · organizations · memberships) |
 | Authority | `Doc-2 §5/§7/§10.2` (the *what*); `Doc-6A` (the *how*); `Doc-4C` (consumed); `Doc-3 v1.9_Identity` (RATIFIED) |
@@ -28,11 +28,27 @@ CREATE TABLE identity.roles (
   CONSTRAINT roles_pkey PRIMARY KEY (id),
   CONSTRAINT roles_org_fk FOREIGN KEY (organization_id) REFERENCES identity.organizations(id)  -- [Doc-6A §5.2] intra-schema; nullable (system seeds)
 );
--- [§2.5] name uniqueness: per-org for tenant roles; global for system bundles (org_id NULL)
+-- [§2.5 realizing the DC-CR2/DC-CR8 NULL-seed invariant] Doc-2 §10.2 states `name, is_system_bundle` (no explicit unique);
+-- these materialize the implicit uniqueness the NULL-seed model needs: per-org for tenant roles + GLOBAL for system bundles (org_id NULL).
 CREATE UNIQUE INDEX roles_org_name_live_uq    ON identity.roles (organization_id, name) WHERE deleted_at IS NULL AND organization_id IS NOT NULL;
 CREATE UNIQUE INDEX roles_system_name_live_uq ON identity.roles (name)                  WHERE deleted_at IS NULL AND organization_id IS NULL;
 ```
-- **RLS (DC-CR2):** read `USING (organization_id = current_setting('app.active_org', true)::uuid OR organization_id IS NULL OR current_setting('app.is_platform_staff', true)::boolean)`; **write** policy restricts `organization_id IS NULL` rows to System/platform-staff (an org **clones** a system bundle into its own `organization_id`, never mutates the seed).
+- **RLS (DC-CR2) — read + write realized as DDL (RLS-WRITE-001):**
+```sql
+ALTER TABLE identity.roles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY roles_read ON identity.roles FOR SELECT
+  USING (organization_id = current_setting('app.active_org', true)::uuid
+         OR organization_id IS NULL                                   -- system bundles globally readable
+         OR current_setting('app.is_platform_staff', true)::boolean IS TRUE);
+-- write: an org may mutate only its OWN-org roles; NULL-org system bundles are System/platform-staff only
+CREATE POLICY roles_write ON identity.roles FOR ALL
+  USING      (organization_id = current_setting('app.active_org', true)::uuid
+              OR current_setting('app.is_platform_staff', true)::boolean IS TRUE)
+  WITH CHECK (organization_id = current_setting('app.active_org', true)::uuid
+              OR current_setting('app.is_platform_staff', true)::boolean IS TRUE);
+```
+An org **clones** a system bundle into its own `organization_id` (never mutates the NULL-org seed — the `roles_write` policy denies it; only platform-staff/System may touch NULL-org rows).
+- **System-bundle immutability (SD-001):** a `organization_id IS NULL` system bundle is **never soft-deleted** (it is seed) — enforced by the `roles_write` policy (NULL-org mutation = staff/System only) + a service-layer guard; org-custom roles (SD=YES) soft-delete normally.
 - **`memberships_role_fk`** (Pass-1, deferred) is added now in the migration order (§6, Pass-3) — roles exists at this point.
 - **Prisma [§2.5]:** `Role` model (`organizationId` nullable, `isSystemBundle`, `@@map("roles") @@schema("identity")`).
 
@@ -151,7 +167,7 @@ State transitions that Doc-2 §8 declares as domain events emit to **`core.outbo
 Idempotent forward-only seed (Doc-6A §9.4/§11.3); upsert on natural key; **by pointer, none coined**.
 
 ### §5.1 Permission catalog seed (45 slugs — Doc-2 §7)
-Seed `identity.permissions` with the **38 tenant slugs** (`space = 'tenant'`) + **7 staff slugs** (`space = 'staff'`) enumerated in **Doc-2 §7** (e.g. tenant: `can_create_rfq`, `can_approve_rfq`, `can_award_rfq`, `can_manage_users`, `can_manage_billing`, `can_manage_delegations`, … ; staff: `staff_can_moderate_rfq`, `staff_can_verify`, `staff_can_support`, `staff_can_ban`, `staff_can_manage_categories`, `staff_can_redact_audit`, `staff_super_admin`). The **authoritative exhaustive list is Doc-2 §7** (bound by pointer; not restated/closed here). Slug + space verbatim; **no slug coined** (gaps → `[ESC-6-SCHEMA]`, none expected).
+Seed `identity.permissions` with the **38 tenant slugs** (`space = 'tenant'`) + **7 staff slugs** (`space = 'staff'`) enumerated in **Doc-2 §7** (e.g. tenant: `can_create_rfq`, `can_approve_rfq`, `can_award_rfq`, `can_manage_users`, `can_manage_billing`, `can_manage_delegations`, … ; staff: `staff_can_moderate_rfq`, `staff_can_verify`, `staff_can_support`, `staff_can_ban`, `staff_can_manage_categories`, `staff_can_redact_audit`, `staff_super_admin`). The **authoritative exhaustive list is Doc-2 §7** (bound by pointer; not restated/closed here). Slug + space verbatim; **no slug coined** (a gap between a Doc-2 §7 declared slug and the seed → resolved by a Doc-2 patch before realization, `[ESC-6-SCHEMA]`; none expected).
 ```sql
 INSERT INTO identity.permissions (id, slug, description, space)
 VALUES (<uuidv7>, '<slug>', '<desc>', '<tenant|staff>')   -- one row per Doc-2 §7 slug
@@ -163,7 +179,7 @@ Seed `identity.roles` with the 4 system bundles (`organization_id = NULL`, `is_s
 ```sql
 INSERT INTO identity.roles (id, organization_id, name, is_system_bundle)
 VALUES (<uuidv7>, NULL, '<Owner|Director|Manager|Officer>', true)
-ON CONFLICT (name) WHERE organization_id IS NULL DO NOTHING;   -- idempotent (the roles_system_name_live_uq partial index)
+ON CONFLICT (name) WHERE deleted_at IS NULL AND organization_id IS NULL DO NOTHING;  -- predicate MATCHES roles_system_name_live_uq for arbiter-index inference (CONFLICT-001: a partial index must use the index-predicate form, NOT `ON CONSTRAINT`)
 -- role_permissions composition seeded per Doc-2 §7 bundle defaults (by pointer; none coined)
 ```
 
@@ -172,4 +188,22 @@ Both seeds are idempotent forward-only seed migrations (re-run safe), separate f
 
 ---
 
-*End of Doc-6C Content Pass-2 (§3.4–§3.8 · §4 · §5). Realizes the role/permission model + the two org-child tables + the state-machine realization plan (value-set DB / governance-guards service) + the permission/role seed. Columns verbatim Doc-2 §10.2; 45 slugs + role bundles by pointer to Doc-2 §7 / A-08; intra-schema FKs (Doc-6A §5.2); RLS per DC-CR2 (incl. roles NULL-seed); physical specifics §2.5-attributed; coins nothing. Next: Pass-3 (§3.9 `delegation_grants` dual-party · §6 POLICY/migration · §7 + Appendix A attestation).*
+## Review Disposition (Independent Hard Review — Pass-2)
+
+Reviewer: independent (Architecture Board / DDD / Security / DBA). Verified CORRECT: column sets verbatim (Doc-2 §10.2); enum values (permission_space, rfq_approval_mode); 45-slug + role-bundle pointer (Doc-2 §7 / A-08, none coined); SD flags; intra-schema FKs; Invariant #2 (no staff slug in org bundles); `role_permissions.organization_id` **required not coined** (§10.2 lists it); the two roles partial-unique indexes correctly enforce the NULL-seed uniqueness. 0 BLOCKER.
+
+| Finding | Sev | Disposition |
+|---|---|---|
+| **RP-001** `role_permissions.organization_id` cited §6 (general) not §10.2 (blueprint) | MAJOR | **FIXED** — re-cited `[Doc-2 §10.2 binding]`; noted "not coined — §10.2 lists it." |
+| **IDX-001** roles two partial-unique indexes under-attributed | MAJOR | **FIXED** — tagged `[§2.5 realizing DC-CR2/DC-CR8 NULL-seed invariant]` + explained (per-org + global-system uniqueness; §10.2 states no explicit unique). |
+| **CONFLICT-001** `ON CONFLICT (name) WHERE organization_id IS NULL` index inference risky | MAJOR | **FIXED** — predicate now matches the full index predicate `WHERE deleted_at IS NULL AND organization_id IS NULL`. (Reviewer's `ON CONSTRAINT` suggestion **rejected** — partial indexes cannot use `ON CONSTRAINT`; the index-predicate form is the correct PG inference.) |
+| **RLS-WRITE-001** roles write-restriction prose-only, not DDL | MAJOR | **FIXED** — added explicit `roles_read` + `roles_write` RLS policies (NULL-org mutation = staff/System only; org clones into own org_id). |
+| **SD-001** system-bundle roles soft-delete not guarded | MINOR | **FIXED** — note: NULL-org bundles never soft-deleted (roles_write policy + service guard); org-custom SD normally. |
+| **SLUG-001** `[ESC-6-SCHEMA]` escalation vague | MINOR | **FIXED** — clarified (slug gap → Doc-2 patch before realization). |
+| **ATTR-001 / ENUM-001 / ENUM-002** | NIT | **NO ACTION** — verified correct by reviewer. |
+
+**Net:** 4 MAJOR (attribution ×2, ON-CONFLICT inference, roles write RLS) fixed; MINOR applied. One reviewer suggestion (`ON CONSTRAINT`) correctly rejected as invalid for partial indexes. 0 open BLOCKER/MAJOR/MINOR.
+
+---
+
+*End of Doc-6C Content Pass-2 (§3.4–§3.8 · §4 · §5) — Independent Hard Review applied; 0 open BLOCKER/MAJOR/MINOR. Realizes the role/permission model + the two org-child tables + the state-machine realization plan (value-set DB / governance-guards service) + the permission/role seed. Columns verbatim Doc-2 §10.2; 45 slugs + role bundles by pointer to Doc-2 §7 / A-08; intra-schema FKs (Doc-6A §5.2); RLS per DC-CR2 (incl. roles NULL-seed); physical specifics §2.5-attributed; coins nothing. Next: Pass-3 (§3.9 `delegation_grants` dual-party · §6 POLICY/migration · §7 + Appendix A attestation).*
