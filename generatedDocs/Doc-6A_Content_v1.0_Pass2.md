@@ -142,7 +142,7 @@ Realizes Doc-2 §9 + Doc-4B (M0 audit owner). `core.audit_records` is **realized
 
 ### §8.1 Immutable audit table (Doc-2 §9 — binding)
 
-`core.audit_records` is **append-only** (§6.4): INSERT-only, UPDATE/DELETE trigger-blocked. Columns (Doc-2 §9): `audit_id`, `actor_id`, `actor_type` (`User | Admin | System | AI Agent`), `organization_id`, `entity_type`, `entity_id`, `action`, `old_value`, `new_value`, `timestamp`, `ip_address`, `user_agent`.
+`core.audit_records` is **append-only** (§6.4): INSERT-only, UPDATE/DELETE trigger-blocked. Columns (Doc-2 §9): `audit_id`, `actor_id`, `actor_type` (`User|Admin|System|AI Agent`), `organization_id`, `entity_type`, `entity_id`, `action`, `old_value`, `new_value`, `timestamp`, `ip_address`, `user_agent`.
 
 ### §8.2 Redaction-as-new-event (Doc-2 §9 — binding)
 

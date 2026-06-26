@@ -54,7 +54,7 @@ Consolidates the physical type mappings used in §2.3/§3.6 snippets. The *logic
 |---|---|---|---|
 | `actor_type` | `User\|Admin\|System\|AI Agent` | M0 `core` | Doc-2 §9 — **[Doc-2 binding]** (used by audit §8.1, System-actor score writes §6.4) |
 | `currency` (supported set) | per Doc-2 §0.4, default `'BDT'` | M0 `core` | Doc-2 §0.4 — **[Doc-2 binding]** |
-| outbox `status` | `pending → dispatched → archived` | M0 `core` | §7.2 / Doc-2 §10.1 — **[Doc-2 binding]** (M0-owned outbox; not a module enum) |
+| outbox `status` | `pending → dispatched → archived` | M0 `core` | §7.2 / Doc-2 §10.1 — **[Doc-2 §10.1 lifecycle binding]** (M0-owned outbox infra; not a module enum) |
 
 Anything not in this table (RFQ states, quotation states, subscription states, claim states, visibility, …) is **module-owned**, realized in that module's Doc-6x against Doc-2 §3/§5 — **never lifted into B.3**.
 
