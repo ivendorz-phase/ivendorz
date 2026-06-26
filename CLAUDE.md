@@ -164,8 +164,8 @@ ratified. Authoritative blueprint lives in `generatedDocs/`.
   **Doc-5A metastandard FROZEN** (gates 5B…5M via Appendix A) + **all 10 module realizations
   content-FROZEN: Doc-5B (M0) · 5C (M1) · 5D (M2) · 5E (M3) · 5F (M4) · 5G (M5) · 5H (M6) ·
   5I (M7) · 5J (M8, 2026-06-26) · 5K (M9).** Doc-3 POLICY patches v1.0–v1.8 applied (one namespace
-  per registered module; M1 identity none). **Doc-6 (Database) program STARTED — metastandard
-  `Doc-6A` FROZEN (2026-06-26):** the DB analog of Doc-5A (R1–R12 + §2.5 realization-choice
+  per registered module; M1 identity none). **Doc-6 (Database) program COMPLETE/FROZEN (2026-06-26) — Doc-6A + Doc-6B…6K (M0–M9) all frozen; metastandard
+  `Doc-6A`:** the DB analog of Doc-5A (R1–R12 + §2.5 realization-choice
   attribution; Appendix A = 10 bands / 37 `CHK-6-xxx` per-module freeze gate; Appendix B Global
   Conventions Registry; R3(b) one-Prisma-namespace-per-module Board-ratified; coins nothing).
   **`Doc-6B` (M0 `core`) FROZEN (2026-06-26):** 5 platform-owned tables (DDL+Prisma) realizing
@@ -220,10 +220,13 @@ ratified. Authoritative blueprint lives in `generatedDocs/`.
   **the authoritative event catalog (Doc-4J)**; **"Admin decides, owning module owns"** (M8 writes no owning-module authoritative table; ban→M2,
   verification→M5, link→M4, import→M2 via event/service); the ban authority (`ban_actions` emits `VendorBanned`); **`link_suggestions` never
   vendor-visible** (A-03; CHK-6-022 in-scope); append-only `import_rows`; no event coined; no human_ref (CHK-6-002 N/A); Appendix A 37/37; carries
-  `[ESC-ADMIN-AUDIT]`/`[ESC-ADMIN-SCHEMA-OUTREACH]`. **Next: Doc-6K (M9 `ai`, the FINAL Doc-6 module — regenerable derived artifacts only; sole `ai.*` TTL hard-delete exception)** ·
-  **Doc-7 COMPLETE (7A–7H frozen)** · Doc-8D then 8E…8G (8G Frontend/E2E now unblocked by Doc-7). Per-module ledger: `generatedDocs/Program_Status_And_Roadmap.md`.
+  `[ESC-ADMIN-AUDIT]`/`[ESC-ADMIN-SCHEMA-OUTREACH]`. **`Doc-6K` (M9 `ai`) FROZEN (2026-06-26) — the FINAL Doc-6 module:** 4 cache tables (DDL+Prisma+RLS)
+  realizing Doc-2 §10.10 — **"AI suggests; modules decide"** (Invariant #12 — owns no authoritative data; never source of truth; no §8 event/no score);
+  **the sole `ai.*` TTL hard-delete exception** (Doc-6A R7 — hard-DELETE permitted; no SD, no immutability; **CHK-6-033 the active PASS**); requesting-org RLS;
+  no human_ref; Appendix A 37/37; carries `[ESC-AI-AUDIT]`. **→ Doc-6 Database program COMPLETE/FROZEN (Doc-6A + Doc-6B…6K, M0–M9).**
+  **Doc-7 COMPLETE (7A–7H frozen)** · Doc-8D (Persistence/RLS — now fully unblocked: full schema oracle) then 8E…8G. Per-module ledger: `generatedDocs/Program_Status_And_Roadmap.md`.
 - **Status:** architecture = COMPLETE/FROZEN · Doc-5 API contracts = COMPLETE/FROZEN (M0–M9) ·
-  Doc-6 DB = STARTED (Doc-6A + Doc-6B M0 `core` + Doc-6C M1 `identity` + Doc-6D M2 `marketplace` + Doc-6E M3 `rfq` + Doc-6F M4 `operations` + Doc-6G M5 `trust` + Doc-6H M6 `communication` + Doc-6I M7 `billing` + Doc-6J M8 `admin` FROZEN; only Doc-6K M9 `ai` NOT STARTED) ·
+  Doc-6 DB = **COMPLETE/FROZEN (Doc-6A + Doc-6B…6K, M0–M9 — all 11 deliverables frozen)** ·
   Doc-7 FE = **COMPLETE/FROZEN (7A–7H all frozen; `Doc-7_SERIES_FROZEN_v1.0`)** ·
   Doc-8 Test = STARTED (Doc-8A metastandard FROZEN; Doc-8B…8G NOT STARTED) ·
   code = NOT STARTED.
