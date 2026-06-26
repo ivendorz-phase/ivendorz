@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | **CONTENT Pass-2** (realizes §5–§9 of `Doc-6A_Structure_v1.0_FROZEN`) — awaiting Hard Review → Pass-3 |
+| Status | **CONTENT Pass-2 — Independent Hard Review applied** (1 MAJOR + 3 MINOR + 1 NITPICK dispositioned; §Review Disposition). Realizes §5–§9 of `Doc-6A_Structure_v1.0_FROZEN`. Next: Pass-3 |
 | Date | 2026-06-26 |
 | Realizes (structure) | §5 Integrity & Constraint Realization · §6 Immutability/Soft-Delete/Versioning · §7 Outbox & Event-Persistence · §8 Audit Persistence · §9 POLICY Configuration & Seed |
 | Authority | `Doc-2 v1.0.3` (the *what*-authority); `Doc-4B` (M0 outbox/audit/id/config owner); `Doc-4L` (event-flow map); `Doc-3 §12` + POLICY patches v1.0–v1.8 |
@@ -87,12 +87,14 @@ Realizes Invariant #8 (nothing authoritative overwritten or hard-deleted; IDs ne
 Tables Doc-2 declares versioned — e.g. `rfq_versions`, `quotation_versions`, `template_versions`, `spec_documents` (Doc-2 §10.4/§10.5) — realize: each revision is a **new row** (new `id`); a prior version becomes **immutable** once a binding state is reached (e.g. a quotation exists against an RFQ version; a generated document records the `template_version` used). Immutability is enforced at the DB by an **UPDATE/DELETE-blocking trigger** on bound rows (realization mechanism — §2.5). Convention:
 
 ```sql
--- generic convention — NOT a module trigger
+-- generic convention — NOT a module trigger; trigger + function names are Doc-6A realization choices (§2.5)
 CREATE TRIGGER <table>_block_mutation_when_bound
   BEFORE UPDATE OR DELETE ON <schema>.<table>
   FOR EACH ROW WHEN (OLD.<bound_flag> IS TRUE)
-  EXECUTE FUNCTION core.raise_immutable_violation();
+  EXECUTE FUNCTION core.raise_immutable_violation();  -- function realized in Doc-6B
 ```
+
+The immutability-enforcement **mechanism** (UPDATE/DELETE-blocking trigger on bound rows) is a **Doc-2 §5 binding**; the trigger/function **names** (`<table>_block_mutation_when_bound`, `core.raise_immutable_violation()`) are **Doc-6A realization choices** (§2.5), with the shared function realized in `core` (Doc-6B).
 
 ### §6.4 Append-only / history tables (Doc-2 §0.2/§5)
 
@@ -100,7 +102,7 @@ History/snapshot tables — e.g. `financial_tier_history`, `trust_score_history`
 
 ### §6.5 The regenerable `ai.*` cache exception (enumerated — Doc-5K R7)
 
-The **sole** legitimate hard-delete is the M9 `ai` schema's regenerable derived-artifact cache: a TTL-expired cache row MAY be hard-deleted (`Doc-3_Policy_Key_Registration_Patch_v1.8_AI` `ai.<bc>.ttl_seconds`). These are **disposable projections, not authoritative records** (advisory-only; no score, no §8 event — Doc-5K R5/R6). The exception is **enumerated to `ai.*`** — no other schema may hard-delete an authoritative row. Doc-6K realizes the TTL hard-delete; all other Doc-6x inherit the no-hard-delete rule.
+The **sole** legitimate hard-delete is the M9 `ai` schema's regenerable derived-artifact cache: a TTL-expired cache row MAY be hard-deleted (`Doc-3_Policy_Key_Registration_Patch_v1.8_AI` `ai.<bc>.ttl_seconds`; TTL hard-delete legitimate — **Doc-5K R7**). These are **disposable projections, not authoritative records** — advisory-only (**Doc-5K R5**); no trust/decision score (score firewall — **R6**); no Doc-2 §8 event (pull/derive-on-demand — **R8**). The exception is **enumerated to `ai.*`** — no other schema may hard-delete an authoritative row. Doc-6K realizes the TTL hard-delete; all other Doc-6x inherit the no-hard-delete rule.
 
 ---
 
@@ -122,11 +124,11 @@ BEGIN;
 COMMIT;
 ```
 
-The insert into `core.outbox_events` is the **only** legitimate cross-schema write from a business module, and it is to the **M0-owned outbox by its contract**, not a foreign business table (no cross-module table write — CLAUDE.md §3).
+Writing the `core.outbox_events` row is the **one sanctioned exception** to module write-isolation: it goes to the **M0-owned outbox through M0's transactional-outbox contract** (Doc-2 §8 / Doc-4B), in the emitter's own transaction. It is **not** a write to another business module's tables — that remains forbidden (no cross-module table write — CLAUDE.md §3 / Red Flag list). No cross-schema FK, JOIN, or RLS traversal is implied (§5.3).
 
 ### §7.2 Outbox table shape (realized in Doc-6B — by pointer)
 
-`core.outbox_events` columns (Doc-2 §10.1): `id` (UUIDv7), `event_name`, `event_version`, `payload_jsonb` (IDs + metadata, **no blobs**), `status` (`pending → dispatched → archived`), `dispatched_at`, `attempts`. Dispatch lifecycle + retry/backoff is code (Inngest); Doc-6B realizes the table + a status/created_at index for the dispatcher poll (§10 indexing, Pass-3).
+`core.outbox_events` **key attributes** (Doc-2 §10.1 — which lists load-bearing attributes only, **not** the full column set): `event_name`, `event_version`, `payload_jsonb` (IDs + metadata, **no blobs**), `status` (`pending → dispatched → archived`), `dispatched_at`, `attempts`. Plus the **standard columns** every table carries (§3.1/§3.3 / R5): `id` (UUIDv7 PK), `created_at`, `updated_at`. The full realized set is therefore `id, created_at, updated_at, event_name, event_version, payload_jsonb, status, dispatched_at, attempts`. Dispatch lifecycle + retry/backoff is code (Inngest); Doc-6B realizes the table + a `(status, created_at)` index for the dispatcher poll (§10 indexing, Pass-3).
 
 ### §7.3 Event set bound by pointer (no event coined)
 
@@ -184,7 +186,7 @@ Seed the **nine** registered POLICY namespaces (Doc-3 §12.2 additive patches):
 
 ### §9.3 Key shape bound by pointer (no key coined)
 
-The two recurring API-realization keys per registered namespace are `<ns>.idempotency_dedup_window` + `<ns>.list_page_size_max` (the `ai` namespace instead registers `ai.list_page_size_max` + four `ai.<bc>.ttl_seconds` cache-lifecycle keys — Doc-3 v1.8). Doc-6A seeds exactly the registered keys/values from the patches; it coins **no** key and invents **no** default value.
+The two recurring API-realization keys per registered namespace are `<ns>.idempotency_dedup_window` + `<ns>.list_page_size_max`. The `ai` namespace is the exception (Doc-3 v1.8): it registers `ai.list_page_size_max` + **four fixed** BC-specific cache-lifecycle keys — `ai.recommendation.ttl_seconds`, `ai.prediction.ttl_seconds`, `ai.classification.ttl_seconds`, `ai.similar_vendors.ttl_seconds` — and **no** `ai.idempotency_dedup_window` (M9 is read-only). (`<bc>` denotes those four fixed business-capability artifact types, not a wildcard.) Doc-6A seeds exactly the registered keys/values from the patches; it coins **no** key and invents **no** default value.
 
 ### §9.4 Role / permission seed (Doc-2 §7 / A-08)
 
@@ -196,4 +198,18 @@ Seeds (POLICY keys §9.2/§9.3, roles §9.4) are realized as **idempotent forwar
 
 ---
 
-*End of Doc-6A Content Pass-2 (§5–§9). Realizes the frozen structure; coins nothing — `core.*` tables bound by pointer (realized in Doc-6B), every event/audit-action/POLICY-key bound to Doc-2 §8/§9 / Doc-3 §12; physical specifics attributed per §2.5. Generic templates only — no module table authored. Next: Pass-3 (§10–§13 + Appendix A `CHK-6-xxx`).*
+## Review Disposition (Independent Hard Review — Pass-2)
+
+Reviewer: independent (Architecture Board / DDD / Security / API Governance). Verified **verbatim-correct**: the `core.audit_records` column list (§8.1 = Doc-2 §9 exact), the 9-namespace POLICY table (§9.2 = Doc-3 patches v1.0–v1.8), the POLICY key shapes (§9.3 = patches), the versioned/history table names (Doc-2 §10.4/§10.5/§10.6). 0 BLOCKER; no scope leak; no coined domain element.
+
+| Finding | Sev | Disposition |
+|---|---|---|
+| **FND-1** §7.2 outbox list omits `created_at`; "columns (Doc-2 §10.1)" implies completeness (§10.1 lists key-attributes only); contradicts §7.1 INSERT + R5 | MAJOR | **FIXED** — §7.2 reworded: key-attributes (Doc-2 §10.1, partial) **+** standard columns (§3.1/§3.3/R5); full set stated `id, created_at, updated_at, event_name, event_version, payload_jsonb, status, dispatched_at, attempts`; index → `(status, created_at)`. |
+| **FND-2** §7.1 "only legitimate cross-schema write" framing risks contradicting no-cross-module-table-write | MINOR | **FIXED** — reframed as the one sanctioned write to the **M0-owned outbox via M0's transactional-outbox contract** (Doc-2 §8/Doc-4B), in the emitter's transaction; explicitly **not** a foreign business-table write; no cross-schema FK/JOIN/RLS implied. |
+| **FND-3** §6.5 Doc-5K cite "R5/R6" for "no §8 event" | MINOR | **FIXED + corrected beyond review** — verified Doc-5K manifest: R5=advisory, R6=score firewall, **R7**=TTL cache, **R8**=no §8 event. §6.5 now cites R5/R6/R7/R8 precisely. |
+| **FND-4** `core.raise_immutable_violation()` unattributed (§2.5) | MINOR | **FIXED** — trigger/function names labeled Doc-6A realization choices (§2.5); mechanism = Doc-2 §5 binding; function realized in Doc-6B. |
+| **FND-5** `ai.<bc>.ttl_seconds` placeholder ambiguous | NIT | **FIXED** — §9.3 lists the four fixed keys (recommendation/prediction/classification/similar_vendors); notes `<bc>` ≠ wildcard; no `ai.idempotency_dedup_window`. |
+
+---
+
+*End of Doc-6A Content Pass-2 (§5–§9) — Independent Hard Review applied; 0 open BLOCKER/MAJOR/MINOR. Realizes the frozen structure; coins nothing — `core.*` tables bound by pointer (realized in Doc-6B), every event/audit-action/POLICY-key bound to Doc-2 §8/§9 / Doc-3 §12; physical specifics attributed per §2.5. Generic templates only — no module table authored. Next: Pass-3 (§10–§13 + Appendix A `CHK-6-xxx`).*
