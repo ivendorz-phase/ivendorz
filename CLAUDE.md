@@ -61,7 +61,7 @@ cross-module table access, no cross-module foreign keys, no cross-module imports
 | M3 | RFQ Procurement Engine | `rfq` · Doc-4E | RFQs, routing, matching, sorting, invitations, quotations, comparison |
 | M4 | Business Operations | `operations` · Doc-4F | post-award docs (LOI/PO/challan/invoice/payment/WCC), finance records, Vendor CRM |
 | M5 | Trust & Verification | `trust` · Doc-4G | trust scores, performance scores, verification records, fraud signals |
-| M6 | Communication | `comms` · Doc-4H | chat, RFQ threads, notifications, email/SMS/WhatsApp logs (delivery only) |
+| M6 | Communication | `communication` · Doc-4H | chat, RFQ threads, notifications, email/SMS/WhatsApp logs (delivery only) |
 | M7 | Monetization | `billing` · Doc-4I | plans, subscriptions, entitlements, quotas, lead credits, platform invoices |
 | M8 | Admin Operations | `admin` · Doc-4J | moderation, bans, category/vendor approval, import, config policy (authoritative event catalog) |
 | M9 | AI Layer (reserved) | `ai` · Doc-4K | regenerable derived artifacts only — "AI suggests; modules decide" |
@@ -201,10 +201,20 @@ ratified. Authoritative blueprint lives in `generatedDocs/`.
   party-column RLS** (`active_org IN (buyer_organization_id, vendor_controlling_org_id)`); **money-record boundary — no funds custody**
   (`trade_invoices ≠ billing.platform_invoices`; no balance/gateway/escrow; money facts immutable); governance signal #5 never mutates
   platform scores; versioned post-award docs; idempotent `VendorInvited` lead; human_refs ENG-/DOC-/INV-; Appendix A 37/37; carries
-  `[ESC-OPS-AUDIT]`. **Next: Doc-6G (M5 `trust`, the governance-signal owner — the firewall's authoritative side)** · 6H…6K ·
+  `[ESC-OPS-AUDIT]`. **`Doc-6G` (M5 `trust`) FROZEN (2026-06-26):** 11 tables / 5 groupings (DDL+Prisma+RLS) realizing Doc-2 §10.6 —
+  **the governance-signal owner — the firewall's authoritative side** (Trust/Performance/verified-Tier/Capacity computed independently;
+  no cross-score column/FK; **Buyer Vendor Status never enters**); **scores System-written, never hand-edited** (no in-band write policy;
+  System owner-role/`SECURITY DEFINER`); **public band = M2 reflection** (no public raw-score read); **Admin decides, Trust owns**;
+  `verified_financial_tiers` emits `VendorTierChanged`; idempotent `performance_inputs`; `public_reviews` post-award/published-public;
+  `admin_ratings` staff-only; no human_ref (CHK-6-002 N/A); Appendix A 37/37 (4 justified N/A); carries `[ESC-TRUST-AUDIT]`.
+  **`Doc-6H` (M6 `communication`) FROZEN (2026-06-26):** 9 tables / 4 groupings (DDL+Prisma+RLS) realizing Doc-2 §10.7 — **delivery-only**
+  (M6 transmits, owns no business content); **participant-grant RLS** (third grant pattern; `thread_participants` simple anchor, terminates);
+  **append-only System-written delivery logs** (email/sms/whatsapp; column-scoped status); notifications/logs **M0-event consumers**; Realtime
+  messages (SD=hidden); org+staff support; **schema = `communication`** (the prior `comms` slip patched, §3 above); no human_ref; Appendix A 37/37
+  (4 justified N/A); carries `[ESC-COMM-AUDIT]`. **Next: Doc-6I (M7 `billing`, the platform's own revenue — `platform_invoices ≠ trade_invoices` + billing firewall)** · 6J…6K ·
   **Doc-7 COMPLETE (7A–7H frozen)** · Doc-8D then 8E…8G (8G Frontend/E2E now unblocked by Doc-7). Per-module ledger: `generatedDocs/Program_Status_And_Roadmap.md`.
 - **Status:** architecture = COMPLETE/FROZEN · Doc-5 API contracts = COMPLETE/FROZEN (M0–M9) ·
-  Doc-6 DB = STARTED (Doc-6A + Doc-6B M0 `core` + Doc-6C M1 `identity` + Doc-6D M2 `marketplace` + Doc-6E M3 `rfq` + Doc-6F M4 `operations` FROZEN; Doc-6G…6K NOT STARTED) ·
+  Doc-6 DB = STARTED (Doc-6A + Doc-6B M0 `core` + Doc-6C M1 `identity` + Doc-6D M2 `marketplace` + Doc-6E M3 `rfq` + Doc-6F M4 `operations` + Doc-6G M5 `trust` + Doc-6H M6 `communication` FROZEN; Doc-6I…6K NOT STARTED) ·
   Doc-7 FE = **COMPLETE/FROZEN (7A–7H all frozen; `Doc-7_SERIES_FROZEN_v1.0`)** ·
   Doc-8 Test = STARTED (Doc-8A metastandard FROZEN; Doc-8B…8G NOT STARTED) ·
   code = NOT STARTED.
