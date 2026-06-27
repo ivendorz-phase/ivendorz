@@ -5,7 +5,7 @@
 | **WP** | WP-0.13 [W0-INT-001] |
 | **Date** | 2026-06-27 |
 | **Integration branch** | `wave/0-bootstrap` (12 WP merges; tags `wave0/wp-0.1-green` … `wave0/wp-0.12-green`) |
-| **Verdict** | **CONDITIONAL GREEN** — every gate green except the **"10 schemas migrate clean"** Exit-Gate clause, which is **BLOCKED** pending the Board ruling on `ESC-W0-MIGRATE-SCHEMAS`. |
+| **Verdict** | **GREEN** — all 11 audit items + all 5 Exit-Gate clauses pass. The schema clause was closed by Board ruling **R-a** on `ESC-W0-MIGRATE-SCHEMAS` (idempotent baseline migration + 10-schema probe; proven against Postgres 16). |
 
 ---
 
@@ -30,16 +30,16 @@
 | Clause | Pass check | Status |
 |--------|-----------|--------|
 | Skeleton compiles | `next build` + `tsc --noEmit` 0 | ✅ **GREEN** |
-| 10 schemas migrate clean | a migration creates the 10 frozen namespaces | ⛔ **BLOCKED** — `ESC-W0-MIGRATE-SCHEMAS` awaiting Board ruling (R-a idempotent baseline vs R-b defer). WP-0.5 migration + WP-0.9 probe + WP-0.10 migrate-probe parked. |
+| 10 schemas migrate clean | `migrate deploy` creates the 10 frozen namespaces + probe asserts them | ✅ **GREEN** — Board ruled R-a; baseline migration `00000000000000_init_schemas` + `check-schemas.mjs`; proven against Postgres 16 (10 present; idempotent; probe fails if one is dropped) |
 | Harness runs | `vitest run` + `playwright` smoke green; six mock seams; no observer/factories | ✅ **GREEN** |
 | CI merge-gate active | `ci.yml` runs the gates on PR | ✅ **GREEN** (workflow in-wave); marking checks **"required" on `main`** is a repo-admin action (external) |
 | All 12 WP tags present | `git tag -l 'wave0/wp-0.*-green'` = 12 | ✅ **GREEN** |
 
-**Exit verdict:** Wave 0 is **green on 4 of 5 clauses**. It **does not fully CLOSE** (no PR → main) until the Board rules on `ESC-W0-MIGRATE-SCHEMAS`, which unblocks the schema clause (governance-correct per the locked FLAG-AND-HALT decision).
+**Exit verdict:** Wave 0 is **GREEN on all 5 clauses** (Board ruled R-a; schema clause closed). Wave 0 is **ready to close** — the final PR `wave/0-bootstrap` → `main` + branch protection + required-checks are the remaining outward/admin actions.
 
 ## C. Blocking / external actions (cannot be done by the execution agent)
 
-1. **Board ruling on `ESC-W0-MIGRATE-SCHEMAS`** (R-a idempotent baseline `CREATE SCHEMA IF NOT EXISTS` ×10, *recommended*, vs R-b defer). On R-a: WP-0.5 authors the baseline migration; WP-0.9/0.10 enable the 10-schema probe; the Exit-Gate clause closes.
+1. ~~Board ruling on `ESC-W0-MIGRATE-SCHEMAS`~~ — **DONE: ruled R-a (2026-06-27)**. Baseline migration + `check-schemas.mjs` probe realized; CI wired; clause closed.
 2. **Open the PR `wave/0-bootstrap` → `main`** — held pending (1); outward-facing (needs the GitHub remote + authorization).
 3. **Branch protection on `main`** + mark CI checks "required" — the literal "merge-gate active" enforcement (repo-admin).
 4. **Supabase project + GH secrets** — deferred to Wave 1 (not needed for the Wave-0 container gate).
