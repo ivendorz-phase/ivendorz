@@ -101,12 +101,13 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run db:generate
-      # Apply the forward-only migration set. At Wave 0 this is the PARKED baseline
-      # (ESC-W0-MIGRATE-SCHEMAS) — a no-op that proves the migrate runner. The
-      # "10 schemas migrate clean" PROBE is PARKED pending the Board ruling: do NOT assert
-      # schema existence here until R-a/R-b is decided.
-      - name: Apply migrations (parked baseline)
+      # Apply the forward-only migration set (Board ruling R-a on ESC-W0-MIGRATE-SCHEMAS:
+      # the idempotent baseline creates the 10 frozen namespaces).
+      - name: Apply migrations
         run: npm run db:migrate
+      # Exit-Gate clause "10 schemas migrate clean" — assert all 10 frozen namespaces exist.
+      - name: Assert 10 schemas migrated clean
+        run: node scripts/check-schemas.mjs
       - name: Vitest (runner + hermetic mock boundary)
         run: npm run test
 

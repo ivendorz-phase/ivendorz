@@ -6,7 +6,7 @@
 | **Raised by** | Wave 0 execution, WP-0.5 [W0-DB-001] |
 | **Date** | 2026-06-27 |
 | **Severity** | BLOCKER (gates the Wave 0 Exit Gate's "10 schemas migrate clean" clause) |
-| **Status** | **OPEN — awaiting Board ruling (human-approved additive patch)** |
+| **Status** | **RESOLVED — Board ruled R-a (2026-06-27).** Idempotent baseline migration authored; 10-schema probe enabled (harness/CI); Exit-Gate clause closed. |
 | **Authority** | CLAUDE.md §7 (Authority Order), §8 (architecture-affecting → human approval), §11 (Flag-and-Halt); Build_Roadmap_v1.0.md §0 conflict rule |
 | **Disposition rule** | Do **not** resolve locally. Wave 0 proceeds on all other items; the schema-creation step + its dependent assertions are parked until ruled. |
 
@@ -79,6 +79,19 @@ the Build Roadmap receives a one-line additive clarification and the probe is dr
 
 ---
 
-*Raised under Raise ≠ Accept (CLAUDE.md §13): this is a claim with a severity, not a mandate. The
-presiding authority (Board, per §7) adjudicates. Until ruled, the Wave 0 Exit Gate cannot certify
-the "10 schemas migrate clean" clause.*
+## 6. Resolution (Board ruling — R-a, 2026-06-27)
+
+The Board approved **R-a**. Realized:
+- `prisma/migrations/00000000000000_init_schemas/migration.sql` — forward-only, idempotent
+  `CREATE SCHEMA IF NOT EXISTS` for the 10 frozen namespaces (coins no tables).
+- `scripts/check-schemas.mjs` — the 10-schema probe (asserts all 10 exist after `migrate deploy`).
+- CI unit job (`.github/workflows/ci.yml`) runs `db:migrate` → the probe (no longer parked).
+- Verified locally against Postgres 16: `migrate deploy` exit 0; exactly 10 schemas present;
+  re-apply idempotent ("No pending migrations"); probe fails (exit 1) if a namespace is dropped.
+
+The Exit-Gate clause "10 schemas migrate clean" is **CLOSED**.
+
+---
+
+*Raised under Raise ≠ Accept (CLAUDE.md §13): a claim with a severity, adjudicated by the presiding
+authority (Board, §7). Ruled R-a; resolved by additive realization (no frozen document edited).*
