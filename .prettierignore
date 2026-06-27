@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+build
+coverage
+test-results
+playwright-report
+generated-contracts-registry
+src/generated
+prisma/generated
+generatedDocs
+governanceReviews
+*.md
+package-lock.json
