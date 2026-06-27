@@ -31,3 +31,113 @@ datasource db {
   directUrl = env("DIRECT_URL")
   schemas   = ["core", "identity", "marketplace", "rfq", "operations", "trust", "communication", "billing", "admin", "ai"]
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M0 — Platform Core / Shared Kernel (`core`) — Doc-6B (FROZEN)
+//
+// The 5 platform-owned tables (Doc-2 §10.1), realized verbatim from Doc-6B
+// Content Pass-1/Pass-2. Columns are [Doc-2 binding]; physical types/names are
+// [§2.5] realization choices, tagged in Doc-6B. Triggers, the
+// `core.allocate_human_ref` SECURITY DEFINER function, RLS, and the 18-key
+// POLICY seed are NOT representable in Prisma — they are raw SQL in the
+// `core_init` migration (Doc-6B §5.1; tables managed by Prisma).
+// ─────────────────────────────────────────────────────────────────────────────
+
+// §3.1 — core.audit_records (immutable audit stream; CR3 PK = audit_id, CR4′ column-scoped)
+model AuditRecord {
+  auditId        String    @id @map("audit_id") @db.Uuid
+  actorId        String?   @map("actor_id") @db.Uuid
+  actorType      ActorType @map("actor_type")
+  organizationId String?   @map("organization_id") @db.Uuid
+  entityType     String    @map("entity_type")
+  entityId       String    @map("entity_id") @db.Uuid
+  action         String
+  oldValue       Json?     @map("old_value") @db.JsonB
+  newValue       Json?     @map("new_value") @db.JsonB
+  eventTime      DateTime  @map("event_time") @db.Timestamptz
+  ipAddress      String?   @map("ip_address") @db.Inet
+  userAgent      String?   @map("user_agent")
+  archivedAt     DateTime? @map("archived_at") @db.Timestamptz
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([organizationId, eventTime], map: "audit_records_org_time_idx")
+  @@index([entityType, entityId, eventTime], map: "audit_records_entity_time_idx")
+  @@map("audit_records")
+  @@schema("core")
+}
+
+enum ActorType {
+  user
+  admin
+  system
+  ai_agent
+
+  @@schema("core")
+}
+
+// §3.2 — core.outbox_events (transactional outbox; CR5 status column, CR4′ forward-only)
+model OutboxEvent {
+  id           String       @id @db.Uuid
+  aggregateId  String?      @map("aggregate_id") @db.Uuid
+  eventName    String       @map("event_name")
+  eventVersion Int          @map("event_version")
+  payloadJsonb Json         @map("payload_jsonb") @db.JsonB
+  status       OutboxStatus @default(pending)
+  dispatchedAt DateTime?    @map("dispatched_at") @db.Timestamptz
+  attempts     Int          @default(0)
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([status, createdAt])
+  @@map("outbox_events")
+  @@schema("core")
+}
+
+enum OutboxStatus {
+  pending
+  dispatched
+  archived
+
+  @@schema("core")
+}
+
+// §3.3 — core.id_sequences (human-reference generator; CR3/CR6 composite PK)
+model IdSequence {
+  entityType String   @map("entity_type")
+  year       Int
+  nextValue  BigInt   @default(1) @map("next_value")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@id([entityType, year])
+  @@map("id_sequences")
+  @@schema("core")
+}
+
+// §3.4 — core.system_configuration (POLICY store; CR7)
+model SystemConfiguration {
+  id         String   @id @db.Uuid
+  key        String   @unique(map: "system_configuration_key_uq")
+  valueJsonb Json     @map("value_jsonb") @db.JsonB
+  valueType  String   @map("value_type")
+  updatedBy  String?  @map("updated_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("system_configuration")
+  @@schema("core")
+}
+
+// §3.5 — core.feature_flags (rollout control, firewalled; CR8)
+model FeatureFlag {
+  id         String   @id @db.Uuid
+  flagKey    String   @unique(map: "feature_flags_flag_key_uq") @map("flag_key")
+  enabled    Boolean  @default(false)
+  scopeJsonb Json?    @map("scope_jsonb") @db.JsonB
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("feature_flags")
+  @@schema("core")
+}
