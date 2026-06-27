@@ -258,6 +258,17 @@ several streams at once.
 
 ## §6 Merge Strategy
 
+- **Wave Execution Lifecycle (binding — all waves).** Every wave and every work package follows the
+  identical lifecycle **owned by `Wave_Template_v1.0.md`** — per-wave: Planning → Execution → Work-Package
+  Review → Wave Integration Audit → Wave Exit Gate → Merge to `main` → Engineering Baseline → Status Update
+  → Next Wave; per-WP: implement → self-verify → independent board review → consolidate → **Validate-Findings
+  gate (CLAUDE.md §13)** → apply accepted fixes → regression recheck → technical audit → merge-collision check
+  → merge. A wave closes **only after every work package has passed its full lifecycle and the Wave Exit Gate
+  is green** (all corpus-defined exit clauses; CLAUDE.md §13: BLOCKER=MAJOR=MINOR=0). **Mandatory for Waves
+  1–6 and every future implementation phase**, inherited unchanged unless intentionally version-bumped. The
+  realized **per-wave git model** (integration branch `wave/{n}-*` off `main` + one `wp/{n}.x` branch per WP →
+  merge into the integration branch → one PR `wave/{n}-*` → `main`) is defined there and **refines** the
+  per-WP branch flow below; Wave 0 is the reference instance (`Wave0_Baseline_Report_v1.0.md`).
 - **Branch strategy:** `main` = production, protected, no direct push. Feature branch per work package off
   `main` → PR → review → merge.
 - **PR scope:** **one module scope per PR; multiple WP PRs allowed** — a module is delivered through several

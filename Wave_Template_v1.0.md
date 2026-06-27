@@ -4,6 +4,11 @@
 > instantiates this structure unchanged — **only the Work Packages differ**. Inherit unless
 > intentionally version-bumped. Non-authoritative process doc; on any conflict the frozen corpus
 > wins (Flag-and-Halt).
+>
+> **Rev. 2026-06-27 (additive):** the per-wave lifecycle is made explicit and the **delivery tail**
+> (Merge to `main` → Engineering Baseline → Status Update → Next Wave) is added — realized at the
+> Wave-0 delivery (`generatedDocs/Wave0_Baseline_Report_v1.0.md`). Bound as the mandatory standard for
+> all waves by `generatedDocs/Build_Roadmap_v1.0.md` §6.
 
 ## Corpus supremacy
 If any part of a wave's execution conflicts with the frozen corpus, **the frozen corpus prevails** —
@@ -21,6 +26,33 @@ Flag-and-Halt, never resolve locally (Authority Order §7). Realize, never re-de
 6. **Integration Audit** (final WP) — programmatic checklist incl. a Repository Ownership Audit.
 7. **Exit Gate** — the wave's corpus-defined exit clauses; per-clause pass/fail; all WP tags present.
 8. **Retrospective** — short engineering note; carry-forwards.
+
+## Per-wave lifecycle (binding)
+
+Every wave runs the identical end-to-end chain — Wave 0 is the reference instance:
+
+```
+Planning → Execution → Work-Package Review → Wave Integration Audit → Wave Exit Gate
+   → Merge to `main` → Engineering Baseline → Status Update → Next Wave
+```
+
+A wave **completes only after every Work Package has passed its full lifecycle** (below) **and the Wave
+Exit Gate is green** (every corpus-defined exit clause passes; CLAUDE.md §13 gate: BLOCKER=MAJOR=MINOR=0).
+Planning → Execution → WP Review → Integration Audit → Exit Gate are the §"Structure (per wave)" sections
+above; the **delivery tail** is the last four steps:
+
+- **Merge to `main`** — one `--no-ff` merge `wave/{n}-*` → `main`; complete history preserved (never squash).
+- **Engineering Baseline** — annotate a permanent tag `wave{n}-complete` on the delivery merge **and** publish
+  `generatedDocs/Wave{n}_Baseline_Report_v1.0.md` (merge SHA · tag · default branch · toolchain pins ·
+  build/lint/test/migration status · Exit-Gate status · known non-blocking follow-ups). Reference, never restate.
+- **Status Update** — patch the **non-authoritative** status/nav set only (`Program_Status_And_Roadmap.md`,
+  `IMPLEMENTATION_START_HERE.md`, primers, `CORPUS_INDEX.md`, `00_AUTHORITY_MAP.md`) to set the current phase
+  to the next wave. **Never edit a frozen document** (Authority Order §7).
+- **Next Wave** — cut the next integration branch `wave/{n+1}-*` from `main`; no implementation begins until
+  that wave's first Work Package starts.
+
+The **Validate-Findings gate**, severity ladder, and Raise ≠ Accept that govern every review step are owned by
+**CLAUDE.md §13** (this template realizes them; it coins none).
 
 ## WP Template v1.0
 
