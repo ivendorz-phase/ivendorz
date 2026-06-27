@@ -87,7 +87,21 @@ const config = [
                 "shared",
               ],
             },
-            { from: ["module-contracts"], allow: ["module-contracts", "shared"] },
+            // A module's PUBLIC contracts/ surface may delegate to its OWN module's private
+            // implementation (application/domain/infrastructure) — the canonical DDD facade pattern
+            // (contracts/ = the public face over the module's private internals). `${from.module}`
+            // constrains this to the SAME module only: NO cross-module internal access is opened —
+            // cross-module value-calls remain strictly contracts/→contracts/ (the One-Module rule is
+            // intact). [WP-1.3 minimal boundaries refinement — Board-authorized; same-module only.]
+            {
+              from: ["module-contracts"],
+              allow: [
+                ["module-internal", { module: "${from.module}" }],
+                ["module-root", { module: "${from.module}" }],
+                "module-contracts",
+                "shared",
+              ],
+            },
             { from: ["shared"], allow: ["shared"] },
             { from: ["server"], allow: ["server", "module-contracts", "shared"] },
             { from: ["app"], allow: ["app", "module-contracts", "server", "shared"] },
