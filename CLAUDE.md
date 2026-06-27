@@ -1,5 +1,9 @@
 # CLAUDE.md — iVendorz
 
+**Status:** Governance Constitution — **FROZEN v1.0** (`governance-frozen-v1`, 2026-06-27). The
+governance architecture/ownership model is ratified; changes require an additive patch + version
+bump. Content remains **non-authoritative under the frozen corpus** and is patched to match it.
+
 > **The repository Governance Constitution + guardrails for AI agents.** Owns the repository-wide,
 > permanent governance rules: authority order (§7), AI behavior (§8), **Review & Findings Governance**
 > (severity ladder · Validate Findings gate · Raise ≠ Accept · review philosophy), and the Red-Flag
