@@ -4,3 +4,5 @@
 
 export { allocateHumanReference } from "./data/human-reference.service";
 export { appendAuditRecord } from "./data/audit-record.service";
+export { drainOutbox } from "./events/drain-outbox.service";
+export type { DrainOutboxOptions, DrainOutboxResult } from "./events/drain-outbox.service";

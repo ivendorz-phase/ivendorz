@@ -8,12 +8,17 @@
 // optional transaction executor so allocation/audit-append join the caller's single
 // transaction; absent one, the service runs on the shared client.
 
-import { allocateHumanReference as allocateHumanReferenceImpl } from "../infrastructure";
+import {
+  allocateHumanReference as allocateHumanReferenceImpl,
+  drainOutbox as drainOutboxImpl,
+} from "../infrastructure";
 import type {
   AllocateHumanReferenceInput,
   AllocateHumanReferenceResult,
   AppendAuditRecordInput,
   AppendAuditRecordResult,
+  DrainOutboxInput,
+  DrainOutboxResult,
 } from "./types";
 
 /**
@@ -48,10 +53,20 @@ export type AppendAuditRecord = (
   executor?: CoreServiceExecutor,
 ) => Promise<AppendAuditRecordResult>;
 
+/**
+ * `core` transactional-outbox drainer (Doc-8B §7.2; Doc-6B §3.2). Drains `core.outbox_events`
+ * `pending → dispatched` (and, when asked, the distinct `dispatched → archived` archival leg) as the
+ * System/platform-staff actor, in its own transaction. EMITTER-AGNOSTIC (R-a / ESC-W1-OUTBOX): it
+ * advances whatever rows exist and coins NO domain event. Idempotent; forward-only (DB-trigger-enforced).
+ * This is the dispatch entry point invoked by the Inngest outbox job (`inngest/functions`).
+ */
+export type DrainOutbox = (input?: DrainOutboxInput) => Promise<DrainOutboxResult>;
+
 /** The M0 callable service surface exposed to other modules (contracts-only). */
 export interface CoreServices {
   allocateHumanReference: AllocateHumanReference;
   appendAuditRecord: AppendAuditRecord;
+  drainOutbox: DrainOutbox;
 }
 
 // ── Concrete contract facades (WP-1.4 — closes the WP-1.3 deferred MINOR) ─────────────────────
@@ -70,3 +85,11 @@ export interface CoreServices {
  * supplied (Doc-4B §A7 atomicity). Consumed cross-module via `@/modules/core/contracts`.
  */
 export const allocateHumanReference: AllocateHumanReference = allocateHumanReferenceImpl;
+
+/**
+ * Concrete `core` outbox drainer (Doc-8B §7.2 / Doc-6B §3.2), bound to the M0 infrastructure adapter.
+ * The Inngest outbox job consumes this via `@/modules/core/contracts` (strictly contracts/-only
+ * cross-module access; the contracts→infrastructure binding is same-module-legal — the canonical DDD
+ * facade pattern). Emitter-agnostic + idempotent + forward-only; coins no event (R-a / ESC-W1-OUTBOX).
+ */
+export const drainOutbox: DrainOutbox = (input) => drainOutboxImpl(input);

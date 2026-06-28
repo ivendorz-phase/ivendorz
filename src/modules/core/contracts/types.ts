@@ -72,3 +72,30 @@ export interface AppendAuditRecordResult {
   /** The `audit_id` (UUIDv7, time-ordered) of the appended row (Doc-6B §3.1). */
   auditId: string;
 }
+
+/**
+ * Options for the M0 transactional-outbox drainer (Doc-8B §7.2; Doc-6B §3.2). Mechanical only —
+ * no domain semantics. The drainer is EMITTER-AGNOSTIC (R-a / ESC-W1-OUTBOX): it drains whatever
+ * `pending` rows exist and coins no event.
+ */
+export interface DrainOutboxInput {
+  /** Cap on rows processed per leg in one pass (a poll batch). Defaults to a bounded batch. */
+  batchSize?: number;
+  /**
+   * Run the distinct archival leg (`dispatched → archived`) this pass (Doc-8B §7.2 — a separate
+   * POLICY-bounded step from dispatch). Default off; the minimal obligation is the dispatch leg.
+   */
+  archive?: boolean;
+}
+
+/**
+ * Result of one M0 outbox drain pass (mechanical counters only — Doc-8B §7.2). No domain meaning.
+ */
+export interface DrainOutboxResult {
+  /** Rows advanced `pending → dispatched` this pass. */
+  dispatched: number;
+  /** Rows advanced `dispatched → archived` this pass (the distinct archival leg). */
+  archived: number;
+  /** `pending` rows skipped because `attempts >= core.outbox_dispatch_max_attempts` (left for DLQ). */
+  skippedMaxAttempts: number;
+}
