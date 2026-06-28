@@ -6,7 +6,7 @@
 | **Raised by** | Wave 1 execution, WP-1.0 [W1-ESC-001] |
 | **Date** | 2026-06-28 |
 | **Severity** | MAJOR (gates the Wave 1 Exit Gate's "outbox observer exercised" sub-clause; does **not** block the rest of Wave 1) |
-| **Status** | **RULED — Board approved R-a (2026-06-28).** Realize the synthetic-row observer in WP-1.7 (observer assertion) + WP-1.8 (dispatcher); marked **RESOLVED** on realization. See §7. |
+| **Status** | **RESOLVED — Board ruled R-a (2026-06-28); realized + proven.** WP-1.8 ships the dispatcher; WP-1.7 exercises the observer against a synthetic `core.outbox_events` row (`pending → dispatched`, idempotent, distinct archival) — coining no event. The Exit-Gate "outbox observer exercised" sub-clause is **CLOSED**. See §7. |
 | **Authority** | CLAUDE.md §7 (Authority Order), §11 (Flag-and-Halt), §13 (Raise ≠ Accept); Build_Roadmap_v1.0.md §0 conflict rule |
 | **Disposition rule** | Do **not** resolve locally. Wave 1 proceeds on all other items; only the outbox-observer step + its dependants park until ruled. |
 
