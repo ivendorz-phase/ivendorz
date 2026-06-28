@@ -11,8 +11,14 @@
 // "allocate the ref via Module 0").
 
 import type { AllocateHumanReference } from "@/modules/core/contracts";
+import type { DbExecutor } from "@/shared/db";
 import { provisionIdentityForAuthUser } from "../application/commands/provision-identity.command";
-import type { ProvisionIdentityInput, ProvisionIdentityResult } from "./types";
+import { getBuyerProfile as getBuyerProfileQuery } from "../application/queries/get-buyer-profile.query";
+import type {
+  GetBuyerProfileResult,
+  ProvisionIdentityInput,
+  ProvisionIdentityResult,
+} from "./types";
 
 /** Dependencies a caller injects into provisioning — the Module 0 contract service(s). */
 export interface ProvisionIdentityDeps {
@@ -41,3 +47,29 @@ export type ProvisionIdentity = (
  */
 export const provisionIdentity: ProvisionIdentity = (input, deps) =>
   provisionIdentityForAuthUser(input, { allocateHumanReference: deps.allocateHumanReference });
+
+/**
+ * `identity.get_buyer_profile.v1` (Doc-5C §6.1 row 33; §6.3 non-disclosure) — the PUBLIC, contracts-only
+ * face over the private M1 read query (WP-1.2). The owning/active-org buyer-profile singleton read; the
+ * active org is RESOLVED + enforced upstream by the app-layer org-context guard which sets `app.active_org`
+ * on the request transaction (Doc-6C §2.1 / Doc-5C §3.3 — client-supplied org id never trusted). RLS scopes
+ * the read; NO organization id is taken as input. Cross-tenant / absent → `found: false` (Doc-5C §6.3 — the
+ * wire `404` collapse, indistinguishable from genuine absence).
+ *
+ * The cross-module surface is the TYPE; the concrete callable below binds the same-module application query
+ * (the canonical DDD contracts-facade pattern — `${from.module}`-scoped; no cross-module internal access).
+ * Callers (the app-layer route) MUST invoke it with the transaction executor carrying the server-set
+ * `app.active_org` GUC — i.e. INSIDE `withActiveOrgContext` (`src/server/context`).
+ *
+ * @param db the request-transaction executor carrying the server-set active-org GUC (Doc-6C §2.1).
+ */
+export type GetBuyerProfile = (db?: DbExecutor) => Promise<GetBuyerProfileResult>;
+
+/** Concrete `identity.get_buyer_profile.v1` facade (M1 contracts → M1 application query). */
+export const getBuyerProfile: GetBuyerProfile = (db) => getBuyerProfileQuery(db);
+
+// The M1 WIRE FACE for the buyer-profile read (result → Doc-5A envelope + §6.2 status). M1 owns how
+// its read becomes HTTP, so the mapper lives in M1's `api/`; this contracts re-export is the public,
+// boundary-legal handle the app-layer route composition consumes via `@/modules/identity/contracts`
+// (same-module contracts → own `api/`; `${from.module}`-scoped — no cross-module internal access).
+export { mapGetBuyerProfile } from "../api/get-buyer-profile.handler";

@@ -9,3 +9,4 @@
 export { createSupabaseServerClient } from "./server";
 export { ensureProvisioned } from "./provisioning";
 export type { AuthSession, EnsureProvisionedDeps, ProvisionIdentityResult } from "./provisioning";
+export { resolveSupabaseSession } from "./session";
