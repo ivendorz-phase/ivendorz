@@ -1,3 +1,4 @@
+import "../_harness/env"; // load the ephemeral test-DB env per worker (Doc-8B §3) before Prisma connects.
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "../../src/shared/db";
 import { uuidv7 } from "../../src/shared/ids";
