@@ -1,12 +1,15 @@
 # iVendorz — Program Status & Authoring Roadmap
 
 **Companion to `iVendorz_Context_Pack_v5.md`.** Detailed per-module ledger + live work queue. Read both into a fresh chat to resume.
-**Updated:** 2026-06-27. Non-authoritative orientation — on any conflict, the FROZEN corpus wins; patch this to match.
+**Updated:** 2026-06-28. Non-authoritative orientation — on any conflict, the FROZEN corpus wins; patch this to match.
 
-> **CURRENT PHASE: Wave 1 — Foundation.** **Wave 0 — Repository Bootstrap is DELIVERED to `main`**
-> (2026-06-27; baseline tag `wave0-complete`, merge `b1c70fd`; Exit Gate GREEN 5/5). Baseline record:
-> `Wave0_Baseline_Report_v1.0.md`; governance record: `governanceReviews/Wave-0_Integration_Audit_and_Exit_Gate_v1.0.md`.
-> The gated build sequence is `Build_Roadmap_v1.0.md` — **Wave 1 (Walking Skeleton, §3) is next.**
+> **CURRENT PHASE: Wave 2 — Core Platform (M0 → M1).** **Waves 0–1 are DELIVERED to `main`:** Wave 0
+> Repository Bootstrap (2026-06-27; `wave0-complete`, merge `b1c70fd`; Exit Gate GREEN 5/5) + **Wave 1
+> Foundation / Walking Skeleton (2026-06-28; `wave1-complete`, merge `3345b00`; Integration Audit GREEN
+> 14/14, Exit Gate GREEN on all in-wave clauses — deploy/CI-on-`main` parked per Board, WP-1.9).**
+> Baseline records: `Wave0_Baseline_Report_v1.0.md` · `Wave1_Baseline_Report_v1.0.md`; governance records:
+> `governanceReviews/Wave-{0,1}_Integration_Audit_and_Exit_Gate_v1.0.md`. The gated build sequence is
+> `Build_Roadmap_v1.0.md` — **Wave 2 (Core Platform, M0 → M1) is next.**
 
 ---
 
@@ -147,7 +150,8 @@ Next:
 2. **Build Roadmap — PRODUCED** (`Build_Roadmap_v1.0.md`, 2026-06-26): the engineering execution plan sequencing the decomposition into a gated build program — Wave 0 Repository Bootstrap · Wave 1 Walking Skeleton · Wave 2 M0→M1 · Wave 3 M2/M5/M6/M7 (parallel) · Wave 4 M3 (moat) · Wave 5 M4/M8 · Wave 6 M9; per-wave Doc-8 suite gates; merge strategy (one module scope per PR); DoR/DoD; MVP-Ready/Production-Ready as engineering gate-states. No dates/estimates; coins nothing. **The final planning artifact before code — drives Wave 0.**
 3. **Implementation (Code) — IN PROGRESS.** Next.js + Supabase + Prisma + Inngest, gated by the Doc-8 conformance fabric (authored-not-run; executes + merge-gates as code lands).
    - **Wave 0 — Repository Bootstrap: DELIVERED 2026-06-27** (baseline tag `wave0-complete`, merge `b1c70fd`; Exit Gate GREEN 5/5 — skeleton compiles · 10 schemas migrate clean · harness runs · CI merge-gate active · all WP tags). Records: `Wave0_Baseline_Report_v1.0.md` · `governanceReviews/Wave-0_Integration_Audit_and_Exit_Gate_v1.0.md`. Open external/admin items: GitHub remote + branch-protection/required-checks; Supabase project + secrets (Wave 1).
-   - **Wave 1 — Foundation (Walking Skeleton, `Build_Roadmap` §3): NEXT.** Integration branch `wave/1-foundation` cut from `main`; no implementation started.
+   - **Wave 1 — Foundation (Walking Skeleton, `Build_Roadmap` §3): DELIVERED 2026-06-28** (baseline tag `wave1-complete`, merge `3345b00`; Integration Audit GREEN 14/14; Exit Gate GREEN on all in-wave clauses — one end-to-end slice: login → atomic lazy-provision → server-validated active-org RLS context → wired `get_buyer_profile.v1` → Doc-7E Account screen; `CHK-8-024` adversarially proven; synthetic outbox observer). Records: `Wave1_Baseline_Report_v1.0.md` · `governanceReviews/Wave-1_Integration_Audit_and_Exit_Gate_v1.0.md`. **PARKED (Board): deploy + CI-green-on-`main` (WP-1.9) — Supabase + Vercel + push `main` to the `origin` remote + branch-protection/required-checks.** Deferred non-blocking ESCs: `ESC-W1-USER-PROVISION` · `ESC-W1-CONTEXT-RESOLVE` · `ESC-W1-AUTH-401` · `ESC-IDN-BUYERPROFILE-CODE`.
+   - **Wave 2 — Core Platform (M0 → M1, full module builds; `Build_Roadmap` § Wave 2): NEXT.** Integration branch `wave/2-core-platform` cut from `main`; no implementation started.
 
 *(Corpus tidy DONE: `Doc-5K_SERIES_FROZEN_v1.0` manifest added for peer-parity; `Doc-3 …v1.8_AI` registers the `ai.*` keys and clears `[ESC-AI-POLICY]`. All 10 modules now have a `SERIES_FROZEN` (or `Content_v1.0_FROZEN`) manifest + a cleared POLICY gate.)*
 
