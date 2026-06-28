@@ -6,7 +6,7 @@
 | **Raised by** | Wave 1 execution, WP-1.0 [W1-ESC-001] |
 | **Date** | 2026-06-28 |
 | **Severity** | MAJOR (gates the Wave 1 Exit Gate's "outbox observer exercised" sub-clause; does **not** block the rest of Wave 1) |
-| **Status** | **OPEN — awaiting Board ruling.** Board lean: **R-a** (per the rev.2 plan review, OBS-2). |
+| **Status** | **RULED — Board approved R-a (2026-06-28).** Realize the synthetic-row observer in WP-1.7 (observer assertion) + WP-1.8 (dispatcher); marked **RESOLVED** on realization. See §7. |
 | **Authority** | CLAUDE.md §7 (Authority Order), §11 (Flag-and-Halt), §13 (Raise ≠ Accept); Build_Roadmap_v1.0.md §0 conflict rule |
 | **Disposition rule** | Do **not** resolve locally. Wave 1 proceeds on all other items; only the outbox-observer step + its dependants park until ruled. |
 
@@ -69,8 +69,28 @@ WP-1.7 adds the synthetic-row observer assertion and WP-1.8 ships the minimal di
 Build_Roadmap note is added (non-authoritative doc). On **R-b**: the observer clause is dropped from Wave 1
 (Build_Roadmap §3 one-line clarification) and WP-1.8 defers to Wave 2.
 
+## 7. Resolution (Board ruling — R-a, 2026-06-28)
+
+The Board **approved R-a**: implement the M0 outbox observer now against a **synthetic
+`core.outbox_events` record**, asserting the `pending → dispatched` lifecycle + distinct archival — i.e.
+prove the table + observer mechanics independently of any domain emitter. Coins no event (nothing added to
+the Doc-4J catalog / Doc-2 §8; M1 still emits nothing).
+
+**Binding conditions (Board, verbatim intent):**
+1. The synthetic event **must never become part of production business logic** — it is a
+   **bootstrap/test fixture for architecture validation only, NOT a domain event**, and must be documented
+   as such at its site.
+2. The **observer implementation must remain identical** when real emitters arrive in Wave 2 (the synthetic
+   row exercises the *same* observer/drainer code path; only the row's origin differs — test-seeded now vs.
+   a real write-plus-emit later).
+
+**Realization (WP-1.7 + WP-1.8):** WP-1.8 ships the minimal dispatcher (`pending → dispatched`,
+forward-only/idempotent); WP-1.7 asserts the observer against a clearly-labelled synthetic
+`core.outbox_events` fixture. A one-line additive note in `Build_Roadmap` records that the **first real
+emitter** (Wave 2+) exercises write-plus-emit atomicity (`CHK-8-051`) end-to-end. This ESC is marked
+**RESOLVED** when WP-1.7/1.8 land.
+
 ---
 
 *Raised under Raise ≠ Accept (CLAUDE.md §13): a claim with a severity, adjudicated by the presiding
-authority (Board, §7). Until ruled, only the outbox-observer step + WP-1.8 park; the MANDATORY `CHK-8-024`
-gate and the rest of Wave 1 proceed.*
+authority (Board, §7). Ruled R-a (2026-06-28); realized in WP-1.7/1.8 under the conditions above.*

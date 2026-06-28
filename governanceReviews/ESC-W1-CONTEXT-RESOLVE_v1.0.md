@@ -6,7 +6,7 @@
 | **Raised by** | Wave 1 execution, WP-1.4 [W1-CONTEXT-001] |
 | **Date** | 2026-06-28 |
 | **Severity** | MINOR (non-gating — boundary-legal as realized; a cleaner long-term home exists) |
-| **Status** | **OPEN — app-edge realization in use; awaits an additive in-process contract.** |
+| **Status** | **DEFERRED — Board ruled (2026-06-28): record the interface contract; do not invent the implementation in Wave 1.** The app-edge realization stands; defer the in-process M1 active-context contract until M1 requires an active-context lifecycle. |
 | **Authority** | CLAUDE.md §11 (Flag-and-Halt on a genuine gap); REPOSITORY_STRUCTURE §5/§9; Doc-5C §C8 |
 
 ---

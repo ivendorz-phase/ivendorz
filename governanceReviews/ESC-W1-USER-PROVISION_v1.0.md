@@ -6,7 +6,7 @@
 | **Raised by** | Wave 1 execution, WP-1.3 [W1-AUTH-001] |
 | **Date** | 2026-06-28 |
 | **Severity** | MINOR (non-gating — an interim default is in place; the skeleton functions) |
-| **Status** | **OPEN — interim disposition in use; awaits an additive ratification.** |
+| **Status** | **DEFERRED — Board ruled (2026-06-28): no Wave-1 action.** Record as a governance/ADR decision; the flagged interim derivation stands; revisit when organization/account provisioning becomes operational. |
 | **Authority** | CLAUDE.md §11 (Flag-and-Halt on a genuine gap); §13 (Raise ≠ Accept) |
 
 ---
