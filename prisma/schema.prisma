@@ -31,3 +31,285 @@ datasource db {
   directUrl = env("DIRECT_URL")
   schemas   = ["core", "identity", "marketplace", "rfq", "operations", "trust", "communication", "billing", "admin", "ai"]
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M0 — Platform Core / Shared Kernel (`core`) — Doc-6B (FROZEN)
+//
+// The 5 platform-owned tables (Doc-2 §10.1), realized verbatim from Doc-6B
+// Content Pass-1/Pass-2. Columns are [Doc-2 binding]; physical types/names are
+// [§2.5] realization choices, tagged in Doc-6B. Triggers, the
+// `core.allocate_human_ref` SECURITY DEFINER function, RLS, and the 18-key
+// POLICY seed are NOT representable in Prisma — they are raw SQL in the
+// `core_init` migration (Doc-6B §5.1; tables managed by Prisma).
+// ─────────────────────────────────────────────────────────────────────────────
+
+// §3.1 — core.audit_records (immutable audit stream; CR3 PK = audit_id, CR4′ column-scoped)
+model AuditRecord {
+  auditId        String    @id @map("audit_id") @db.Uuid
+  actorId        String?   @map("actor_id") @db.Uuid
+  actorType      ActorType @map("actor_type")
+  organizationId String?   @map("organization_id") @db.Uuid
+  entityType     String    @map("entity_type")
+  entityId       String    @map("entity_id") @db.Uuid
+  action         String
+  oldValue       Json?     @map("old_value") @db.JsonB
+  newValue       Json?     @map("new_value") @db.JsonB
+  eventTime      DateTime  @map("event_time") @db.Timestamptz
+  ipAddress      String?   @map("ip_address") @db.Inet
+  userAgent      String?   @map("user_agent")
+  archivedAt     DateTime? @map("archived_at") @db.Timestamptz
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([organizationId, eventTime], map: "audit_records_org_time_idx")
+  @@index([entityType, entityId, eventTime], map: "audit_records_entity_time_idx")
+  @@map("audit_records")
+  @@schema("core")
+}
+
+enum ActorType {
+  user
+  admin
+  system
+  ai_agent
+
+  @@schema("core")
+}
+
+// §3.2 — core.outbox_events (transactional outbox; CR5 status column, CR4′ forward-only)
+model OutboxEvent {
+  id           String       @id @db.Uuid
+  aggregateId  String?      @map("aggregate_id") @db.Uuid
+  eventName    String       @map("event_name")
+  eventVersion Int          @map("event_version")
+  payloadJsonb Json         @map("payload_jsonb") @db.JsonB
+  status       OutboxStatus @default(pending)
+  dispatchedAt DateTime?    @map("dispatched_at") @db.Timestamptz
+  attempts     Int          @default(0)
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([status, createdAt])
+  @@map("outbox_events")
+  @@schema("core")
+}
+
+enum OutboxStatus {
+  pending
+  dispatched
+  archived
+
+  @@schema("core")
+}
+
+// §3.3 — core.id_sequences (human-reference generator; CR3/CR6 composite PK)
+model IdSequence {
+  entityType String   @map("entity_type")
+  year       Int
+  nextValue  BigInt   @default(1) @map("next_value")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@id([entityType, year])
+  @@map("id_sequences")
+  @@schema("core")
+}
+
+// §3.4 — core.system_configuration (POLICY store; CR7)
+model SystemConfiguration {
+  id         String   @id @db.Uuid
+  key        String   @unique(map: "system_configuration_key_uq")
+  valueJsonb Json     @map("value_jsonb") @db.JsonB
+  valueType  String   @map("value_type")
+  updatedBy  String?  @map("updated_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("system_configuration")
+  @@schema("core")
+}
+
+// §3.5 — core.feature_flags (rollout control, firewalled; CR8)
+model FeatureFlag {
+  id         String   @id @db.Uuid
+  flagKey    String   @unique(map: "feature_flags_flag_key_uq") @map("flag_key")
+  enabled    Boolean  @default(false)
+  scopeJsonb Json?    @map("scope_jsonb") @db.JsonB
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("feature_flags")
+  @@schema("core")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M1 — Identity & Organization (`identity`) — Doc-6C (FROZEN)
+//
+// WP-1.2 realizes the 5-table minimal-valid subset of Doc-2 §10.2 (9 tables total):
+// users, organizations, roles, memberships, buyer_profiles. The other 4
+// (permissions, role_permissions, organization_workflow_settings, delegation_grants)
+// are Wave 2 and are intentionally NOT modeled here.
+//
+// Columns are [Doc-2 binding] (verbatim Doc-2 §10.2); physical types/names are
+// [§2.5] realization choices, tagged in Doc-6C Content Pass-1/Pass-2. Enums,
+// partial-unique-live indexes, RLS, the inline FKs, and the system-bundle role
+// seed are realized as raw SQL in the `identity_init` migration (Doc-6C §6;
+// tables/columns managed by Prisma).
+// ─────────────────────────────────────────────────────────────────────────────
+
+// §3.1 — identity.users (platform-owned; the person record + auth boundary; DC-CR3)
+model User {
+  id               String     @id @db.Uuid
+  authUserId       String?    @map("auth_user_id") @db.Uuid
+  email            String?
+  phone            String?
+  twoFaJsonb       Json?      @map("two_fa_jsonb") @db.JsonB
+  status           UserStatus @default(active)
+  preferencesJsonb Json?      @map("preferences_jsonb") @db.JsonB
+  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy        String?    @map("created_by") @db.Uuid
+  updatedBy        String?    @map("updated_by") @db.Uuid
+  deletedAt        DateTime?  @map("deleted_at") @db.Timestamptz
+  deletedBy        String?    @map("deleted_by") @db.Uuid
+  deleteReason     String?    @map("delete_reason")
+
+  memberships Membership[]
+
+  @@map("users")
+  @@schema("identity")
+}
+
+enum UserStatus {
+  active
+  suspended
+  soft_deleted
+
+  @@map("user_status")
+  @@schema("identity")
+}
+
+// §3.2 — identity.organizations (the tenant root; first `human_ref`; §5.1 state machine; DC-CR5)
+model Organization {
+  id                String            @id @db.Uuid
+  humanRef          String            @map("human_ref")
+  name              String
+  slug              String
+  orgStatus         OrgStatus         @default(active) @map("org_status")
+  hasBuyerProfile   Boolean           @default(false) @map("has_buyer_profile")
+  hasVendorProfile  Boolean           @default(false) @map("has_vendor_profile")
+  verificationLevel VerificationLevel @default(unverified) @map("verification_level")
+  isPersonalOrg     Boolean           @default(false) @map("is_personal_org")
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy         String?           @map("created_by") @db.Uuid
+  updatedBy         String?           @map("updated_by") @db.Uuid
+  deletedAt         DateTime?         @map("deleted_at") @db.Timestamptz
+  deletedBy         String?           @map("deleted_by") @db.Uuid
+  deleteReason      String?           @map("delete_reason")
+
+  memberships   Membership[]
+  roles         Role[]
+  buyerProfiles BuyerProfile[]
+
+  @@unique([humanRef], map: "organizations_human_ref_uq")
+  @@map("organizations")
+  @@schema("identity")
+}
+
+enum OrgStatus {
+  active
+  suspended
+  soft_deleted
+
+  @@map("org_status")
+  @@schema("identity")
+}
+
+enum VerificationLevel {
+  unverified
+  verified
+  enhanced_verified
+
+  @@map("verification_level")
+  @@schema("identity")
+}
+
+// §3.4 — identity.roles (tenant-owned + platform system-bundle seeds; DC-CR2/DC-CR8)
+model Role {
+  id             String    @id @db.Uuid
+  organizationId String?   @map("organization_id") @db.Uuid
+  name           String
+  isSystemBundle Boolean   @default(false) @map("is_system_bundle")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy      String?   @map("created_by") @db.Uuid
+  updatedBy      String?   @map("updated_by") @db.Uuid
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy      String?   @map("deleted_by") @db.Uuid
+  deleteReason   String?   @map("delete_reason")
+
+  organization Organization? @relation(fields: [organizationId], references: [id], map: "roles_org_fk")
+  memberships  Membership[]
+
+  @@map("roles")
+  @@schema("identity")
+}
+
+// §3.3 — identity.memberships (user↔org link; §5.2 state machine; partial-unique-live; DC-CR10)
+model Membership {
+  id             String          @id @db.Uuid
+  organizationId String          @map("organization_id") @db.Uuid
+  userId         String          @map("user_id") @db.Uuid
+  roleId         String          @map("role_id") @db.Uuid
+  state          MembershipState @default(invited)
+  department     String?
+  joinedAt       DateTime?       @map("joined_at") @db.Timestamptz
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy      String?         @map("created_by") @db.Uuid
+  updatedBy      String?         @map("updated_by") @db.Uuid
+  deletedAt      DateTime?       @map("deleted_at") @db.Timestamptz
+  deletedBy      String?         @map("deleted_by") @db.Uuid
+  deleteReason   String?         @map("delete_reason")
+
+  organization Organization @relation(fields: [organizationId], references: [id], map: "memberships_org_fk")
+  user         User         @relation(fields: [userId], references: [id], map: "memberships_user_fk")
+  role         Role         @relation(fields: [roleId], references: [id], map: "memberships_role_fk")
+
+  @@map("memberships")
+  @@schema("identity")
+}
+
+enum MembershipState {
+  invited
+  pending
+  active
+  suspended
+  removed
+
+  @@map("membership_state")
+  @@schema("identity")
+}
+
+// §3.8 — identity.buyer_profiles (tenant-owned; SD=YES; FK → organizations)
+model BuyerProfile {
+  id                          String    @id @db.Uuid
+  organizationId              String    @map("organization_id") @db.Uuid
+  industry                    String?
+  factoryInfoJsonb            Json?     @map("factory_info_jsonb") @db.JsonB
+  deliveryLocationsJsonb      Json?     @map("delivery_locations_jsonb") @db.JsonB
+  procurementPreferencesJsonb Json?     @map("procurement_preferences_jsonb") @db.JsonB
+  createdAt                   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                   DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy                   String?   @map("created_by") @db.Uuid
+  updatedBy                   String?   @map("updated_by") @db.Uuid
+  deletedAt                   DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy                   String?   @map("deleted_by") @db.Uuid
+  deleteReason                String?   @map("delete_reason")
+
+  organization Organization @relation(fields: [organizationId], references: [id], map: "buyer_profiles_org_fk")
+
+  @@map("buyer_profiles")
+  @@schema("identity")
+}

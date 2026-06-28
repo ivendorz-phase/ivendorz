@@ -87,14 +87,32 @@ const config = [
                 "shared",
               ],
             },
-            { from: ["module-contracts"], allow: ["module-contracts", "shared"] },
+            // A module's PUBLIC contracts/ surface may delegate to its OWN module's private
+            // implementation (application/domain/infrastructure) — the canonical DDD facade pattern
+            // (contracts/ = the public face over the module's private internals). `${from.module}`
+            // constrains this to the SAME module only: NO cross-module internal access is opened —
+            // cross-module value-calls remain strictly contracts/→contracts/ (the One-Module rule is
+            // intact). [WP-1.3 minimal boundaries refinement — Board-authorized; same-module only.]
+            {
+              from: ["module-contracts"],
+              allow: [
+                ["module-internal", { module: "${from.module}" }],
+                ["module-root", { module: "${from.module}" }],
+                "module-contracts",
+                "shared",
+              ],
+            },
             { from: ["shared"], allow: ["shared"] },
             { from: ["server"], allow: ["server", "module-contracts", "shared"] },
             { from: ["app"], allow: ["app", "module-contracts", "server", "shared"] },
             { from: ["inngest"], allow: ["inngest", "module-contracts", "server", "shared"] },
             // Tests may compose any module's contracts/ + shared + server, never internals
-            // (§10: no cross-module import bypasses contracts/, including from test code).
-            { from: ["tests"], allow: ["tests", "module-contracts", "shared", "server"] },
+            // (§10: no cross-module import bypasses contracts/, including from test code). E2E/a11y
+            // specs may ALSO import the `app` presentation layer they exercise (render a page/view for
+            // an axe scan) — `app` is the composition/UI layer, NOT a module internal, so this opens NO
+            // cross-module-internal access and the One-Module rule is untouched. [WP-1.6 test-infra:
+            // tests→app for e2e/a11y rendering, mirrors the WP-1.3 same-module boundaries refinement.]
+            { from: ["tests"], allow: ["tests", "module-contracts", "shared", "server", "app"] },
           ],
         },
       ],
