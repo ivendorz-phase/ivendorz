@@ -5,8 +5,12 @@
   Realizes : information_architecture.md (Wave 0C) — app-shell anatomy (§3.3),
              global navigation (§4), wayfinding (§5), surface sitemap (§6.3 Buyer).
   Tokens   : design_philosophy.md §2 / app/globals.css — bound, never re-coined.
-  Theme    : DARK — mirrors the shipped globals.css (light-default divergence is
-             deliberately deferred; this demo reflects what the code renders today).
+  Theme    : LIGHT by default (per design_philosophy.md §3.1 — light is the primary
+             theme), with a first-class DARK toggle in the banner. Theming is a
+             presentation-only swap of semantic tokens (Doc-7B §3.4): light values live
+             in :root, dark values in html[data-theme="dark"] (mirroring shipped
+             globals.css). NOTE: the shipped globals.css still defaults dark — that
+             code divergence stays deferred; this demo follows the philosophy's intent.
   Status   : Non-authoritative companion. Coins no route, contract, or token.
              On any conflict, the frozen corpus wins (CLAUDE.md §7, §11).
   Note     : Lucide icons + Inter/JetBrains Mono load from CDN; offline the layout
@@ -356,8 +360,8 @@ body[data-rail="true"] .collapse-btn{justify-content:center}
 /* Tabs — IA §4.4 */
 .tabs{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--iv-surface-border);padding:0 var(--iv-space-6);margin-top:var(--iv-space-4)}
 .tab{padding:10px 14px;color:var(--iv-neutral-bright);font-size:var(--iv-text-sm);font-weight:500;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color var(--iv-duration-fast);display:flex;align-items:center;gap:7px}
-.tab:hover{color:#fff}
-.tab.active{color:#fff;border-bottom-color:var(--iv-brand-500)}
+.tab:hover{color:var(--iv-fg)}
+.tab.active{color:var(--iv-fg);border-bottom-color:var(--iv-brand-500)}
 .tab .pill{font-family:var(--iv-font-mono);font-size:var(--iv-text-2xs);background:var(--iv-surface-muted);color:var(--iv-neutral-text);border-radius:var(--iv-radius-full);padding:1px 7px}
 .tab.active .pill{background:var(--iv-brand-700);color:#fff}
 
@@ -371,7 +375,7 @@ body[data-rail="true"] .collapse-btn{justify-content:center}
 .stat-card{background:var(--iv-surface-raised);border:1px solid var(--iv-surface-border);border-radius:var(--iv-radius-lg);padding:var(--iv-space-4);box-shadow:var(--iv-shadow-sm)}
 .stat-card .label{display:flex;align-items:center;gap:8px;color:var(--iv-neutral-bright);font-size:var(--iv-text-xs);font-weight:500}
 .stat-card .label [data-lucide]{width:15px;height:15px}
-.stat-card .value{font-size:var(--iv-text-3xl);font-weight:700;color:#fff;margin-top:8px;letter-spacing:-.02em}
+.stat-card .value{font-size:var(--iv-text-3xl);font-weight:700;color:var(--iv-fg);margin-top:8px;letter-spacing:-.02em}
 .stat-card .delta{font-size:var(--iv-text-xs);margin-top:4px;display:flex;align-items:center;gap:4px}
 .delta.up{color:var(--iv-success-text)}.delta.down{color:var(--iv-danger-text)}.delta.flat{color:var(--iv-neutral-bright)}
 .delta [data-lucide]{width:13px;height:13px}
@@ -381,7 +385,7 @@ body[data-rail="true"] .collapse-btn{justify-content:center}
 .filter-bar{display:flex;align-items:center;gap:var(--iv-space-2);padding:var(--iv-space-3);border-bottom:1px solid var(--iv-surface-border);flex-wrap:wrap}
 .filter-search{position:relative;flex:1;min-width:200px}
 .filter-search [data-lucide]{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--iv-neutral-base);width:15px;height:15px}
-.filter-search input{width:100%;height:32px;background:var(--iv-surface-muted);border:1px solid var(--iv-surface-border);border-radius:var(--iv-radius-md);color:#fff;font-size:var(--iv-text-xs);padding:0 10px 0 30px;outline:none}
+.filter-search input{width:100%;height:32px;background:var(--iv-surface-muted);border:1px solid var(--iv-surface-border);border-radius:var(--iv-radius-md);color:var(--iv-fg);font-size:var(--iv-text-xs);padding:0 10px 0 30px;outline:none}
 .filter-search input:focus{border-color:var(--iv-brand-500);box-shadow:var(--iv-glow-brand)}
 .fchip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;background:var(--iv-surface-muted);border:1px solid var(--iv-surface-border);border-radius:var(--iv-radius-md);color:var(--iv-neutral-text);font-size:var(--iv-text-xs);cursor:pointer;transition:all var(--iv-duration-fast)}
 .fchip:hover{border-color:var(--iv-brand-700);color:var(--iv-fg)}
@@ -408,9 +412,9 @@ tbody tr.selected td:first-child{box-shadow:inset 3px 0 0 var(--iv-brand-400)}
 body[data-density="compact"] tbody td{padding:6px var(--iv-space-3)}
 body[data-density="comfortable"] tbody td{padding:16px var(--iv-space-3)}
 .cell-ref{font-family:var(--iv-font-mono);color:var(--iv-brand-300);font-size:var(--iv-text-xs);font-weight:500}
-.cell-title{color:#fff;font-weight:500}
+.cell-title{color:var(--iv-fg);font-weight:500}
 .cell-sub{color:var(--iv-neutral-base);font-size:var(--iv-text-xs);margin-top:2px}
-.amount{font-family:var(--iv-font-mono);font-variant-numeric:tabular-nums;color:#fff;font-weight:500;white-space:nowrap}
+.amount{font-family:var(--iv-font-mono);font-variant-numeric:tabular-nums;color:var(--iv-fg);font-weight:500;white-space:nowrap}
 .amount .cur{color:var(--iv-amber-400);margin-right:3px}
 .cb{width:16px;height:16px;border:1.5px solid var(--iv-surface-border);border-radius:var(--iv-radius-sm);background:var(--iv-surface-muted);display:grid;place-items:center;cursor:pointer;flex:none}
 .cb [data-lucide]{width:12px;height:12px;color:#fff;opacity:0}
@@ -432,12 +436,12 @@ body[data-density="comfortable"] tbody td{padding:16px var(--iv-space-3)}
 .rail{display:flex;flex-direction:column;gap:var(--iv-space-4)}
 .rail .panel{padding:var(--iv-space-4)}
 .rail-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--iv-space-3)}
-.rail-head h3{margin:0;font-size:var(--iv-text-sm);font-weight:600;color:#fff;display:flex;align-items:center;gap:8px}
+.rail-head h3{margin:0;font-size:var(--iv-text-sm);font-weight:600;color:var(--iv-fg);display:flex;align-items:center;gap:8px}
 .rail-head h3 [data-lucide]{width:16px;height:16px;color:var(--iv-brand-300)}
 .kv{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--iv-surface-border);font-size:var(--iv-text-xs)}
 .kv:last-child{border-bottom:none}
 .kv .k{color:var(--iv-neutral-bright)}
-.kv .v{color:#fff;font-weight:500}
+.kv .v{color:var(--iv-fg);font-weight:500}
 
 /* Lifecycle stepper (Doc-4M states are authoritative; this only displays) */
 .stepper{display:flex;flex-direction:column;gap:0;margin-top:4px}
@@ -449,7 +453,7 @@ body[data-density="comfortable"] tbody td{padding:16px var(--iv-space-3)}
 .step.done .node{background:var(--iv-brand-600);border-color:var(--iv-brand-500)}
 .step.current .node{background:var(--iv-amber-500);border-color:var(--iv-amber-400);box-shadow:var(--iv-glow-amber)}
 .step .lbl{font-size:var(--iv-text-xs);color:var(--iv-neutral-bright);line-height:1.3}
-.step.done .lbl,.step.current .lbl{color:#fff}
+.step.done .lbl,.step.current .lbl{color:var(--iv-fg)}
 .step .when{font-size:9px;color:var(--iv-neutral-base);margin-top:1px}
 
 /* AI advisory panel (Doc-7B §5 ai-advisory-panel — non-recommending) */
@@ -461,7 +465,7 @@ body[data-density="comfortable"] tbody td{padding:16px var(--iv-space-3)}
 /* Trust ring (read-only M5 display) */
 .trust-ring{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;flex:none;
   background:conic-gradient(var(--iv-trust-high) 0 84%,var(--iv-surface-muted) 84% 100%)}
-.trust-ring .inner{width:36px;height:36px;border-radius:50%;background:var(--iv-surface-raised);display:grid;place-items:center;font-weight:700;color:#fff;font-size:var(--iv-text-sm)}
+.trust-ring .inner{width:36px;height:36px;border-radius:50%;background:var(--iv-surface-raised);display:grid;place-items:center;font-weight:700;color:var(--iv-fg);font-size:var(--iv-text-sm)}
 
 /* =========================================================================
    FOOTER — IA §4.6 (app: minimal)
@@ -481,7 +485,7 @@ body[data-density="comfortable"] tbody td{padding:16px var(--iv-space-3)}
 .palette{width:min(640px,92vw);background:var(--iv-surface-overlay);border:1px solid var(--iv-surface-border);border-radius:var(--iv-radius-xl);box-shadow:var(--iv-shadow-xl);overflow:hidden;animation:pop .15s var(--iv-ease-in-out)}
 .palette-input{display:flex;align-items:center;gap:10px;padding:var(--iv-space-4);border-bottom:1px solid var(--iv-surface-border)}
 .palette-input [data-lucide]{width:18px;height:18px;color:var(--iv-neutral-bright)}
-.palette-input input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:var(--iv-text-base)}
+.palette-input input{flex:1;background:transparent;border:none;outline:none;color:var(--iv-fg);font-size:var(--iv-text-base)}
 .palette-body{max-height:50vh;overflow-y:auto;padding:var(--iv-space-2)}
 .pal-group{font-size:var(--iv-text-2xs);text-transform:uppercase;letter-spacing:.08em;color:var(--iv-neutral-base);padding:8px 10px 4px}
 .pal-item{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:var(--iv-radius-md);color:var(--iv-neutral-text);cursor:pointer;font-size:var(--iv-text-sm)}
@@ -507,7 +511,7 @@ body[data-density="comfortable"] tbody td{padding:16px var(--iv-space-3)}
 
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);z-index:var(--iv-z-toast);
   background:var(--iv-surface-overlay);border:1px solid var(--iv-brand-700);border-radius:var(--iv-radius-md);
-  box-shadow:var(--iv-shadow-lg);padding:10px 16px;color:#fff;font-size:var(--iv-text-sm);display:flex;align-items:center;gap:10px;
+  box-shadow:var(--iv-shadow-lg);padding:10px 16px;color:var(--iv-fg);font-size:var(--iv-text-sm);display:flex;align-items:center;gap:10px;
   opacity:0;pointer-events:none;transition:all var(--iv-duration-normal) var(--iv-ease-in-out)}
 .toast [data-lucide]{width:16px;height:16px;color:var(--iv-brand-300)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -521,6 +525,7 @@ body[data-density="comfortable"] tbody td{padding:16px var(--iv-space-3)}
   <b>Wave 0C-R</b><span class="muted">· Visual Reference Demo · non-production</span>
   <span class="muted">realizes <b>information_architecture.md</b> (Wave 0C) · tokens from <b>design_philosophy.md</b></span>
   <span class="spacer"></span>
+  <button id="themeToggle" onclick="toggleTheme()"><i data-lucide="moon"></i> Dark</button>
   <button id="iaToggle" onclick="toggleIA()"><i data-lucide="tag"></i> IA labels</button>
   <button onclick="document.body.dataset.rail = document.body.dataset.rail==='true'?'false':'true'"><i data-lucide="panel-left"></i> Toggle rail</button>
   <button onclick="openPalette()"><i data-lucide="command"></i> Command Center</button>
@@ -545,9 +550,9 @@ body[data-density="comfortable"] tbody td{padding:16px var(--iv-space-3)}
     </div>
     <div class="pop" id="orgPop" style="left:0;top:46px">
       <div class="pop-title">Switch organization</div>
-      <div class="pop-item current"><span class="org-avatar">MG</span><div><div style="color:#fff;font-weight:600">Meghna Group</div><div class="org-role">Hybrid · Manager</div></div><i data-lucide="check" class="check"></i></div>
-      <div class="pop-item"><span class="org-avatar" style="background:var(--iv-amber-700,#b45309)">BR</span><div><div style="color:#fff;font-weight:600">BRAC Engineering</div><div class="org-role">Buyer · Officer</div></div></div>
-      <div class="pop-item"><span class="org-avatar" style="background:var(--iv-success-base)">SP</span><div><div style="color:#fff;font-weight:600">Square Pharma Plant 3</div><div class="org-role">Vendor · Owner</div></div></div>
+      <div class="pop-item current"><span class="org-avatar">MG</span><div><div style="color:var(--iv-fg);font-weight:600">Meghna Group</div><div class="org-role">Hybrid · Manager</div></div><i data-lucide="check" class="check"></i></div>
+      <div class="pop-item"><span class="org-avatar" style="background:var(--iv-amber-700,#b45309)">BR</span><div><div style="color:var(--iv-fg);font-weight:600">BRAC Engineering</div><div class="org-role">Buyer · Officer</div></div></div>
+      <div class="pop-item"><span class="org-avatar" style="background:var(--iv-success-base)">SP</span><div><div style="color:var(--iv-fg);font-weight:600">Square Pharma Plant 3</div><div class="org-role">Vendor · Owner</div></div></div>
       <div class="pop-sep"></div>
       <div class="pop-item"><i data-lucide="plus"></i> Create organization</div>
     </div>
@@ -595,9 +600,9 @@ body[data-density="comfortable"] tbody td{padding:16px var(--iv-space-3)}
       </button>
       <div class="pop" id="notifPop" style="right:0;top:42px;min-width:320px">
         <div class="pop-title">Notifications · M6 (Doc-5H)</div>
-        <div class="pop-item"><i data-lucide="file-check"></i><div><div style="color:#fff">3 new quotations on <span class="mono" style="color:var(--iv-brand-300)">RFQ-2026-000482</span></div><div class="org-role">12 min ago</div></div></div>
-        <div class="pop-item"><i data-lucide="shield-check"></i><div><div style="color:#fff">Vendor verification approved</div><div class="org-role">1 hr ago</div></div></div>
-        <div class="pop-item"><i data-lucide="clock"></i><div><div style="color:#fff">RFQ <span class="mono" style="color:var(--iv-brand-300)">RFQ-2026-000475</span> closes in 24h</div><div class="org-role">3 hr ago</div></div></div>
+        <div class="pop-item"><i data-lucide="file-check"></i><div><div style="color:var(--iv-fg)">3 new quotations on <span class="mono" style="color:var(--iv-brand-300)">RFQ-2026-000482</span></div><div class="org-role">12 min ago</div></div></div>
+        <div class="pop-item"><i data-lucide="shield-check"></i><div><div style="color:var(--iv-fg)">Vendor verification approved</div><div class="org-role">1 hr ago</div></div></div>
+        <div class="pop-item"><i data-lucide="clock"></i><div><div style="color:var(--iv-fg)">RFQ <span class="mono" style="color:var(--iv-brand-300)">RFQ-2026-000475</span> closes in 24h</div><div class="org-role">3 hr ago</div></div></div>
         <div class="pop-sep"></div>
         <div class="pop-item" style="justify-content:center;color:var(--iv-brand-300)">Mark all read</div>
       </div>
@@ -609,7 +614,7 @@ body[data-density="comfortable"] tbody td{padding:16px var(--iv-space-3)}
         <span class="user-avatar">AR</span><i data-lucide="chevron-down" style="width:14px;color:var(--iv-neutral-base)"></i>
       </button>
       <div class="pop" id="userPop" style="right:0;top:46px">
-        <div class="pop-item" style="pointer-events:none"><span class="user-avatar">AR</span><div><div style="color:#fff;font-weight:600">Arefin Rahman</div><div class="org-role">arefin@meghna.com.bd</div></div></div>
+        <div class="pop-item" style="pointer-events:none"><span class="user-avatar">AR</span><div><div style="color:var(--iv-fg);font-weight:600">Arefin Rahman</div><div class="org-role">arefin@meghna.com.bd</div></div></div>
         <div class="pop-sep"></div>
         <div class="pop-item"><i data-lucide="user"></i> Account profile</div>
         <div class="pop-item"><i data-lucide="shield"></i> Security &amp; 2FA</div>
@@ -879,7 +884,7 @@ body[data-density="comfortable"] tbody td{padding:16px var(--iv-space-3)}
 
           <!-- CURSOR PAGINATION (IA §8 · no offset/page numbers) -->
           <div class="table-foot">
-            <span>Showing <b style="color:#fff">5</b> of 12 · cursor-paginated (<span class="mono">page_size</span> from POLICY key)</span>
+            <span>Showing <b style="color:var(--iv-fg)">5</b> of 12 · cursor-paginated (<span class="mono">page_size</span> from POLICY key)</span>
             <button class="btn btn-secondary" style="height:30px"><i data-lucide="chevron-down"></i> Load more</button>
           </div>
         </div>
@@ -896,7 +901,7 @@ body[data-density="comfortable"] tbody td{padding:16px var(--iv-space-3)}
             <span class="chip chip-brand"><span class="dot"></span>Quotations Received</span>
           </div>
           <div style="font-family:var(--iv-font-mono);color:var(--iv-brand-300);font-size:var(--iv-text-sm);font-weight:600">RFQ-2026-000482</div>
-          <div style="color:#fff;font-weight:500;margin:4px 0 12px">Centrifugal Pumps — 50 m³/hr</div>
+          <div style="color:var(--iv-fg);font-weight:500;margin:4px 0 12px">Centrifugal Pumps — 50 m³/hr</div>
           <div class="kv"><span class="k">Est. value</span><span class="v"><span style="color:var(--iv-amber-400)">৳</span> 12,50,000</span></div>
           <div class="kv"><span class="k">Vendors invited</span><span class="v" data-numeric>8</span></div>
           <div class="kv"><span class="k">Quotations</span><span class="v" data-numeric>6</span></div>
@@ -935,7 +940,7 @@ body[data-density="comfortable"] tbody td{padding:16px var(--iv-space-3)}
           <div style="display:flex;align-items:center;gap:12px">
             <div class="trust-ring"><div class="inner">84</div></div>
             <div style="min-width:0">
-              <div style="color:#fff;font-weight:600;font-size:var(--iv-text-sm)">KSB Bangladesh Ltd.</div>
+              <div style="color:var(--iv-fg);font-weight:600;font-size:var(--iv-text-sm)">KSB Bangladesh Ltd.</div>
               <div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap">
                 <span class="chip chip-success" style="font-size:9px">Verified</span>
                 <span class="chip" style="font-size:9px;background:rgba(96,165,250,.12);color:var(--iv-tier-c);border:1px solid rgba(96,165,250,.25)">Tier C</span>
@@ -995,6 +1000,16 @@ body[data-density="comfortable"] tbody td{padding:16px var(--iv-space-3)}
 
 <script>
   lucide.createIcons();
+
+  /* Theme toggle — light (default) ⇄ dark. Presentation-only token swap. */
+  function toggleTheme(){
+    const html=document.documentElement;
+    const wasDark = html.getAttribute('data-theme')==='dark';
+    html.setAttribute('data-theme', wasDark ? 'light' : 'dark');
+    document.getElementById('themeToggle').innerHTML =
+      wasDark ? '<i data-lucide="moon"></i> Dark' : '<i data-lucide="sun"></i> Light';
+    lucide.createIcons();
+  }
 
   /* IA annotation toggle */
   function toggleIA(){
