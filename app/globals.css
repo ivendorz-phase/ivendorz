@@ -1,3 +1,660 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ==========================================================================
+   iVendorz Design System — CSS Custom Properties (Design Tokens)
+   Namespace: --iv-
+   Philosophy: "Industrial Precision, Human Clarity"
+   Modes: dark (default / primary), light (secondary)
+   ========================================================================== */
+
+@layer base {
+  :root {
+    /* -----------------------------------------------------------------------
+       BRAND — Deep Navy + Electric Indigo
+    ----------------------------------------------------------------------- */
+    --iv-brand-50: #eef2ff;
+    --iv-brand-100: #e0e7ff;
+    --iv-brand-200: #c7d2fe;
+    --iv-brand-300: #a5b4fc;
+    --iv-brand-400: #818cf8;
+    --iv-brand-500: #6366f1;
+    --iv-brand-600: #4f46e5;
+    --iv-brand-700: #4338ca;
+    --iv-brand-800: #3730a3;
+    --iv-brand-900: #312e81;
+    --iv-brand-950: #1e1b4b;
+
+    /* -----------------------------------------------------------------------
+       PROCUREMENT AMBER — Award, High-Value Signals
+    ----------------------------------------------------------------------- */
+    --iv-amber-50: #fffbeb;
+    --iv-amber-100: #fef3c7;
+    --iv-amber-200: #fde68a;
+    --iv-amber-300: #fcd34d;
+    --iv-amber-400: #fbbf24;
+    --iv-amber-500: #f59e0b;
+    --iv-amber-600: #d97706;
+    --iv-amber-700: #b45309;
+    --iv-amber-800: #92400e;
+    --iv-amber-900: #78350f;
+
+    /* -----------------------------------------------------------------------
+       SURFACE — Dark Mode (Primary Experience)
+    ----------------------------------------------------------------------- */
+    --iv-surface-base: #0a0e1a;
+    --iv-surface-raised: #0f1424;
+    --iv-surface-overlay: #151b2e;
+    --iv-surface-muted: #1c2340;
+    --iv-surface-border: #252d47;
+    --iv-surface-hover: #1e2540;
+    --iv-surface-selected: #202745;
+
+    /* -----------------------------------------------------------------------
+       SURFACE — Light Mode (Secondary Experience)
+    ----------------------------------------------------------------------- */
+    --iv-light-base: #f8fafc;
+    --iv-light-raised: #ffffff;
+    --iv-light-overlay: #ffffff;
+    --iv-light-muted: #f1f5f9;
+    --iv-light-border: #e2e8f0;
+    --iv-light-hover: #f8fafc;
+
+    /* -----------------------------------------------------------------------
+       SEMANTIC — Status Colors
+    ----------------------------------------------------------------------- */
+
+    /* Success — Verified, Active, Won */
+    --iv-success-subtle: rgba(22, 163, 74, 0.08);
+    --iv-success-muted: #14532d;
+    --iv-success-base: #16a34a;
+    --iv-success-bright: #22c55e;
+    --iv-success-text: #4ade80;
+
+    /* Warning — Pending, Under Review, Expiring */
+    --iv-warning-subtle: rgba(202, 138, 4, 0.08);
+    --iv-warning-muted: #713f12;
+    --iv-warning-base: #ca8a04;
+    --iv-warning-bright: #eab308;
+    --iv-warning-text: #fde047;
+
+    /* Danger — Rejected, Overdue (blacklist signals never rendered publicly) */
+    --iv-danger-subtle: rgba(220, 38, 38, 0.08);
+    --iv-danger-muted: #7f1d1d;
+    --iv-danger-base: #dc2626;
+    --iv-danger-bright: #ef4444;
+    --iv-danger-text: #fca5a5;
+
+    /* Info — New, Submitted, Invited */
+    --iv-info-subtle: rgba(37, 99, 235, 0.08);
+    --iv-info-muted: #1e3a5f;
+    --iv-info-base: #2563eb;
+    --iv-info-bright: #3b82f6;
+    --iv-info-text: #93c5fd;
+
+    /* Neutral — Draft, Closed, Inactive */
+    --iv-neutral-subtle: rgba(107, 114, 128, 0.08);
+    --iv-neutral-muted: #374151;
+    --iv-neutral-base: #6b7280;
+    --iv-neutral-bright: #9ca3af;
+    --iv-neutral-text: #d1d5db;
+
+    /* -----------------------------------------------------------------------
+       TRUST & GOVERNANCE — Domain-specific
+    ----------------------------------------------------------------------- */
+
+    /* Trust Score Ring — 0–100 */
+    --iv-trust-low: #ef4444; /* 0–39 */
+    --iv-trust-medium: #f59e0b; /* 40–69 */
+    --iv-trust-high: #22c55e; /* 70–89 */
+    --iv-trust-elite: #6366f1; /* 90–100 */
+
+    /* Financial Tier Badges */
+    --iv-tier-a: #94a3b8; /* Tier A — Steel (0–5 Lac) */
+    --iv-tier-b: #34d399; /* Tier B — Emerald (5–25 Lac) */
+    --iv-tier-c: #60a5fa; /* Tier C — Blue (25 Lac–1 Cr) */
+    --iv-tier-d: #fbbf24; /* Tier D — Gold (1–5 Cr) */
+    --iv-tier-e: #a78bfa; /* Tier E — Violet (5 Cr+) */
+
+    /* Vendor Capability Flags */
+    --iv-cap-supply: #3b82f6; /* can_supply — Blue */
+    --iv-cap-service: #818cf8; /* can_service — Indigo */
+    --iv-cap-fabricate: #fbbf24; /* can_fabricate — Amber */
+    --iv-cap-consult: #22c55e; /* can_consult — Emerald */
+
+    /* -----------------------------------------------------------------------
+       TYPOGRAPHY
+    ----------------------------------------------------------------------- */
+    --iv-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --iv-font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+
+    --iv-text-2xs: 0.625rem;
+    --iv-text-xs: 0.75rem;
+    --iv-text-sm: 0.875rem;
+    --iv-text-base: 1rem;
+    --iv-text-lg: 1.125rem;
+    --iv-text-xl: 1.25rem;
+    --iv-text-2xl: 1.5rem;
+    --iv-text-3xl: 1.875rem;
+    --iv-text-4xl: 2.25rem;
+    --iv-text-5xl: 3rem;
+    --iv-text-6xl: 3.75rem;
+
+    /* -----------------------------------------------------------------------
+       SPACING — 4px base grid
+    ----------------------------------------------------------------------- */
+    --iv-space-1: 4px;
+    --iv-space-2: 8px;
+    --iv-space-3: 12px;
+    --iv-space-4: 16px;
+    --iv-space-5: 20px;
+    --iv-space-6: 24px;
+    --iv-space-8: 32px;
+    --iv-space-10: 40px;
+    --iv-space-12: 48px;
+    --iv-space-16: 64px;
+    --iv-space-20: 80px;
+    --iv-space-24: 96px;
+
+    /* -----------------------------------------------------------------------
+       BORDER RADIUS
+    ----------------------------------------------------------------------- */
+    --iv-radius-sm: 4px;
+    --iv-radius-md: 8px;
+    --iv-radius-lg: 12px;
+    --iv-radius-xl: 16px;
+    --iv-radius-2xl: 24px;
+    --iv-radius-full: 9999px;
+
+    /* -----------------------------------------------------------------------
+       SHADOWS & ELEVATION
+    ----------------------------------------------------------------------- */
+    --iv-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --iv-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --iv-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+    --iv-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
+    --iv-shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.7), 0 8px 16px rgba(0, 0, 0, 0.5);
+    --iv-shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.8);
+
+    /* Glow — interactive elements */
+    --iv-glow-brand: 0 0 0 1px rgba(99, 102, 241, 0.3), 0 0 20px rgba(99, 102, 241, 0.15);
+    --iv-glow-success: 0 0 0 1px rgba(34, 197, 94, 0.3), 0 0 20px rgba(34, 197, 94, 0.12);
+    --iv-glow-amber: 0 0 0 1px rgba(251, 191, 36, 0.3), 0 0 20px rgba(251, 191, 36, 0.12);
+
+    /* -----------------------------------------------------------------------
+       MOTION
+    ----------------------------------------------------------------------- */
+    --iv-duration-instant: 50ms;
+    --iv-duration-fast: 100ms;
+    --iv-duration-normal: 200ms;
+    --iv-duration-slow: 300ms;
+    --iv-duration-slower: 500ms;
+    --iv-duration-slowest: 800ms;
+
+    --iv-ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --iv-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --iv-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --iv-ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+
+    /* -----------------------------------------------------------------------
+       Z-INDEX
+    ----------------------------------------------------------------------- */
+    --iv-z-raised: 10;
+    --iv-z-dropdown: 100;
+    --iv-z-sticky: 200;
+    --iv-z-overlay: 300;
+    --iv-z-modal: 400;
+    --iv-z-toast: 500;
+    --iv-z-tooltip: 600;
+  }
+
+  /* =========================================================================
+     BASE RESETS & GLOBAL DEFAULTS
+  ========================================================================= */
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--iv-font-sans);
+    background-color: var(--iv-surface-base);
+    color: var(--iv-neutral-text);
+    line-height: 1.5;
+    min-height: 100dvh;
+  }
+
+  /* Monospace for IDs, refs, financial figures */
+  code,
+  kbd,
+  samp,
+  pre,
+  [data-type="id"],
+  [data-type="ref"],
+  [data-type="amount"] {
+    font-family: var(--iv-font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Numeric tabular for all financial data */
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* Focus ring — WCAG 2.1 AA compliant */
+  :focus-visible {
+    outline: 2px solid var(--iv-brand-500);
+    outline-offset: 2px;
+    border-radius: var(--iv-radius-sm);
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: rgba(99, 102, 241, 0.25);
+    color: inherit;
+  }
+
+  /* Scrollbar — subtle dark */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--iv-surface-raised);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--iv-surface-border);
+    border-radius: var(--iv-radius-full);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--iv-neutral-muted);
+  }
+}
+
+/* ==========================================================================
+   UTILITY COMPONENT CLASSES
+   These are pre-composed design system utilities — NOT ad-hoc Tailwind hacks.
+========================================================================== */
+
+@layer components {
+  /* -----------------------------------------------------------------------
+     SURFACE UTILITIES
+  ----------------------------------------------------------------------- */
+  .iv-surface {
+    background-color: var(--iv-surface-raised);
+    border: 1px solid var(--iv-surface-border);
+    border-radius: var(--iv-radius-lg);
+  }
+
+  .iv-surface-muted {
+    background-color: var(--iv-surface-muted);
+    border: 1px solid var(--iv-surface-border);
+    border-radius: var(--iv-radius-md);
+  }
+
+  /* -----------------------------------------------------------------------
+     TEXT UTILITIES
+  ----------------------------------------------------------------------- */
+  .iv-text-primary {
+    color: #ffffff;
+  }
+  .iv-text-secondary {
+    color: var(--iv-neutral-text);
+  }
+  .iv-text-muted {
+    color: var(--iv-neutral-bright);
+  }
+  .iv-text-brand {
+    color: var(--iv-brand-400);
+  }
+  .iv-text-amber {
+    color: var(--iv-amber-400);
+  }
+  .iv-text-success {
+    color: var(--iv-success-text);
+  }
+  .iv-text-danger {
+    color: var(--iv-danger-text);
+  }
+  .iv-text-info {
+    color: var(--iv-info-text);
+  }
+  .iv-text-mono {
+    font-family: var(--iv-font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* -----------------------------------------------------------------------
+     BADGE / CHIP UTILITIES
+  ----------------------------------------------------------------------- */
+  .iv-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--iv-space-1);
+    padding: 2px var(--iv-space-2);
+    border-radius: var(--iv-radius-sm);
+    font-size: var(--iv-text-2xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  .iv-badge-brand {
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--iv-brand-300);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+  }
+  .iv-badge-success {
+    background: var(--iv-success-subtle);
+    color: var(--iv-success-text);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+  }
+  .iv-badge-warning {
+    background: var(--iv-warning-subtle);
+    color: var(--iv-warning-text);
+    border: 1px solid rgba(202, 138, 4, 0.2);
+  }
+  .iv-badge-danger {
+    background: var(--iv-danger-subtle);
+    color: var(--iv-danger-text);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+  }
+  .iv-badge-info {
+    background: var(--iv-info-subtle);
+    color: var(--iv-info-text);
+    border: 1px solid rgba(37, 99, 235, 0.2);
+  }
+  .iv-badge-neutral {
+    background: var(--iv-neutral-subtle);
+    color: var(--iv-neutral-text);
+    border: 1px solid rgba(107, 114, 128, 0.2);
+  }
+  .iv-badge-amber {
+    background: rgba(251, 191, 36, 0.1);
+    color: var(--iv-amber-300);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+  }
+
+  /* Financial Tier Badges */
+  .iv-tier-badge {
+    @apply iv-badge;
+  }
+  .iv-tier-a {
+    background: rgba(148, 163, 184, 0.12);
+    color: var(--iv-tier-a);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+  }
+  .iv-tier-b {
+    background: rgba(52, 211, 153, 0.12);
+    color: var(--iv-tier-b);
+    border: 1px solid rgba(52, 211, 153, 0.2);
+  }
+  .iv-tier-c {
+    background: rgba(96, 165, 250, 0.12);
+    color: var(--iv-tier-c);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+  }
+  .iv-tier-d {
+    background: rgba(251, 191, 36, 0.12);
+    color: var(--iv-tier-d);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+  }
+  .iv-tier-e {
+    background: rgba(167, 139, 250, 0.12);
+    color: var(--iv-tier-e);
+    border: 1px solid rgba(167, 139, 250, 0.2);
+  }
+
+  /* Capability Flag Chips */
+  .iv-cap-chip {
+    @apply iv-badge;
+  }
+  .iv-cap-supply {
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--iv-cap-supply);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+  }
+  .iv-cap-service {
+    background: rgba(129, 140, 248, 0.12);
+    color: var(--iv-cap-service);
+    border: 1px solid rgba(129, 140, 248, 0.25);
+  }
+  .iv-cap-fabricate {
+    background: rgba(251, 191, 36, 0.12);
+    color: var(--iv-cap-fabricate);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+  }
+  .iv-cap-consult {
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--iv-cap-consult);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+  }
+
+  /* -----------------------------------------------------------------------
+     BUTTON PRIMITIVES
+  ----------------------------------------------------------------------- */
+  .iv-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--iv-space-2);
+    font-family: var(--iv-font-sans);
+    font-size: var(--iv-text-sm);
+    font-weight: 500;
+    line-height: 1;
+    border-radius: var(--iv-radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition:
+      background-color var(--iv-duration-normal) var(--iv-ease-in-out),
+      border-color var(--iv-duration-normal) var(--iv-ease-in-out),
+      box-shadow var(--iv-duration-normal) var(--iv-ease-in-out),
+      color var(--iv-duration-normal) var(--iv-ease-in-out),
+      opacity var(--iv-duration-normal) var(--iv-ease-in-out);
+    user-select: none;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+
+  .iv-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* Sizes */
+  .iv-btn-sm {
+    padding: var(--iv-space-2) var(--iv-space-3);
+    font-size: var(--iv-text-xs);
+  }
+  .iv-btn-md {
+    padding: var(--iv-space-2) var(--iv-space-4);
+    font-size: var(--iv-text-sm);
+    height: 36px;
+  }
+  .iv-btn-lg {
+    padding: var(--iv-space-3) var(--iv-space-6);
+    font-size: var(--iv-text-base);
+    height: 44px;
+  }
+
+  /* Variants */
+  .iv-btn-primary {
+    background-color: var(--iv-brand-600);
+    color: #ffffff;
+    border-color: var(--iv-brand-500);
+  }
+  .iv-btn-primary:hover {
+    background-color: var(--iv-brand-500);
+    box-shadow: var(--iv-glow-brand);
+  }
+  .iv-btn-primary:active {
+    background-color: var(--iv-brand-700);
+  }
+
+  .iv-btn-secondary {
+    background-color: var(--iv-surface-muted);
+    color: var(--iv-neutral-text);
+    border-color: var(--iv-surface-border);
+  }
+  .iv-btn-secondary:hover {
+    background-color: var(--iv-surface-hover);
+    border-color: var(--iv-brand-800);
+    color: #ffffff;
+  }
+
+  .iv-btn-ghost {
+    background-color: transparent;
+    color: var(--iv-neutral-bright);
+    border-color: transparent;
+  }
+  .iv-btn-ghost:hover {
+    background-color: var(--iv-surface-hover);
+    color: #ffffff;
+  }
+
+  .iv-btn-amber {
+    background-color: var(--iv-amber-500);
+    color: #0a0e1a;
+    border-color: var(--iv-amber-400);
+    font-weight: 600;
+  }
+  .iv-btn-amber:hover {
+    background-color: var(--iv-amber-400);
+    box-shadow: var(--iv-glow-amber);
+  }
+
+  .iv-btn-danger {
+    background-color: rgba(220, 38, 38, 0.12);
+    color: var(--iv-danger-text);
+    border-color: rgba(220, 38, 38, 0.25);
+  }
+  .iv-btn-danger:hover {
+    background-color: rgba(220, 38, 38, 0.2);
+    border-color: var(--iv-danger-base);
+  }
+
+  /* -----------------------------------------------------------------------
+     FORM INPUT PRIMITIVES
+  ----------------------------------------------------------------------- */
+  .iv-input {
+    width: 100%;
+    background-color: var(--iv-surface-raised);
+    border: 1px solid var(--iv-surface-border);
+    border-radius: var(--iv-radius-md);
+    color: #ffffff;
+    font-family: var(--iv-font-sans);
+    font-size: var(--iv-text-sm);
+    padding: var(--iv-space-2) var(--iv-space-3);
+    height: 36px;
+    transition:
+      border-color var(--iv-duration-normal) var(--iv-ease-in-out),
+      box-shadow var(--iv-duration-normal) var(--iv-ease-in-out),
+      background-color var(--iv-duration-normal) var(--iv-ease-in-out);
+    outline: none;
+  }
+
+  .iv-input::placeholder {
+    color: var(--iv-neutral-base);
+  }
+
+  .iv-input:hover {
+    border-color: var(--iv-brand-800);
+    background-color: var(--iv-surface-overlay);
+  }
+
+  .iv-input:focus {
+    border-color: var(--iv-brand-500);
+    box-shadow: var(--iv-glow-brand);
+    background-color: var(--iv-surface-overlay);
+  }
+
+  .iv-input-error {
+    border-color: var(--iv-danger-base);
+  }
+  .iv-input-error:focus {
+    box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.4);
+  }
+
+  .iv-label {
+    display: block;
+    font-size: var(--iv-text-xs);
+    font-weight: 500;
+    color: var(--iv-neutral-bright);
+    margin-bottom: var(--iv-space-1);
+    letter-spacing: 0.01em;
+  }
+
+  /* -----------------------------------------------------------------------
+     DIVIDER
+  ----------------------------------------------------------------------- */
+  .iv-divider {
+    height: 1px;
+    background-color: var(--iv-surface-border);
+    border: none;
+    margin: 0;
+  }
+
+  /* -----------------------------------------------------------------------
+     LINK
+  ----------------------------------------------------------------------- */
+  .iv-link {
+    color: var(--iv-brand-400);
+    text-decoration: none;
+    transition: color var(--iv-duration-fast) var(--iv-ease-in-out);
+  }
+  .iv-link:hover {
+    color: var(--iv-brand-300);
+    text-decoration: underline;
+  }
+
+  /* -----------------------------------------------------------------------
+     SKELETON / LOADING
+  ----------------------------------------------------------------------- */
+  .iv-skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--iv-surface-muted) 25%,
+      var(--iv-surface-hover) 50%,
+      var(--iv-surface-muted) 75%
+    );
+    background-size: 200% 100%;
+    border-radius: var(--iv-radius-md);
+    animation: iv-shimmer var(--iv-duration-slowest) ease-in-out infinite;
+  }
+
+  @keyframes iv-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  /* -----------------------------------------------------------------------
+     SCROLLABLE CONTAINER
+  ----------------------------------------------------------------------- */
+  .iv-scroll-x {
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--iv-surface-border) transparent;
+  }
+}
