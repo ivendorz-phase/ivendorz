@@ -1,0 +1,174 @@
+// P-BUY-RFQ (RFQ create · P-BUY-07 · `T-WIZARD`) — host view. Pure function of its view-model (Server
+// Component; no hooks/fetch/mutation — Content ≠ Presentation, Inv #9). The route page seeds a blank draft;
+// a client form surface wires values + the (audit-backed) `create_rfq`/`submit_rfq` writes at integration
+// (Wave 4; PARKED behind the write-wiring milestone). PRESENTATION-ONLY.
+//
+// REUSE: shell `Breadcrumbs`; kit `Card`/`Button`/`FormField`/`EmptyState`/`ErrorState`; buyer `Textarea`/
+// `Select`/`DescriptionList`; buyer-scoped `WizardStepper` + `UploadArea`.
+//
+// GOVERNANCE: no real submit/mutation/upload/search/AI/matching (Board scope). The buyer sets routing
+// BREADTH (`routing_mode`) + preference hints — never matching weights (R6); the engine decides who is
+// invited. No money moves (R8 — payment is a stated preference). Draft is permissive (Doc-3 §1.2); the
+// submit-required fields (budget / district / routing) are noted, never enforced client-side here.
+
+import Link from "next/link";
+import { CheckCircle2, Plus } from "lucide-react";
+import { Button } from "@/frontend/primitives/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
+import { ErrorState } from "@/frontend/components/error-state";
+import { Breadcrumbs } from "../../../_components/shell";
+import { WizardStepper } from "./wizard-stepper";
+import { UploadArea } from "./upload-area";
+import {
+  RequirementSection,
+  TechnicalSection,
+  LogisticsSection,
+  VendorSection,
+  ReviewSection,
+} from "./rfq-sections";
+import { RFQ_WIZARD_STEPS } from "./rfq-options";
+import type { RfqCreateData } from "./rfq-form-models";
+
+/** Phase 8 — success page (presentation only; no RFQ is actually created this milestone). */
+function SubmittedState() {
+  return (
+    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6">
+      <Card>
+        <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
+          <CheckCircle2 aria-hidden className="size-10 text-iv-success-base" />
+          <h1 className="text-xl font-semibold text-foreground">Request submitted</h1>
+          <p className="max-w-md text-sm text-muted-foreground">
+            Your RFQ has been created as a draft. Once wired, it routes to matching vendors and
+            you&rsquo;ll see quotations as they arrive.
+          </p>
+          <div className="mt-2 flex flex-wrap justify-center gap-2">
+            <Button asChild>
+              <Link href="/rfqs">Go to my RFQs</Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link href="/rfqs/new">Create another</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/** A titled card wrapping arbitrary section content (used for the Attachments phase). */
+function PanelCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <Card>
+      <CardHeader className="p-4">
+        <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 pt-0">{children}</CardContent>
+    </Card>
+  );
+}
+
+/** The sticky assistance sidebar (Phase 1). Presentation-only guidance — no AI (Board scope). */
+function AssistanceSidebar() {
+  return (
+    <aside className="lg:sticky lg:top-20" aria-label="Help">
+      <Card>
+        <CardHeader className="p-4">
+          <CardTitle className="text-sm font-semibold">Tips for a strong RFQ</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2 p-4 pt-0 text-sm text-muted-foreground">
+          <p>
+            • Be specific about grade, dimensions, and tolerances — it gets you better-matched
+            quotes.
+          </p>
+          <p>• Attach drawings or a bill of quantities so vendors quote against the same scope.</p>
+          <p>• Set a realistic delivery date and a district so logistics can be priced.</p>
+          <p className="text-xs">
+            Vendors are matched by the routing engine — you choose the breadth, not the winner.
+          </p>
+        </CardContent>
+      </Card>
+    </aside>
+  );
+}
+
+export function RfqCreateView({ data }: { data: RfqCreateData }) {
+  const submission = data.submission ?? "idle";
+
+  if (submission === "success") {
+    return <SubmittedState />;
+  }
+
+  const { form } = data;
+  const submitting = submission === "submitting";
+
+  return (
+    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6">
+      <Breadcrumbs
+        items={[{ label: "RFQs", href: "/rfqs" }, { label: "New RFQ" }]}
+        className="mb-4"
+      />
+
+      {/* Phase 1 — hero */}
+      <header className="mb-6">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          Create a request for quotation
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Describe what you need; the routing engine matches verified vendors and gathers
+          quotations.
+        </p>
+      </header>
+
+      {/* Phase 1 — progress indicator */}
+      <div className="mb-6 rounded-lg border border-border bg-card p-4 shadow-iv-xs">
+        <WizardStepper steps={RFQ_WIZARD_STEPS} activeStep={data.activeStep ?? 0} />
+      </div>
+
+      {submission === "error" ? (
+        <ErrorState
+          errorClass="DEPENDENCY"
+          message="We couldn’t submit your request just now. Your draft is safe — please try again."
+          className="mb-6"
+          action={
+            <Button asChild variant="secondary" size="sm">
+              <Link href="/rfqs/new">Try again</Link>
+            </Button>
+          }
+        />
+      ) : null}
+
+      {/* Phase 1 — responsive two-column layout (form + sticky assistance sidebar) */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="flex flex-col gap-4 lg:col-span-2">
+          <RequirementSection form={form} />
+          <TechnicalSection form={form} />
+          <PanelCard title="Attachments">
+            <UploadArea attachments={form.attachments} />
+          </PanelCard>
+          <LogisticsSection form={form} />
+          <VendorSection form={form} />
+          <PanelCard title="Review">
+            <ReviewSection form={form} />
+          </PanelCard>
+        </div>
+        <div>
+          <AssistanceSidebar />
+        </div>
+      </div>
+
+      {/* Phase 8 — submission save-bar (sticky). Save Draft is a disabled placeholder; Submit is presentation. */}
+      <div className="sticky bottom-0 z-10 mt-4 flex flex-wrap items-center justify-end gap-2 border-t border-border bg-background/95 py-3 backdrop-blur">
+        <p className="mr-auto text-xs text-muted-foreground">
+          Drafts and submission connect in the integration phase.
+        </p>
+        <Button type="button" variant="secondary" disabled>
+          Save draft
+        </Button>
+        <Button type="button" disabled={submitting} className="gap-1.5">
+          <Plus aria-hidden />
+          {submitting ? "Submitting…" : "Submit RFQ"}
+        </Button>
+      </div>
+    </div>
+  );
+}
