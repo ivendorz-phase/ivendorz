@@ -1,0 +1,100 @@
+# BOARD SPRINT — Platform Audit Mechanism (`SPRINT-AUDIT-MECH`) v1.0
+
+> **A platform milestone, not an application feature.** This sprint exists to resolve **one** systemic
+> gap before any further feature work proceeds. It ships no product surface — its product is a ratified,
+> realized, tested **platform audit-write mechanism**.
+
+| Field | Value |
+|---|---|
+| **Type** | Board Sprint (platform milestone) |
+| **Owner** | **Architecture Board** (presiding authority — CLAUDE.md §7); realization by Engineering once ruled |
+| **Status** | **OPEN — ACTIVE.** |
+| **Single objective** | **Resolve [`ESC-W2-AUDIT-RLS`](ESC-W2-AUDIT-RLS_v1.0.md).** Nothing else. |
+| **Date opened** | 2026-06-30 |
+| **Feature-work freeze** | **ALL feature work is paused** for the duration of this sprint (owner directive, 2026-06-30). No new application surfaces; no resumption of the M1 buyer-profile write or any other feature until the sprint exits. |
+| **Work definition** | [`WP-AUDIT-MECH_v1.0`](WP-AUDIT-MECH_v1.0.md) (the work package — scope, decision, acceptance) |
+| **Resolves / closes** | `ESC-W2-AUDIT-RLS` (BLOCKER) |
+| **Authority** | CLAUDE.md §7 (Authority Order), §8 (architecture-affecting → **human approval**), §11 (Flag-and-Halt), §13 (Raise ≠ Accept) |
+| **Change class** | **Additive patches only** (Doc-4B / Doc-6B). Never an edit that reopens a frozen decision. |
+
+---
+
+## 1. Why a sprint (and not a task inside M1)
+
+The gap is **platform-wide**: `core.audit_records` admits writes only under platform-staff, yet **every
+Audit-Required tenant write** (all of M1's writes, and later M2–M9) runs under tenant context. Treating it
+as an M1 task would either invent a local mechanism (prohibited) or smuggle a platform decision into a
+feature. It is therefore elevated to a **milestone** with its own exit gate, ahead of the dependent
+features. Problem statement + evidence: `ESC-W2-AUDIT-RLS` §1–§2 (by pointer; not restated).
+
+## 2. Objective
+
+**Ratify, realize, and prove** the single mechanism by which a tenant-scoped business write satisfies its
+Audit-Required obligation (Doc-4C §C10 / Doc-4B §A10) under the existing tenant RLS context — then close
+the ESC. Out of scope: anything that is not this mechanism (see `WP-AUDIT-MECH` §3).
+
+## 3. Deliverables (strict sequence — each gates the next)
+
+| # | Deliverable | Done when |
+|---|---|---|
+| **D1** | **Board decision** | The Board rules a mechanism (R-a…R-d or a Board alternative) and records it in `ESC-W2-AUDIT-RLS` §7 with binding conditions. Additive disposition; no frozen edit. |
+| **D2** | **Additive Doc-4B patch** | The audit-write mechanism (M0 contract behavior — `core.append_audit_record.v1`, Doc-4B §A10) is patched additively + human-approved + frozen via the corpus process. |
+| **D3** | **Additive Doc-6B patch** | The audit-table RLS/realization (Doc-6B §2.2/§4.1) is patched additively to admit the ratified path, frozen via the corpus process. |
+| **D4** | **M0 implementation** | The mechanism is realized **once** in `src/modules/core`, and the concrete `appendAuditRecord` facade is exposed on `core/contracts/services.ts`. |
+| **D5** | **Audit conformance tests** | A test proves a **tenant-context** write (`is_platform_staff = false`) appends exactly one audit row **atomically** with the business write; no staff-privilege leak to later writes; and (if R-b) a forged/cross-tenant audit insert is rejected by the `WITH CHECK`. |
+| **D6** | **Close ESC** | `ESC-W2-AUDIT-RLS` marked **RESOLVED** (ruling + realization recorded), and `WP-AUDIT-MECH` DoD met. |
+| **D7** | **Resume M1** | The M1 buyer-profile write slice is unblocked and resumes per its approved plan — wiring audit through the ratified mechanism and shipping **with** audit. |
+
+## 4. Owner recommendation to the Board (Raise ≠ Accept — the Board validates or overrides)
+
+The owner recommends the Board **investigate R-b first** — the dedicated **append-only INSERT policy** on
+`core.audit_records` with a **tightly scoped `WITH CHECK`** (e.g. `actor_id = app.user_id`,
+`organization_id = app.active_org`; SELECT stays staff-only; UPDATE/DELETE stay blocked by the Doc-6B §4.1
+immutability triggers). Rationale: it aims to **preserve Doc-4B §A10 atomicity while avoiding any
+privilege-elevation mechanism**. This is a recommendation, not a decision — `WP-AUDIT-MECH` exists
+precisely so the Board can **validate R-b or choose another** (R-a/R-c; R-d recorded as likely non-viable)
+before any implementation.
+
+## 5. Sprint exit criteria (Definition of Done)
+
+- ✅ D1–D7 complete, in order.
+- ✅ Only additive, human-approved patches landed; **no tenant-table RLS weakened**; **no frozen decision reopened**; **coins nothing** beyond the ratified additive.
+- ✅ `ESC-W2-AUDIT-RLS` = RESOLVED; `WP-AUDIT-MECH` = CLOSED.
+- ✅ Feature-work freeze lifts **only** on sprint exit.
+
+## 6. Post-sprint roadmap (the sequence this unblocks)
+
+```
+Board Sprint — Resolve ESC-W2-AUDIT-RLS
+        │
+        ▼
+M0 Audit Mechanism (ratified + realized + tested)
+        │
+        ▼
+Resume M1 Buyer-Profile Write  (ships WITH audit)
+        │
+        ▼
+Wave-2 Complete  (remaining M1 contracts + Doc-8 suites — separate slices)
+        │
+        ▼
+Authenticated Shell  (Doc-7C (app): org-switcher + notification center + write client)
+        │
+        ▼
+M2 Marketplace  (Doc-4D/5D/6D — the Public reads + trust)
+        │
+        ▼
+Public Landing  (P-PUB-01 / Doc-7D — wired against M2, on the frozen kit)
+```
+
+## 7. Freeze (binding for this sprint)
+
+No application feature work proceeds while this sprint is OPEN — including the parked M1 buyer-profile
+write, the authenticated shell, M2, and the public landing. The only sanctioned work is D1–D7. The
+already-built, non-audit-dependent generic `FormField` kit component stands as-is and is **not** further
+extended into a surface during the freeze.
+
+---
+
+*Opened under Flag-and-Halt / Raise ≠ Accept (CLAUDE.md §11/§13). The reviewer frames; the Architecture
+Board rules; only validated, additive, human-approved resolutions are implemented. The sprint exits only
+when `ESC-W2-AUDIT-RLS` is RESOLVED.*
