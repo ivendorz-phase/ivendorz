@@ -106,6 +106,18 @@ export interface RfqDraftForm {
   currency?: RfqCurrency;
   urgency?: string;
   specialInstructions?: string;
+
+  // Communication preferences (dev-doc capture). PLATFORM MESSAGES ARE ALWAYS ON — the system of record /
+  // audit trail (M6, delivery-only); the off-platform channels below are OPTIONAL and buyer-controlled. The
+  // platform stays the communication record for RFQs, clarifications, and dispute resolution (Board ruling).
+  // A WhatsApp number is shared only with vendors who RECEIVE this RFQ (non-disclosure). No real comms wired.
+  contactPhone?: boolean;
+  contactWhatsapp?: boolean;
+  contactEmail?: boolean;
+  whatsappAllow?: boolean;
+  whatsappUseAccount?: boolean;
+  whatsappNumber?: string;
+  preferredContactTime?: string;
 }
 
 /** Submission states for Phase 8 (presentation only — NO real submit occurs this milestone). */

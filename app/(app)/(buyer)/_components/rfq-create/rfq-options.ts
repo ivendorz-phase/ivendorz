@@ -90,6 +90,15 @@ export const URGENCY_OPTIONS: Option[] = [
   { value: "critical", label: "Critical" },
 ];
 
+/** Preferred contact time — presentation list (optional buyer preference). */
+export const CONTACT_TIME_OPTIONS: Option[] = [
+  { value: "anytime", label: "Anytime" },
+  { value: "business", label: "Business hours" },
+  { value: "morning", label: "Morning" },
+  { value: "afternoon", label: "Afternoon" },
+  { value: "evening", label: "Evening" },
+];
+
 /** Vendor type preference — presentation list (a routing/preference hint, not a matching weight). */
 export const VENDOR_TYPE_OPTIONS: Option[] = [
   { value: "any", label: "Any" },
@@ -112,5 +121,6 @@ export const RFQ_WIZARD_STEPS: WizardStep[] = [
   { key: "delivery", label: "Delivery" },
   { key: "vendors", label: "Vendor preferences" },
   { key: "budget", label: "Budget & priority" },
+  { key: "communication", label: "Communication" },
   { key: "review", label: "Review" },
 ];
