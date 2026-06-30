@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/
 import { Separator } from "@/frontend/primitives/separator";
 import { CurrencyDisplay } from "@/frontend/components/currency-display";
 import { StatusChip, type StatusTone } from "@/frontend/components/status-chip";
-import { CapabilityMatrix } from "./capability-matrix";
+import { CapabilityMatrix } from "@/frontend/components/capability-matrix";
 import { CategoryAssignmentList } from "./category-assignment-list";
 import { DescriptionList, type DescriptionItem } from "./description-list";
 import { GovernanceBandsPlaceholder } from "./governance-bands-placeholder";

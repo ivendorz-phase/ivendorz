@@ -1,10 +1,13 @@
-// Buyer Workspace — recent-activity timeline (P-BUY-01, Doc-7F §9.1). A BUYER-SCOPED presentation
-// composition of the existing kit `Card` + `EmptyState` (the shared Doc-7B `timeline` component remains a
-// Doc-7B-owner item, §11.3). Pure function of props (Server Component, no hooks/fetch).
+// Buyer Workspace — read-only timeline (Tier-2). A BUYER-SCOPED presentation composition of the existing
+// kit `Card` + `EmptyState` (the shared Doc-7B `timeline` component remains a Doc-7B-owner item, §11.3).
+// Reused for: dashboard recent activity (P-BUY-01, Doc-7F §9.1), RFQ lifecycle (P-BUY-08), and the
+// quotation version history (P-BUY-14). `title`/`emptyLabel` are optional (defaulting to the dashboard
+// "Recent activity" wording) so a caller can relabel without forking. Pure function of props (Server
+// Component, no hooks/fetch).
 //
-// GOVERNANCE: entries are sourced from the immutable M0 audit (read-only) and are NON-DISCLOSURE-SAFE —
-// the timeline never surfaces an excluded/deferred party or any CRM/blacklist signal (Inv #11; §9.3).
-// It renders only what the caller (a disclosed read) supplies; it infers and computes nothing.
+// GOVERNANCE: entries are sourced from the immutable M0 audit / version history (read-only, Inv #8) and are
+// NON-DISCLOSURE-SAFE — the timeline never surfaces an excluded/deferred party or any CRM/blacklist signal
+// (Inv #11; §9.3). It renders only what the caller (a disclosed read) supplies; it infers/computes nothing.
 //
 // A11y: an ordered list (`<ol>`) under a labelled section; each entry's timestamp uses a `<time>` element.
 
@@ -14,15 +17,23 @@ import { EmptyState } from "@/frontend/components/empty-state";
 import { formatInstant } from "./format";
 import type { ActivityEntry } from "./view-models";
 
-export function ActivityTimeline({ entries }: { entries: ActivityEntry[] }) {
+export function ActivityTimeline({
+  entries,
+  title = "Recent activity",
+  emptyLabel = "No activity yet",
+}: {
+  entries: ActivityEntry[];
+  title?: string;
+  emptyLabel?: string;
+}) {
   return (
     <Card>
       <CardHeader className="p-4">
-        <CardTitle className="text-sm font-semibold">Recent activity</CardTitle>
+        <CardTitle className="text-sm font-semibold">{title}</CardTitle>
       </CardHeader>
       <CardContent className="p-4 pt-0">
         {entries.length === 0 ? (
-          <EmptyState title="No activity yet" className="py-8" />
+          <EmptyState title={emptyLabel} className="py-8" />
         ) : (
           <ol className="flex flex-col gap-3">
             {entries.map((entry) => (

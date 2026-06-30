@@ -16,7 +16,6 @@
 //  • Deferral/exclusion is invisible; no excluded/deferred vendor is ever shown (Doc-3 §4.2 / Inv #11).
 //  • Quotations (P-BUY-09) and Activity (P-BUY-10) tabs are later-milestone placeholders, not data.
 
-import * as React from "react";
 import Link from "next/link";
 import { FileText } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
@@ -27,6 +26,7 @@ import { PageHeader, Breadcrumbs } from "../../../_components/shell";
 import { RfqDetailTabs } from "./rfq-detail-tabs";
 import { QuotationsTab } from "./quotations-tab";
 import { ActivityTimeline } from "../../_components/activity-timeline";
+import { DescriptionList, type DescriptionItem } from "../../_components/description-list";
 import { formatDate, Money, Ref } from "../../_components/format";
 import { rfqStateDisplay } from "../../_components/state-display";
 import type { RfqDetailData, RfqLifecycleAction } from "../../_components/rfq-view-models";
@@ -56,18 +56,17 @@ function LifecycleActions({ actions }: { actions: RfqLifecycleAction[] }) {
   );
 }
 
-/** A definition-list meta row (a11y-correct `<dt>`/`<dd>` pair). */
-function MetaRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="grid grid-cols-1 gap-1 py-2 sm:grid-cols-3 sm:gap-4">
-      <dt className="text-sm font-medium text-muted-foreground">{label}</dt>
-      <dd className="text-sm text-foreground sm:col-span-2">{children}</dd>
-    </div>
-  );
-}
-
 /** Overview tab — RFQ meta (left) + read-only lifecycle timeline (right). This IS P-BUY-08. */
 function OverviewTab({ data }: { data: RfqDetailData }) {
+  const items: DescriptionItem[] = [
+    ...(data.summary ? [{ label: "Summary", value: data.summary }] : []),
+    { label: "Category", value: data.category ?? "—" },
+    { label: "Budget", value: <Money value={data.value} /> },
+    { label: "Delivery location", value: data.deliveryLocation ?? "—" },
+    { label: "Needed by", value: data.neededBy ? formatDate(data.neededBy) : "—" },
+    { label: "Created", value: formatDate(data.createdAt) },
+    { label: "Last updated", value: formatDate(data.updatedAt) },
+  ];
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       <Card className="lg:col-span-2">
@@ -75,17 +74,7 @@ function OverviewTab({ data }: { data: RfqDetailData }) {
           <CardTitle className="text-sm font-semibold">Request details</CardTitle>
         </CardHeader>
         <CardContent className="p-4 pt-0">
-          <dl className="divide-y divide-border">
-            {data.summary ? <MetaRow label="Summary">{data.summary}</MetaRow> : null}
-            <MetaRow label="Category">{data.category ?? "—"}</MetaRow>
-            <MetaRow label="Budget">
-              <Money value={data.value} />
-            </MetaRow>
-            <MetaRow label="Delivery location">{data.deliveryLocation ?? "—"}</MetaRow>
-            <MetaRow label="Needed by">{data.neededBy ? formatDate(data.neededBy) : "—"}</MetaRow>
-            <MetaRow label="Created">{formatDate(data.createdAt)}</MetaRow>
-            <MetaRow label="Last updated">{formatDate(data.updatedAt)}</MetaRow>
-          </dl>
+          <DescriptionList items={items} />
         </CardContent>
       </Card>
       <ActivityTimeline entries={data.lifecycle} />

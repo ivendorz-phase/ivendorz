@@ -14,7 +14,12 @@ export { FinancialTierPanel, type FinancialTierPanelProps } from "./financial-ti
 export { CategoriesPanel, type CategoriesPanelProps } from "./categories-panel";
 export { CompanyProfileTabs, type CompanyProfileTabsProps } from "./company-profile-tabs";
 
-export { CapabilityMatrix, type CapabilityMatrixProps } from "./capability-matrix";
+// CapabilityMatrix promoted to the shared kit (landing_page_spec §1.5 — owner-of-record = Doc-7B kit);
+// re-exported here so existing Vendor-workspace imports keep their barrel entry point.
+export {
+  CapabilityMatrix,
+  type CapabilityMatrixProps,
+} from "@/frontend/components/capability-matrix";
 export { TierChip, type TierChipProps } from "./tier-chip";
 export { TierHistoryList, type TierHistoryListProps } from "./tier-history-list";
 export {

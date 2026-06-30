@@ -91,17 +91,20 @@ Until promotion completes, the component stays at its current scope; the second 
 | ~~`BuyerTopbar`/`BuyerSidebar`/`BuyerMobileNav`~~ **RETIRED** → Tier-1 `AppShell` | — | — | — | **Promoted** to Tier 1 (§5.2) |
 | `KpiStatCard` | Card | P-BUY-01 | 1 (Buyer) | No |
 | `WorkQueueCard` | Card, Button, EmptyState, `DataListTable` | P-BUY-01 | 1 (Buyer) | No |
-| `DataListTable<T>` | (semantic table) | P-BUY-01, P-BUY-06, **P-BUY-09** | 1 workspace (**3 screens**) | **Strongest Watch** — generic; **Doc-7B `data-table` candidate**. Board ruling (M2): evidence-driven — do NOT promote until a 2nd WORKSPACE (Vendor/Public) needs it (→ §4.2) |
+| `DataListTable<T>` | (semantic table) | P-BUY-01, P-BUY-06, P-BUY-09, **P-BUY-14** (price lines) | 1 workspace (**4 screens**) | **Strongest Watch** — generic; **Doc-7B `data-table` candidate**. Board ruling (M2): evidence-driven — do NOT promote until a 2nd WORKSPACE (Vendor/Public) needs it (→ §4.2) |
 | `ListToolbar` | Input, Button | P-BUY-06 | 1 (Buyer) | Watch |
-| `ActivityTimeline` | Card, EmptyState | P-BUY-01, P-BUY-08 (lifecycle) | 1 workspace (2 screens) | Watch |
-| `format` (Money/Ref/formatDate/formatInstant) | CurrencyDisplay | P-BUY-01/06/08/09 | 1 (Buyer) | Watch (Board: "becoming true Platform utilities" — promote on 2nd workspace) |
+| `ActivityTimeline` (now `title`/`emptyLabel` props) | Card, EmptyState | P-BUY-01 (activity), P-BUY-08 (lifecycle), **P-BUY-14** (version history) | 1 workspace (**3 screens**) | Watch — generalized (relabelable) this milestone; still 1 workspace |
+| `DescriptionList` | (semantic `<dl>`) | **P-BUY-08** (refactored from `MetaRow`), **P-BUY-14** (delivery/warranty/compliance/summary) | 1 workspace (**2 screens**) | Watch — generic `<dl>` renderer; Doc-7B candidate the moment a 2nd workspace needs one |
+| `format` (Money/Ref/formatDate/formatInstant) | CurrencyDisplay | P-BUY-01/06/08/09/**14** | 1 (Buyer) | Watch (Board: "becoming true Platform utilities" — promote on 2nd workspace) |
 | `RfqDetailTabs` (client tab chrome) | Tabs | P-BUY-08 | 1 (Buyer) | No (RFQ-specific) |
 | `QuotationsTab` | `DataListTable`, StatusChip, EmptyState, PaginationControl, Money | P-BUY-09 | 1 (Buyer) | No (RFQ-quotation-specific) |
-| `state-display` (Doc-4M state → label/tone) | — | P-BUY-01/06/08/09 | 1 (Buyer) | No (domain mapping) |
-| list/detail/dashboard skeleton presets | Skeleton, Card | P-BUY-01/06/08 | 1 (Buyer) | Watch |
+| `QuotationDetailView` (+ co-located Pricing/Delivery/Warranty/Compliance/Attachment/Summary cards) | `DataListTable`, `DescriptionList`, `ActivityTimeline`, Card, StatusChip, EmptyState, FileLink, Money | P-BUY-14 | 1 (Buyer) | No (quotation-detail-specific) |
+| `state-display` (Doc-4M state → label/tone) | — | P-BUY-01/06/08/09/**14** | 1 (Buyer) | No (domain mapping) |
+| list/detail/dashboard skeleton presets | Skeleton, Card | P-BUY-01/06/08/**14** | 1 (Buyer) | Watch |
 
 > **Reused, NOT rebuilt (P-BUY-06/08):** the page `<h1>` + detail hero use the **shell `PageHeader`**; the detail breadcrumb uses the **shell `Breadcrumbs`** — Team 2's earlier plan to build a bespoke `DetailHero`/`Breadcrumbs` was **dropped** in favour of the canonical shell components (search-before-build, §6.1).
 > **Note (DataListTable):** Doc-7F §11.3 lists `data-table` as a Doc-7B-kit (Tier 0) item not yet on disk. Team 2 realized it as a **buyer-scoped** `DataListTable` (Tier 2) to avoid unilaterally modifying the frozen kit — an explicit **Doc-7B promotion candidate** (§4.2) the moment a second workspace needs a cursor-paginated table.
+> **Note (P-BUY-14 field mapping):** the quotation-detail cards render the **frozen** quotation content set only (Doc-4E §E7.1 / Doc-2 §10.4): `price_breakdown` · `delivery_terms` · `warranty_terms` · `spec_compliance_declaration` · `attachments_refs`. Those jsonb blobs' INTERNAL schema is "dev-doc" (not in the frozen corpus), so each is projected to **generic** label/value rows — no specific term key is coined. There is **no** frozen `commercial_terms`/`technical_notes` field, so the milestone brief's `CommercialTermsCard`/`TechnicalResponseCard` were **not** built; `ComplianceCard` (= `spec_compliance_declaration`, Doc-3 §8.1) is the technical/compliance content. `sealedUntilClose` is a server-set presentation hint tracing to Doc-3 §10.1/§12.2 (`abuse.sealed_until_close`), not a coined field.
 
 ### 5.4 Tier 2 — Public-scoped (Team 1) · Vendor-scoped (Team 3)
 

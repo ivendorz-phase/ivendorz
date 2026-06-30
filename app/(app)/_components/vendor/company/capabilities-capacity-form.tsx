@@ -6,7 +6,7 @@
 import { Button } from "@/frontend/primitives/button";
 import { Input } from "@/frontend/primitives/input";
 import { FormField } from "@/frontend/components/form-field";
-import { CapabilityMatrix } from "./capability-matrix";
+import { CapabilityMatrix } from "@/frontend/components/capability-matrix";
 import { MatchingContextBanner } from "./matching-context-banner";
 import { PresentationFormNote } from "./presentation-form-note";
 import { VerifiedMarker } from "./verified-marker";
