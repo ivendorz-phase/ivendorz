@@ -125,12 +125,14 @@ export function CapabilityMatrix({
           <li key={flag.key} className="flex items-center gap-3 p-3">
             <span aria-hidden="true" className={cn("size-2.5 shrink-0 rounded-full", flag.dot)} />
             <div className="min-w-0 flex-1">
-              <label
-                htmlFor={editable ? id : undefined}
-                className="block text-sm font-medium text-foreground"
-              >
-                {flag.label}
-              </label>
+              {editable ? (
+                <label htmlFor={id} className="block text-sm font-medium text-foreground">
+                  {flag.label}
+                </label>
+              ) : (
+                // Read mode: a plain span (a <label> with no associated control is improper HTML).
+                <span className="block text-sm font-medium text-foreground">{flag.label}</span>
+              )}
               <p className="text-xs text-muted-foreground">{flag.description}</p>
             </div>
             {editable ? (
@@ -145,7 +147,9 @@ export function CapabilityMatrix({
               <span
                 className={cn(
                   "inline-flex items-center gap-1 text-xs font-medium",
-                  on ? "text-iv-success-base" : "text-muted-foreground",
+                  // AA-safe success ink (the `*-base` ink fails 4.5:1 at this size on light — same
+                  // Platform P-4 fix the Badge primitive applies); redundant "On"/"Off" word retained.
+                  on ? "text-iv-success-muted dark:text-iv-success-text" : "text-muted-foreground",
                 )}
               >
                 {on ? (

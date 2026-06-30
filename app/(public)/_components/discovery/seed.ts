@@ -25,6 +25,7 @@ import {
 import type { VendorCardVM } from "@/frontend/components/vendor-card";
 import type { ProductCardVM } from "@/frontend/components/product-card";
 import type { CategoryVM } from "@/frontend/components/category-tile";
+import type { CapabilityFlags } from "@/frontend/components/capability-matrix";
 import type { FilterFacetGroup } from "@/frontend/components/filter-sidebar";
 
 // ── Vendors (vendor directory seed). One is intentionally unverified → demonstrates that an absent
@@ -252,3 +253,90 @@ export const VENDOR_FACETS: FilterFacetGroup[] = [
   { heading: "Capability", options: CAPABILITY_FACETS.map((f) => ({ label: f.label })) },
   { heading: "Verification", options: [{ label: "Verified only" }] },
 ];
+
+// ── Public vendor profile (P-PUB-13 · Doc-7D §4). Presentation VM for the anonymous microsite — the
+//    PUBLIC projection of `get_public_vendor_profile`: identity + category + location + capability + the
+//    binary verification signal + published "about" content + public ACTIVE categories. NO trust/perf
+//    score or band, NO financial tier, NO capacity/turnover (deferred — [ESC-7G-SCORE-DISPLAY] pending +
+//    not in the public read); NO claim/verification detail, governance bands, or draft content (Doc-5G R10).
+export interface PublicVendorProfileVM {
+  slug: string;
+  name: string;
+  /** Primary category label. */
+  category: string;
+  location?: string;
+  /** Binary verification (M5 public projection). true → "Verified"; absence = no badge (never "pending"). */
+  verified?: boolean;
+  /** Four-flag capability matrix (Invariant #1). */
+  capability?: Partial<CapabilityFlags>;
+  /** Published microsite description (editorial seed — maps to the published M2 content when wired). */
+  about?: string;
+  /** Public ACTIVE category names (no status/level — those are vendor-internal). */
+  categories?: string[];
+}
+
+/** Editorial extras per vendor (curated presentation seed — stands in for published M2 microsite content). */
+const PROFILE_EXTRAS: Record<string, { about: string; categories: string[] }> = {
+  "padma-valve-fittings": {
+    about:
+      "Padma Valve & Fittings supplies and fabricates industrial valves and pipeline fittings for power, water-treatment, and process plants across Bangladesh. ISO-9001 quality systems with in-house machining and testing.",
+    categories: ["Valves & Fittings", "Pumps & Motors", "Safety & PPE"],
+  },
+  "bengal-steel-industries": {
+    about:
+      "Bengal Steel Industries is a Chattogram-based supplier of MS plate, structural sections, and custom fabrication for shipbuilding, construction, and heavy-engineering projects.",
+    categories: ["Steel & Metals", "Fabrication & Machining"],
+  },
+  "jamuna-electrical-drives": {
+    about:
+      "Jamuna Electrical & Drives supplies and services VFDs, motors, switchgear, and control panels, with engineering support for industrial automation across the Dhaka belt.",
+    categories: ["Electrical & Drives", "Automation & Control"],
+  },
+  "meghna-pumps-motors": {
+    about:
+      "Meghna Pumps & Motors supplies and services centrifugal and submersible pumps, motors, and spares for water, effluent, and process applications.",
+    categories: ["Pumps & Motors"],
+  },
+  "surma-safety-solutions": {
+    about:
+      "Surma Safety Solutions supplies certified industrial PPE and safety equipment, with advisory support on plant safety compliance.",
+    categories: ["Safety & PPE"],
+  },
+  "karnaphuli-chemicals": {
+    about:
+      "Karnaphuli Chemicals supplies industrial and process chemicals, lubricants, and gases, with technical advisory for treatment and maintenance programmes.",
+    categories: ["Chemicals", "Lubricants"],
+  },
+  "titas-fabrication-works": {
+    about:
+      "Titas Fabrication Works provides custom fabrication, machining, and on-site servicing for structural and mechanical assemblies.",
+    categories: ["Fabrication & Machining"],
+  },
+  "shitalakshya-engineering": {
+    about:
+      "Shitalakshya Engineering supplies and services bearings, power-transmission components, and rotating equipment, with consulting on reliability and maintenance.",
+    categories: ["Bearings & Power Transmission", "Pumps & Motors"],
+  },
+};
+
+/** Look up the public profile for a vendor slug — `undefined` → the page renders a byte-equivalent 404. */
+export function getPublicVendorProfile(slug: string): PublicVendorProfileVM | undefined {
+  const vendor = VENDORS.find((v) => v.slug === slug);
+  if (!vendor) return undefined;
+  const extra = PROFILE_EXTRAS[slug];
+  return {
+    slug: vendor.slug,
+    name: vendor.name,
+    category: vendor.category,
+    location: vendor.location,
+    verified: vendor.verified,
+    capability: vendor.capability,
+    about: extra?.about,
+    categories: extra?.categories ?? [vendor.category],
+  };
+}
+
+/** Vendor-scoped PUBLISHED catalog — the public projection boundary (the seed carries only public products). */
+export function getPublicVendorProducts(slug: string): ProductCardVM[] {
+  return PRODUCTS.filter((p) => p.vendorSlug === slug);
+}

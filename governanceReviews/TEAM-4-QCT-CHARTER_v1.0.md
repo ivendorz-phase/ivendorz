@@ -38,6 +38,24 @@ feature code, rule architecture, or freeze the corpus.
 - **Flag-and-Halt:** any conflict with a frozen document is escalated to the right authority (Architecture Board / API Governance Board / corpus reconciliation), **never resolved locally**.
 - **Output:** signed conformance reviews + dispositions, not implementations.
 
+## Review sequencing & stable-target rule (amendment — directive 2026-07-01)
+
+**Fixed review order (prevents duplicate reviews).** Team-4 milestone gates run in this
+dependency order; a downstream stage opens only after the upstream stage receives a pass-class
+verdict (APPROVED or PASS WITH PATCH):
+
+1. **Platform primitives** (the shared kit — badge / card / tokens / etc.)
+2. **Vendor Shared Extraction**
+3. **Public Shared Promotion**
+4. **Full Repository Integration Gate**
+5. **Release Candidate Gate**
+
+**Stable-target rule (binding).** Team 4 **never performs a milestone review on an actively
+changing working tree.** A review target must be a **completed milestone, a stable branch, or a
+specific commit / HEAD** — never "whatever is currently modified." If the tree is mid-flight,
+Team 4 **holds** until a stable target is named (clean tree, a commit SHA, or a tagged milestone),
+then executes. Every gate report records the exact reviewed SHA for traceability.
+
 ## Boundaries
 
 - Reviews and **raises**; the owning author / presiding authority **rules**.

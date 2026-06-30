@@ -30,8 +30,14 @@ export type CardTitleProps = React.HTMLAttributes<HTMLElement> & {
    * (`h2`) to give the page a programmatic outline (WCAG 1.3.1 — Platform P-5 fix; the prior plain
    * `<div>` left card-titled sections with no heading semantics). `h2` is skip-safe beneath the shell
    * `PageHeader` `<h1>`; pass `as="h3"` for a sub-section, or `as="div"` only when the title is
-   * genuinely NOT a heading. Appearance is unchanged — Tailwind preflight resets heading size/margin
-   * and the utility classes below control the look.
+   * genuinely NOT a heading.
+   *
+   * Type scale is preserved by the utility classes below (Tailwind preflight neutralises UA heading
+   * size/weight/margin). COLOR changes by design, though: as a heading the title now adopts the brand
+   * heading ink (`--iv-fg-heading`, navy on light) via the `globals.css` `h1–h6` base rule, whereas the
+   * prior `<div>` inherited `card-foreground`. This on-brand navy heading is intended (and AA-clear on
+   * card surfaces); a caller may override it with an explicit `text-*` utility (which wins over the
+   * base rule).
    */
   as?: "h2" | "h3" | "h4" | "div";
 };
