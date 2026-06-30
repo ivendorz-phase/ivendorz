@@ -1,0 +1,242 @@
+"use client";
+
+// Page-local centerpiece — the Industrial Procurement Command Center
+// (landing_page_spec.md §2 · SEC-COMMAND-CENTER). Realizes the Doc-7D Public surface.
+//
+// GOVERNANCE (Doc-7D PR1/PR3/PR5 · spec §2.10) — this is PRESENTATION ONLY, ANONYMOUS, READ-ONLY:
+//   • Binds NO Doc-5 contract and fetches nothing. Live marketplace search wires to M2
+//     `search_catalog` / `list_vendor_directory` (BC-MKT-6 §8) in a later wave; here the input is a
+//     presentation shell and the popular terms are a CURATED STATIC SEED (spec §2.3(f) — allowed,
+//     never presented as a computed "trending" signal; SC GI-03/GI-04/GI-12).
+//   • Performs NO mutation. Authenticated intents (Create RFQ / Find Suppliers) route to `(auth)`
+//     (Doc-7D PR5; Doc-7E owns the auth action). Browsing categories stays anonymous.
+//   • AI entry is a DISABLED "Coming Soon" affordance only — opens no panel (Invariant #12; ER ESC-7-AI).
+//   • Fabricates NO suggestion rows, counts, or results (never re-ranks M3).
+//
+// The §2 persistent "popular" row and the §2.4 suggest popover are consolidated here into one popular
+// quick-pick row + an honest interim hint (no live suggest is wired yet). Extractable Unit — stays
+// page-local per spec §1.5 / §2 (no change to the frozen Doc-7B kit).
+import * as React from "react";
+import Link from "next/link";
+import {
+  Search,
+  LayoutGrid,
+  ClipboardList,
+  Factory,
+  Sparkles,
+  ShieldCheck,
+  Boxes,
+  Clock,
+  ArrowRight,
+  Command,
+  type LucideIcon,
+} from "lucide-react";
+import { Button } from "@/frontend/primitives/button";
+import { Badge } from "@/frontend/primitives/badge";
+import { cn } from "@/frontend/lib/cn";
+
+/** Curated static seed of industrial search terms (spec §2.3(f)). NOT a computed/"trending" signal. */
+const DEFAULT_POPULAR_SEARCHES = [
+  "ball valves",
+  "MS plate",
+  "VFD drives",
+  "gear pumps",
+  "industrial PPE",
+] as const;
+
+const AUTH_HREF = "/login"; // `(auth)` entry — Doc-7E owns the auth action (Doc-7D PR5).
+const PUBLIC_BROWSE_HREF = "/"; // interim placeholder for unbuilt public views (P-PUB-*), matching existing chrome.
+
+interface CommandEntry {
+  key: string;
+  label: string;
+  icon: LucideIcon;
+  /** `nav` = anonymous public browse; `auth` = routes to `(auth)` (no anonymous mutation). */
+  kind: "nav" | "auth";
+  href: string;
+}
+
+const ENTRIES: CommandEntry[] = [
+  {
+    key: "explore",
+    label: "Explore Categories",
+    icon: LayoutGrid,
+    kind: "nav",
+    href: PUBLIC_BROWSE_HREF,
+  },
+  { key: "rfq", label: "Create RFQ", icon: ClipboardList, kind: "auth", href: AUTH_HREF },
+  { key: "suppliers", label: "Find Suppliers", icon: Factory, kind: "auth", href: AUTH_HREF },
+];
+
+export interface CommandCenterProps {
+  /** Curated static seed (spec §2.3(f)); injectable so a later wave can pass facet-backed terms. */
+  popularSearches?: readonly string[];
+}
+
+export function CommandCenter({ popularSearches = DEFAULT_POPULAR_SEARCHES }: CommandCenterProps) {
+  const [query, setQuery] = React.useState("");
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const hintId = "cc-search-hint";
+  const showHint = query.trim().length > 0;
+
+  // ⌘K / Ctrl-K focuses the search input — the public mirror of the Universal Command Center (spec §2.6).
+  React.useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  function onInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Escape") {
+      setQuery("");
+      inputRef.current?.blur();
+    }
+  }
+
+  function onSubmit(e: React.FormEvent) {
+    // Marketplace search binds M2 `search_catalog` (Doc-7D PR2/PR6) — wired in a later wave. Presentation
+    // shell only: submitting navigates nowhere and fabricates no results (no API invention).
+    e.preventDefault();
+  }
+
+  function fill(term: string) {
+    setQuery(term);
+    inputRef.current?.focus();
+  }
+
+  return (
+    <div
+      role="search"
+      aria-label="Industrial Procurement Command Center"
+      className={cn(
+        "relative mx-auto w-full max-w-[var(--iv-container-md)] lg:max-w-[var(--iv-container-lg)]",
+        "rounded-lg border border-border bg-popover p-4 shadow-iv-lg sm:rounded-xl sm:p-6 sm:shadow-iv-xl",
+      )}
+    >
+      {/* Header row — title + ⌘K hint */}
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <p className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Industrial Procurement Command Center
+        </p>
+        <span
+          aria-hidden="true"
+          className="hidden items-center gap-1 rounded-sm border border-border px-1.5 py-0.5 text-2xs text-muted-foreground sm:inline-flex"
+        >
+          <Command className="size-3" />K
+        </span>
+      </div>
+
+      {/* Search input row */}
+      <form onSubmit={onSubmit}>
+        <label htmlFor="cc-search" className="sr-only">
+          Search products, suppliers, and categories
+        </label>
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            />
+            <input
+              id="cc-search"
+              ref={inputRef}
+              type="search"
+              autoComplete="off"
+              placeholder="Search products, suppliers, categories…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={onInputKeyDown}
+              aria-describedby={showHint ? hintId : undefined}
+              className="h-11 w-full rounded-md border border-input bg-background pl-9 pr-3 text-base text-foreground shadow-iv-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            />
+            {showHint && (
+              <div
+                id={hintId}
+                role="note"
+                className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-[var(--iv-z-dropdown)] rounded-md border border-border bg-popover p-3 text-sm text-muted-foreground shadow-iv-md animate-iv-scale-in motion-reduce:animate-none"
+              >
+                Marketplace search connects when the catalog is available — no results are shown
+                yet.
+              </div>
+            )}
+          </div>
+          <Button type="submit" size="lg" aria-label="Search">
+            <ArrowRight />
+          </Button>
+        </div>
+      </form>
+
+      {/* Entry rail — anonymous browse + auth-routed intents + disabled AI affordance */}
+      <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Procurement shortcuts">
+        {ENTRIES.map((entry) => {
+          const Icon = entry.icon;
+          return (
+            <Button
+              key={entry.key}
+              asChild
+              variant={entry.kind === "auth" ? "secondary" : "outline"}
+              size="sm"
+              className="gap-2"
+            >
+              <Link href={entry.href}>
+                <Icon /> {entry.label}
+              </Link>
+            </Button>
+          );
+        })}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled
+          aria-disabled="true"
+          className="gap-2"
+          title="AI Assistant — coming soon"
+        >
+          <Sparkles /> AI Assistant
+          <Badge variant="neutral" className="ml-1">
+            Soon
+          </Badge>
+        </Button>
+      </div>
+
+      {/* Popular searches — curated static seed; clicking pre-fills the input (no recommendation) */}
+      <div className="mt-4">
+        <p className="mb-1.5 text-2xs font-medium uppercase tracking-wide text-muted-foreground">
+          Popular
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {popularSearches.map((term) => (
+            <button
+              key={term}
+              type="button"
+              onClick={() => fill(term)}
+              className="rounded-full border border-border px-2.5 py-1 text-xs text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              {term}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Trust strip — QUALITATIVE badges only; no fabricated counts (spec §2.3(g); SC GI-03/GI-12) */}
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-3 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5">
+          <ShieldCheck aria-hidden="true" className="size-3.5 text-iv-success-base" /> Verified
+          suppliers
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <Boxes aria-hidden="true" className="size-3.5" /> Industrial categories
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <Clock aria-hidden="true" className="size-3.5" /> Published-only, always current
+        </span>
+      </div>
+    </div>
+  );
+}

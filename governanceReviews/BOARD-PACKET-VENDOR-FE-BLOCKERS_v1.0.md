@@ -1,0 +1,221 @@
+<!--
+Doc-type:  Architecture Board Decision Packet (decision-prep; NON-authoritative input to the human Architecture Board).
+Subject:   iVendorz Vendor Workspace design companion (vendor_planning_and_design.md, v0.9-rc) - the 3 freeze-blocking BLOCKERs.
+Produced:  2026-06-30 (multi-agent, corpus-verified). Raise != Accept: the Board rules; the companion is then patched to match.
+Note:      AI/skill does not resolve rank-0-vs-rank-0 conflicts (CLAUDE.md 7/8/11). Recommendations here are NOT rulings.
+-->
+
+# iVendorz Vendor Workspace — Architecture Board Decision Packet
+
+**Companion:** `vendor_planning_and_design.md` (Vendor Workspace design companion) — **v0.9-rc**, coverage complete, **freeze WITHHELD**.
+**Packet date:** 2026-06-30 · **Prepared for:** the HUMAN Architecture Board (Authority ranks 2–6 convened) · **Prepared by:** design-companion authoring pass (rank ~7–8, non-authoritative).
+
+## Purpose
+
+Three BLOCKER findings are the **only** items the §13 freeze gate needs the **human Architecture Board** to resolve. Everything else surfaced during the companion pass has been engineering-resolved within rank 7–8, or routed to the **API Governance Board** (rank 5) for contract-shape questions. The §13 freeze gate requires **BLOCKER = 0 · MAJOR = 0 · MINOR = 0**; the companion currently carries **BLOCKER = 3** (the three below), which is the sole reason freeze is withheld. Closing these three to a recorded ruling each is what moves v0.9-rc → freeze.
+
+## Status
+
+- Companion: **v0.9-rc** — coverage complete, freeze **WITHHELD**.
+- Freeze gate (§13): **BLOCKER = 3** (the three entries in this packet); MAJOR/MINOR clear pending these.
+- None of the three is AI/skill-resolvable: each turns on the interpretation or realization of a **rank-0 frozen artifact** (the Master System Architecture's Invariant 6, Doc-5G, Doc-7A, Doc-7B, Doc-7C), which §7/§8 reserve to humans.
+
+## How to use this packet (Raise ≠ Accept)
+
+Per CLAUDE.md §13, **the reviewer raises; the author/presiding authority rules.** This packet **raises** three findings with recommended dispositions. **The recommendations are not rulings.** The Board evaluates each against the four Validate-Findings questions (Valid? Applicable? Best for the product? Consistent with the frozen corpus?), then **rules**. After each ruling, the **companion is patched to match** (the companion is rank ~7–8 and conforms upward); where a ruling requires it, a **human-approved additive corpus patch + version bump** (§7/§8) is raised separately. The AI/skill author applies the companion edits the Board's ruling dictates; it does **not** apply any corpus patch without human approval.
+
+## Authority-order primer (§7) — why these are human-only
+
+Authority descends: **0 Frozen Architecture Corpus → 1 ADRs → 2 Virtual CTO → 3 Enterprise Architect → 4 DDD Architect → 5 API Governance Board → 6 Security → 7 Engineering → 8 Product.** Ranks 0–1 are **immutable to skills/AI**; changing them needs a **human-approved additive patch + version bump** (§7/§8). Each of the three blockers reaches into rank 0: two of them turn on the **scope/interpretation of Invariant 6** (a rank-0 invariant in the Master System Architecture) set against the **rank-0 Doc-5G disclosure contract** and the **rank-0 frozen Doc-7B kit**; the third turns on the **realization of a rank-0 frozen shell mandate** (Doc-7A/Doc-7C) by a design-introduced device under Golden Rule 7. Where two rank-0 documents could be read to disagree, §11 mandates **Flag-and-Halt** — an AI/skill **must never pick a winner between two rank-0 readings**, and may not self-certify that its own gap-fill conforms upward. That is the entire reason these three are escalated to humans rather than resolved in the companion.
+
+## Summary table
+
+| BLOCKER | One-line issue | Recommended disposition | What it unblocks | Dependency |
+|---|---|---|---|---|
+| **ESC-7G-SCORE-DISPLAY** | Frozen Doc-5G §5.3 permits a `display score`; companion DP4 (reading Invariant 6) mandates bands-only — which posture binds vendor display? | **Option B** — permit the Doc-5G display score only on the vendor's own-profile Public-Badge projection; band-only everywhere else; record that **Invariant 6 is display-silent** (no corpus patch needed). | Dashboard governance-signals strip (§3.2/§3.5); §4.3 Financial Tier badge; §3.8/§4.6 conformance tables; closes `[ESC-7B-TRUSTSCORE]`. | **Parent** of ESC-7B-TRUSTSCORE. Independent of ESC-7G-A7. |
+| **ESC-7B-TRUSTSCORE** | Frozen kit `trust-badge.score` prop renders a raw 0–100 — a live Invariant-6 disclosure footgun if any caller passes it. | **Option 1 now** (usage-discipline lint/test, no frozen-kit change); **defer Option 2 vs 3 to the SCORE-DISPLAY ruling** — strict child of it. | Vendor Dashboard trust surface + any screen composing `trust-badge`; closes one of three freeze BLOCKERs. | **Child of ESC-7G-SCORE-DISPLAY** — decide that first. |
+| **ESC-7G-A7** | Frozen Doc-7A/7C mandate "mount both" for Hybrid but don't specify internal IA or a `(vendor)` route group; companion introduced both. | **Option 1** — ratify "mount both, grouped-not-merged; `(vendor)` is an acceptable non-routing layout group under `(app)`" with a documented Golden-Rule-7 sign-off (no corpus patch). | §2.1 IA, §2.3 route tree, §2.5 responsive nav, Hybrid dashboard D-0b; sets the precedent Doc-7F Buyer inherits. | **Independent** of the other two. |
+
+---
+
+## Full entries (verbatim)
+
+### ESC-7G-SCORE-DISPLAY — Vendor governance-signal display: frozen Doc-5G "band + display score" vs the companion's DP4 "bands only"
+
+**Class**
+Architecture / authority blocker. Human-only per §7/§8 because the resolution turns on the **interpretation and intended scope of Invariant 6** (Master System Architecture §4 — a rank-0 frozen authority) against the **explicit disclosure contract in Doc-5G §5.3** (also rank-0 frozen). The companion's design rule **DP4** ("bands only … never a raw 0–100") asserts that Invariant 6 forbids numeric display; Doc-5G §5.3 frozenly *permits* a `display score` on the Public-Badge read. Deciding whether DP4's reading of Invariant 6 stands, or yields to Doc-5G's explicit grant, is an authority-scoping call. Per §8, ranks 0–1 are immutable to AI/skills, and an AI must never pick a winner between two frozen-corpus readings (§11 Flag-and-Halt). Confirming either disposition also fixes whether the frozen kit's `trust-badge.score` prop is ever wirable on a vendor surface — a platform-wide presentation posture, not a local fix.
+
+**The conflict (precise)**
+Doc-5G §5.3 (frozen, rank-0) defines `trust.get_trust_score` / `trust.get_performance_score` (Public-Badge scope) to return **"band + display score"**, with the score **null/suppressed while `freeze_state=frozen`** and a sub-threshold performance score reporting **`Not Rated` (`rated=false`), never `0`**. The companion's **DP4** (non-authoritative) requires governance signals to render **bands only, never a raw 0–100**, citing **Invariant 6**. On re-verification, **Invariant 6 itself (Master §4, line 274–276) firewalls *cross-mutation* between the five signals — it says nothing about numeric display**; the Master architecture in fact defines both scores on a 0–100 scale with bands (lines 756, 771), and the only authority that governs *what is disclosed on the wire* is Doc-5G §5.3. The genuine tension is therefore between the **frozen Doc-5G grant of a `display score`** and the companion's **DP4 interpretive overlay** that reads Invariant 6 as a band-only display mandate. The crux artifact is the frozen kit `trust-badge`, whose optional `score?:number` already renders `· {score}` — i.e. the kit can already surface the Doc-5G display score.
+
+**Frozen anchors (re-verified on disk)**
+- `generatedDocs/Doc-5G_Content_v1.0_Pass2.md:67` — heading "§5.3 Score Reads — band/display only; Not-Rated ≠ zero (R5/N5G-01/02)".
+- `generatedDocs/Doc-5G_Content_v1.0_Pass2.md:68` — binding rule: `get_trust_score`/`get_performance_score` (Public-Badge) return **"band + display score"**; **score null/suppressed while `freeze_state=frozen`**; **sub-threshold performance reports `Not Rated` (`rated=false`), never `0`**; no formula/threshold/weights/inputs on the wire.
+- `generatedDocs/Doc-5G_Content_v1.0_Pass2.md:43` — disclosure scope: `get_verified_tier` → **Public-Badge** ("no internal basis"); `get_verification`/`list_verifications` → **Staff-Internal**. (Correction: the brief cited ":43" as a score-reads anchor; :43 actually governs verification/verified-tier disclosure scope. The score-reads rule is :67–68.)
+- `generatedDocs/Doc-5G_Content_v1.0_Pass2.md:64` — `freeze_*`/`reactivate_*` toggle `freeze_state` (publication/ranking only; never edit/recompute/zero the value); a `frozen` score's band/score publication is **suppressed** (Doc-2 §3.6).
+- `generatedDocs/Doc-5G_Structure_v1.0_FROZEN.md:31` — **R5** "Score-computation firewall (the M5 signature; **Invariant #6**)": firewall is over **computation/write** ("no caller action mutates a score value, and no score value is ever a wire input"; Not-Rated ≠ zero) — **not over display**.
+- `generatedDocs/Master_System_Architecture_v1.0_FINAL.md:274–276` — **Invariant 6** = the five signals are separate dimensions; **no signal may mutate another**. (No display/numeric-suppression clause.)
+- `generatedDocs/Master_System_Architecture_v1.0_FINAL.md:93` — Firewall rules (binding): all five clauses are cross-mutation/dominance rules; none concerns display.
+- `generatedDocs/Master_System_Architecture_v1.0_FINAL.md:756, 771` — Trust Score and Performance Score are **0–100 with bands** (corpus does not prohibit the number existing).
+- `generatedDocs/Doc-7G_Content_v1.0_Pass2.md:83, 135` — the embedded trust badge is the vendor's **own** trust/performance/verified-tier (`Doc-5G` read, **read-only**, "score firewall: own trust read-only") — Doc-7G mandates read-only, **not** band-only.
+- `src/frontend/embedded/trust-badge.tsx:18` — `score?: number` prop; `:55–59` — renders `<span data-numeric>· {score}</span>` when `score` is a number. (Re-verified; brief's anchors accurate.)
+- Companion: `vendor_planning_and_design.md:77` (DP4), `:239–242` (§3.3 Flag-and-Halt), `:251/:254` (badge composed without `score`), `:328` (kit-level `[ESC-7B-TRUSTSCORE]` cross-ref).
+
+**Authority-order analysis (§7)**
+Ranks in play: **rank 0** holds *both* Invariant 6 (Master §4) and Doc-5G §5.3 — both immutable to skills/AI. On re-verification these two do **not** in fact contradict each other: Invariant 6 is a cross-mutation firewall and Doc-5G §5.3 is a disclosure contract that explicitly permits a display score; R5 (Doc-5G Structure :31) anchors Invariant #6 to *computation*, not display. The "conflict" therefore lives one rank lower — between **frozen Doc-5G §5.3** and the **companion's DP4** (an Engineering/Product-tier design overlay, rank ~7–8, non-authoritative). Under §7, a higher-rank frozen authority outranks a lower-rank design rule, which would ordinarily settle it in Doc-5G's favor *without* a Board. It is escalated to humans anyway for two reasons an AI/skill may not adjudicate: (1) DP4 explicitly invokes **Invariant 6** as its basis, so confirming Doc-5G's grant requires an **authoritative reading of a rank-0 invariant's scope** — exactly the immutable-rank interpretation §8 reserves for humans; (2) the disposition sets a **platform-wide presentation posture** (whether any vendor/marketplace surface may show a 0–100), with cross-surface consequences (buyer workspace, microsite, public profile) beyond this companion's scope. An AI must not declare Invariant 6 display-silent and unblock numeric display on its own authority.
+
+**Options**
+
+- **Option A — Strict band-only everywhere (uphold DP4 as the platform display posture).**
+  - *Rule it sets:* No vendor/marketplace surface renders a numeric governance score; `trust-badge` is always composed without `score`; bands/status/Not-Rated/frozen-suppressed only. Doc-5G's `display score` field is received but never rendered on these surfaces.
+  - *Consequence/cost:* Maximally conservative on Invariant 6's spirit and on non-disclosure ergonomics; zero risk of a number leaking. But it **declines a capability the frozen Doc-5G read explicitly offers**, creating a standing divergence between the frozen contract and realized UX (must be recorded so it is not later mistaken for a defect). Forecloses any future "show my score to myself" product intent without a fresh escalation.
+  - *Unblocks:* The Dashboard bands strip, §4.3 Financial Tier, and the §3.8/§4.6 conformance tables freeze as-is; `[ESC-7B-TRUSTSCORE]` resolves to "prop exists in kit but is contractually never passed on vendor surfaces."
+
+- **Option B — Permit the Doc-5G `display score` only on the vendor's OWN-profile Public-Badge read (sanctioned projection); band-only everywhere else.**
+  - *Rule it sets:* On the vendor viewing its **own** standing (the own-org Public-Badge projection per Doc-5G §5.3 / Doc-7G :83), the UI MAY render `band + display score` exactly as the frozen read returns it — suppressed when `freeze_state=frozen`, `Not Rated` when `rated=false`, never `0`. Every other surface (buyer-facing vendor cards, microsite, public profile, comparison) stays band-only.
+  - *Consequence/cost:* Conforms most faithfully to the frozen Doc-5G grant while containing it to a self-view where non-disclosure risk is lowest (a vendor seeing its own number leaks nothing about exclusion/matching). Cost: introduces a **surface-conditional display rule** that must be enforced structurally (own-profile read path may pass `score`; all shared cards must not), raising the test/conformance burden and a real footgun if a shared component is reused on the own-profile screen. Requires precise carriage of the frozen suppression/Not-Rated states into the kit.
+  - *Unblocks:* Same screens as A, plus a Doc-5G-faithful own-standing tile; `[ESC-7B-TRUSTSCORE]` resolves to "`score` permitted only on the own-profile composition; lint/guard enforced."
+
+- **Option C — Additive patch to reconcile one side explicitly (no local resolution).**
+  - *Rule it sets:* Humans issue a **human-approved additive patch + version bump** (§7/§8) to whichever authority needs clarifying — either an additive note on Invariant 6 / Master §4 affirming it is display-silent (so Doc-5G governs display unambiguously), **or** an additive Doc-5G §5.3 clarification that the `display score` is suppressed for tenant/public *display* even though the field is returned. Companion DP4 is then re-derived from the patched authority.
+  - *Consequence/cost:* Highest durability — removes the interpretive ambiguity at the source so no future companion re-litigates it. Cost: slowest path; touches the frozen corpus; requires the full additive-patch ceremony and Board ratification. Appropriate only if the Board judges the Invariant 6 ↔ Doc-5G boundary genuinely under-specified rather than merely needing a companion-level ruling.
+
+**Recommended disposition (for ratification)**
+*This is a recommendation, not a ruling.* Adopt **Option B** (permit the Doc-5G `display score` only on the vendor's own-profile Public-Badge projection; band-only on every shared/other-facing surface), recorded as a Board ruling that **Invariant 6 is a cross-mutation firewall and is display-silent**, so Doc-5G §5.3 governs display and no corpus patch is required (i.e. Option C is unnecessary unless the Board disagrees with that reading). Rationale: it is the disposition most faithful to the frozen authority order — a rank-0 frozen contract (Doc-5G §5.3) explicitly grants the display score, and §7 favors the frozen authority over the companion's lower-rank DP4 overlay; confining the number to the self-view honors the non-disclosure intent of Invariant 11 (a vendor's own number reveals nothing about exclusion or matchability) while not silently discarding a frozen capability. If the Board prefers a single uniform rule with minimal conformance surface, **Option A** is the safe fallback and should be explicitly recorded as a *posture choice that declines a frozen-offered field* (so the divergence is intentional, not a latent defect). Option C should be reserved for the case where the Board finds the Invariant 6 ↔ Doc-5G boundary genuinely ambiguous at the source.
+
+**Interim posture (what the companion ships until ruled)**
+Band-only on **every** vendor surface; `embedded/trust-badge` is composed **without** the `score` prop (`vendor_planning_and_design.md:251, 254`); the frozen-suppressed (`freeze_state=frozen`) and `Not Rated` (`rated=false`, never `0`) states are explicitly handled as distinct tile states (§3.3 :243–246, §3.8 States row :269). DP4 stands as written. No numeric governance score renders anywhere. This is the strictest posture (a subset of all three options), so it remains conformant whichever way the Board rules.
+
+**What a ruling unblocks**
+- Freezes the **Vendor Dashboard governance-signals strip** (§3.2 :216–222; §3.5 :251) — currently pinned to band-only/no-`score`.
+- Freezes **§4.3 Financial Tier** verified-tier badge (:308–309, "tier band B, no score") and the **§3.8 / §4.6 per-screen conformance tables** (States + Non-disclosure rows: :269, :271, :333–335).
+- Closes the cross-referenced kit escalation **`[ESC-7B-TRUSTSCORE]`** (:328) — whether `trust-badge.score` is contractually never-passed (A), own-profile-only (B), or governed by a patched authority (C).
+- Removes one of the three named freeze-blocking BLOCKERs in the companion front-matter (:5–6); with `[ESC-7B-TRUSTSCORE]`, `[ESC-7G-A7]` also pending, this clears one of the three §13 gate blockers toward BLOCKER=0.
+
+**Decision record (Board to complete)**
+- **Ruling:** ____________________ (A strict band-only / B own-profile display-score permitted / C additive patch — specify)
+- **Rationale:** ____________________
+- **Decided by / date:** ____________________
+- **Resulting additive patch (if any):** ____________________ (e.g. additive note on Master §4 Invariant 6 affirming display-silence, or Doc-5G §5.3 display clarification — with version bump per §7/§8; "none" if ruling is companion-level only)
+- **Companion edit to apply:** ____________________ (e.g. amend DP4 :77 to the ruled posture; update §3.3 :239–246, §3.5 :251/:254, §4.3 :308–309, §4.5 :328; set conformance States/Non-disclosure rows :269/:271/:333–335; resolve `[ESC-7B-TRUSTSCORE]`; recompute the §13 freeze gate)
+
+---
+
+> **Board note, flagged honestly:** the original blocker brief framed this as "Invariant 6 (rank 0) vs Doc-5G (rank 0)," but on-disk re-verification shows **Invariant 6 (Master §4 :274–276) and the firewall rules (:93) concern cross-mutation, not display** — they are display-silent; the band-only display mandate exists only in the companion's non-authoritative **DP4** (:77). The frozen-vs-frozen *direct contradiction* premise does not hold as stated. The escalation remains correctly Board-only because DP4 invokes Invariant 6 as its basis and ruling on it requires an authoritative reading of a rank-0 invariant's scope (§8) plus a platform-wide display-posture decision. Anchors carried in the entry above are the corrected ones.
+
+---
+
+### ESC-7B-TRUSTSCORE — Frozen shared-kit `trust-badge.score` prop is a live Invariant-6 disclosure footgun
+
+**Class**
+Architecture / authority blocker — **human-only** per §7/§8. Two rank-0 concerns are in tension (the Invariant-6 score-display firewall vs. a frozen-corpus read that may disclose a display score), and any *kit-altering* remedy modifies the **frozen frontend foundation** (Doc-7B / the project's "frontend foundation is FROZEN" rule), which §8 makes a human-approval change ("Architecture-affecting artifacts require HUMAN approval — code review alone is insufficient"). An AI/skill may not pick a winner.
+
+**The conflict (precise)**
+The frozen shared-kit embedded component `src/frontend/embedded/trust-badge.tsx` exposes `score?: number` (`:18`) and, when a caller passes it, renders a raw `· {score}` numeric (`:55–59`). Invariant 6 (governance signals firewalled; no overall/combined score, bands-only in governance contexts — companion DP4, `vendor_planning_and_design.md:77`) is undermined the moment any caller supplies `score`, because the kit will faithfully render a raw 0–100. Whether that prop is a defect or a legitimate feature is **not determinable downstream**: it turns entirely on whether the frozen M5 public read may disclose a display value — i.e., on [ESC-7G-SCORE-DISPLAY]. The frozen Doc-7G read-only/never-composite mandate and the frozen Doc-5G "score-computation firewall" both hold; the unresolved question is the *display* leg, where Doc-5G Content (working pass) says "band/**display score**; suppressed while frozen" while Invariant 6 reads as bands-only.
+
+**Frozen anchors (re-verified on disk)**
+- `src/frontend/embedded/trust-badge.tsx:18` — `score?: number` prop ("Score (0–100) IF the public read discloses one").
+- `src/frontend/embedded/trust-badge.tsx:55–59` — conditional render `<span data-numeric class="tabular-nums">· {score}</span>` (the raw 0–100 footgun).
+- `generatedDocs/Doc-7B_SERIES_FROZEN_v1.0.md:34` — BR5 / `CHK-7-005`: the **trust badge** is a single-owned shared embedded component (frozen kit; "surfaces compose, never re-implement; contract owner stays the module").
+- `generatedDocs/Doc-7B_Content_v1.0_Pass2.md:21` — frozen inventory names the component "**Trust badge / score chip**," rendering "M5 trust/performance **score** + verification state (`Doc-5G` read)."
+- `generatedDocs/Doc-7B_Content_v1.0_Pass2.md:107` — **load-bearing:** Doc-7B "fixes the **inventory + conventions**, not the code … Exact props, variants, and token bindings are realized with the implementation." (So the *prop signature* is an implementation detail, not a frozen spec line.)
+- `generatedDocs/Doc-5G_Structure_v1.0_FROZEN.md:31` — R5 score-computation firewall (Invariant #6): scores are System-auto-calculated, out-of-wire, never a wire input; **silent on the display leg**.
+- `generatedDocs/Doc-5G_Content_v1.0_Pass1.md:88,116` — *working pass* (not yet frozen): "computed score **display value MAY be returned** by an approved Public-Badge read (band/display score; suppressed while frozen)." This is the disclosure language that powers [ESC-7G-SCORE-DISPLAY].
+- `vendor_planning_and_design.md:77` (DP4), `:241` ([ESC-7G-SCORE-DISPLAY]), `:328` (composition rule), `:573/:601/:602/:685` (escalation register) — companion's interim posture and cross-reference.
+- Invariant 6 wording is governed by the Master Architecture / 12-Invariants source; restated in `CLAUDE.md §5(6)` and `§4 Governance Signals (Firewalled)`. *Note: I could not locate a single `generatedDocs/` file that restates Invariant 6 as a numbered line under a `*Invariant*` filename — the binding source is the Master System Architecture corpus; cite it there, not a derived file.*
+
+**Authority-order analysis (§7)**
+Ranks in play: **0 — Frozen Architecture Corpus** on two fronts: (a) the Master-Architecture Invariant 6 firewall, and (b) the frozen Doc-5G R5 plus the (not-yet-frozen) Doc-5G display-leg language that [ESC-7G-SCORE-DISPLAY] turns on; **0 — Doc-7B frozen kit** (the artifact any remedy would edit). Because the trigger condition is a potential **frozen-vs-frozen** reconciliation (Invariant 6 ↔ a corpus read that may disclose a display value), §11 mandates **Flag-and-Halt**: an AI/skill must never pick a winner between two rank-0 documents. Independently, even the narrow kit fix (guard/deprecate the prop) edits a frozen Doc-7B-owned artifact, which §8 reserves to human approval (AI Coding Supervisor sign-off is explicitly insufficient). Only the lint-only mitigation sits entirely below rank 0 (it touches no frozen artifact and asserts no display ruling), which is why it is available now.
+
+**Options**
+1. **Usage-discipline lint/test only — no kit change.**
+   *Rule it sets:* the vendor workspace (and any governance context) MUST NOT pass `score` to `trust-badge`; a lint rule + test enforces it. *Consequence/cost:* zero frozen-artifact change; the footgun remains latent for non-governed callers and any future surface; protection is convention-enforced, not type-enforced. *Unblocks:* the companion's entire vendor trust surface immediately, band-only, without waiting on the Board. Does **not** resolve [ESC-7G-SCORE-DISPLAY].
+2. **Additively guard/deprecate the prop for governance contexts (frozen-kit change).**
+   *Rule it sets:* the Doc-7B owner adds a governance-context guard (e.g., a `governanceContext`/`bandOnly` gate, or `@deprecated`-for-governance annotation) so `score` cannot render where Invariant 6 applies, while leaving it available where a display score is sanctioned. *Consequence/cost:* requires human/Doc-7B-owner approval + an additive Doc-7B patch + version bump; type-/runtime-enforced (stronger than lint). *Unblocks:* a durable, kit-level guarantee; but it is **contingent** — its exact shape depends on the SCORE-DISPLAY ruling (where, if anywhere, the display score is legitimate).
+3. **Leave the prop as-is.**
+   *Rule it sets:* `score` is a sanctioned feature; the badge may render a display score where the read discloses one. *Consequence/cost:* only defensible **if** [ESC-7G-SCORE-DISPLAY] rules that the frozen read may disclose a display value; otherwise it leaves a live Invariant-6 violation path. *Unblocks:* numeric trust display on permitted surfaces with no kit change.
+
+**Recommended disposition (for ratification)**
+*This is a recommendation, not a ruling.* Adopt **Option 1 now** (usage-discipline lint/test) as the shipping mitigation, and **defer the choice between Options 2 and 3 to the [ESC-7G-SCORE-DISPLAY] ruling**, treating this blocker as a strict child of it. Rationale: (a) Doc-7B Content Pass2:107 establishes that the *prop signature* is an implementation detail, not a frozen spec line, and the frozen inventory name is literally "Trust badge / **score chip**" (`:21`) — so the prop's mere existence is *not* itself a frozen-corpus violation; the violation is only *unguarded rendering in a governance context*. (b) That makes a kit edit premature and possibly wasteful: if the Board permits the display score (Option 3), Option 2's guard would have to be re-shaped or partly reverted. (c) Option 1 is the only remedy that touches no rank-0 artifact and asserts no display ruling, so it is correct under §7/§11 regardless of how SCORE-DISPLAY lands. **Explicit dependency: this blocker cannot be closed independently of [ESC-7G-SCORE-DISPLAY]** — band-only ⇒ ratify Option 2; display-permitted ⇒ ratify Option 3 (scoped to the permitted surface) and keep Option 1 for governance contexts.
+
+**Interim posture (what the companion ships until ruled)**
+The companion ships **band/tier-only** trust presentation and **never passes `score`** to `trust-badge` in the vendor workspace (composition rule, `vendor_planning_and_design.md:328`; DP4 `:77`). It proposes a **lint/test forbidding the `score` prop in governance contexts** — a non-frozen-touching mitigation available now. No frozen artifact is edited; the freeze gate remains **WITHHELD** (`:685`, BLOCKER = 3).
+
+**What a ruling unblocks**
+- The vendor **Dashboard** trust/verification surface and any vendor screen composing `trust-badge` (`vendor_planning_and_design.md:241` §3.5, DP4 §3) — currently held to band-only.
+- Closure of **[ESC-7B-TRUSTSCORE]** itself, which is one of the three freeze-blocking BLOCKERs gating v0.9-rc → freeze (`:685`).
+- Resolves the cross-referenced pair: a SCORE-DISPLAY ruling determines whether the kit guard (Option 2) or the as-is prop (Option 3) is ratified, and whether the lint stays scoped to governance contexts only.
+
+**Decision record (Board to complete)**
+- **Ruling:** ________________________________________________
+- **Rationale:** _____________________________________________
+- **Decided by / date:** _____________________________________
+- **Resulting additive patch (if any):** Doc-7B additive patch + version bump? ☐ Yes ☐ No — ref: __________ (only if Option 2)
+- **Companion edit to apply:** update `vendor_planning_and_design.md` §10 register (`:573/:601/:602`) and DP4 (`:77`) / §3.5 (`:241`) to reflect the ruling; decrement BLOCKER count at `:685`; record disposition in §12 Track-2 log.
+
+---
+
+### ESC-7G-A7 — Hybrid-org "mount both" IA realization + the design-introduced `(vendor)` route-group name
+
+**Class** — Architecture/authority blocker (Golden Rule 7, No Architecture Redesign). Two rank-0 frozen artifacts (Doc-7A, Doc-7C) mandate "mount both" but do **not** specify the *internal IA* of the co-mounted surface set, nor do they name a `(vendor)` sub-group; the companion has introduced both. Per §7/§8 an AI/skill MAY NOT change ownership boundaries, governance invariants, or the realization of a frozen shell mandate — only a human Architecture Board may ratify how a frozen mandate is realized or sanction a design-introduced route-grouping device against Golden Rule 7. AI sign-off is explicitly insufficient (§8: architecture-affecting artifacts require human approval).
+
+**The conflict (precise)** — Doc-7A R6 and Doc-7C SR3 mandate that for a Hybrid (buyer+vendor) org the **Doc-7C shell** composes the navigable surface set and mounts the Buyer AND Vendor surfaces **together**, with composition owned by the shell, not the vendor area. The frozen corpus stops at that mandate: it names a *surface-set* ("Buyer + Vendor together for Hybrid") and does **not** specify (a) the internal IA of "mount both" (grouped vs. merged) nor (b) any `(vendor)` nested route group. The companion fills both gaps by design — asserting "co-mounted, grouped, never merged, Trust read-only" and introducing a `(vendor)` nested Next.js route group under the frozen `(app)` group. Neither addition contradicts a frozen statement, but each *realizes* a frozen mandate with a design-introduced device, which is precisely what Golden Rule 7 reserves for human ratification.
+
+**Frozen anchors (re-verified on disk)**
+- `generatedDocs/Doc-7C_Structure_v1.0_FROZEN.md:21` — **most precise**: "The shell composes the navigable surface set from the org's platform participation + the user's org role, mounting **Buyer + Vendor together for Hybrid** (`Doc-7A §4.2`; Invariant #2)." (Confirms shell-owned composition; cites Doc-7A §4.2 and Invariant 2.)
+- `generatedDocs/Doc-7C_SERIES_FROZEN_v1.0.md:32` — SR3/R6: active-org server-resolved; "switching = full context re-resolution + surface-set re-derivation… **Hybrid mounts Buyer+Vendor**." (Names a *surface-set*, not a `(vendor)` segment — corrected from the brief's "~:28,32"; the mount-both clause is at `:32`, the `(app)` topology definition is at `:28`.)
+- `generatedDocs/Doc-7C_SERIES_FROZEN_v1.0.md:28` — SR2 topology: the four route groups are `(public)` · `(auth)` · `(app)` · `(admin)`. No `(vendor)` group exists in the frozen set. (Confirms `(vendor)` is design-introduced.)
+- `generatedDocs/Doc-7A_SERIES_FROZEN_v1.0.md:31` — R6: "server-resolved active-org, **Hybrid mounts both**."
+- Invariant 2 (two role dimensions: Platform Participation Buyer/Vendor/Hybrid/Staff ≠ Org Role) — CLAUDE.md §5 #2; companion binds it at `vendor_planning_and_design.md:81` (DP8, citing "Invariant 2; Doc-2 §7"). Trust read-only firewall = Invariant 6 / DP4 (`vendor_planning_and_design.md:77`).
+- Companion conformance resolution: `vendor_planning_and_design.md:96` (removed the non-conformant re-routing toggle; adopted "mount both"; escalated as ESC-7G-A7); `:130–142` (§2.3 route tree showing `app/(app)/(vendor)/` and the design-introduced flag); `:142` (explicit "`(vendor)` is a design-introduced nested route group… not a frozen segment"); `:164–165`, `:183` ("Hybrid → Buyer + Vendor co-mounted, grouped not merged").
+
+**Authority-order analysis (§7)** — Ranks in play: **Rank 0** (Doc-7A R6, Doc-7C SR2/SR3, Invariants 2 and 6) and **Rank 7/8** (the companion is a non-authoritative Engineering/Product-tier design artifact realizing rank-0 docs). This is **not** a frozen-vs-frozen conflict — Doc-7A and Doc-7C agree. It is a *realization gap*: the frozen mandate is silent on internal IA and on the route-group name, and a lower-rank artifact has filled the silence with two design-introduced devices. Per §8, an AI/skill MAY generate the realization but MAY NOT ratify it as conformant when it touches shell composition ownership and a route-topology device; per Golden Rule 7 (No Architecture Redesign) and §11 (verify-before-delivering; Flag-and-Halt on doubt), the decision of whether the design-introduced `(vendor)` group and the "grouped-not-merged" IA are an acceptable *realization* or an *unsanctioned addition* is a human architecture call. An AI cannot self-certify that its own gap-fill conforms upward.
+
+**Options**
+
+1. **Ratify "mount both, grouped-not-merged; `(vendor)` is an acceptable non-routing layout group under `(app)`."**
+   - *Rule it sets:* For a Hybrid org the shell co-mounts both surface sets; the two role dimensions are kept distinct by **visual grouping** (Invariant 2), never by mutually-exclusive re-routing; Trust/governance bands are never folded into an editable group (Invariant 6 / DP4). A `(vendor)` nested route group is permitted as a standard Next.js layout-only device (no URL segment, no org id in URL — DP9) under the frozen `(app)` group; no corpus edit needed.
+   - *Consequence/cost:* Zero corpus change; relies on the position that this is standard Next.js route-group usage and therefore not a real conflict. Cost: a design-introduced topology device gains permanent standing by sign-off rather than by corpus text, so future surfaces (Doc-7F Buyer) must be told the precedent exists out-of-band.
+   - *Unblocks:* The full vendor route tree (§2.3), the Hybrid dashboard (D-0b), and every screen mounting under `(app)/(vendor)/…`.
+
+2. **Require a different grouping/naming.**
+   - *Rule it sets:* Board mandates a specific realization (e.g. no nested `(vendor)` group — mount surfaces flat under `(app)`; or a differently-named group; or an explicit grouped-layout spec).
+   - *Consequence/cost:* Companion §2.3 route tree and §2.1 IA must be rewritten before freeze; ripples into Doc-7F Buyer (must use the same chosen pattern for symmetry). Highest rework cost.
+   - *Unblocks:* Same screens, but only after the rewrite lands.
+
+3. **Add a Doc-7C additive clarification naming the vendor surface-set in the corpus.**
+   - *Rule it sets:* An additive, human-approved Doc-7C patch (+ version bump, §7) that names the Hybrid surface-set realization and sanctions a layout-grouping convention in the corpus itself, making it rank-0 rather than sign-off-only.
+   - *Consequence/cost:* Strongest durability and removes the "design-introduced" flag at the source; cost is the full additive-patch + freeze-bump cycle and a new normative line every surface inherits.
+   - *Unblocks:* Same screens, plus it pre-resolves the identical question for Doc-7F/7H surface sets.
+
+**Recommended disposition (for ratification)** — *This is a recommendation, not a ruling.* Adopt **Option 1** with a documented Golden-Rule-7 sign-off. Rationale: (i) Doc-7A and Doc-7C already agree on "mount both" and explicitly assign composition to the shell (`Doc-7C_Structure_v1.0_FROZEN.md:21`); the companion's "grouped-not-merged, Trust read-only" realization is a faithful, conformant reading of Invariant 2 + Invariant 6, adding no new authority. (ii) A `(vendor)` route group with no URL segment is standard Next.js layout grouping — it changes no module ownership, adds no cross-module access, and keeps DP9 (no org id in URL); under Golden Rule 7 it is a realization choice, not a redesign, so the lightest sanction is correct. (iii) Option 3 is the right tool only if the Board wants the convention to bind future surfaces normatively; recommend deferring it to a batched Doc-7C clarification covering all four surface-sets (7F/7G/7H) rather than blocking Doc-7G alone. Whichever option is chosen, the Board should affirm the two non-negotiable constraints the companion already encodes: role-dimension separation (Invariant 2) and Trust never folded into an editable group (Invariant 6 / DP4).
+
+**Interim posture (what the companion ships until ruled)** — Per `vendor_planning_and_design.md:96`: the non-conformant participation re-routing toggle is **removed**; the companion adopts the frozen "mount both" model and asserts only "co-mounted, grouped, Trust never folded into an editable group" — it does **not** assert a final Hybrid layout beyond that. The `(vendor)` segment is shipped but explicitly flagged design-introduced (`:142`), and the route tree (§2.3) and IA (§2.1, `:164–165`) carry the `[ESC-7G-A7]` marker. Freeze remains WITHHELD on this entry.
+
+**What a ruling unblocks** — Companion §2.1 IA (the final Hybrid grouped-not-merged layout, `:164–165`); §2.3 route tree (`app/(app)/(vendor)/…`, `:130–142`); §2.5 responsive nav (left rail / `sheet` / bottom quick-bar, `:174–183`); the Hybrid-org dashboard **D-0b** (`:201`); and removal of the `[ESC-7G-A7]` marker from all carrying sections. It also sets the precedent the Buyer surface (Doc-7F) will inherit. (Independent of `[ESC-7G-SCORE-DISPLAY]`, `[ESC-7B-SWITCH]`, and the `[ESC-7G-04]` verification-submit path, which remain separately open.)
+
+**Decision record (Board to complete)**
+- **Ruling:** ________________________________________________
+- **Rationale:** ________________________________________________
+- **Decided by / date:** ________________________________________________
+- **Resulting additive patch (if any):** ________ (e.g. Doc-7C additive clarification + version bump per §7, or "none — Golden-Rule-7 sign-off only")
+- **Companion edit to apply:** ________ (e.g. finalize §2.1/§2.3, replace `[ESC-7G-A7]` markers at `:96`, `:130–142`, `:164–165`, `:183` with the ruling reference; promote v0.9-rc → freeze)
+
+---
+
+## Board session checklist
+
+**Decide in this order:**
+
+1. **ESC-7G-SCORE-DISPLAY first** — it is the **parent**. The ruling here fixes the platform display posture (whether any vendor surface may render a 0–100, and where) and, in doing so, sets the authoritative reading of Invariant 6's scope (cross-mutation firewall vs. display mandate). Nothing else can be soundly decided until this is settled.
+
+2. **ESC-7B-TRUSTSCORE second — it depends on ESC-7G-SCORE-DISPLAY.** This blocker is a **strict child**: the kit-prop remedy is determined by the parent ruling — *band-only* ⇒ ratify the kit guard (Option 2) or hold Option 1; *display-permitted* ⇒ ratify the as-is prop (Option 3) scoped to the permitted surface, keeping the lint (Option 1) for governance contexts. Do not close this independently of the parent.
+
+3. **ESC-7G-A7 last (order-independent)** — it is **independent** of the other two (no shared anchor; touches shell IA / route topology, not trust display). It can be taken at any point, but is listed last so the trust pair is settled as a unit first.
+
+**Each ruling produces, deterministically:**
+
+- **A companion edit** — the companion is rank ~7–8 and conforms upward, so every ruling is written back into `vendor_planning_and_design.md`: the relevant **DP rule** and section text (companion **§12** design-principles / DP register — DP4 `:77`, DP8 `:81`, DP9), the affected **screen/IA sections** (companion **§10** route-tree / IA and the per-section bodies named in each entry's "Companion edit to apply"), and the **§13-equivalent escalation register + freeze-gate count** (decrement BLOCKER at `:685`; record disposition in the §12 Track-2 log). The `[ESC-…]` markers carried in-text are replaced with the ruling reference.
+- **Possibly an additive corpus patch (human-approved only)** — where a ruling reaches rank 0 (SCORE-DISPLAY Option C; A7 Option 3; TRUSTSCORE Option 2 against Doc-7B), the Board raises a **human-approved additive patch + version bump** per §7/§8. The AI/skill author applies only the companion edits; it does **not** author or apply any corpus patch without explicit human approval. If a ruling is companion-level only, the "Resulting additive patch" field is recorded as **"none."**
+
+**Freeze gate:** once all three Decision Records are completed and the corresponding companion edits applied, recompute the §13 gate. **BLOCKER = 0 · MAJOR = 0 · MINOR = 0** is required to lift "freeze WITHHELD" and promote **v0.9-rc → freeze**.

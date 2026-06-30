@@ -150,6 +150,33 @@ staff-privilege leak to later writes, and a **forged/cross-tenant** audit insert
 `WITH CHECK`. → D6 this ESC marked **RESOLVED**. → D7 `upsert_buyer_profile` resumes and ships **with**
 audit; all Audit-Required tenant writes inherit the path.
 
+**D2/D3 realization addendum (2026-06-30).** The D2 (Doc-4B) and D3 (Doc-6B) additive patches are **drafted as
+proposals** — `governanceReviews/D2_Doc-4B_AuditAppendRLS_Additive_Patch_PROPOSAL.md` and
+`governanceReviews/D3_Doc-6B_AuditInsertPolicy_Additive_Patch_PROPOSAL.md` — and **await human approval** (§8);
+they edit no frozen document. Drafting (adversarially verified) surfaced **one realization refinement of binding
+condition #7 that does NOT change this ruling**: Postgres forces `INSERT … RETURNING` rows through the table's
+**SELECT** policy (which stays staff-only per condition #1, verified against the PG 15–18 `CREATE POLICY` docs),
+and Prisma's `db.auditRecord.create` always emits `RETURNING "audit_id"`, so a tenant-context append via
+`create()` would abort with **SQLSTATE 42501** and roll back the caller's business write. **D4 must therefore
+append via a non-`RETURNING` insert on the caller's executor** — the service already mints the `auditId` app-side
+via `uuidv7()`, so no DB-returned key is needed — and **must not** widen the staff-only SELECT surface (that would
+change the read posture → Flag-and-Halt). D3 and D4 are a **single linked deploy unit**: the INSERT policy must
+not reach tenant traffic until the non-`RETURNING` service change lands. (This corrects the D1 sequencing note's
+aside that "the change is the RLS policy, not the service" — D4 changes **both**: the RLS policy *and* the
+service's insert call.)
+
+**Board approval addendum (2026-06-30).** The Board **APPROVED D2 and D3 AS DRAFT** ("ready for human review"),
+conditional on three pre-freeze improvements, now applied: **(1)** the durable rationale is extracted into a new ADR —
+`governanceReviews/ADR-021_Audit-Records-RLS-Asymmetry_PROPOSAL.md` (*Audit-Records RLS Asymmetry — Write-Admission ≠
+Read-Disclosure*; PROPOSED; the answer to "why INSERT is broader than SELECT"; extends ADR-009, refines ADR-016,
+supersedes nothing; not folded into the rank-1 ADR Compendium by AI); **(2)** D3 is restructured into a tight normative
+body + a non-normative **Appendix A** (implementation notes); **(3)** the linked-deploy requirement is elevated to a
+normative **Deployment Constraint** (the D3 migration SHALL NOT deploy to tenant traffic until D4 eliminates `INSERT …
+RETURNING`). The Board also **confirmed the D4 direction**: keep SELECT unchanged, eliminate RETURNING, app-side UUID,
+atomic tx, no `SECURITY DEFINER`, no privilege elevation. **Remaining gate:** the formal fold of D2/D3 (+ ADR-021) into
+the frozen corpus — `generatedDocs/` + `00_AUTHORITY_MAP.md` + version bump — is a **human action** (CLAUDE.md §7 ranks
+0–1 immutable to skills; §8); not performed by AI.
+
 **Status after D1:** the ESC stays **OPEN — ruled R-b**, not yet RESOLVED (RESOLVED at D6, after the
 human-approved patches + the green conformance test). The feature-work freeze (`BOARD-SPRINT` §7) remains in
 effect until sprint exit.
