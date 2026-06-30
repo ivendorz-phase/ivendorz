@@ -41,6 +41,17 @@ export interface DataListTableProps<T> {
   emptyState: React.ReactNode;
   /** Optional per-row destination (opaque-id route) — links the first cell. */
   getRowHref?: (row: T) => string | undefined;
+  /**
+   * Pin the first column during horizontal scroll (e.g. a comparison matrix's attribute-label column, or a
+   * wide listing's identity column). Off by default — existing consumers are unaffected.
+   */
+  stickyFirstColumn?: boolean;
+  /**
+   * Render the first column's cells as `<th scope="row">` (row headers) instead of `<td>` — for matrix/
+   * comparison tables where each row is a named attribute, so AT associates each cell with its row + column
+   * header. Off by default. Not combined with `getRowHref` (a row header is a label, not a link).
+   */
+  rowHeaderFirstColumn?: boolean;
   className?: string;
 }
 
@@ -51,18 +62,30 @@ export function DataListTable<T>({
   caption,
   emptyState,
   getRowHref,
+  stickyFirstColumn,
+  rowHeaderFirstColumn,
   className,
 }: DataListTableProps<T>) {
   if (rows.length === 0) {
     return <>{emptyState}</>;
   }
   return (
-    <div className={cn("overflow-x-auto", className)}>
+    // When the first column is sticky the table is meant to scroll horizontally (e.g. the comparison
+    // matrix on narrow screens). A static table has no focusable child to carry arrow-key scroll, so the
+    // scroll region itself is made keyboard-focusable + labelled (WCAG 2.1.1 / 1.4.10). Gated on
+    // `stickyFirstColumn` so the non-scrolling listings (P-BUY-01/06) gain no spurious focus stop. The
+    // `caption` is reused as the accessible label (no new copy). Sticky cells use `z-10` — sufficient
+    // because this table has no vertical-sticky header, and the scroll region is its own stacking context
+    // (well below the shell chrome). If a sticky header row is ever added, the corner cell needs a higher z.
+    <div
+      className={cn("overflow-x-auto", className)}
+      {...(stickyFirstColumn ? { tabIndex: 0, role: "group", "aria-label": caption } : {})}
+    >
       <table className="w-full border-t border-border text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead>
           <tr className="border-b border-border">
-            {columns.map((col) => (
+            {columns.map((col, colIndex) => (
               <th
                 key={col.key}
                 scope="col"
@@ -70,6 +93,9 @@ export function DataListTable<T>({
                   "px-4 py-2 text-left text-2xs font-semibold uppercase tracking-wide text-muted-foreground",
                   col.numeric && "text-right",
                   col.hideOnMobile && "hidden sm:table-cell",
+                  stickyFirstColumn &&
+                    colIndex === 0 &&
+                    "sticky left-0 z-10 border-r border-border bg-card",
                 )}
               >
                 {col.header}
@@ -83,10 +109,32 @@ export function DataListTable<T>({
             return (
               <tr
                 key={getRowKey(row)}
-                className="border-b border-border last:border-0 hover:bg-accent/60"
+                className="group border-b border-border last:border-0 hover:bg-accent/60"
               >
                 {columns.map((col, colIndex) => {
                   const content = col.render(row);
+                  const isFirst = colIndex === 0;
+                  const sticky = stickyFirstColumn && isFirst;
+                  // Matrix/comparison first column → a real row header (scope="row") for cell association.
+                  if (rowHeaderFirstColumn && isFirst) {
+                    return (
+                      <th
+                        key={col.key}
+                        scope="row"
+                        className={cn(
+                          "px-4 py-2.5 text-left align-middle font-medium text-foreground",
+                          col.hideOnMobile && "hidden sm:table-cell",
+                          // Opaque bg occludes content scrolling beneath; right border delineates the frozen
+                          // edge; `group-hover` keeps the sticky cell in sync with the row hover (solid, so it
+                          // stays opaque during horizontal scroll).
+                          sticky &&
+                            "sticky left-0 z-10 border-r border-border bg-card group-hover:bg-accent",
+                        )}
+                      >
+                        {content}
+                      </th>
+                    );
+                  }
                   return (
                     <td
                       key={col.key}
@@ -94,10 +142,12 @@ export function DataListTable<T>({
                         "px-4 py-2.5 align-middle text-foreground",
                         col.numeric && "text-right tabular-nums",
                         col.hideOnMobile && "hidden sm:table-cell",
+                        sticky &&
+                          "sticky left-0 z-10 border-r border-border bg-card group-hover:bg-accent",
                       )}
                     >
                       {/* First column links the row to its detail (opaque-id route) when provided. */}
-                      {colIndex === 0 && href ? (
+                      {isFirst && href ? (
                         <Link
                           href={href}
                           className="font-medium text-foreground underline-offset-2 hover:underline"

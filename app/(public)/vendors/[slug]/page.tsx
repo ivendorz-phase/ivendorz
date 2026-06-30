@@ -12,6 +12,7 @@ import { ResultsGrid } from "@/frontend/components/results-grid";
 import { EmptyState } from "@/frontend/components/empty-state";
 import { vendorInitials } from "@/frontend/components/vendor-card";
 import { getPublicVendorProfile, getPublicVendorProducts } from "../../_components/discovery/seed";
+import { productDetailHref } from "../../_components/product-detail";
 
 // P-PUB-13 Public Vendor Profile / microsite (Doc-7D §4). PRESENTATION & COMPOSITION ONLY: anonymous,
 // read-only, binds NO Doc-5 contract. The PUBLIC projection of a vendor (Content ≠ Presentation, Inv #9):
@@ -138,11 +139,11 @@ export default async function VendorProfilePage({ params }: { params: Promise<{ 
                 }
               >
                 {products.map((product) => (
-                  // [ESC-7-API-PRODDETAIL]: no anon product page — open the result in context (search).
+                  // [ESC-7-API-PRODDETAIL]: no anon product page — open the in-search product detail.
                   <ProductCard
                     key={product.id}
                     product={product}
-                    href={`/search?q=${encodeURIComponent(product.name)}`}
+                    href={productDetailHref(product.id)}
                   />
                 ))}
               </ResultsGrid>

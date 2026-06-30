@@ -32,6 +32,7 @@ import { DataListTable, type DataColumn } from "../../../../_components/data-lis
 import { DescriptionList, type DescriptionItem } from "../../../../_components/description-list";
 import { Money, Ref, formatDate, formatInstant } from "../../../../_components/format";
 import { quotationStateDisplay } from "../../../../_components/state-display";
+import { SealedMarker } from "../../../../_components/sealed-marker";
 import type {
   QuotationDetailData,
   QuotationPriceLine,
@@ -52,16 +53,6 @@ function SealedNotice() {
         Sealed until the quotation window closes — this becomes visible once the window has closed.
       </p>
     </div>
-  );
-}
-
-/** Inline sealed marker for a single value cell (e.g. the headline amount in the summary). */
-function SealedInline() {
-  return (
-    <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
-      <Lock aria-hidden className="size-3.5" />
-      Sealed until close
-    </span>
   );
 }
 
@@ -257,7 +248,7 @@ function SummaryCard({ data }: { data: QuotationDetailData }) {
     {
       label: "Quoted amount",
       value:
-        data.sealedUntilClose && !data.amount ? <SealedInline /> : <Money value={data.amount} />,
+        data.sealedUntilClose && !data.amount ? <SealedMarker /> : <Money value={data.amount} />,
     },
     { label: "Valid until", value: data.validUntil ? formatDate(data.validUntil) : "—" },
     { label: "Received", value: data.submittedAt ? formatInstant(data.submittedAt) : "—" },

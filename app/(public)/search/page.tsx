@@ -10,6 +10,7 @@ import { CategoryTile } from "@/frontend/components/category-tile";
 import { ResultsGrid } from "@/frontend/components/results-grid";
 import { ErrorState } from "@/frontend/components/error-state";
 import { PaginationControl } from "@/frontend/components/pagination-control";
+import { ProductDetail, productDetailHref } from "../_components/product-detail";
 import { Skeleton } from "@/frontend/primitives/skeleton";
 import { Button } from "@/frontend/primitives/button";
 import { cn } from "@/frontend/lib/cn";
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
   description: "Search verified industrial suppliers and products across Bangladesh.",
 };
 
-type SearchParams = { q?: string; tab?: string; state?: string };
+type SearchParams = { q?: string; tab?: string; state?: string; product?: string };
 
 const TABS = [
   { key: "products", label: "Products" },
@@ -143,6 +144,11 @@ export default async function SearchPage({
     q ? `/search?q=${encodeURIComponent(q)}&tab=${tab}` : `/search?tab=${tab}`;
   const grid = TAB_GRID[activeTab];
 
+  // In-search-context product detail ([ESC-7-API-PRODDETAIL]: no standalone product page). Resolved from
+  // the public catalog seed; an UNRESOLVED id falls through to the LIST view — byte-equivalent to genuine
+  // absence (Doc-5D R9 / Invariant #11), so an excluded/draft/missing product is indistinguishable.
+  const detail = sp.product ? PRODUCTS.find((p) => p.id === sp.product) : undefined;
+
   function renderResults() {
     if (demoState === "error") {
       return (
@@ -193,7 +199,12 @@ export default async function SearchPage({
         footer={<PaginationControl hasMore hasPrevious={false} />}
       >
         {products.map((p) => (
-          <ProductCard key={p.id} product={p} href={`/vendors/${p.vendorSlug}`} />
+          // Opens the in-search-context detail (no standalone product page — [ESC-7-API-PRODDETAIL]).
+          <ProductCard
+            key={p.id}
+            product={p}
+            href={productDetailHref(p.id, { q: q || undefined })}
+          />
         ))}
       </ResultsGrid>
     );
@@ -215,62 +226,80 @@ export default async function SearchPage({
           <SearchBar action="/search" defaultQuery={q} />
         </div>
         {/* Honest interim disclosure (byte-neutral) — live catalog search is not yet wired. Removed when
-            `search_catalog` lands. Mirrors the Command Center's honest hint; no counts, no exclusion copy. */}
-        <p className="mt-2 text-xs text-muted-foreground">
-          Live catalog search is coming soon — showing example listings from across the marketplace.
-        </p>
+            `search_catalog` lands. Hidden in detail mode (the detail carries its own interim note). */}
+        {detail ? null : (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Live catalog search is coming soon — showing example listings from across the
+            marketplace.
+          </p>
+        )}
       </header>
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <aside className="lg:w-64 lg:shrink-0">
-          <div className="rounded-lg border border-border bg-card p-4 lg:sticky lg:top-20">
-            <FilterSidebar facets={VENDOR_FACETS} label="Filter search results" />
+      {detail ? (
+        // FOCUSED product detail — a single result is not a list, so the list chrome (filter sidebar,
+        // result-type tabs, live results region) is intentionally NOT rendered. Still inside /search
+        // (route-wise) per the [ESC-7-API-PRODDETAIL] interim; "Back to results" returns to the list.
+        <ProductDetail
+          product={detail}
+          vendorHref={`/vendors/${detail.vendorSlug}`}
+          backHref={q ? `/search?q=${encodeURIComponent(q)}` : "/search"}
+          authHref="/login"
+          related={PRODUCTS.filter(
+            (p) => p.vendorSlug === detail.vendorSlug && p.id !== detail.id,
+          ).map((p) => ({ product: p, href: productDetailHref(p.id, { q: q || undefined }) }))}
+        />
+      ) : (
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+          <aside className="lg:w-64 lg:shrink-0">
+            <div className="rounded-lg border border-border bg-card p-4 lg:sticky lg:top-20">
+              <FilterSidebar facets={VENDOR_FACETS} label="Filter search results" />
+            </div>
+          </aside>
+
+          <div className="min-w-0 flex-1">
+            {/* Result-type tabs as URL links (server-rendered; aria-current, no client-computed counts — GI-03). */}
+            <nav
+              aria-label="Result type"
+              className="mb-4 inline-flex h-9 items-center justify-center gap-1 rounded-md bg-muted p-1"
+            >
+              {TABS.map((t) => {
+                const active = t.key === activeTab;
+                return (
+                  <Link
+                    key={t.key}
+                    href={tabHref(t.key)}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "rounded-sm px-3 py-1 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      active
+                        ? "bg-card text-foreground shadow-iv-xs"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {t.label}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Labelled live region so loading→loaded / partial / error transitions are perceivable to AT. */}
+            <section
+              aria-label="Search results"
+              aria-live="polite"
+              aria-busy={demoState === "loading" ? true : undefined}
+            >
+              {demoState === "partial" ? (
+                <div className="mb-4 flex items-center gap-2 rounded-md border border-border bg-iv-info-subtle px-3 py-2 text-sm text-iv-info-base">
+                  <Info aria-hidden="true" className="size-4 shrink-0" />
+                  Showing partial results while we finish searching…
+                </div>
+              ) : null}
+
+              {renderResults()}
+            </section>
           </div>
-        </aside>
-
-        <div className="min-w-0 flex-1">
-          {/* Result-type tabs as URL links (server-rendered; aria-current, no client-computed counts — GI-03). */}
-          <nav
-            aria-label="Result type"
-            className="mb-4 inline-flex h-9 items-center justify-center gap-1 rounded-md bg-muted p-1"
-          >
-            {TABS.map((t) => {
-              const active = t.key === activeTab;
-              return (
-                <Link
-                  key={t.key}
-                  href={tabHref(t.key)}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "rounded-sm px-3 py-1 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    active
-                      ? "bg-card text-foreground shadow-iv-xs"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {t.label}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Labelled live region so loading→loaded / partial / error transitions are perceivable to AT. */}
-          <section
-            aria-label="Search results"
-            aria-live="polite"
-            aria-busy={demoState === "loading" ? true : undefined}
-          >
-            {demoState === "partial" ? (
-              <div className="mb-4 flex items-center gap-2 rounded-md border border-border bg-iv-info-subtle px-3 py-2 text-sm text-iv-info-base">
-                <Info aria-hidden="true" className="size-4 shrink-0" />
-                Showing partial results while we finish searching…
-              </div>
-            ) : null}
-
-            {renderResults()}
-          </section>
         </div>
-      </div>
+      )}
     </div>
   );
 }
