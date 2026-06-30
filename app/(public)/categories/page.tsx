@@ -13,7 +13,7 @@ import { SupplierShowcase } from "../_components/landing/supplier-showcase";
 export const metadata: Metadata = {
   title: "Categories · iVendorz",
   description:
-    "Browse the industrial category taxonomy — mechanical, metals, electrical, process, and safety.",
+    "Browse industrial categories — mechanical, metals, electrical, process, and safety.",
 };
 
 export default function CategoriesPage() {
@@ -25,8 +25,7 @@ export default function CategoriesPage() {
             Browse by category
           </h1>
           <p className="mt-2 max-w-2xl text-iv-ink-secondary">
-            Explore the industrial taxonomy and jump straight into the suppliers and products you
-            need.
+            Browse industrial categories and jump straight to the suppliers and products you need.
           </p>
         </div>
       </section>
@@ -37,7 +36,7 @@ export default function CategoriesPage() {
       >
         <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 sm:px-6">
           <h2 id="category-tree-heading" className="sr-only">
-            Category tree
+            Category navigation
           </h2>
           <div className="flex flex-col gap-10">
             {CATEGORY_GROUPS.map((group) => (

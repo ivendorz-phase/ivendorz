@@ -18,22 +18,20 @@ export function SearchBar({
 }: SearchBarProps) {
   return (
     <div role="search" className={cn("flex items-center gap-2", className)}>
-      <label htmlFor="discovery-search" className="sr-only">
-        Search the marketplace
-      </label>
-      <div className="relative flex-1">
+      {/* Label WRAPS the input (no id) — render-safe if more than one SearchBar appears on a page. */}
+      <label className="relative flex-1">
+        <span className="sr-only">Search the marketplace</span>
         <Search
           aria-hidden="true"
           className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
         />
         <Input
-          id="discovery-search"
           type="search"
           autoComplete="off"
           placeholder={placeholder}
           className="h-11 pl-9 pr-3 text-base"
         />
-      </div>
+      </label>
       <Button type="button" size="lg" aria-label="Search">
         <Search />
       </Button>

@@ -5,8 +5,9 @@
 //  • Interim per [ESC-7-API-CATNAV] — full anonymous taxonomy tree is blocked; the featured selection
 //    is a curated/static seed and a tile navigates to a `search_catalog` facet view (/marketplace?…).
 //  • Single-line label with ellipsis truncation (full name via title); a default industrial glyph
-//    renders when a node has no icon. Product counts are OMITTED unless a contract facet supplies them
-//    (never client-computed — GI-03/GI-12). Link carries icon + text (never icon/colour alone).
+//    renders when a node has no icon. Link carries icon + text (never icon/colour alone). NO count/total
+//    is rendered (GI-03): a category count would require a frozen facet-count read + API-Governance
+//    ruling and must never be bound to a client `.length`.
 import Link from "next/link";
 import { Card } from "@/frontend/primitives/card";
 import type { CategoryVM } from "./view-models";
@@ -36,9 +37,6 @@ export function CategoryTile({ category, className }: CategoryTileProps) {
           >
             {category.name}
           </span>
-          {typeof category.count === "number" ? (
-            <span className="block text-xs text-muted-foreground">{category.count} listings</span>
-          ) : null}
         </span>
       </Card>
     </Link>

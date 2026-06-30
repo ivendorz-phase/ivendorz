@@ -16,7 +16,7 @@ export function FeaturedCategories() {
     <LandingSection
       id="sec-category"
       title="Browse industrial categories"
-      description="Source across the industrial taxonomy — from valves and steel to electrical drives, pumps, and safety."
+      description="Source across industrial categories — from valves and steel to electrical drives, pumps, and safety."
       viewAllHref="/categories"
       viewAllLabel="All categories"
     >
@@ -28,16 +28,14 @@ export function FeaturedCategories() {
         ))}
       </div>
 
-      {/* SEC-INDUSTRY — Industry Explorer entry; opens the full Industrial Category Explorer (M2.2). */}
+      {/* SEC-INDUSTRY — Industry Explorer entry; opens the category browse page (/categories, M2.2). */}
       <Card className="mt-4 flex flex-wrap items-center justify-between gap-3 bg-iv-navy-50/40 p-4">
         <div className="flex items-center gap-3">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-iv-navy-100 text-iv-navy-700">
             <LayoutGrid aria-hidden="true" className="size-5" />
           </span>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-iv-ink-heading">
-              Explore the full category tree
-            </p>
+            <p className="text-sm font-semibold text-iv-ink-heading">Browse more categories</p>
             <p className="text-xs text-muted-foreground">
               Drill through industries, categories, and specialisations to find the right suppliers.
             </p>
@@ -45,7 +43,7 @@ export function FeaturedCategories() {
         </div>
         <Button asChild variant="secondary" size="sm" className="gap-1.5">
           <Link href="/categories">
-            Open category explorer
+            Browse all categories
             <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
         </Button>

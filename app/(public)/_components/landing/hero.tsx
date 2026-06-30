@@ -19,6 +19,7 @@ export function Hero() {
           backgroundImage:
             "linear-gradient(var(--iv-border) 1px, transparent 1px), linear-gradient(90deg, var(--iv-border) 1px, transparent 1px)",
           backgroundSize: "32px 32px",
+          // The mask consumes only the alpha channel — #000 is a mask alpha, not a theme colour.
           WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 0%, #000 25%, transparent 75%)",
           maskImage: "radial-gradient(ellipse 80% 60% at 50% 0%, #000 25%, transparent 75%)",
           opacity: 0.5,
@@ -36,7 +37,7 @@ export function Hero() {
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button asChild size="lg" className="gap-2">
               <Link href="/login">
-                Get started <ArrowRight />
+                Get started <ArrowRight aria-hidden="true" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">

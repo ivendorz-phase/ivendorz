@@ -168,7 +168,7 @@ export function CommandCenter({ popularSearches = DEFAULT_POPULAR_SEARCHES }: Co
             )}
           </div>
           <Button type="submit" size="lg" aria-label="Search">
-            <ArrowRight />
+            <ArrowRight aria-hidden="true" />
           </Button>
         </div>
       </form>
@@ -186,7 +186,7 @@ export function CommandCenter({ popularSearches = DEFAULT_POPULAR_SEARCHES }: Co
               className="gap-2"
             >
               <Link href={entry.href}>
-                <Icon /> {entry.label}
+                <Icon aria-hidden="true" /> {entry.label}
               </Link>
             </Button>
           );
@@ -202,7 +202,7 @@ export function CommandCenter({ popularSearches = DEFAULT_POPULAR_SEARCHES }: Co
           onClick={(e) => e.preventDefault()}
           className="gap-2 cursor-not-allowed opacity-60"
         >
-          <Sparkles /> AI Assistant
+          <Sparkles aria-hidden="true" /> AI Assistant
           <Badge variant="neutral" className="ml-1">
             Soon
           </Badge>

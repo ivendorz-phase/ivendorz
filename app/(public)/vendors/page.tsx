@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function VendorsPage() {
   return (
-    <div className="mx-auto w-full max-w-[var(--iv-page-max)] px-4 py-8 sm:px-6">
+    <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-8 sm:px-6">
       <header className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight text-iv-ink-heading sm:text-4xl">
           Vendor directory

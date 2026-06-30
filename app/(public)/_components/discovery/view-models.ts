@@ -64,8 +64,8 @@ export interface CategoryVM {
   name: string;
   /** Industrial glyph (DP §10 set). Server→server, so the component type is passed directly (no RSC boundary). */
   icon: LucideIcon;
-  /** Facet-derived count; omitted when no contract aggregate exists — never client-computed (GI-03/GI-12). */
-  count?: number;
+  // No `count`/total field (GI-03): a category count would require a frozen facet-count read + an
+  // API-Governance ruling on whether a contract aggregate may be displayed — never a client `.length`.
 }
 
 /** Two-letter identity initials for the logo fallback (no broken image — §5 card edge-cases). */

@@ -46,7 +46,7 @@ export function VendorCard({ vendor, action, className }: VendorCardProps) {
           <h3 className="truncate text-base font-semibold text-iv-ink-heading" title={vendor.name}>
             {vendor.name}
           </h3>
-          <p className="truncate text-sm text-iv-brand-700">{vendor.category}</p>
+          <p className="truncate text-sm text-iv-navy-700">{vendor.category}</p>
         </div>
         {vendor.verified ? (
           <Badge variant="success" className="shrink-0 gap-1">

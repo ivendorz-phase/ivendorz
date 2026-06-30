@@ -25,13 +25,16 @@ function FacetCheckbox({ label }: { label: string }) {
 }
 
 function FacetGroup({ heading, children }: { heading: string; children: ReactNode }) {
+  // <fieldset>/<legend> exposes the group name to AT (WCAG 1.3.1) so the Category vs Capability checkbox
+  // sets are distinguishable; the legend keeps the existing uppercase styling. min-w-0 defeats the
+  // fieldset min-content default so labels can still truncate.
   return (
-    <div>
-      <p className="mb-1.5 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+    <fieldset className="min-w-0 border-0 p-0">
+      <legend className="mb-1.5 p-0 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
         {heading}
-      </p>
+      </legend>
       {children}
-    </div>
+    </fieldset>
   );
 }
 
