@@ -58,11 +58,16 @@ const FLAGS: FlagMeta[] = [
   },
 ];
 
+// VARIANT CONTRACT (N1) — three explicit presentation modes; styling is never inferred:
+//   • list     (default)  — detailed read rows: dot + label + description + on/off marker.
+//   • compact             — read chip row for cards/grids: dot + label; on/off by fill + sr-only text.
+//   • editable (override) — uncontrolled native checkboxes for the vendor edit form; takes precedence
+//                           over `variant`. Interim control until [ESC-7B-SWITCH] lands; no write wiring.
 export interface CapabilityMatrixProps {
   flags?: Partial<CapabilityFlags>;
-  /** "list" = detailed rows (default); "compact" = chip row for cards. Ignored when `editable`. */
+  /** Read mode — `list` (default, detailed rows) or `compact` (chip row). Ignored when `editable`. */
   variant?: "list" | "compact";
-  /** Render editable (uncontrolled) checkboxes vs a read-only display. */
+  /** `true` → editable uncontrolled checkboxes (overrides `variant`); omitted → read-only display. */
   editable?: boolean;
   /** Field-name prefix for editable inputs (presentation only — not wired to any write). */
   namePrefix?: string;

@@ -11,6 +11,10 @@ import * as React from "react";
 import { cn } from "@/frontend/lib/cn";
 
 export interface DescriptionItem {
+  /** Optional stable identity. Curated lists (e.g. P-BUY-08) have unique labels and can omit it; consumers
+   *  that map GENERIC contract-projected rows (e.g. P-BUY-14 term cards from dev-doc jsonb) should pass it
+   *  so repeated labels never produce colliding React keys. */
+  id?: string;
   /** Term label (`<dt>`). */
   label: string;
   /** Already-resolved presentation value (`<dd>`). */
@@ -26,8 +30,10 @@ export function DescriptionList({
 }) {
   return (
     <dl className={cn("divide-y divide-border", className)}>
-      {items.map((item) => (
-        <div key={item.label} className="grid grid-cols-1 gap-1 py-2 sm:grid-cols-3 sm:gap-4">
+      {items.map((item, index) => (
+        // Stable id when supplied; otherwise the index guarantees a unique key for this render-only,
+        // never-client-reordered list (so duplicate projected labels cannot collide).
+        <div key={item.id ?? index} className="grid grid-cols-1 gap-1 py-2 sm:grid-cols-3 sm:gap-4">
           <dt className="text-sm font-medium text-muted-foreground">{item.label}</dt>
           <dd className="text-sm text-foreground sm:col-span-2">{item.value}</dd>
         </div>

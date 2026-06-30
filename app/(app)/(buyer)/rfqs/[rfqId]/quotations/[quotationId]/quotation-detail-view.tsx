@@ -40,15 +40,16 @@ import type {
   QuotationAttachment,
 } from "../../../../_components/quotation-view-models";
 
-/** A neutral, EXPLAINED notice for fields the server sealed until the quotation window closes (anti-farming,
- *  Doc-3 §10.1). It frames the absence as a deliberate, time-bound redaction — never a vendor deficiency. */
+/** A neutral, EXPLAINED notice for content the server sealed until the quotation window closes (anti-farming,
+ *  Doc-3 §10.1 / §12.2). It frames the absence as a deliberate, time-bound redaction — never a vendor
+ *  deficiency. Card-neutral copy: the SERVER decides which fields (price + protected commercial terms) it
+ *  omits while the window is open; the presentation explains any such seal-driven absence wherever it lands. */
 function SealedNotice() {
   return (
     <div className="flex items-start gap-2 rounded-md border border-border bg-secondary p-3 text-sm text-secondary-foreground">
       <Lock aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
       <p>
-        Pricing and protected commercial terms are sealed until the quotation window closes. They
-        become visible once the window has closed.
+        Sealed until the quotation window closes — this becomes visible once the window has closed.
       </p>
     </div>
   );
@@ -97,16 +98,14 @@ function PricingCard({ pricing, sealed }: { pricing?: QuotationPricing | null; s
           </div>
         ) : (
           <>
+            {/* The outer guard above already handles the empty/sealed cases, so DataListTable here always
+                has rows; `emptyState` is required by the component but unreachable on this path. */}
             <DataListTable
               caption="Price breakdown"
               columns={PRICE_COLUMNS}
               rows={pricing.lines}
-              getRowKey={(l) => l.label}
-              emptyState={
-                <div className="p-4">
-                  <EmptyState title="No pricing provided" className="py-8" />
-                </div>
-              }
+              getRowKey={(l) => l.id ?? l.label}
+              emptyState={null}
             />
             {pricing.total ? (
               <div className="flex items-center justify-between border-t border-border px-4 py-3">
@@ -123,18 +122,28 @@ function PricingCard({ pricing, sealed }: { pricing?: QuotationPricing | null; s
   );
 }
 
-/** Shared "terms" card — a titled `DescriptionList` of generic label/value rows, with a non-penalizing
- *  empty state. Backs the Delivery / Warranty / Compliance sections (one renderer, no divergence). */
+/** Shared "terms" card — a titled `DescriptionList` of generic label/value rows. SEALED-AWARE: when the
+ *  RFQ cell is sealed and the window is open, the server OMITS price + protected commercial terms from the
+ *  buyer projection, so an empty card AT A SEAL must read as a deliberate redaction (SealedNotice), never as
+ *  a vendor deficiency ("No X provided"). The UI does not guess WHICH fields the server seals — it explains
+ *  any seal-driven absence wherever it lands; once the window closes (`sealed=false`) a genuinely-empty card
+ *  resolves to its honest non-penalizing empty state. Backs Delivery / Warranty / Compliance (one renderer). */
 function TermsCard({
   title,
   rows,
   emptyTitle,
+  sealed,
 }: {
   title: string;
   rows?: QuotationTermRow[];
   emptyTitle: string;
+  sealed?: boolean;
 }) {
-  const items: DescriptionItem[] = (rows ?? []).map((r) => ({ label: r.label, value: r.value }));
+  const items: DescriptionItem[] = (rows ?? []).map((r) => ({
+    id: r.id,
+    label: r.label,
+    value: r.value,
+  }));
   return (
     <Card>
       <CardHeader className="p-4">
@@ -142,7 +151,11 @@ function TermsCard({
       </CardHeader>
       <CardContent className="p-4 pt-0">
         {items.length === 0 ? (
-          <EmptyState title={emptyTitle} className="py-8" />
+          sealed ? (
+            <SealedNotice />
+          ) : (
+            <EmptyState title={emptyTitle} className="py-8" />
+          )
         ) : (
           <DescriptionList items={items} />
         )}
@@ -152,23 +165,38 @@ function TermsCard({
 }
 
 /** Delivery terms (`delivery_terms` projection). */
-function DeliveryCard({ rows }: { rows?: QuotationTermRow[] }) {
-  return <TermsCard title="Delivery terms" rows={rows} emptyTitle="No delivery terms provided" />;
+function DeliveryCard({ rows, sealed }: { rows?: QuotationTermRow[]; sealed?: boolean }) {
+  return (
+    <TermsCard
+      title="Delivery terms"
+      rows={rows}
+      emptyTitle="No delivery terms provided"
+      sealed={sealed}
+    />
+  );
 }
 
 /** Warranty (`warranty_terms` projection — nullable in the contract, 0..1). */
-function WarrantyCard({ rows }: { rows?: QuotationTermRow[] }) {
-  return <TermsCard title="Warranty" rows={rows} emptyTitle="No warranty terms provided" />;
+function WarrantyCard({ rows, sealed }: { rows?: QuotationTermRow[]; sealed?: boolean }) {
+  return (
+    <TermsCard
+      title="Warranty"
+      rows={rows}
+      emptyTitle="No warranty terms provided"
+      sealed={sealed}
+    />
+  );
 }
 
 /** Specification compliance (`spec_compliance_declaration` projection — the technical/compliance content,
  *  Doc-3 §8.1). There is no separate frozen `commercial_terms`/`technical_notes` field; this is it. */
-function ComplianceCard({ rows }: { rows?: QuotationTermRow[] }) {
+function ComplianceCard({ rows, sealed }: { rows?: QuotationTermRow[]; sealed?: boolean }) {
   return (
     <TermsCard
       title="Specification compliance"
       rows={rows}
       emptyTitle="No compliance declaration provided"
+      sealed={sealed}
     />
   );
 }
@@ -197,10 +225,14 @@ function AttachmentList({ attachments }: { attachments?: QuotationAttachment[] }
                     className="w-full"
                   />
                 ) : (
-                  <span className="inline-flex w-full items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
+                  // No resolved href ⇒ NOT a fabricated link. A deliberately PLAIN, un-chromed row (it does
+                  // not mirror the kit FileLink's bordered shell, so there is no markup to keep in lockstep)
+                  // with an explicit "unavailable" cue so the state is announced, not just visually implied.
+                  <span className="inline-flex w-full items-center gap-2 px-1 py-2 text-sm text-muted-foreground">
                     <Paperclip aria-hidden className="size-4 shrink-0" />
                     <span className="truncate">{f.name}</span>
                     {f.sizeLabel ? <span className="shrink-0 text-xs">{f.sizeLabel}</span> : null}
+                    <span className="ml-auto shrink-0 text-xs italic">unavailable</span>
                   </span>
                 )}
               </li>
@@ -295,9 +327,9 @@ export function QuotationDetailView({ data }: { data: QuotationDetailData | null
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="flex flex-col gap-4 lg:col-span-2">
           <PricingCard pricing={data.pricing} sealed={data.sealedUntilClose} />
-          <DeliveryCard rows={data.delivery} />
-          <WarrantyCard rows={data.warranty} />
-          <ComplianceCard rows={data.compliance} />
+          <DeliveryCard rows={data.delivery} sealed={data.sealedUntilClose} />
+          <WarrantyCard rows={data.warranty} sealed={data.sealedUntilClose} />
+          <ComplianceCard rows={data.compliance} sealed={data.sealedUntilClose} />
           <AttachmentList attachments={data.attachments} />
         </div>
         <div className="flex flex-col gap-4">

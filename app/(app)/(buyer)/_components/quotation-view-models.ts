@@ -16,6 +16,24 @@
 // `technical_notes` fields the milestone brief anticipated — those are not frozen quotation fields;
 // `spec_compliance_declaration` is the technical/compliance content (Doc-3 §8.1). See the M4 report.
 //
+// ──────────────────────────────────────────────────────────────────────────────────────────────────
+// RENDERER CONTRACT (generic label/value projection) — binding for future maintainers (Board M4 MINOR-2)
+// ──────────────────────────────────────────────────────────────────────────────────────────────────
+// The term/price/compliance cards are GENERIC renderers over `QuotationTermRow`/`QuotationPriceLine`.
+// Their inputs are ALREADY-RESOLVED, display-ready primitives:
+//   • `label`  — a presentation string the SURFACE derived from the dev-doc jsonb (never a raw blob key).
+//   • `value`  — a display-ready string (dates/money/units formatted UPSTREAM at the surface, GI-08).
+//   • `amount` — a `{amount,currency}` pair rendered via the kit `CurrencyDisplay` (currency a prop).
+//   • `id`     — a surface-minted stable key (React identity only; NOT a contract field).
+// CONSEQUENCES (do NOT violate):
+//   1. Do NOT add field-specific / special-case renderers (e.g. `if (label === "Incoterm") …`) inside the
+//      components — that would re-couple presentation to an undocumented jsonb schema (the exact thing
+//      this generic projection exists to avoid). Any shaping/branching belongs in the SURFACE projection.
+//   2. Do NOT compute or re-derive business values client-side (no client totals/ratios; the contract
+//      `total` is authoritative — R7 firewall / GI-12). Presentation renders; it never decides.
+//   3. The cards must stay schema-agnostic: adding a new term key requires NO component change — the
+//      surface simply projects another `{id,label,value}` row.
+//
 // SCOPE: presentation only — no fetch, no mutation, no business logic (Content ≠ Presentation, Inv #9).
 
 import type { QuotationState, MoneyValue, ActivityEntry } from "./view-models";
@@ -27,6 +45,9 @@ import type { QuotationState, MoneyValue, ActivityEntry } from "./view-models";
  * presentation renders them without coining any specific term key. `value` is already display-formatted.
  */
 export interface QuotationTermRow {
+  /** Optional stable identity minted by the surface projection (like `QuotationAttachment.id`) — used as
+   *  the React key so repeated/duplicate display labels from a dev-doc jsonb blob never collide. */
+  id?: string;
   label: string;
   value: string;
 }
@@ -37,6 +58,10 @@ export interface QuotationTermRow {
  * surface never re-computes anything — amounts and the total are contract-provided figures only.
  */
 export interface QuotationPriceLine {
+  /** Optional stable identity minted by the surface projection (like `QuotationAttachment.id`) — used as
+   *  the React key so two same-labelled price lines (a dev-doc jsonb blob has no unique-label guarantee)
+   *  never collide. */
+  id?: string;
   label: string;
   amount?: MoneyValue;
   /** Optional quantity/unit note exactly as the projection supplies it (display only). */

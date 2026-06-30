@@ -39,6 +39,8 @@ export function FeaturedCategories() {
       viewAllHref="/categories"
       viewAllLabel="All categories"
     >
+      {/* Count-agnostic grid (N3): renders whatever number of tiles a future facet read returns — the
+          six here is the curated seed, not a layout assumption (the grid wraps any N). */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {FEATURED_CATEGORIES.map((category) => (
           <CategoryTile key={category.slug} category={category} />

@@ -10,6 +10,7 @@
 //    here — that rides the M5 embedded trust-badge (Doc-5G), pending [ESC-7G-SCORE-DISPLAY].
 //  • Published-only Public projection — no buyer-private field exists; an excluded vendor is byte-
 //    identical to any other (Invariant #11; GI-12). Missing logo → identity fallback (no broken image).
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { Card } from "@/frontend/primitives/card";
@@ -22,10 +23,16 @@ import { vendorInitials, type VendorCardVM } from "./view-models";
 
 export interface VendorCardProps {
   vendor: VendorCardVM;
+  /**
+   * Action slot (N2). When omitted, the card renders the default "View profile" link to the public
+   * microsite. The card makes NO assumption about which action belongs here — callers inject their own
+   * (e.g. Compare, Add to RFQ) so the card stays generic across directory / search / showcase surfaces.
+   */
+  action?: ReactNode;
   className?: string;
 }
 
-export function VendorCard({ vendor, className }: VendorCardProps) {
+export function VendorCard({ vendor, action, className }: VendorCardProps) {
   return (
     <Card className={cn("flex h-full flex-col p-4", className)}>
       <div className="flex items-start gap-3">
@@ -59,13 +66,15 @@ export function VendorCard({ vendor, className }: VendorCardProps) {
       </div>
 
       <div className="mt-auto pt-4">
-        <Button asChild variant="outline" size="sm" className="w-full">
-          {/* → /vendors/{slug}: the public microsite (P-PUB-13, M2.3). Anonymous read; no mutation. */}
-          <Link href={`/vendors/${vendor.slug}`}>
-            View profile
-            <span className="sr-only"> — {vendor.name}</span>
-          </Link>
-        </Button>
+        {action ?? (
+          <Button asChild variant="outline" size="sm" className="w-full">
+            {/* Default action → /vendors/{slug}: the public microsite (P-PUB-13, M2.4). Anonymous read. */}
+            <Link href={`/vendors/${vendor.slug}`}>
+              View profile
+              <span className="sr-only"> — {vendor.name}</span>
+            </Link>
+          </Button>
+        )}
       </div>
     </Card>
   );

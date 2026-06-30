@@ -12,6 +12,10 @@
 //    (Doc-5G public projection), pending [ESC-7G-SCORE-DISPLAY] / [ESC-7B-TRUSTSCORE]. The only public
 //    trust signal carried here is the binary verification status (`verified`); absence = no badge,
 //    never a fabricated "pending"/"unverified" state.
+//
+// GUARDRAIL (N4): these VMs stay PRESENTATION-ONLY. They must NOT evolve into shared business objects
+// or contract DTOs. The wired phase MAPS the frozen public reads onto them — it never promotes them
+// upward into a domain/contract type.
 import type { LucideIcon } from "lucide-react";
 import type { CapabilityFlags } from "@/frontend/components/capability-matrix";
 
