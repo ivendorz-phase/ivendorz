@@ -9,3 +9,8 @@ export {
   type GetBuyerProfileHandlerDeps,
   type ResolveSession,
 } from "./get-buyer-profile.route-handler";
+
+export {
+  handleUpsertBuyerProfile,
+  type UpsertBuyerProfileHandlerDeps,
+} from "./upsert-buyer-profile.route-handler";

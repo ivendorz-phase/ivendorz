@@ -37,6 +37,55 @@ export interface BuyerProfileView {
 export type GetBuyerProfileResult = { found: true; profile: BuyerProfileView } | { found: false };
 
 /**
+ * Input to `identity.upsert_buyer_profile.v1` (Doc-4C §C10; Doc-2 §10.2 column set). All fields are
+ * OPTIONAL (partial upsert — an omitted field is left unchanged on update / DB-null on create). The active
+ * org is the SERVER-RESOLVED tenant anchor (never client input — Invariant #5) and is NOT part of this
+ * input. (Doc-4C also lists `approval_settings` — no `buyer_profiles` column exists for it in Doc-2 §10.2,
+ * so it is deferred; a future schema/contract additive owns it.)
+ */
+export interface UpsertBuyerProfileInput {
+  /** Buyer industry (Doc-2 §10.2); omit = unchanged (update) / null (create). */
+  industry?: string | null;
+  /** Factory info (`factory_info_jsonb`, Doc-2 §10.2); IDs/values only, no blobs (Doc-6A §12). */
+  factoryInfo?: unknown;
+  /** Delivery locations (`delivery_locations_jsonb`, Doc-2 §10.2). */
+  deliveryLocations?: unknown;
+  /** Procurement preferences (`procurement_preferences_jsonb`, Doc-2 §10.2). */
+  procurementPreferences?: unknown;
+  /**
+   * Optimistic-concurrency token (Doc-4C §C10 — `updated_at` concurrency on UPDATE). When present and the
+   * live row's `updated_at` differs, the update is a CONFLICT (stale). Ignored on create.
+   */
+  expectedUpdatedAt?: Date;
+}
+
+/** The result of a successful upsert (Doc-4C §C10 response: `buyer_profile_id` + `updated_at`). */
+export interface UpsertBuyerProfileResult {
+  /** The upserted `buyer_profiles.id` (UUIDv7). */
+  buyerProfileId: string;
+  /** The resulting `updated_at` (the new optimistic-concurrency token). */
+  updatedAt: Date;
+}
+
+/** Error outcome of an upsert (Doc-4C §C10 error register; classes per Doc-5A §6.2). */
+export interface UpsertBuyerProfileError {
+  /** Doc-5A §6.2 class → HTTP status (VALIDATION → 400 · AUTHORIZATION → 403 · CONFLICT → 409). */
+  errorClass: "VALIDATION" | "AUTHORIZATION" | "CONFLICT";
+  /** The Doc-4C §C10 `identity_buyer_profile_*` register code (frozen; never coined here). */
+  errorCode: string;
+  /** Human-safe, non-leaking message. */
+  message: string;
+}
+
+/**
+ * Outcome of `identity.upsert_buyer_profile.v1`. `ok: true` + `created` distinguishes the wire `201`
+ * (created) from `200` (updated). `ok: false` carries the contract error (validation/forbidden/conflict).
+ */
+export type UpsertBuyerProfileOutcome =
+  | { ok: true; created: boolean; result: UpsertBuyerProfileResult }
+  | { ok: false; error: UpsertBuyerProfileError };
+
+/**
  * Input to lazy first-login identity provisioning (WP-1.3) — the authenticated Supabase subject.
  *
  * Provisioning is OUT-OF-BAND (Doc-7E §2 / `[ESC-7-API-SIGNUP]`): signup coins NO `create_user`

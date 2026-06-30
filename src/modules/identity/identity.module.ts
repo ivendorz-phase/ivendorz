@@ -4,8 +4,14 @@
 // `identityQueries`, never the application/infrastructure layers directly.
 
 import { getBuyerProfile } from "./application/queries/get-buyer-profile.query";
+import { upsertBuyerProfile } from "./contracts/services";
 
 /** The M1 read surface realized in WP-1.2 (the active-org buyer-profile read; Doc-5C §6). */
 export const identityQueries = {
   getBuyerProfile,
+};
+
+/** The M1 write surface (D7) — the active-org buyer-profile upsert (Doc-4C §C10), audit-on-write. */
+export const identityCommands = {
+  upsertBuyerProfile,
 };

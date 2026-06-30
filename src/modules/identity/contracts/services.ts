@@ -14,11 +14,22 @@ import type { AllocateHumanReference } from "@/modules/core/contracts";
 import type { DbExecutor } from "@/shared/db";
 import { provisionIdentityForAuthUser } from "../application/commands/provision-identity.command";
 import { getBuyerProfile as getBuyerProfileQuery } from "../application/queries/get-buyer-profile.query";
+import {
+  upsertBuyerProfileCommand,
+  type UpsertBuyerProfileContext,
+  type UpsertBuyerProfileDeps,
+} from "../application/commands/upsert-buyer-profile.command";
 import type {
   GetBuyerProfileResult,
   ProvisionIdentityInput,
   ProvisionIdentityResult,
+  UpsertBuyerProfileInput,
+  UpsertBuyerProfileOutcome,
 } from "./types";
+
+// Re-export the write-command's context/deps shapes on the contracts surface so the app-layer composition
+// edge (`src/server/identity`) can build them via `@/modules/identity/contracts` (contracts-only).
+export type { UpsertBuyerProfileContext, UpsertBuyerProfileDeps };
 
 /** Dependencies a caller injects into provisioning — the Module 0 contract service(s). */
 export interface ProvisionIdentityDeps {
@@ -73,3 +84,28 @@ export const getBuyerProfile: GetBuyerProfile = (db) => getBuyerProfileQuery(db)
 // boundary-legal handle the app-layer route composition consumes via `@/modules/identity/contracts`
 // (same-module contracts → own `api/`; `${from.module}`-scoped — no cross-module internal access).
 export { mapGetBuyerProfile } from "../api/get-buyer-profile.handler";
+
+/**
+ * `identity.upsert_buyer_profile.v1` (Doc-4C §C10; D7) — the PUBLIC, contracts-only face over the private
+ * M1 write command. Create-or-update the active-org buyer profile, appending the canonical audit action
+ * (`buyer_profile_created` / `buyer_profile_updated` — Doc-2_Patch_v1.0.4 + Doc-4C realization patch)
+ * ATOMICALLY with the write. The active org is RESOLVED + enforced upstream by the app-layer org-context
+ * guard (RLS); the M0 `appendAuditRecord` is INJECTED by the contract TYPE (the boundary-legal mechanism).
+ *
+ * MUST be invoked INSIDE `withActiveOrgContext` — the `db` executor carries the server-set `app.active_org`
+ * / `app.user_id` GUCs that BOTH the buyer_profiles RLS and the audit `WITH CHECK` read.
+ */
+export type UpsertBuyerProfile = (
+  input: UpsertBuyerProfileInput,
+  ctx: UpsertBuyerProfileContext,
+  deps: UpsertBuyerProfileDeps,
+  db?: DbExecutor,
+) => Promise<UpsertBuyerProfileOutcome>;
+
+/** Concrete `identity.upsert_buyer_profile.v1` facade (M1 contracts → M1 application command). */
+export const upsertBuyerProfile: UpsertBuyerProfile = (input, ctx, deps, db) =>
+  upsertBuyerProfileCommand(input, ctx, deps, db);
+
+// The M1 WIRE FACE for the buyer-profile WRITE (outcome → Doc-5A envelope + §6.2 status). Same One-Owner
+// placement as the read mapper — M1 owns how its write becomes HTTP.
+export { mapUpsertBuyerProfile } from "../api/upsert-buyer-profile.handler";

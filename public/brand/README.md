@@ -1,27 +1,43 @@
-# iVendorz brand assets — SINGLE SOURCE OF TRUTH
+# Brand Assets
 
-Every surface renders the official logo via the kit (`src/frontend/brand`):
-`BrandLogo` (full lockup) and `BrandMark` (compact mark). Nothing recreates, redraws,
-recolors, or approximates the brand in code.
+These SVG files are **authoritative**.
 
-## Required files (place the OFFICIAL SVGs here, byte-for-byte)
+**Never:**
 
-| File | Used by | Surfaces |
+- recreate
+- optimize
+- export
+- redraw
+- simplify
+- recolor
+
+Replace only with an **official replacement approved by Brand**.
+
+These assets are intentionally **stored exactly as delivered** — the original bytes are canonical
+(no SVGO, no Illustrator/export save, no cleanup, no reformatting). The logo is an _asset, not code_,
+and is **never regenerated** (including by tooling or AI).
+
+## Status
+
+Brand integration is complete. The only remaining requirement is the addition of the official,
+unmodified SVG assets under `public/brand/`. Until those files are present, logo rendering will
+remain intentionally incomplete.
+
+## Files
+
+| File | Component | Surfaces |
 |---|---|---|
-| `ivendorz-logo-long.svg` | `BrandLogo` (default) | Public header, auth pages, marketing/landing, footer, docs, branded empty states |
-| `ivendorz-logo-s.svg` | `BrandMark` (compact) | Authenticated shell, collapsed sidebar, mobile nav, favicon, loading/avatar marks |
+| `ivendorz-logo-long.svg` | `BrandLogo` (default · full lockup) | public header · auth · marketing/landing · footer · docs · branded empty states |
+| `ivendorz-logo-s.svg` | `BrandMark` (compact) | authenticated shell · collapsed sidebar · mobile nav · favicon · loading/avatar marks |
 
-## Rules
+## The only way to render the brand
 
-- Use the **official** SVGs exactly as provided — **never recreate, recolor, re-proportion,
-  or add gradients/shadows/outlines**. Preserve each file as-is.
-- Size only via the component `height` prop; width stays proportional (never stretched).
-- The favicon is wired in `app/layout.tsx` via the brand module's `BRAND_MARK_SRC` constant.
-- **Commit these exactly as delivered — no SVGO, no optimization, no re-export / Illustrator save,
-  no cleanup, no formatting. The original bytes are canonical.** They are an asset, not code, and are
-  never regenerated. Only `BrandLogo` / `BrandMark` (and the exported `BRAND_*_SRC` constants) may
-  reference these paths.
+- Render **only** via the kit: `src/frontend/brand` → `BrandLogo` / `BrandMark`. Size with the
+  `height` prop; width stays proportional (never stretched). No effects, no recolor.
+- These paths are referenced **only** through the brand module — the components, or the exported
+  `BRAND_LOGO_SRC` / `BRAND_MARK_SRC` constants. Nothing else hardcodes `/brand/…` (the favicon in
+  `app/layout.tsx` imports `BRAND_MARK_SRC`).
+- **Never** substitute text, Lucide icons, or placeholder squares for the brand.
 
-> If either file is missing, the logo will 404 at runtime — drop the official asset in with the
-> exact filename above. (These bytes were intentionally left for the brand owner to place rather
-> than reproduced in-tool, to avoid any risk of an approximated/altered brand mark.)
+> Onboarding requirement: any new UI needing branding reuses `BrandLogo` / `BrandMark` as-is. To
+> change the artwork, replace these files with a Brand-approved original — do not edit them in place.

@@ -17,7 +17,8 @@
 
 import { NextResponse } from "next/server";
 import { ensureProvisioned, resolveSupabaseSession } from "@/server/auth";
-import { handleGetBuyerProfile } from "@/server/identity";
+import { handleGetBuyerProfile, handleUpsertBuyerProfile } from "@/server/identity";
+import type { UpsertBuyerProfileInput } from "@/modules/identity/contracts";
 
 /**
  * `GET /identity/buyer_profiles` — the active-org buyer-profile read. The handler core resolves the
@@ -33,4 +34,50 @@ export async function GET(): Promise<NextResponse> {
   // HTTP-standard 401 auth challenge header (transport only; not a Doc-5A application header).
   const headers = status === 401 ? { "WWW-Authenticate": "Bearer" } : undefined;
   return NextResponse.json(body, { status, headers });
+}
+
+/** Shape of the JSON request body for the upsert (Doc-4C §C10 — snake_case wire field names). */
+interface UpsertBuyerProfileBody {
+  industry?: unknown;
+  factory_info?: unknown;
+  delivery_locations?: unknown;
+  procurement_preferences?: unknown;
+  /** Optimistic-concurrency token (ISO-8601) on update. */
+  updated_at?: unknown;
+}
+
+/** Map the snake_case wire body → the typed (camelCase) command input (Doc-4C §C10 request contract). */
+function toUpsertInput(body: UpsertBuyerProfileBody): UpsertBuyerProfileInput {
+  return {
+    industry: typeof body.industry === "string" ? body.industry : (body.industry as undefined),
+    factoryInfo: body.factory_info,
+    deliveryLocations: body.delivery_locations,
+    procurementPreferences: body.procurement_preferences,
+    expectedUpdatedAt: typeof body.updated_at === "string" ? new Date(body.updated_at) : undefined,
+  };
+}
+
+/**
+ * `POST /identity/buyer_profiles` — `identity.upsert_buyer_profile.v1` (Doc-4C §C10). Create-or-update the
+ * active-org buyer profile, appending the canonical audit action atomically. The handler core resolves the
+ * session, provisions, and runs the M1 command inside the server-validated active-org context. Unauthenticated
+ * → `401`; created → `201`; updated → `200`; validation/forbidden/conflict → `400`/`403`/`409`.
+ */
+export async function POST(request: Request): Promise<NextResponse> {
+  let body: UpsertBuyerProfileBody;
+  try {
+    body = (await request.json()) as UpsertBuyerProfileBody;
+  } catch {
+    body = {};
+  }
+
+  const { status, body: responseBody } = await handleUpsertBuyerProfile(toUpsertInput(body), {
+    resolveSession: resolveSupabaseSession,
+    ensureProvisioned,
+    ipAddress: request.headers.get("x-forwarded-for"),
+    userAgent: request.headers.get("user-agent"),
+  });
+
+  const headers = status === 401 ? { "WWW-Authenticate": "Bearer" } : undefined;
+  return NextResponse.json(responseBody, { status, headers });
 }
