@@ -8,7 +8,7 @@
 //
 // SCOPE: presentation only — no fetch, no mutation, no business logic (Content ≠ Presentation, Inv #9).
 
-import type { RfqState, MoneyValue, ActivityEntry } from "./view-models";
+import type { RfqState, QuotationState, MoneyValue, ActivityEntry } from "./view-models";
 
 /** One RFQ row in the P-BUY-06 list. `humanRef` is a display label; routes carry the opaque `id`. */
 export interface RfqListItem {
@@ -78,4 +78,43 @@ export interface RfqDetailData {
   lifecycle: ActivityEntry[];
   /** Doc-4M-permitted buyer actions for the current state (GI-10; server-derived). */
   permittedActions: RfqLifecycleAction[];
+  /**
+   * The P-BUY-09 Quotations tab data (`list_quotations_for_rfq`). At wiring this is an INDEPENDENTLY
+   * streamed read (its own Suspense boundary — §11.4). `null`/absent ⇒ the tab renders its
+   * visibility-gated contract-empty state ("awaiting vendor responses"). Optional so the not-found and
+   * Overview-only renders need no quotation data.
+   */
+  quotations?: QuotationListData | null;
+}
+
+/**
+ * One quotation row in the P-BUY-09 list (`list_quotations_for_rfq`, T-LISTING). The buyer sees each
+ * DISCLOSED quotation's real values (Doc-3 §9.1). `quotationStateDisplay` maps the frozen state to a
+ * neutral label/tone — `not_selected`/`withdrawn` are uniform and NON-PENALIZING (Doc-3 §8.3/§9.5); a
+ * vendor never learns it "lost". Routes use the OPAQUE quotation id.
+ */
+export interface QuotationListItem {
+  id: string;
+  /** Vendor display name as the contract discloses it. */
+  vendorName: string;
+  state: QuotationState;
+  /** Quoted amount disclosed to the buyer (Doc-3 §9.1). */
+  amount?: MoneyValue;
+  /** Quotation validity window end (ISO-8601), formatted at the render site. */
+  validUntil?: string;
+  /** ISO-8601 submission instant of this (immutable) version (Inv #8), formatted at the render site. */
+  submittedAt?: string;
+}
+
+/**
+ * The P-BUY-09 list view-model. VISIBILITY-GATED: the server returns only DISCLOSED quotations (outside
+ * the buyer's `quotation_visibility` scope collapses to NOT_FOUND server-side — never a client 404). The
+ * UI renders rows in the caller-supplied governed order and NEVER re-ranks the matching set (R6/GI-04).
+ * Cursor pagination only (GI-03); `total` renders only if the contract provides it — a client-computed
+ * total could leak a count of withheld quotes (GI-12).
+ */
+export interface QuotationListData {
+  items: QuotationListItem[];
+  nextCursor?: string | null;
+  total?: number;
 }

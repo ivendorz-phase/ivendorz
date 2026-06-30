@@ -1,16 +1,21 @@
 import {
   Boxes,
   Briefcase,
+  Building2,
   CheckSquare,
   ClipboardList,
   CreditCard,
   FileText,
+  FolderTree,
+  Globe,
+  Handshake,
   Inbox,
   LayoutDashboard,
   Megaphone,
   Package,
   Search,
   Settings,
+  ShieldCheck,
   Star,
   Store,
   UserPlus,
@@ -43,6 +48,15 @@ export const NAV_ICONS = {
   approvals: CheckSquare,
   engagements: Briefcase,
   crm: Users,
+  // Vendor workspace (Doc-7G).
+  company: Building2,
+  catalog: Package,
+  categories: FolderTree,
+  branding: Globe,
+  pipeline: ClipboardList,
+  deals: Handshake,
+  trust: ShieldCheck,
+  org: Users,
 } as const satisfies Record<string, LucideIcon>;
 
 export type NavIconKey = keyof typeof NAV_ICONS;

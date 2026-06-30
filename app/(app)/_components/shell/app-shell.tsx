@@ -65,9 +65,11 @@ export function AppShell({
         <div className="flex flex-1">
           <Sidebar nav={vm.nav} />
           <div className={cn("flex min-w-0 flex-1 flex-col", hasQuickBar && "pb-16 md:pb-0")}>
-            {/* Frame only — each workspace page owns its content container (mx-auto max-w-content + padding). */}
+            {/* The shell owns the content container (mx-auto max-w-content + padding); pages render content. */}
             <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 focus:outline-none">
-              {children}
+              <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-6 sm:px-6">
+                {children}
+              </div>
             </main>
             <footer className="border-t border-border px-4 py-4 text-xs text-muted-foreground sm:px-6">
               <div className="mx-auto flex w-full max-w-[var(--iv-content-max)] flex-col items-center justify-between gap-2 sm:flex-row">

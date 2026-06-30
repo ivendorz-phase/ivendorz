@@ -1,17 +1,17 @@
-// Temporary, A7-NEUTRAL mount for the Vendor Workspace (presentation phase).
+// Vendor Workspace layout — mounts the CANONICAL Platform Shell (one shell, multiple workspaces). The
+// vendor's bespoke shell (VendorWorkspaceShell + topbar / sidebar-nav / mobile-nav / bottom-bar /
+// breadcrumbs / shell-slots) has been RETIRED in favour of <AppShell>: workspaces contribute only a
+// ViewModel + content. App Router composition only (REPOSITORY_STRUCTURE §8) — no business logic.
 //
-// [ESC-7G-A7] (BLOCKER, pending the human Architecture Board) freezes the design-introduced
-// `(vendor)` route-group name and the Hybrid "mount-both" IA. To keep parallel FE work moving
-// WITHOUT pre-deciding A7 — and to avoid a URL collision with Team 2's `(buyer)` group at
-// `/dashboard` — the Vendor Workspace mounts under a disposable real segment `/workspace/*`. The
-// shell + nav are route-group-agnostic; the `basePath` prop makes this temporary prefix the ONLY
-// thing that changes when A7 is ratified (rename/rehome the segment, drop `basePath`).
-//
-// Presentation-only: no data, no backend, no permission logic. The shell-owned org switcher,
-// notification center and user menu render as placeholders (Doc-7C SR3/SR6; GR12).
+// [ESC-7G-A7] (pending the human Architecture Board) freezes the `(vendor)` route-group name + the
+// Hybrid "mount-both" IA. To keep moving WITHOUT pre-deciding A7 — and to avoid a URL collision with the
+// `(buyer)` group at `/dashboard` — the Vendor Workspace stays on the disposable `/workspace/*` segment.
+// Only the nav-href prefix (VENDOR_SHELL_VM `BASE`) carries it; the shell is route-group-agnostic, so A7
+// ratification is a one-line change. PRESENTATION ONLY — identity is a neutral placeholder until wired.
 import type { ReactNode } from "react";
-import { VendorWorkspaceShell } from "../_components/vendor";
+import { AppShell } from "../_components/shell";
+import { VENDOR_SHELL_VM } from "../_components/vendor/vendor-shell-vm";
 
 export default function WorkspaceLayout({ children }: { children: ReactNode }) {
-  return <VendorWorkspaceShell basePath="/workspace">{children}</VendorWorkspaceShell>;
+  return <AppShell vm={VENDOR_SHELL_VM}>{children}</AppShell>;
 }

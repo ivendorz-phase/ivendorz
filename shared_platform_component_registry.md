@@ -91,12 +91,13 @@ Until promotion completes, the component stays at its current scope; the second 
 | ~~`BuyerTopbar`/`BuyerSidebar`/`BuyerMobileNav`~~ **RETIRED** → Tier-1 `AppShell` | — | — | — | **Promoted** to Tier 1 (§5.2) |
 | `KpiStatCard` | Card | P-BUY-01 | 1 (Buyer) | No |
 | `WorkQueueCard` | Card, Button, EmptyState, `DataListTable` | P-BUY-01 | 1 (Buyer) | No |
-| `DataListTable<T>` | (semantic table) | P-BUY-01, P-BUY-06 | 1 workspace (2 screens) | **Watch** — generic; **Doc-7B `data-table` candidate** if Vendor/Public need it (→ §4.2) |
+| `DataListTable<T>` | (semantic table) | P-BUY-01, P-BUY-06, **P-BUY-09** | 1 workspace (**3 screens**) | **Strongest Watch** — generic; **Doc-7B `data-table` candidate**. Board ruling (M2): evidence-driven — do NOT promote until a 2nd WORKSPACE (Vendor/Public) needs it (→ §4.2) |
 | `ListToolbar` | Input, Button | P-BUY-06 | 1 (Buyer) | Watch |
 | `ActivityTimeline` | Card, EmptyState | P-BUY-01, P-BUY-08 (lifecycle) | 1 workspace (2 screens) | Watch |
-| `format` (Money/Ref/formatDate/formatInstant) | CurrencyDisplay | P-BUY-01/06/08 | 1 (Buyer) | Watch |
+| `format` (Money/Ref/formatDate/formatInstant) | CurrencyDisplay | P-BUY-01/06/08/09 | 1 (Buyer) | Watch (Board: "becoming true Platform utilities" — promote on 2nd workspace) |
 | `RfqDetailTabs` (client tab chrome) | Tabs | P-BUY-08 | 1 (Buyer) | No (RFQ-specific) |
-| `state-display` (Doc-4M state → label/tone) | — | P-BUY-01/06/08 | 1 (Buyer) | No (domain mapping) |
+| `QuotationsTab` | `DataListTable`, StatusChip, EmptyState, PaginationControl, Money | P-BUY-09 | 1 (Buyer) | No (RFQ-quotation-specific) |
+| `state-display` (Doc-4M state → label/tone) | — | P-BUY-01/06/08/09 | 1 (Buyer) | No (domain mapping) |
 | list/detail/dashboard skeleton presets | Skeleton, Card | P-BUY-01/06/08 | 1 (Buyer) | Watch |
 
 > **Reused, NOT rebuilt (P-BUY-06/08):** the page `<h1>` + detail hero use the **shell `PageHeader`**; the detail breadcrumb uses the **shell `Breadcrumbs`** — Team 2's earlier plan to build a bespoke `DetailHero`/`Breadcrumbs` was **dropped** in favour of the canonical shell components (search-before-build, §6.1).

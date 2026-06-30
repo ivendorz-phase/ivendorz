@@ -161,10 +161,7 @@ function FirstRunEmpty() {
 export function BuyerDashboardView({ data }: { data: BuyerDashboardViewModel | null }) {
   if (data === null) {
     return (
-      <section
-        aria-labelledby="dashboard-heading"
-        className="mx-auto flex max-w-[var(--iv-content-max)] flex-col gap-6 p-4 sm:p-6"
-      >
+      <section aria-labelledby="dashboard-heading" className="flex flex-col gap-6">
         <div>
           <h1
             id="dashboard-heading"
@@ -183,10 +180,7 @@ export function BuyerDashboardView({ data }: { data: BuyerDashboardViewModel | n
     typeof kpis.winRate === "number" ? `${Math.round(kpis.winRate * 100)}%` : undefined;
 
   return (
-    <section
-      aria-labelledby="dashboard-heading"
-      className="mx-auto flex max-w-[var(--iv-content-max)] flex-col gap-6 p-4 sm:p-6"
-    >
+    <section aria-labelledby="dashboard-heading" className="flex flex-col gap-6">
       <PageHeader headingId="dashboard-heading" />
 
       {/* KPI stat-card band — every figure a contract read; counts non-disclosure-safe (Inv #11). */}

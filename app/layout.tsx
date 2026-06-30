@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { BRAND_MARK_SRC } from "@/frontend/brand";
 import "./globals.css";
 
 /**
@@ -40,10 +41,12 @@ export const metadata: Metadata = {
     "industrial suppliers",
   ],
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://ivendorz.com"),
+  // Favicon uses the brand module's path constant — the brand SVGs are referenced ONLY via the
+  // brand module (BrandLogo/BrandMark or these exported constants), never hardcoded elsewhere.
   icons: {
-    icon: "/brand/ivendorz-logo-s.svg",
-    shortcut: "/brand/ivendorz-logo-s.svg",
-    apple: "/brand/ivendorz-logo-s.svg",
+    icon: BRAND_MARK_SRC,
+    shortcut: BRAND_MARK_SRC,
+    apple: BRAND_MARK_SRC,
   },
   openGraph: {
     type: "website",

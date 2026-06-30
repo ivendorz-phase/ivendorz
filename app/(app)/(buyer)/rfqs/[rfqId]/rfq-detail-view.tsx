@@ -25,6 +25,7 @@ import { EmptyState } from "@/frontend/components/empty-state";
 import { StatusChip } from "@/frontend/components/status-chip";
 import { PageHeader, Breadcrumbs } from "../../../_components/shell";
 import { RfqDetailTabs } from "./rfq-detail-tabs";
+import { QuotationsTab } from "./quotations-tab";
 import { ActivityTimeline } from "../../_components/activity-timeline";
 import { formatDate, Money, Ref } from "../../_components/format";
 import { rfqStateDisplay } from "../../_components/state-display";
@@ -150,7 +151,7 @@ export function RfqDetailView({ data }: { data: RfqDetailData | null }) {
       {/* The (server-rendered) tab contents are handed to the thin client tab chrome (only it hydrates). */}
       <RfqDetailTabs
         overview={<OverviewTab data={data} />}
-        quotations={<TabPlaceholder title="Quotations" screen="P-BUY-09" />}
+        quotations={<QuotationsTab data={data.quotations ?? null} rfqId={data.id} />}
         activity={<TabPlaceholder title="Activity" screen="P-BUY-10" />}
       />
     </div>
