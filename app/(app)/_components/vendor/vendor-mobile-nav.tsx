@@ -34,9 +34,9 @@ export function VendorMobileNav({ open, onOpenChange, groups, basePath }: Vendor
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-72 p-0">
-        <SheetHeader className="flex-row items-center justify-between gap-2 border-b border-border px-4 py-3 text-left">
-          <SheetTitle>Vendor workspace</SheetTitle>
+      <SheetContent side="left" className="w-72 bg-iv-nav-bg p-0">
+        <SheetHeader className="flex-row items-center justify-between gap-2 border-b border-iv-nav-border px-4 py-3 text-left text-iv-nav-fg">
+          <SheetTitle className="text-iv-nav-fg">Vendor workspace</SheetTitle>
           <LocaleTogglePlaceholder />
         </SheetHeader>
         <VendorSidebarNav groups={groups} basePath={basePath} className="py-2" />

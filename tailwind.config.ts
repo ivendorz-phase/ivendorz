@@ -70,6 +70,38 @@ const config: Config = {
           900: "var(--iv-brand-900)",
           950: "var(--iv-brand-950)",
         },
+        "iv-navy": {
+          50: "var(--iv-navy-50)",
+          100: "var(--iv-navy-100)",
+          200: "var(--iv-navy-200)",
+          300: "var(--iv-navy-300)",
+          400: "var(--iv-navy-400)",
+          500: "var(--iv-navy-500)",
+          600: "var(--iv-navy-600)",
+          700: "var(--iv-navy-700)",
+          800: "var(--iv-navy-800)",
+          900: "var(--iv-navy-900)",
+          950: "var(--iv-navy-950)",
+        },
+        "iv-nav": {
+          bg: "var(--iv-nav-bg)",
+          fg: "var(--iv-nav-fg)",
+          "fg-muted": "var(--iv-nav-fg-muted)",
+          border: "var(--iv-nav-border)",
+          hover: "var(--iv-nav-hover-bg)",
+          "selected-bg": "var(--iv-nav-selected-bg)",
+          "selected-fg": "var(--iv-nav-selected-fg)",
+          "badge-bg": "var(--iv-nav-badge-bg)",
+          "badge-fg": "var(--iv-nav-badge-fg)",
+        },
+        "iv-chart": {
+          1: "var(--iv-chart-1)",
+          2: "var(--iv-chart-2)",
+          3: "var(--iv-chart-3)",
+          4: "var(--iv-chart-4)",
+          5: "var(--iv-chart-5)",
+          6: "var(--iv-chart-6)",
+        },
         "iv-amber": {
           50: "var(--iv-amber-50)",
           100: "var(--iv-amber-100)",
@@ -156,6 +188,13 @@ const config: Config = {
           fabricate: "var(--iv-cap-fabricate)",
           consult: "var(--iv-cap-consult)",
         },
+      },
+
+      /* -----------------------------------------------------------------------
+         BACKGROUND IMAGES — brand gradients (color migration 2026-06-30)
+      ----------------------------------------------------------------------- */
+      backgroundImage: {
+        "iv-primary": "var(--iv-gradient-primary)",
       },
 
       /* -----------------------------------------------------------------------

@@ -46,9 +46,9 @@ export function MobileNav({
           <Menu />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-72 p-0">
-        <SheetHeader className="gap-3 border-b border-border p-4 text-left">
-          <SheetTitle>Menu</SheetTitle>
+      <SheetContent side="left" className="w-72 bg-iv-nav-bg p-0">
+        <SheetHeader className="gap-3 border-b border-iv-nav-border p-4 text-left text-iv-nav-fg">
+          <SheetTitle className="text-iv-nav-fg">Menu</SheetTitle>
           <SheetDescription className="sr-only">Primary navigation</SheetDescription>
           {/* IA §7.3 — org-switcher relocates into the drawer header on mobile. */}
           {org ? <OrgSwitcher activeOrg={org} organizations={organizations ?? [org]} /> : null}
@@ -57,7 +57,7 @@ export function MobileNav({
           {nav.map((section) => (
             <div key={section.id} className="mb-4 last:mb-0">
               {section.label ? (
-                <p className="px-3 pb-1 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <p className="px-3 pb-1 text-2xs font-semibold uppercase tracking-wide text-iv-nav-fg-muted">
                   {section.label}
                 </p>
               ) : null}
@@ -74,8 +74,8 @@ export function MobileNav({
                           className={cn(
                             "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
                             active
-                              ? "bg-accent text-accent-foreground"
-                              : "text-foreground hover:bg-accent",
+                              ? "bg-iv-nav-selected-bg text-iv-nav-selected-fg"
+                              : "text-iv-nav-fg hover:bg-iv-nav-hover",
                           )}
                         >
                           {Icon ? <Icon className="size-4 shrink-0" aria-hidden="true" /> : null}

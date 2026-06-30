@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
@@ -8,10 +9,20 @@ import { NotificationCenter } from "./notification-center";
 import { UserMenu } from "./user-menu";
 import type { ShellViewModel } from "./types";
 
-// Platform shell — topbar (IA §3.3/§4.2 · Doc-7C SR2/SR3/SR6). A Server Component that composes the
-// shell slots; the interactive controls (mobile nav, org-switcher, quick-create, notifications, user
-// menu) are their own Client Components. Sticky, 56px (h-14). PRESENTATION ONLY — wires nothing.
-export function Topbar({ vm }: { vm: ShellViewModel }) {
+// Platform shell — topbar (IA §3.3/§4.2 · Doc-7C SR2/SR3/SR6). A Server Component composing the shell
+// slots; the interactive controls (mobile nav, org-switcher, quick-create, notifications, user menu) are
+// their own Client Components. Sticky, 56px (h-14). PRESENTATION ONLY — wires nothing.
+//
+// SLOT PATTERN: orgSwitcherSlot / notificationSlot / userMenuSlot let a workspace (or the integration
+// layer) inject custom shell-owned slots; each DEFAULTS to the shell's own component.
+export interface TopbarProps {
+  vm: ShellViewModel;
+  orgSwitcherSlot?: ReactNode;
+  notificationSlot?: ReactNode;
+  userMenuSlot?: ReactNode;
+}
+
+export function Topbar({ vm, orgSwitcherSlot, notificationSlot, userMenuSlot }: TopbarProps) {
   const { identity, nav, quickCreate, notifications, unreadCount } = vm;
   return (
     <header className="sticky top-0 z-[var(--iv-z-sticky)] flex h-14 items-center gap-2 border-b border-border bg-background px-3 sm:px-4">
@@ -27,7 +38,9 @@ export function Topbar({ vm }: { vm: ShellViewModel }) {
       </Link>
 
       <div className="ml-1 hidden md:block">
-        <OrgSwitcher activeOrg={identity.activeOrg} organizations={identity.organizations} />
+        {orgSwitcherSlot ?? (
+          <OrgSwitcher activeOrg={identity.activeOrg} organizations={identity.organizations} />
+        )}
       </div>
 
       <div className="ml-auto flex items-center gap-1 sm:gap-2">
@@ -44,8 +57,10 @@ export function Topbar({ vm }: { vm: ShellViewModel }) {
         >
           <Sparkles />
         </Button>
-        <NotificationCenter notifications={notifications} unreadCount={unreadCount} />
-        <UserMenu user={identity.user} />
+        {notificationSlot ?? (
+          <NotificationCenter notifications={notifications} unreadCount={unreadCount} />
+        )}
+        {userMenuSlot ?? <UserMenu user={identity.user} />}
       </div>
     </header>
   );

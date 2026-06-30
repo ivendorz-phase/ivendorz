@@ -75,6 +75,14 @@ export async function ensureRestrictedRlsRole(): Promise<void> {
   await prisma.$executeRawUnsafe(
     `GRANT SELECT, INSERT ON identity.organizations, identity.buyer_profiles TO ${RESTRICTED_RLS_ROLE}`,
   );
+  // core.audit_records (Doc-6B) — the audit-append RLS conformance gate (ESC-W2-AUDIT-RLS §7 = R-b /
+  // ADR-021). SELECT + INSERT so the gate proves the RLS POLICY (staff-only read fail-closes to 0 rows;
+  // the context-bound `WITH CHECK` admits/rejects the INSERT) rather than a missing grant. Grant on the
+  // partitioned parent AND the DEFAULT partition (RLS is per-partition; grants likewise applied to both).
+  await prisma.$executeRawUnsafe(`GRANT USAGE ON SCHEMA core TO ${RESTRICTED_RLS_ROLE}`);
+  await prisma.$executeRawUnsafe(
+    `GRANT SELECT, INSERT ON core.audit_records, core.audit_records_default TO ${RESTRICTED_RLS_ROLE}`,
+  );
 }
 
 /**

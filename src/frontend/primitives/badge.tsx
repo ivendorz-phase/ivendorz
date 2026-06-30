@@ -12,7 +12,7 @@ const badgeVariants = cva(
     variants: {
       variant: {
         neutral: "border-border bg-secondary text-secondary-foreground",
-        brand: "border-iv-brand-100 bg-iv-brand-50 text-iv-brand-700",
+        brand: "border-iv-navy-100 bg-iv-navy-50 text-iv-navy-700",
         amber: "border-iv-amber-100 bg-iv-amber-50 text-iv-amber-700",
         success: "border-transparent bg-iv-success-subtle text-iv-success-base",
         warning: "border-transparent bg-iv-warning-subtle text-iv-warning-base",

@@ -12,7 +12,10 @@
 @layer base {
   :root {
     /* -----------------------------------------------------------------------
-       BRAND — Deep Navy + Electric Indigo
+       BRAND — Electric Indigo (INTERACTIVE / secondary: links, focus rings,
+       selected-nav highlight, brand chips). NAVY (below) is the DOMINANT
+       primary/fill. 2026-06-30 palette migration: navy made dominant; indigo
+       confined to interactive states (purple footprint cut ~80%).
     ----------------------------------------------------------------------- */
     --iv-brand-50: #eef2ff;
     --iv-brand-100: #e0e7ff;
@@ -27,18 +30,34 @@
     --iv-brand-950: #1e1b4b;
 
     /* -----------------------------------------------------------------------
-       PROCUREMENT AMBER — Award, High-Value Signals
+       NAVY — Deep Industrial Navy (DOMINANT brand · primary fills · sidebar)
     ----------------------------------------------------------------------- */
-    --iv-amber-50: #fffbeb;
-    --iv-amber-100: #fef3c7;
-    --iv-amber-200: #fde68a;
-    --iv-amber-300: #fcd34d;
-    --iv-amber-400: #fbbf24;
-    --iv-amber-500: #f59e0b;
-    --iv-amber-600: #d97706;
-    --iv-amber-700: #b45309;
-    --iv-amber-800: #92400e;
-    --iv-amber-900: #78350f;
+    --iv-navy-50: #eef2f8;
+    --iv-navy-100: #d9e1ef;
+    --iv-navy-200: #b7c6e0;
+    --iv-navy-300: #8ba0c6;
+    --iv-navy-400: #5a74a3;
+    --iv-navy-500: #375081;
+    --iv-navy-600: #283f6a;
+    --iv-navy-700: #1f3154;
+    --iv-navy-800: #182643;
+    --iv-navy-900: #111c33;
+    --iv-navy-950: #0b1322;
+
+    /* -----------------------------------------------------------------------
+       PREMIUM GOLD — Award · Premium actions · Verified tiers · Featured · Milestones
+       (token name kept `--iv-amber-*` for stability; values retuned to gold).
+    ----------------------------------------------------------------------- */
+    --iv-amber-50: #fbf7ea;
+    --iv-amber-100: #f5ecca;
+    --iv-amber-200: #ebd99a;
+    --iv-amber-300: #dcc05f;
+    --iv-amber-400: #cda434;
+    --iv-amber-500: #b8860b;
+    --iv-amber-600: #9a6f08;
+    --iv-amber-700: #7c5807;
+    --iv-amber-800: #5f4406;
+    --iv-amber-900: #4a3504;
 
     /* -----------------------------------------------------------------------
        SURFACE — Dark Mode (Primary Experience)
@@ -108,20 +127,31 @@
     --iv-trust-low: #ef4444; /* 0–39 */
     --iv-trust-medium: #f59e0b; /* 40–69 */
     --iv-trust-high: #22c55e; /* 70–89 */
-    --iv-trust-elite: #6366f1; /* 90–100 */
+    --iv-trust-elite: #283f6a; /* 90–100 — Navy (de-purpled from indigo) */
 
     /* Financial Tier Badges */
     --iv-tier-a: #94a3b8; /* Tier A — Steel (0–5 Lac) */
     --iv-tier-b: #34d399; /* Tier B — Emerald (5–25 Lac) */
     --iv-tier-c: #60a5fa; /* Tier C — Blue (25 Lac–1 Cr) */
     --iv-tier-d: #fbbf24; /* Tier D — Gold (1–5 Cr) */
-    --iv-tier-e: #a78bfa; /* Tier E — Violet (5 Cr+) */
+    --iv-tier-e: #283f6a; /* Tier E — Navy (5 Cr+; de-purpled from violet) */
 
     /* Vendor Capability Flags */
     --iv-cap-supply: #3b82f6; /* can_supply — Blue */
-    --iv-cap-service: #818cf8; /* can_service — Indigo */
+    --iv-cap-service: #0d9488; /* can_service — Teal (de-purpled from indigo) */
     --iv-cap-fabricate: #fbbf24; /* can_fabricate — Amber */
     --iv-cap-consult: #22c55e; /* can_consult — Emerald */
+
+    /* -----------------------------------------------------------------------
+       CHART / DATA-VIZ — Navy · Indigo · Sky · Teal · Gold · Gray
+       (industrial; replaces purple-heavy defaults; for future chart surfaces).
+    ----------------------------------------------------------------------- */
+    --iv-chart-1: #283f6a; /* navy */
+    --iv-chart-2: #4f46e5; /* indigo */
+    --iv-chart-3: #0ea5e9; /* sky */
+    --iv-chart-4: #0d9488; /* teal */
+    --iv-chart-5: #b8860b; /* gold */
+    --iv-chart-6: #64748b; /* gray */
 
     /* -----------------------------------------------------------------------
        TYPOGRAPHY
@@ -256,6 +286,22 @@
     --iv-icon-lg: 24px;
     --iv-icon-stroke: 1.75;
 
+    /* Primary brand gradient — Deep Navy → Electric Indigo (premium fills, e.g.
+       primary buttons). Subtle; no neon, no glassmorphism. */
+    --iv-gradient-primary: linear-gradient(135deg, var(--iv-navy-800) 0%, var(--iv-brand-600) 100%);
+
+    /* Navigation rail — always Deep Navy (the industrial sidebar; light content).
+       Selected = soft Indigo highlight; hover = subtle. */
+    --iv-nav-bg: var(--iv-navy-800);
+    --iv-nav-fg: #cbd5ea;
+    --iv-nav-fg-muted: #8ea3c4;
+    --iv-nav-border: rgba(255, 255, 255, 0.08);
+    --iv-nav-hover-bg: rgba(255, 255, 255, 0.06);
+    --iv-nav-selected-bg: rgba(99, 102, 241, 0.18);
+    --iv-nav-selected-fg: #c7d2fe;
+    --iv-nav-badge-bg: rgba(255, 255, 255, 0.1);
+    --iv-nav-badge-fg: #cbd5ea;
+
     /* shadcn/ui compatibility aliases — vendored primitives are themed THROUGH
        the iv semantic tokens via these names (full color values, not HSL
        triplets; tailwind.config maps each color key to `var(--name)`). */
@@ -265,7 +311,7 @@
     --card-foreground: var(--iv-fg);
     --popover: var(--iv-overlay);
     --popover-foreground: var(--iv-fg);
-    --primary: var(--iv-brand-600);
+    --primary: var(--iv-navy-700); /* DOMINANT Deep Navy (was indigo brand-600) */
     --primary-foreground: var(--iv-fg-inverse);
     --secondary: var(--iv-surface-2);
     --secondary-foreground: var(--iv-fg);
@@ -307,8 +353,9 @@
     --iv-shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.7), 0 8px 16px rgba(0, 0, 0, 0.5);
     --iv-shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.8);
 
-    /* Primary brand fill reads a touch brighter on dark for contrast */
-    --primary: var(--iv-brand-500);
+    /* Primary brand fill on dark — navy reads a touch lighter; ink stays white. */
+    --primary: var(--iv-navy-600);
+    --primary-foreground: #ffffff;
   }
 
   /* =========================================================================
@@ -364,7 +411,7 @@
 
   /* Selection */
   ::selection {
-    background-color: rgba(99, 102, 241, 0.25);
+    background-color: rgba(31, 49, 84, 0.18);
     color: inherit;
   }
 

@@ -5,6 +5,18 @@
 //
 // Append-only: the DB triggers (Doc-6B §4.1, CR4′) block any later UPDATE/DELETE of the payload;
 // redaction is the separate core.admin_redact_audit_field contract.
+//
+// RLS admission (ESC-W2-AUDIT-RLS §7 = R-b / ADR-021 / Doc-6B_Structure_Additive_Patch_v1.0.1): the
+// append is admitted by the context-bound `audit_records_context_append` INSERT policy — a tenant-context
+// caller (`app.is_platform_staff = false`) appends a row bound to its own `app.active_org`/`app.user_id`
+// with `actor_type = 'user'`; System/staff paths append under the platform-staff leg. The READ surface
+// stays platform-staff-only.
+//
+// NON-RETURNING (load-bearing — the Doc-6B patch's Deployment Constraint): we use `createMany` (NOT
+// `create`), so the INSERT carries NO `RETURNING` clause. Postgres forces `INSERT … RETURNING` rows
+// through the table's SELECT policy; under the staff-only audit SELECT posture a tenant `RETURNING` would
+// abort with SQLSTATE 42501 and roll back the caller's business write. `audit_id` is minted app-side
+// (below) so no DB-returned key is needed. Do NOT revert to `create()` — it re-introduces the abort.
 
 import { prisma, Prisma, type DbExecutor } from "../../../../shared/db";
 import { uuidv7 } from "../../../../shared/ids";
@@ -20,22 +32,27 @@ function toJsonInput(value: unknown): Prisma.InputJsonValue | typeof Prisma.Json
 
 async function append(input: AppendAuditRecordInput, db: DbExecutor): Promise<{ auditId: string }> {
   const auditId = uuidv7();
-  await db.auditRecord.create({
-    data: {
-      auditId,
-      actorId: input.actorId ?? null,
-      actorType: input.actorType,
-      organizationId: input.organizationId ?? null,
-      entityType: input.entityType,
-      entityId: input.entityId,
-      action: input.action,
-      // jsonb columns: omit when undefined so the column is DB NULL.
-      ...(input.oldValue !== undefined ? { oldValue: toJsonInput(input.oldValue) } : {}),
-      ...(input.newValue !== undefined ? { newValue: toJsonInput(input.newValue) } : {}),
-      eventTime: input.timestamp ?? new Date(),
-      ipAddress: input.ipAddress ?? null,
-      userAgent: input.userAgent ?? null,
-    },
+  // `createMany` (single-row) emits a NON-`RETURNING` INSERT (Prisma 6 returns a count, not the row —
+  // the `RETURNING` variant is the separate `createManyAndReturn`). This is load-bearing: see the
+  // NON-RETURNING note at the top of this file. Exactly one immutable audit row (Doc-4B §A10).
+  await db.auditRecord.createMany({
+    data: [
+      {
+        auditId,
+        actorId: input.actorId ?? null,
+        actorType: input.actorType,
+        organizationId: input.organizationId ?? null,
+        entityType: input.entityType,
+        entityId: input.entityId,
+        action: input.action,
+        // jsonb columns: omit when undefined so the column is DB NULL.
+        ...(input.oldValue !== undefined ? { oldValue: toJsonInput(input.oldValue) } : {}),
+        ...(input.newValue !== undefined ? { newValue: toJsonInput(input.newValue) } : {}),
+        eventTime: input.timestamp ?? new Date(),
+        ipAddress: input.ipAddress ?? null,
+        userAgent: input.userAgent ?? null,
+      },
+    ],
   });
   return { auditId };
 }

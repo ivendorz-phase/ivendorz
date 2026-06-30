@@ -16,7 +16,7 @@ export function VendorWorkspaceSkeleton() {
 
       <div className="flex flex-1">
         {/* rail */}
-        <div className="hidden w-64 shrink-0 flex-col gap-2 border-r border-border p-3 md:flex">
+        <div className="hidden w-64 shrink-0 flex-col gap-2 border-r border-iv-nav-border bg-iv-nav-bg p-3 md:flex">
           {Array.from({ length: 8 }).map((_, index) => (
             <Skeleton key={index} className="h-9 w-full rounded-md" />
           ))}

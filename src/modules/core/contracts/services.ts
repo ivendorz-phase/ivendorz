@@ -10,6 +10,7 @@
 
 import {
   allocateHumanReference as allocateHumanReferenceImpl,
+  appendAuditRecord as appendAuditRecordImpl,
   drainOutbox as drainOutboxImpl,
 } from "../infrastructure";
 import type {
@@ -85,6 +86,17 @@ export interface CoreServices {
  * supplied (Doc-4B §A7 atomicity). Consumed cross-module via `@/modules/core/contracts`.
  */
 export const allocateHumanReference: AllocateHumanReference = allocateHumanReferenceImpl;
+
+/**
+ * Concrete `core.append_audit_record.v1` (Doc-4B §A10), bound to the M0 infrastructure adapter. Appends
+ * exactly one immutable row to `core.audit_records`; participates in the caller's transaction when an
+ * executor is supplied (audit atomic with the business write — Doc-4B §17.1). Consumed cross-module via
+ * `@/modules/core/contracts` (strictly contracts/-only; the contracts→infrastructure binding is
+ * same-module-legal — the canonical DDD facade pattern). The append is admitted under the context-bound
+ * `audit_records_context_append` RLS policy (ESC-W2-AUDIT-RLS §7 = R-b / ADR-021) and is NON-`RETURNING`
+ * (the `audit_id` is app-minted); coins nothing.
+ */
+export const appendAuditRecord: AppendAuditRecord = appendAuditRecordImpl;
 
 /**
  * Concrete `core` outbox drainer (Doc-8B §7.2 / Doc-6B §3.2), bound to the M0 infrastructure adapter.

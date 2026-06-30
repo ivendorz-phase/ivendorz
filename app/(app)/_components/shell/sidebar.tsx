@@ -38,7 +38,7 @@ export function Sidebar({ nav }: { nav: NavSection[] }) {
     <div
       data-collapsed={collapsed}
       className={cn(
-        "sticky top-14 hidden h-[calc(100dvh-3.5rem)] shrink-0 flex-col border-r border-border bg-card md:flex",
+        "sticky top-14 hidden h-[calc(100dvh-3.5rem)] shrink-0 flex-col border-r border-iv-nav-border bg-iv-nav-bg md:flex",
         collapsed ? "w-16" : "w-[264px]",
       )}
     >
@@ -46,7 +46,7 @@ export function Sidebar({ nav }: { nav: NavSection[] }) {
         {nav.map((section) => (
           <div key={section.id} className="mb-4 last:mb-0">
             {section.label && !collapsed ? (
-              <p className="px-3 pb-1 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <p className="px-3 pb-1 text-2xs font-semibold uppercase tracking-wide text-iv-nav-fg-muted">
                 {section.label}
               </p>
             ) : null}
@@ -63,8 +63,8 @@ export function Sidebar({ nav }: { nav: NavSection[] }) {
                       className={cn(
                         "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                         active
-                          ? "bg-accent text-accent-foreground"
-                          : "text-foreground hover:bg-accent",
+                          ? "bg-iv-nav-selected-bg text-iv-nav-selected-fg"
+                          : "text-iv-nav-fg hover:bg-iv-nav-hover",
                         collapsed && "justify-center px-0",
                       )}
                     >
@@ -73,7 +73,7 @@ export function Sidebar({ nav }: { nav: NavSection[] }) {
                       {!collapsed && typeof item.badge === "number" && item.badge > 0 ? (
                         <span
                           data-numeric
-                          className="ml-auto rounded-full bg-muted px-1.5 text-2xs tabular-nums text-muted-foreground"
+                          className="ml-auto rounded-full bg-iv-nav-badge-bg px-1.5 text-2xs tabular-nums text-iv-nav-badge-fg"
                         >
                           {item.badge}
                         </span>
@@ -86,7 +86,7 @@ export function Sidebar({ nav }: { nav: NavSection[] }) {
           </div>
         ))}
       </nav>
-      <div className="border-t border-border p-2">
+      <div className="border-t border-iv-nav-border p-2">
         <Button
           type="button"
           variant="ghost"
@@ -97,7 +97,7 @@ export function Sidebar({ nav }: { nav: NavSection[] }) {
           }}
           aria-expanded={!collapsed}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="w-full justify-center gap-2"
+          className="w-full justify-center gap-2 text-iv-nav-fg hover:bg-iv-nav-hover hover:text-white"
         >
           {collapsed ? <PanelLeft /> : <PanelLeftClose />}
           {!collapsed ? <span>Collapse</span> : null}

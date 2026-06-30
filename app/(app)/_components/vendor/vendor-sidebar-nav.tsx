@@ -54,11 +54,11 @@ export function VendorSidebarNav({
           <div key={group.id} className="flex flex-col gap-1">
             {group.label && (
               <>
-                <Separator className="my-1" />
+                <Separator className="my-1 bg-iv-nav-border" />
                 <p
                   id={headingId}
                   className={cn(
-                    "px-3 pt-1 text-2xs font-semibold uppercase tracking-wide text-muted-foreground",
+                    "px-3 pt-1 text-2xs font-semibold uppercase tracking-wide text-iv-nav-fg-muted",
                     collapsed && "sr-only",
                   )}
                 >
@@ -80,8 +80,8 @@ export function VendorSidebarNav({
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       collapsed && "justify-center",
                       isActive
-                        ? "bg-accent text-accent-foreground"
-                        : "text-foreground hover:bg-accent hover:text-accent-foreground",
+                        ? "bg-iv-nav-selected-bg text-iv-nav-selected-fg"
+                        : "text-iv-nav-fg hover:bg-iv-nav-hover hover:text-white",
                     )}
                   >
                     <Icon aria-hidden="true" className="size-4 shrink-0" />

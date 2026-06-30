@@ -102,7 +102,7 @@ export function VendorWorkspaceShell({
         <div className="flex flex-1">
           <aside
             className={cn(
-              "sticky top-14 hidden h-[calc(100dvh-3.5rem)] shrink-0 border-r border-border bg-background transition-[width] duration-200 md:flex md:flex-col",
+              "sticky top-14 hidden h-[calc(100dvh-3.5rem)] shrink-0 border-r border-iv-nav-border bg-iv-nav-bg transition-[width] duration-200 md:flex md:flex-col",
               collapsed ? "w-16" : "w-64",
             )}
           >
