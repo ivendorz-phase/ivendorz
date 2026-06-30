@@ -13,3 +13,25 @@ export { VendorHero, type VendorHeroProps } from "./vendor-hero";
 export { VendorSection, type VendorSectionProps } from "./vendor-section";
 export { VendorBreadcrumb, type VendorBreadcrumbProps } from "./vendor-breadcrumb";
 export { VendorVerifiedBadge } from "./vendor-verified-badge";
+
+// ── Company-website content (M2.6) — reusable, presentation-only, editorial stand-in (coins nothing). ──
+export { CompanyOverview, type CompanyOverviewProps } from "./company-overview";
+export { MissionVision, type MissionVisionProps } from "./mission-vision";
+export { ManagementMessage, type ManagementMessageProps } from "./management-message";
+export { CapabilitySection, type CapabilitySectionProps } from "./capability-section";
+export { IndustryGrid, type IndustryGridProps } from "./industry-grid";
+export { CertificationGrid, type CertificationGridProps } from "./certification-grid";
+export { CompanyGallery, type CompanyGalleryProps } from "./company-gallery";
+export { CompanyStatistics, type CompanyStatisticsProps } from "./company-statistics";
+export { CompanyTimeline, type CompanyTimelineProps } from "./company-timeline";
+export {
+  getCompanyContent,
+  type VendorCompanyContentVM,
+  type CompanyValueVM,
+  type CompanyTimelineEntryVM,
+  type ManagementMessageVM,
+  type CompanyStatVM,
+  type CertificationVM,
+  type CapabilityAreaVM,
+  type GalleryItemVM,
+} from "./company-content-seed";

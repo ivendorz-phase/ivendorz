@@ -1,36 +1,49 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Factory, FolderOpen, PackageOpen } from "lucide-react";
+import { FolderOpen, PackageOpen } from "lucide-react";
 import { Badge } from "@/frontend/primitives/badge";
 import { Button } from "@/frontend/primitives/button";
-import { Card, CardContent } from "@/frontend/primitives/card";
-import { CapabilityMatrix } from "@/frontend/components/capability-matrix";
+import { Card } from "@/frontend/primitives/card";
 import { ProductCard } from "@/frontend/components/product-card";
 import { ResultsGrid } from "@/frontend/components/results-grid";
 import { EmptyState } from "@/frontend/components/empty-state";
-import { VendorHero, VendorMicrositeLayout, VendorSection } from "../../_components/microsite";
+import {
+  CapabilitySection,
+  CertificationGrid,
+  CompanyGallery,
+  CompanyOverview,
+  CompanyStatistics,
+  CompanyTimeline,
+  IndustryGrid,
+  ManagementMessage,
+  MissionVision,
+  VendorHero,
+  VendorMicrositeLayout,
+  VendorSection,
+  getCompanyContent,
+} from "../../_components/microsite";
 import { getPublicVendorProfile, getPublicVendorProducts } from "../../_components/discovery/seed";
 import { productDetailHref } from "../../_components/product-detail";
 
-// P-PUB-13 Public Vendor Profile / microsite (Doc-7D §4 · M2.5 foundation). PRESENTATION & COMPOSITION
-// ONLY: anonymous, read-only, binds NO Doc-5 contract. The PUBLIC projection of a vendor (Content ≠
-// Presentation, Inv #9): renders published M2 content as a SINGLE page composed of sections (the frozen
+// P-PUB-13 Public Vendor Profile / microsite (Doc-7D §4 · M2.5 foundation + M2.6 company-website content).
+// PRESENTATION & COMPOSITION ONLY: anonymous, read-only, binds NO Doc-5 contract. The PUBLIC projection
+// of a vendor (Content ≠ Presentation, Inv #9), rendered as a SINGLE page of sections (the frozen
 // microsite model — one page, layout_template + profile_sections, atomic publish; NOT multi-page). The
-// /vendors/[slug]/{about,products,projects,contact} URLs exist only as thin redirect stubs back to this
-// page's section anchors (owner-approved Hybrid; see the M2.5 Flag-and-Halt). Composes the shared kit +
-// the sibling microsite components ONLY — it imports nothing from the Vendor workspace (`(app)`).
+// /vendors/[slug]/{about,industries,capabilities,certifications,products,projects,contact} URLs exist
+// only as thin redirect stubs back to this page's section anchors (owner-approved Hybrid). Composes the
+// shared kit + the sibling microsite components ONLY — it imports nothing from the Vendor workspace.
 //
 // GOVERNANCE:
-//  • Published-only · byte-equivalent 404 — an unknown / draft / unpublished / soft-deleted / banned /
-//    buyer-blacklisted vendor renders `notFound()`, byte-identical to genuine absence (Invariant #11).
-//  • Capability = the four-flag MATRIX (Invariant #1). The only trust signal is the binary "Verified"
-//    badge (absence = no badge, never "pending"). Trust/performance BAND, financial TIER, capacity/
-//    turnover are DEFERRED — [ESC-7G-SCORE-DISPLAY] (human Board); never a numeric score (Doc-5G R10).
-//  • Anonymous intents (Request quote / Contact) are CTAs that route to `(auth)` — never a mutation here.
-//  • Products are the vendor-scoped PUBLISHED catalog; a card opens the in-search product detail
-//    ([ESC-7-API-PRODDETAIL] — no standalone anonymous product page). Projects (frozen showcase_projects)
-//    and industries are not wired/frozen-on-the-profile → honest genuine-empty placeholders (no fabrication).
+//  • Published-only · byte-equivalent 404 — unknown/draft/unpublished/banned → `notFound()` (Invariant #11).
+//  • Capability = the four-flag MATRIX (Invariant #1, via CapabilitySection). The only trust signal is
+//    the binary "Verified" badge — NO trust/performance score, NO financial tier, NO turnover, NO
+//    verification workflow (Doc-5G R10; certifications are SELF-DECLARED company info, never the badge).
+//  • Anonymous intents (Request quote / Contact) route to `(auth)` — never a mutation here.
+//  • Company-website content (overview/mission/vision/values/history/management/industries/certifications/
+//    stats/gallery) is EDITORIAL presentation stand-in (getCompanyContent) — no frozen field, coins
+//    nothing (mirrors the discovery PROFILE_EXTRAS seed). Products = vendor-scoped PUBLISHED catalog
+//    ([ESC-7-API-PRODDETAIL]). Projects (frozen showcase_projects) is unwired → honest genuine-empty.
 const AUTH_HREF = "/login";
 
 export async function generateMetadata({
@@ -52,26 +65,59 @@ export default async function VendorProfilePage({ params }: { params: Promise<{ 
   const profile = getPublicVendorProfile(slug);
   if (!profile) notFound();
 
-  // Vendor-scoped PUBLISHED catalog (public projection accessor — symmetric with the profile read).
+  // Vendor-scoped PUBLISHED catalog + editorial company-website content (presentation stand-ins).
   const products = getPublicVendorProducts(slug);
+  const content = getCompanyContent(profile);
 
   return (
     <VendorMicrositeLayout profile={profile} authHref={AUTH_HREF}>
       <VendorHero profile={profile} authHref={AUTH_HREF} />
 
       <VendorSection id="about" title="About">
-        {profile.about ? (
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm leading-relaxed text-foreground">{profile.about}</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <EmptyState
-            title="No company overview yet"
-            description="This supplier hasn’t published an about section."
+        <CompanyOverview
+          overview={content.overview}
+          businessOverview={content.businessOverview}
+          facilities={content.facilities}
+        />
+      </VendorSection>
+
+      <VendorSection id="statistics" title="At a glance">
+        <CompanyStatistics stats={content.stats} />
+      </VendorSection>
+
+      <VendorSection id="mission" title="Mission & vision">
+        <MissionVision mission={content.mission} vision={content.vision} values={content.values} />
+      </VendorSection>
+
+      <VendorSection id="capabilities" title="Capabilities">
+        <div className="flex flex-col gap-5">
+          <CapabilitySection
+            capabilityFlags={profile.capability}
+            capabilities={content.capabilities}
           />
-        )}
+          {profile.categories && profile.categories.length > 0 ? (
+            <div>
+              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Categories
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {profile.categories.map((category) => (
+                  <Badge key={category} variant="neutral">
+                    {category}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </VendorSection>
+
+      <VendorSection
+        id="industries"
+        title="Industries served"
+        description="Sectors this supplier serves."
+      >
+        <IndustryGrid industries={content.industries} />
       </VendorSection>
 
       <VendorSection
@@ -102,8 +148,8 @@ export default async function VendorProfilePage({ params }: { params: Promise<{ 
         title="Projects"
         description="Selected work this supplier has delivered."
       >
-        {/* showcase_projects is a frozen M2 entity but is not embedded in the public profile read and is
-            not wired — honest genuine-empty placeholder, no fabricated projects. */}
+        {/* showcase_projects is a frozen M2 entity but is not embedded in the public read / not wired —
+            honest genuine-empty placeholder, no fabricated projects. */}
         <EmptyState
           icon={<FolderOpen aria-hidden="true" />}
           title="No projects published yet"
@@ -111,34 +157,24 @@ export default async function VendorProfilePage({ params }: { params: Promise<{ 
         />
       </VendorSection>
 
-      <VendorSection id="capabilities" title="Capabilities">
-        <div className="flex flex-col gap-5">
-          <CapabilityMatrix flags={profile.capability} />
-          {profile.categories && profile.categories.length > 0 ? (
-            <div>
-              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Categories
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {profile.categories.map((category) => (
-                  <Badge key={category} variant="neutral">
-                    {category}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </div>
+      <VendorSection id="gallery" title="Gallery">
+        <CompanyGallery gallery={content.gallery} />
       </VendorSection>
 
-      <VendorSection id="industries" title="Industries served">
-        {/* No "industries served" field exists in the frozen public profile projection — placeholder
-            only (no fabrication). See the M2.5 Flag-and-Halt note. */}
-        <EmptyState
-          icon={<Factory aria-hidden="true" />}
-          title="Industries served"
-          description="The sectors this supplier serves appear here as part of its published microsite."
-        />
+      <VendorSection id="history" title="Company history">
+        <CompanyTimeline entries={content.history} />
+      </VendorSection>
+
+      <VendorSection id="management" title="Message from management">
+        <ManagementMessage management={content.management} />
+      </VendorSection>
+
+      <VendorSection
+        id="certifications"
+        title="Certifications & licenses"
+        description="Standards and registrations declared by this supplier."
+      >
+        <CertificationGrid certifications={content.certifications} />
       </VendorSection>
 
       <VendorSection
