@@ -51,27 +51,28 @@ export function BuyerTopbar({ activeOrgName, userName }: BuyerTopbarProps) {
         <span className="hidden sm:inline">iVendorz</span>
       </Link>
 
-      {/* Org context — read-only switcher slot (Inv #5). Static until the Doc-7C switcher is wired. */}
-      <span
-        className="ml-1 hidden items-center gap-1.5 rounded-md border border-border bg-secondary px-2.5 py-1.5 text-sm text-secondary-foreground sm:flex"
-        aria-label="Active organization"
-      >
+      {/* Org context — read-only switcher slot (Inv #5). Static until the Doc-7C switcher is wired.
+          A static display element: the org name is its own accessible text (the icon is aria-hidden),
+          so no redundant aria-label is applied to this non-interactive span. */}
+      <span className="ml-1 hidden items-center gap-1.5 rounded-md border border-border bg-secondary px-2.5 py-1.5 text-sm text-secondary-foreground sm:flex">
         <Building2 aria-hidden className="size-4 text-muted-foreground" />
         <span className="max-w-[12rem] truncate">
           {activeOrgName ?? "No organization selected"}
         </span>
       </span>
 
-      {/* Command-center / search trigger — presentational placeholder. */}
+      {/* Command-center / search trigger — presentational placeholder. The label uses the
+          secondary-foreground ink (the button default) to meet WCAG-AA contrast on the secondary
+          surface; only the decorative (aria-hidden) icon is muted. */}
       <Button
         variant="secondary"
         size="sm"
-        className="ml-auto hidden min-w-44 justify-start gap-2 font-normal text-muted-foreground md:flex"
+        className="ml-auto hidden min-w-44 justify-start gap-2 font-normal md:flex"
         aria-label="Search and commands"
       >
-        <Search aria-hidden />
+        <Search aria-hidden className="text-muted-foreground" />
         <span>Search…</span>
-        <kbd className="ml-auto rounded border border-border bg-background px-1.5 text-2xs font-medium">
+        <kbd className="ml-auto rounded border border-border bg-background px-1.5 text-2xs font-medium text-muted-foreground">
           ⌘K
         </kbd>
       </Button>

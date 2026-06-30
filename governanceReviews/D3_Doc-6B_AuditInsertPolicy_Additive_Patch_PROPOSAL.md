@@ -1,5 +1,10 @@
 # Doc-6B — Audit-Records Append-RLS Additive Patch v1.0.1 (CR4′-adjacent append-only INSERT-policy realization for `core.audit_records`)
 
+> **✅ FOLDED (2026-06-30).** This proposal was **APPROVED (human)** and folded into the corpus as
+> **`generatedDocs/Doc-6B_Structure_Additive_Patch_v1.0.1.md`** (registered in `00_AUTHORITY_MAP.md`). This file is
+> retained as provenance/origin; **the corpus copy is authoritative.** (D4 realization is **not** yet performed and
+> remains bound by the Deployment Constraint below.)
+
 > **Reading guide.** The **normative** patch is §§"The gap"→"Disposition" (the policy SQL, the binding-condition
 > conformance, and the **Deployment Constraint**). The **implementation notes** (RETURNING handling, executor
 > surface, facade exposure, System-GUC runbook, D5 test matrix) are **Appendix A — non-normative**, for the D4/D5

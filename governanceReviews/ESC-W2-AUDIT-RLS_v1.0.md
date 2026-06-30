@@ -177,6 +177,15 @@ atomic tx, no `SECURITY DEFINER`, no privilege elevation. **Remaining gate:** th
 the frozen corpus — `generatedDocs/` + `00_AUTHORITY_MAP.md` + version bump — is a **human action** (CLAUDE.md §7 ranks
 0–1 immutable to skills; §8); not performed by AI.
 
+**Corpus-fold addendum (2026-06-30).** The owner **approved and directed the fold**, performed **additively**: D2/D3
++ ADR-021 are now carried into the corpus as `generatedDocs/Doc-4B_AuditAppendRLS_Patch_v1.0.1.md` ·
+`generatedDocs/Doc-6B_Structure_Additive_Patch_v1.0.1.md` · `generatedDocs/ADR-021_Audit-Records-RLS-Asymmetry.md`,
+each carried **alongside** the unedited frozen docs and registered in `00_AUTHORITY_MAP.md` — **no frozen file edited
+in place**. Consolidation into an ADR Compendium v2 / the `Doc-6B_SERIES_FROZEN` manifest is a **deferred human
+re-freeze**. **D4 is PAUSED per owner directive** ("stop before D4"); the realization (M0 migration + the non-`RETURNING`
+audit-service change + the `appendAuditRecord` facade) awaits the owner's go-ahead and is bound by the Doc-6B patch's
+normative **Deployment Constraint**.
+
 **Status after D1:** the ESC stays **OPEN — ruled R-b**, not yet RESOLVED (RESOLVED at D6, after the
 human-approved patches + the green conformance test). The feature-work freeze (`BOARD-SPRINT` §7) remains in
 effect until sprint exit.

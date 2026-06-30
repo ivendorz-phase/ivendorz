@@ -142,11 +142,14 @@ const ENGAGEMENT_COLUMNS: QueueColumn<EngagementQueueRow>[] = [
   },
 ];
 
-function PageHeader() {
+function PageHeader({ headingId }: { headingId?: string }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Procurement</h1>
+        {/* The section's `aria-labelledby` references this h1 directly (id lives on the heading). */}
+        <h1 id={headingId} className="text-2xl font-semibold tracking-tight text-foreground">
+          Procurement
+        </h1>
         <p className="text-sm text-muted-foreground">Your procurement at a glance.</p>
       </div>
       <Button asChild className="gap-1.5">
@@ -208,9 +211,7 @@ export function BuyerDashboardView({ data }: { data: BuyerDashboardViewModel | n
       aria-labelledby="dashboard-heading"
       className="mx-auto flex max-w-[var(--iv-content-max)] flex-col gap-6 p-4 sm:p-6"
     >
-      <div id="dashboard-heading">
-        <PageHeader />
-      </div>
+      <PageHeader headingId="dashboard-heading" />
 
       {/* KPI stat-card band — every figure a contract read; counts non-disclosure-safe (Inv #11). */}
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">

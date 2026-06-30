@@ -13,9 +13,10 @@
 //   • AI entry is a DISABLED "Coming Soon" affordance only — opens no panel (Invariant #12; ER ESC-7-AI).
 //   • Fabricates NO suggestion rows, counts, or results (never re-ranks M3).
 //
-// The §2 persistent "popular" row and the §2.4 suggest popover are consolidated here into one popular
+// REUSE: composes the frozen Doc-7B kit (Input · Button · Badge) — adds no kit primitive. The §2
+// persistent "popular" row and the §2.4 suggest popover are consolidated here into one popular
 // quick-pick row + an honest interim hint (no live suggest is wired yet). Extractable Unit — stays
-// page-local per spec §1.5 / §2 (no change to the frozen Doc-7B kit).
+// page-local per spec §1.5 / §2.
 import * as React from "react";
 import Link from "next/link";
 import {
@@ -33,6 +34,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
 import { Badge } from "@/frontend/primitives/badge";
+import { Input } from "@/frontend/primitives/input";
 import { cn } from "@/frontend/lib/cn";
 
 /** Curated static seed of industrial search terms (spec §2.3(f)). NOT a computed/"trending" signal. */
@@ -93,8 +95,8 @@ export function CommandCenter({ popularSearches = DEFAULT_POPULAR_SEARCHES }: Co
 
   function onInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Escape") {
+      // Clear the query (hides the interim hint) but KEEP focus on the input (spec §2.6).
       setQuery("");
-      inputRef.current?.blur();
     }
   }
 
@@ -131,7 +133,7 @@ export function CommandCenter({ popularSearches = DEFAULT_POPULAR_SEARCHES }: Co
         </span>
       </div>
 
-      {/* Search input row */}
+      {/* Search input row — reuses the kit Input primitive (no duplication) */}
       <form onSubmit={onSubmit}>
         <label htmlFor="cc-search" className="sr-only">
           Search products, suppliers, and categories
@@ -140,9 +142,9 @@ export function CommandCenter({ popularSearches = DEFAULT_POPULAR_SEARCHES }: Co
           <div className="relative flex-1">
             <Search
               aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              className="pointer-events-none absolute left-3 top-1/2 z-[var(--iv-z-raised)] size-4 -translate-y-1/2 text-muted-foreground"
             />
-            <input
+            <Input
               id="cc-search"
               ref={inputRef}
               type="search"
@@ -152,7 +154,7 @@ export function CommandCenter({ popularSearches = DEFAULT_POPULAR_SEARCHES }: Co
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={onInputKeyDown}
               aria-describedby={showHint ? hintId : undefined}
-              className="h-11 w-full rounded-md border border-input bg-background pl-9 pr-3 text-base text-foreground shadow-iv-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="h-11 pl-9 pr-3 text-base"
             />
             {showHint && (
               <div
@@ -189,14 +191,16 @@ export function CommandCenter({ popularSearches = DEFAULT_POPULAR_SEARCHES }: Co
             </Button>
           );
         })}
+        {/* AI affordance — spec §2.8/§2.10: aria-disabled (NOT native `disabled`) so it stays in the
+            tab order; accessible name conveys future availability; inert (exposes no action). */}
         <Button
           type="button"
           variant="outline"
           size="sm"
-          disabled
           aria-disabled="true"
-          className="gap-2"
-          title="AI Assistant — coming soon"
+          aria-label="AI Assistant — coming soon"
+          onClick={(e) => e.preventDefault()}
+          className="gap-2 cursor-not-allowed opacity-60"
         >
           <Sparkles /> AI Assistant
           <Badge variant="neutral" className="ml-1">
@@ -212,14 +216,16 @@ export function CommandCenter({ popularSearches = DEFAULT_POPULAR_SEARCHES }: Co
         </p>
         <div className="flex flex-wrap gap-1.5">
           {popularSearches.map((term) => (
-            <button
+            <Button
               key={term}
               type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-full"
               onClick={() => fill(term)}
-              className="rounded-full border border-border px-2.5 py-1 text-xs text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {term}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

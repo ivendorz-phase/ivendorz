@@ -1,5 +1,9 @@
 # Doc-4B — Audit-Append RLS-Posture Clarification Additive Patch v1.0.1 (records the §B10/§17.1 RLS contract the in-tx audit append relies on)
 
+> **✅ FOLDED (2026-06-30).** This proposal was **APPROVED (human)** and folded into the corpus as
+> **`generatedDocs/Doc-4B_AuditAppendRLS_Patch_v1.0.1.md`** (registered in `00_AUTHORITY_MAP.md`). This file is
+> retained as provenance/origin; **the corpus copy is authoritative.**
+
 | Field | Value |
 |---|---|
 | Filename (on approval) | `generatedDocs/Doc-4B_AuditAppendRLS_Patch_v1.0.1.md` — the **phase token** (`AuditAppendRLS`) disambiguates this post-freeze patch from the already-crowded bare-decimal Doc-4B lineage (`Doc-4B_Freeze_Patch_v1.0.1.md` **and** `Doc-4B_PassA_Patch_v1.0.1.md` both occupy `v1.0.1`, and the lineage already reaches `v1.0.2` via `Doc-4B_PassA_Consistency_Patch_v1.0.2.md`). The decimal is keyed to the new phase, per the corpus convention that re-uses `.1`/`.2` across distinct lifecycle phases disambiguated by the filename phase token; confirm against `generatedDocs/00_AUTHORITY_MAP.md` line 58 before folding. |

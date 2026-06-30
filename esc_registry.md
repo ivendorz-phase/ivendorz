@@ -35,6 +35,48 @@ Precedence: non-authoritative; on conflict the frozen corpus wins.
 | **`ESC-IDN-DELEG-EXPIRY`** | `reinstate_delegation_grant` UI path pending (Doc-2 §5.10 unresolved) | Delegation reinstate action hidden until resolved | Identity channel (Board) |
 | **`ESC-RFQ-POLICY`** / **`ESC-OPS-POLICY`** | Some idempotency dedup-window POLICY keys not yet registered | Use the named POLICY key once registered; never a UI literal | Additive Doc-3 §12.2 patch (Board) |
 
+### Vendor Workspace (Doc-7G design companion — Track 2/3, 2026-06-30)
+
+Source: `vendor_planning_and_design.md` (v0.9-rc, freeze WITHHELD) — detail in its §12/§13. Packets in
+`governanceReviews/`: [`BOARD-PACKET-VENDOR-FE-BLOCKERS_v1.0.md`](governanceReviews/BOARD-PACKET-VENDOR-FE-BLOCKERS_v1.0.md)
+(the 3 BLOCKERs) · [`API-GOV-INTAKE-VENDOR-FE_v1.0.md`](governanceReviews/API-GOV-INTAKE-VENDOR-FE_v1.0.md)
+(contract questions). Freeze convened by [`BOARD-SPRINT-VENDOR-FE-FREEZE_v1.0.md`](governanceReviews/BOARD-SPRINT-VENDOR-FE-FREEZE_v1.0.md). 30-second landscape: [`DECISION-MATRIX-VENDOR-FE_v1.0.md`](governanceReviews/DECISION-MATRIX-VENDOR-FE_v1.0.md).
+
+**Freeze-gating BLOCKERs — human Architecture Board (the only path to companion freeze):**
+
+| Handle | Scope / gap | Interim presentation | Channel |
+|---|---|---|---|
+| **`ESC-7G-SCORE-DISPLAY`** | Doc-5G §5.3 ("band + display score", Public-Badge) vs companion DP4 "bands only" — re-read shows Invariant 6 (Master §4) is a cross-mutation firewall, **display-silent** | Band-only on every vendor surface; `trust-badge` composed without `score`; frozen-suppressed + Not-Rated handled | Human Architecture Board — frozen-vs-frozen, Flag-and-Halt (BOARD-PACKET §SCORE-DISPLAY) |
+| **`ESC-7B-TRUSTSCORE`** | Frozen kit `trust-badge.score?:number` renders raw 0–100 — Invariant-6 footgun; **child of** SCORE-DISPLAY | Never pass `score` in the vendor workspace + lint/test; no frozen-kit change yet | Human Architecture Board / Doc-7B owner |
+| **`ESC-7G-A7`** | Doc-7A R6 / Doc-7C SR3 mandate Hybrid "mount both" but specify neither the internal IA nor a `(vendor)` route group (design-introduced) | Co-mounted, grouped-not-merged; Trust read-only; `(vendor)` flagged as a non-routing layout group under `(app)` | Human Architecture Board (Golden Rule 7 sign-off) |
+
+**Contract gaps — API Governance Board (§7 r5; NOT freeze-blocking; each ships a fallback):**
+
+| Handle | Scope / gap | Interim presentation | Channel |
+|---|---|---|---|
+| **`ESC-7-API` (vendor pipeline count)** | No frozen vendor received-only count read (vendor-leg reads are cursor lists only) | Non-numeric "view" links; no badges/tallies | Additive count read (owner M4, own-org `vendor_leads`-by-stage) — recommend decline for v1 |
+| **`ESC-7-API` (participation)** | Derived Platform Participation only on out-of-wire `identity.get_organization.v1`; Doc-7A §3.7 bars client use | No Buyer/Vendor/Hybrid label rendered | Additive **wired** M1 participation read (recommend High) |
+| **`ESC-7G-Q-DRAFT`** | No frozen quotation draft-write/read (quotation is created at submit) | Client-local "Saved on this device" autosave | Additive M3 draft contract OR accept client-local (recommend defer) — supersedes companion `[ESC-7G-A6]` |
+| **`ESC-7G-ENG-01`** | `ops.get_engagement.v1` projects no `rfq_id` (the column exists, Doc-2 §10) | "[pending projection]" for the engagement→RFQ link | Additive M4 projection of `rfq_id` (recommend approve) |
+| **`ESC-7G-ENG-02`** | No buyer-org display-name in engagement scope (UUID only) | Neutral label ("Buyer organization") | Additive M1/M4 name read (Low) |
+| **`ESC-7G-ENG-03`** | No `list_engagement_documents` for the BC-OPS-2 record set (only single get; BC-OPS-4 lists rendered artifacts) | E3 per-kind document enumeration build-blocked | Additive M4 child-ref projection on `get_engagement` (recommend approve) |
+| **`ESC-7G-LEAD-NOTE`** | No vendor-leg private lead-note contract (note slug is buyer-side BC-OPS-1) | Note-typed `ops.add_lead_activity.v1` (frozen, vendor-owned) | Decline (accept fallback); do **not** coin `add_lead_note` |
+| **`ESC-7G-LEAD-REF`** | No `vendor_leads` human-ref scheme | Render no lead human-ref | Decline (coin no `LD-` prefix) or corpus-reconcile |
+
+**Corpus reconciliation — human (frozen-vs-frozen / watch):**
+
+| Handle | Scope / gap | Interim presentation | Channel |
+|---|---|---|---|
+| **`ESC-7G-LEAD-MACHINE`** | Doc-2/4F/5F lead machine (`received→quoted→negotiation→won\|lost→follow_up`) vs Doc-4M (`new→contacted→qualified→converted\|disqualified`) | Companion binds the Doc-2/Doc-5F spelling (per-module authority) | Human corpus-reconciliation (Flag-and-Halt; not AI, not API-Gov) |
+| **`ESC-7G-ENG-04`** | Doc-2 §8 IR-02/IR-03 emit-cardinality on versioned challans/WCC | UI assumes one event per record/issue | Watch item (Doc-2 §8) |
+
+**Resolved during verification (recorded, no longer open):** `ESC-7G-LEAD-FILTER` — frozen `ops.list_leads.v1`
+already accepts a `stage` filter (Doc-4F BC-OPS-3); `ESC-7G-Q-01` — bound to `rfq.get_rfq.v1` (grant-scoped);
+`ESC-7G-Q-IDEMP` — deleted (idempotency already bound via Doc-4A §14.2). Carried on existing channels:
+`[ESC-BILL-SLUG]`, `[ESC-MKT-AUDIT]`, `[ESC-OPS-AUDIT]`, `[ESC-OPS-SLUG]`, `[ESC-RFQ-POLICY]`.
+
+---
+
 ### Known non-ESC gaps (recorded, not escalations)
 - **Industry / Brand / Standard / Manufacturer taxonomies** are **not modeled** in the frozen corpus.
   Navigation may *reference* them as wayfinding dimensions but **coins no data model**; introducing any

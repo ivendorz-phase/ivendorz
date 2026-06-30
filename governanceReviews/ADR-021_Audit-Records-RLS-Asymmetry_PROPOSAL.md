@@ -1,5 +1,10 @@
 # ADR-021: Audit-Records RLS Asymmetry — Write-Admission ≠ Read-Disclosure
 
+> **✅ FOLDED (2026-06-30).** This proposal was **APPROVED (human)** and carried into the corpus as the individual
+> ADR legal record **`generatedDocs/ADR-021_Audit-Records-RLS-Asymmetry.md`** (registered in `00_AUTHORITY_MAP.md`;
+> the frozen ADR Compendium is **not** edited in place — Compendium v2 consolidation is a deferred human re-freeze).
+> This file is retained as provenance/origin; **the corpus copy is authoritative.**
+
 **Status:** **PROPOSED (DRAFT) — AWAITS HUMAN / ARCHITECTURE-REVIEW-BOARD APPROVAL.** A new ADR is a **new
 decision**; per CLAUDE.md §7 the ADR Compendium is **rank 1, immutable to skills** — this proposal is **NOT**
 folded into `generatedDocs/ADR_Compendium_v1.md` by any AI action. On approval, a human folds it into the

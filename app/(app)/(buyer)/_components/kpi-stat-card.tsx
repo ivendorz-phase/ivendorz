@@ -33,6 +33,8 @@ export interface KpiStatCardProps {
 export function KpiStatCard({ label, value, caption, icon, className }: KpiStatCardProps) {
   return (
     <Card className={cn("shadow-iv-xs", className)}>
+      {/* Buyer-scoped KPI layout variant: compact `p-4` (vs the kit Card default `p-6`) for the
+          dense auto-fill KPI grid (§9.1). A composition delta only — the Card primitive is unmodified. */}
       <CardContent className="flex flex-col gap-1.5 p-4">
         <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           {icon ? (
