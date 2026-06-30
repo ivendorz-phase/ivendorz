@@ -20,6 +20,7 @@ import { Breadcrumbs } from "../../../_components/shell";
 import { WizardStepper } from "./wizard-stepper";
 import { UploadArea } from "./upload-area";
 import {
+  TitledCard,
   RequirementSection,
   TechnicalSection,
   LogisticsSection,
@@ -52,18 +53,6 @@ function SubmittedState() {
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-/** A titled card wrapping arbitrary section content (used for the Attachments phase). */
-function PanelCard({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <Card>
-      <CardHeader className="p-4">
-        <CardTitle className="text-sm font-semibold">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="p-4 pt-0">{children}</CardContent>
-    </Card>
   );
 }
 
@@ -142,14 +131,14 @@ export function RfqCreateView({ data }: { data: RfqCreateData }) {
         <div className="flex flex-col gap-4 lg:col-span-2">
           <RequirementSection form={form} />
           <TechnicalSection form={form} />
-          <PanelCard title="Attachments">
+          <TitledCard title="Attachments">
             <UploadArea attachments={form.attachments} />
-          </PanelCard>
+          </TitledCard>
           <LogisticsSection form={form} />
           <VendorSection form={form} />
-          <PanelCard title="Review">
+          <TitledCard title="Review">
             <ReviewSection form={form} />
-          </PanelCard>
+          </TitledCard>
         </div>
         <div>
           <AssistanceSidebar />

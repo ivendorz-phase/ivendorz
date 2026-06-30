@@ -44,6 +44,28 @@ export interface SelectProps extends Omit<
   placeholder?: string;
 }
 
+export interface CheckboxRowProps {
+  id: string;
+  label: React.ReactNode;
+  defaultChecked?: boolean;
+}
+
+/** A native checkbox + label row (the kit ships no `checkbox` primitive yet — Doc-7B-deferred control).
+ *  Buyer Tier-2; promotion candidate the moment a 2nd workspace needs a styled checkbox. */
+export function CheckboxRow({ id, label, defaultChecked }: CheckboxRowProps) {
+  return (
+    <label htmlFor={id} className="flex items-start gap-2 text-sm text-foreground">
+      <input
+        type="checkbox"
+        id={id}
+        defaultChecked={defaultChecked}
+        className="mt-0.5 size-4 shrink-0 rounded border-input text-iv-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      />
+      <span>{label}</span>
+    </label>
+  );
+}
+
 export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   ({ className, options, placeholder, defaultValue, value, ...props }, ref) => (
     <select

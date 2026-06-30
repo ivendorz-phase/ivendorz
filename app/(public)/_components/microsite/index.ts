@@ -24,14 +24,25 @@ export { CertificationGrid, type CertificationGridProps } from "./certification-
 export { CompanyGallery, type CompanyGalleryProps } from "./company-gallery";
 export { CompanyStatistics, type CompanyStatisticsProps } from "./company-statistics";
 export { CompanyTimeline, type CompanyTimelineProps } from "./company-timeline";
+export { WhyChooseUs, type WhyChooseUsProps } from "./why-choose-us";
+export { ProjectShowcase, type ProjectShowcaseProps } from "./project-showcase";
+export { ProductShowcase, type ProductShowcaseProps } from "./product-showcase";
+export { DownloadCenter, type DownloadCenterProps } from "./download-center";
+export { CompanyFaq, type CompanyFaqProps } from "./company-faq";
+export { CompanyContact, type CompanyContactProps } from "./company-contact";
 export {
   getCompanyContent,
   type VendorCompanyContentVM,
   type CompanyValueVM,
+  type CompanyDifferentiatorVM,
   type CompanyTimelineEntryVM,
   type ManagementMessageVM,
   type CompanyStatVM,
   type CertificationVM,
   type CapabilityAreaVM,
   type GalleryItemVM,
+  type ProjectShowcaseVM,
+  type DownloadItemVM,
+  type FaqItemVM,
+  type CompanyContactVM,
 } from "./company-content-seed";

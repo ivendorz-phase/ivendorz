@@ -1,30 +1,28 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FolderOpen, PackageOpen } from "lucide-react";
 import { Badge } from "@/frontend/primitives/badge";
-import { Button } from "@/frontend/primitives/button";
-import { Card } from "@/frontend/primitives/card";
-import { ProductCard } from "@/frontend/components/product-card";
-import { ResultsGrid } from "@/frontend/components/results-grid";
-import { EmptyState } from "@/frontend/components/empty-state";
 import {
   CapabilitySection,
   CertificationGrid,
+  CompanyContact,
+  CompanyFaq,
   CompanyGallery,
   CompanyOverview,
   CompanyStatistics,
   CompanyTimeline,
+  DownloadCenter,
   IndustryGrid,
   ManagementMessage,
   MissionVision,
+  ProductShowcase,
+  ProjectShowcase,
   VendorHero,
   VendorMicrositeLayout,
   VendorSection,
+  WhyChooseUs,
   getCompanyContent,
 } from "../../_components/microsite";
 import { getPublicVendorProfile, getPublicVendorProducts } from "../../_components/discovery/seed";
-import { productDetailHref } from "../../_components/product-detail";
 
 // P-PUB-13 Public Vendor Profile / microsite (Doc-7D §4 · M2.5 foundation + M2.6 company-website content).
 // PRESENTATION & COMPOSITION ONLY: anonymous, read-only, binds NO Doc-5 contract. The PUBLIC projection
@@ -39,12 +37,16 @@ import { productDetailHref } from "../../_components/product-detail";
 //  • Capability = the four-flag MATRIX (Invariant #1, via CapabilitySection). The only trust signal is
 //    the binary "Verified" badge — NO trust/performance score, NO financial tier, NO turnover, NO
 //    verification workflow (Doc-5G R10; certifications are SELF-DECLARED company info, never the badge).
-//  • Anonymous intents (Request quote / Contact) route to `(auth)` — never a mutation here.
-//  • Company-website content (overview/mission/vision/values/history/management/industries/certifications/
-//    stats/gallery) is EDITORIAL presentation stand-in (getCompanyContent) — no frozen field, coins
-//    nothing (mirrors the discovery PROFILE_EXTRAS seed). Products = vendor-scoped PUBLISHED catalog
-//    ([ESC-7-API-PRODDETAIL]). Projects (frozen showcase_projects) is unwired → honest genuine-empty.
+//  • Anonymous intents (Request quote / Contact / Send RFQ) route to `(auth)` — never a mutation here;
+//    direct-contact channels are platform-mediated (sign-in gated — the lead model).
+//  • Company-website content (overview/mission/vision/values/why/history/management/industries/
+//    certifications/stats/gallery/projects/downloads/faq/contact) is EDITORIAL presentation stand-in
+//    (getCompanyContent) — no frozen field, coins nothing (mirrors the discovery PROFILE_EXTRAS seed).
+//    Products = vendor-scoped PUBLISHED catalog ([ESC-7-API-PRODDETAIL]). Projects stand in for the frozen
+//    `showcase_projects` (unwired) with sector/role "client" descriptors only; downloads are disabled (no
+//    fabricated file); gallery/map are decorative placeholders (no fabricated image source).
 const AUTH_HREF = "/login";
+const MARKETPLACE_HREF = "/marketplace";
 
 export async function generateMetadata({
   params,
@@ -73,7 +75,7 @@ export default async function VendorProfilePage({ params }: { params: Promise<{ 
     <VendorMicrositeLayout profile={profile} authHref={AUTH_HREF}>
       <VendorHero profile={profile} authHref={AUTH_HREF} />
 
-      <VendorSection id="about" title="About">
+      <VendorSection id="about" title="Overview">
         <CompanyOverview
           overview={content.overview}
           businessOverview={content.businessOverview}
@@ -81,12 +83,12 @@ export default async function VendorProfilePage({ params }: { params: Promise<{ 
         />
       </VendorSection>
 
-      <VendorSection id="statistics" title="At a glance">
-        <CompanyStatistics stats={content.stats} />
-      </VendorSection>
-
       <VendorSection id="mission" title="Mission & vision">
         <MissionVision mission={content.mission} vision={content.vision} values={content.values} />
+      </VendorSection>
+
+      <VendorSection id="why" title="Why choose us" description="What sets this supplier apart.">
+        <WhyChooseUs items={content.whyChooseUs} />
       </VendorSection>
 
       <VendorSection id="capabilities" title="Capabilities">
@@ -125,22 +127,7 @@ export default async function VendorProfilePage({ params }: { params: Promise<{ 
         title="Products"
         description="Published products from this supplier."
       >
-        <ResultsGrid
-          count={products.length}
-          columnsClassName="grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
-          empty={
-            <EmptyState
-              icon={<PackageOpen aria-hidden="true" />}
-              title="No products listed yet"
-              description="This supplier hasn’t published any products."
-            />
-          }
-        >
-          {products.map((product) => (
-            // [ESC-7-API-PRODDETAIL]: no anon product page — open the in-search product detail.
-            <ProductCard key={product.id} product={product} href={productDetailHref(product.id)} />
-          ))}
-        </ResultsGrid>
+        <ProductShowcase products={products} authHref={AUTH_HREF} />
       </VendorSection>
 
       <VendorSection
@@ -148,17 +135,15 @@ export default async function VendorProfilePage({ params }: { params: Promise<{ 
         title="Projects"
         description="Selected work this supplier has delivered."
       >
-        {/* showcase_projects is a frozen M2 entity but is not embedded in the public read / not wired —
-            honest genuine-empty placeholder, no fabricated projects. */}
-        <EmptyState
-          icon={<FolderOpen aria-hidden="true" />}
-          title="No projects published yet"
-          description="This supplier’s project portfolio appears here when published."
-        />
+        <ProjectShowcase projects={content.projects} />
       </VendorSection>
 
-      <VendorSection id="gallery" title="Gallery">
+      <VendorSection id="gallery" title="Factory & gallery">
         <CompanyGallery gallery={content.gallery} />
+      </VendorSection>
+
+      <VendorSection id="statistics" title="At a glance">
+        <CompanyStatistics stats={content.stats} />
       </VendorSection>
 
       <VendorSection id="history" title="Company history">
@@ -177,24 +162,25 @@ export default async function VendorProfilePage({ params }: { params: Promise<{ 
         <CertificationGrid certifications={content.certifications} />
       </VendorSection>
 
+      <VendorSection id="downloads" title="Downloads">
+        <DownloadCenter downloads={content.downloads} />
+      </VendorSection>
+
+      <VendorSection id="faq" title="Frequently asked questions">
+        <CompanyFaq items={content.faq} />
+      </VendorSection>
+
       <VendorSection
         id="contact"
         title="Get in touch"
         description="Start a conversation with this supplier on iVendorz."
       >
-        <Card className="flex flex-col gap-3 p-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-muted-foreground">
-            Send a quote request or contact {profile.name} — you’ll be asked to sign in.
-          </p>
-          <div className="flex shrink-0 flex-wrap gap-2">
-            <Button asChild>
-              <Link href={AUTH_HREF}>Request quote</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href={AUTH_HREF}>Contact</Link>
-            </Button>
-          </div>
-        </Card>
+        <CompanyContact
+          vendorName={profile.name}
+          contact={content.contact}
+          authHref={AUTH_HREF}
+          marketplaceHref={MARKETPLACE_HREF}
+        />
       </VendorSection>
     </VendorMicrositeLayout>
   );

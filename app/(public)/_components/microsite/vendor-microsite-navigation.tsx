@@ -19,10 +19,14 @@ import {
 } from "@/frontend/primitives/sheet";
 
 const SECTIONS = [
-  { href: "#vendor-top", label: "Home" },
+  { href: "#vendor-top", label: "Overview" },
   { href: "#about", label: "About" },
+  { href: "#capabilities", label: "Capabilities" },
+  { href: "#industries", label: "Industries" },
   { href: "#products", label: "Products" },
   { href: "#projects", label: "Projects" },
+  { href: "#gallery", label: "Gallery" },
+  { href: "#certifications", label: "Certifications" },
   { href: "#contact", label: "Contact" },
 ];
 
@@ -32,7 +36,10 @@ export function VendorMicrositeNavigation() {
   return (
     <div className="sticky top-14 z-[var(--iv-z-sticky)] -mx-4 border-b border-border bg-background/95 px-4 backdrop-blur sm:-mx-6 sm:px-6">
       <div className="flex h-12 items-center justify-between">
-        <nav className="hidden items-center gap-1 sm:flex" aria-label="Vendor sections">
+        <nav
+          className="hidden min-w-0 items-center gap-1 overflow-x-auto sm:flex"
+          aria-label="Vendor sections"
+        >
           {SECTIONS.map((s) => (
             <Button
               key={s.label}

@@ -14,20 +14,25 @@ export function CompanyStatistics({ stats }: CompanyStatisticsProps) {
   if (!stats || stats.length === 0) return null;
   return (
     <div className="flex flex-col gap-3">
-      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {stats.map((stat) => (
-          <li key={stat.label}>
-            <Card className="h-full">
-              <CardContent className="pt-6 text-center">
-                <p className="text-2xl font-bold tracking-tight text-iv-ink-heading">
+      <Card className="overflow-hidden">
+        <CardContent className="p-0">
+          <ul className="grid grid-cols-2 divide-x divide-y divide-border sm:grid-cols-3 lg:grid-cols-5 lg:divide-y-0">
+            {stats.map((stat) => (
+              <li
+                key={stat.label}
+                className="flex flex-col items-center justify-center gap-1 p-6 text-center"
+              >
+                <span className="text-3xl font-bold tracking-tight text-iv-navy-700 sm:text-4xl">
                   {stat.value}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">{stat.label}</p>
-              </CardContent>
-            </Card>
-          </li>
-        ))}
-      </ul>
+                </span>
+                <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {stat.label}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
       <p className="text-xs text-muted-foreground">Figures are provided by the supplier.</p>
     </div>
   );

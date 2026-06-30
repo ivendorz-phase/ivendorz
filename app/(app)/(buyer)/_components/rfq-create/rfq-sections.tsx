@@ -8,7 +8,8 @@
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
 import { FormField } from "@/frontend/components/form-field";
-import { Textarea, Select } from "../form-controls";
+import { cn } from "@/frontend/lib/cn";
+import { Textarea, Select, CheckboxRow } from "../form-controls";
 import { DescriptionList, type DescriptionItem } from "../description-list";
 import {
   WORK_NATURE_OPTIONS,
@@ -23,39 +24,37 @@ import {
 } from "./rfq-options";
 import type { RfqDraftForm } from "./rfq-form-models";
 
-/** A native checkbox row (the kit ships no `checkbox` primitive yet — a Doc-7B-deferred control). */
-function CheckboxRow({
-  id,
-  label,
-  defaultChecked,
+/** The single titled-card shell (a kit `Card` composition) reused by the form sections, the review
+ *  summaries, and the host's Attachments/Review panels. `titleAs="h3"` nests review sub-cards under the
+ *  "Review" `<h2>` for a correct heading outline. */
+export function TitledCard({
+  title,
+  children,
+  contentClassName,
+  titleAs,
 }: {
-  id: string;
-  label: React.ReactNode;
-  defaultChecked?: boolean;
+  title: string;
+  children: React.ReactNode;
+  contentClassName?: string;
+  titleAs?: "h2" | "h3";
 }) {
   return (
-    <label htmlFor={id} className="flex items-start gap-2 text-sm text-foreground">
-      <input
-        type="checkbox"
-        id={id}
-        defaultChecked={defaultChecked}
-        className="mt-0.5 size-4 shrink-0 rounded border-input text-iv-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-      />
-      <span>{label}</span>
-    </label>
+    <Card>
+      <CardHeader className="p-4">
+        <CardTitle as={titleAs} className="text-sm font-semibold">
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className={cn("p-4 pt-0", contentClassName)}>{children}</CardContent>
+    </Card>
   );
 }
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <Card>
-      <CardHeader className="p-4">
-        <CardTitle className="text-sm font-semibold">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="grid grid-cols-1 gap-4 p-4 pt-0 sm:grid-cols-2">
-        {children}
-      </CardContent>
-    </Card>
+    <TitledCard title={title} contentClassName="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {children}
+    </TitledCard>
   );
 }
 
@@ -83,6 +82,8 @@ export function RequirementSection({ form }: { form: RfqDraftForm }) {
           <span className="ml-0.5 text-destructive" aria-hidden="true">
             *
           </span>
+          {/* The asterisk is decorative (aria-hidden); convey "required" to AT for this group explicitly. */}
+          <span className="sr-only">(required)</span>
         </legend>
         <p className="mt-0.5 text-xs text-muted-foreground">
           Pick all that apply (supply / service / fabricate / consult).
@@ -98,10 +99,10 @@ export function RequirementSection({ form }: { form: RfqDraftForm }) {
           ))}
         </div>
       </fieldset>
+      {/* Item name is dev-doc capture, not in the frozen submission FIXED-set — no required asterisk. */}
       <FormField
         id="rfq-item"
         label="Item name"
-        required
         inputProps={{ defaultValue: form.itemName, placeholder: "e.g. MS plate 12mm" }}
       />
       <div className="grid grid-cols-2 gap-3">
@@ -338,18 +339,15 @@ export function ReviewSection({ form }: { form: RfqDraftForm }) {
     <div className="flex flex-col gap-4">
       <SummaryCard title="Requirement" items={requirement} />
       <SummaryCard title="Specifications" items={specs} />
-      <Card>
-        <CardHeader className="p-4">
-          <CardTitle className="text-sm font-semibold">Files</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 pt-0 text-sm text-muted-foreground">
+      <TitledCard title="Files" titleAs="h3">
+        <p className="text-sm text-muted-foreground">
           {fileCount === 0
             ? "No attachments"
             : fileCount === 1
               ? "1 file attached"
               : `${fileCount} files attached`}
-        </CardContent>
-      </Card>
+        </p>
+      </TitledCard>
       <SummaryCard title="Delivery" items={delivery} />
       <SummaryCard title="Vendor preferences" items={vendor} />
     </div>
@@ -357,14 +355,10 @@ export function ReviewSection({ form }: { form: RfqDraftForm }) {
 }
 
 function SummaryCard({ title, items }: { title: string; items: DescriptionItem[] }) {
+  // h3 — these summaries nest under the host's "Review" <h2> (correct heading outline).
   return (
-    <Card>
-      <CardHeader className="p-4">
-        <CardTitle className="text-sm font-semibold">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="p-4 pt-0">
-        <DescriptionList items={items} />
-      </CardContent>
-    </Card>
+    <TitledCard title={title} titleAs="h3">
+      <DescriptionList items={items} />
+    </TitledCard>
   );
 }
