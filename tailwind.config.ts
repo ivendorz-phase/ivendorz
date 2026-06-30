@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 /**
  * iVendorz Tailwind Configuration
@@ -19,6 +20,43 @@ const config: Config = {
          COLORS — mirrors --iv-* CSS custom properties
       ----------------------------------------------------------------------- */
       colors: {
+        /* shadcn/ui semantic color keys — each maps to a CSS var defined in
+           globals.css (the iv semantic-token layer). These let the vendored
+           kit primitives use bg-background / text-foreground / border-border /
+           bg-primary etc. while theming THROUGH the iv tokens (light + dark). */
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        primary: {
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
+        },
+        secondary: {
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
+        },
+        muted: {
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
+        },
+        accent: {
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
+        },
+        destructive: {
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
+        },
+        card: {
+          DEFAULT: "var(--card)",
+          foreground: "var(--card-foreground)",
+        },
+        popover: {
+          DEFAULT: "var(--popover)",
+          foreground: "var(--popover-foreground)",
+        },
         "iv-brand": {
           50: "var(--iv-brand-50)",
           100: "var(--iv-brand-100)",
@@ -256,7 +294,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [tailwindcssAnimate],
 };
 
 export default config;

@@ -170,12 +170,13 @@
     /* -----------------------------------------------------------------------
        SHADOWS & ELEVATION
     ----------------------------------------------------------------------- */
-    --iv-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
-    --iv-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
-    --iv-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
-    --iv-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
-    --iv-shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.7), 0 8px 16px rgba(0, 0, 0, 0.5);
-    --iv-shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.8);
+    /* Light-tuned (PRIMARY theme); the dark-tuned set lives in `.dark` below. */
+    --iv-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.06);
+    --iv-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.1), 0 1px 2px rgba(15, 23, 42, 0.06);
+    --iv-shadow-md: 0 4px 8px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
+    --iv-shadow-lg: 0 12px 24px rgba(15, 23, 42, 0.1), 0 4px 8px rgba(15, 23, 42, 0.06);
+    --iv-shadow-xl: 0 20px 40px rgba(15, 23, 42, 0.12), 0 8px 16px rgba(15, 23, 42, 0.08);
+    --iv-shadow-2xl: 0 28px 64px rgba(15, 23, 42, 0.16);
 
     /* Glow — interactive elements */
     --iv-glow-brand: 0 0 0 1px rgba(99, 102, 241, 0.3), 0 0 20px rgba(99, 102, 241, 0.15);
@@ -207,6 +208,107 @@
     --iv-z-modal: 400;
     --iv-z-toast: 500;
     --iv-z-tooltip: 600;
+
+    /* -----------------------------------------------------------------------
+       SEMANTIC TOKENS — the layer the kit consumes (theme-aware)
+       Light is the PRIMARY theme (DP §3.1; Doc-7B §3.4); `.dark` overrides
+       these below. Components read ONLY semantic tokens, never a primitive
+       surface/ink directly — so both themes "come for free." DEF-03.
+    ----------------------------------------------------------------------- */
+    --iv-light-selected: #eef2ff; /* missing from the light ramp — brand-50 */
+
+    /* Surfaces (semantic) */
+    --iv-bg: var(--iv-light-base);
+    --iv-surface: var(--iv-light-raised);
+    --iv-surface-2: var(--iv-light-muted);
+    --iv-overlay: var(--iv-light-overlay);
+    --iv-border: var(--iv-light-border);
+    --iv-hover: var(--iv-light-hover);
+    --iv-selected: var(--iv-light-selected);
+
+    /* Foreground / ink (semantic) */
+    --iv-fg: #0f172a; /* primary ink — slate-900 */
+    --iv-fg-secondary: #334155; /* secondary — slate-700 */
+    --iv-fg-muted: #64748b; /* meta / disabled — slate-500 */
+    --iv-fg-inverse: #ffffff; /* ink on brand / dark fills */
+
+    /* Elevation (semantic) — maps onto the shadow scale */
+    --iv-elevation-0: none;
+    --iv-elevation-1: var(--iv-shadow-sm);
+    --iv-elevation-2: var(--iv-shadow-md);
+    --iv-elevation-3: var(--iv-shadow-lg);
+    --iv-elevation-4: var(--iv-shadow-xl);
+
+    /* Layout containers & gutters */
+    --iv-container-sm: 640px;
+    --iv-container-md: 768px;
+    --iv-container-lg: 1024px;
+    --iv-container-xl: 1280px;
+    --iv-content-max: 1280px;
+    --iv-page-max: 1536px;
+    --iv-gutter: 24px;
+    --iv-gutter-tight: 16px;
+
+    /* Icon sizing (Lucide) */
+    --iv-icon-xs: 14px;
+    --iv-icon-sm: 16px;
+    --iv-icon-md: 20px;
+    --iv-icon-lg: 24px;
+    --iv-icon-stroke: 1.75;
+
+    /* shadcn/ui compatibility aliases — vendored primitives are themed THROUGH
+       the iv semantic tokens via these names (full color values, not HSL
+       triplets; tailwind.config maps each color key to `var(--name)`). */
+    --background: var(--iv-bg);
+    --foreground: var(--iv-fg);
+    --card: var(--iv-surface);
+    --card-foreground: var(--iv-fg);
+    --popover: var(--iv-overlay);
+    --popover-foreground: var(--iv-fg);
+    --primary: var(--iv-brand-600);
+    --primary-foreground: var(--iv-fg-inverse);
+    --secondary: var(--iv-surface-2);
+    --secondary-foreground: var(--iv-fg);
+    --muted: var(--iv-surface-2);
+    --muted-foreground: var(--iv-fg-muted);
+    --accent: var(--iv-surface-2);
+    --accent-foreground: var(--iv-fg);
+    --destructive: var(--iv-danger-base);
+    --destructive-foreground: var(--iv-fg-inverse);
+    --border: var(--iv-border);
+    --input: var(--iv-border);
+    --ring: var(--iv-brand-500);
+  }
+
+  /* =========================================================================
+     DARK THEME — optional, first-class (DP §3.1). Applied via `.dark` on
+     <html> (Tailwind `darkMode: "class"`). Reassigns the SEMANTIC tokens only;
+     primitives are unchanged. No theme-switcher UI ships in this tranche.
+  ========================================================================= */
+  .dark {
+    --iv-bg: var(--iv-surface-base);
+    --iv-surface: var(--iv-surface-raised);
+    --iv-surface-2: var(--iv-surface-muted);
+    --iv-overlay: var(--iv-surface-overlay);
+    --iv-border: var(--iv-surface-border);
+    --iv-hover: var(--iv-surface-hover);
+    --iv-selected: var(--iv-surface-selected);
+
+    --iv-fg: #ffffff;
+    --iv-fg-secondary: var(--iv-neutral-text);
+    --iv-fg-muted: var(--iv-neutral-bright);
+    --iv-fg-inverse: #0a0e1a;
+
+    /* Dark-tuned shadows (the original heavy set) */
+    --iv-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --iv-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --iv-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+    --iv-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
+    --iv-shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.7), 0 8px 16px rgba(0, 0, 0, 0.5);
+    --iv-shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.8);
+
+    /* Primary brand fill reads a touch brighter on dark for contrast */
+    --primary: var(--iv-brand-500);
   }
 
   /* =========================================================================
@@ -229,8 +331,8 @@
 
   body {
     font-family: var(--iv-font-sans);
-    background-color: var(--iv-surface-base);
-    color: var(--iv-neutral-text);
+    background-color: var(--iv-bg);
+    color: var(--iv-fg);
     line-height: 1.5;
     min-height: 100dvh;
   }
@@ -273,22 +375,25 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: var(--iv-surface-raised);
+    background: var(--iv-surface-2);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: var(--iv-surface-border);
+    background: var(--iv-border);
     border-radius: var(--iv-radius-full);
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--iv-neutral-muted);
+    background: var(--iv-fg-muted);
   }
 }
 
 /* ==========================================================================
-   UTILITY COMPONENT CLASSES
-   These are pre-composed design system utilities — NOT ad-hoc Tailwind hacks.
+   UTILITY COMPONENT CLASSES (LEGACY Wave-0 bootstrap)
+   Pre-composed CSS utilities from before the Doc-7B React kit existed. They
+   are dark-oriented and currently UNUSED by app code. The `src/frontend/` kit
+   supersedes them; retire these once surfaces adopt the kit (plan follow-up).
+   Kept (not removed) to avoid churn and preserve the bootstrap reference.
 ========================================================================== */
 
 @layer components {
