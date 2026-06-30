@@ -1,10 +1,10 @@
 # iVendorz — Landing Page Specification (P-PUB-01 Home / Landing)
 
 **Role:** Lead Product Designer + Frontend UI Engineer
-**Status:** **DRAFT v0.3** — Landing Page Specification (non-authoritative companion to the Doc-7 program)
-**Date:** 2026-06-29
+**Status:** **DRAFT v0.3.1** — Landing Page Specification (non-authoritative companion to the Doc-7 program)
+**Date:** 2026-06-30
 **Wave:** 0.3 — Governance Refactor
-**Revision:** v0.3 — refactored onto the `SC` de-duplication spine: added the `SC §2` Inherited-From banner + a `SEC-*` ID and `SC §8` Binding type to every section; stripped inherited boilerplate to `GI` references; `ESC` gaps now cite `ER` handles (no re-explanation); terms normalized to `GL`; tokens referenced by `--iv-*` name only. Command Center (§2) marked an **Extractable Unit (extraction deferred)** — kept in place. Coins nothing.
+**Revision:** v0.3.1 — additive board-adjudication patch (Track-1 Public UX review): added §1.4 consolidated section data-binding matrix and §1.5 net-new shared-component ownership/composition/states (all by pointer); per-section deltas (Hero rendering §3 · category-tile presentation §4 · vendor-card edge-cases §5 · Command Center shared-capability §2.10 · AI-slot ownership §2.9); §0.1 "not a platform/capability plan" clarifier. Accepts only corpus-safe kernels — rejects numeric perf budgets (→ Doc-8), capability/owner/state re-ownership, and AI-API authoring. Coins nothing. Prior: v0.3 — refactored onto the `SC` de-duplication spine: added the `SC §2` Inherited-From banner + a `SEC-*` ID and `SC §8` Binding type to every section; stripped inherited boilerplate to `GI` references; `ESC` gaps now cite `ER` handles (no re-explanation); terms normalized to `GL`; tokens referenced by `--iv-*` name only. Command Center (§2) marked an **Extractable Unit (extraction deferred)** — kept in place. Coins nothing.
 **Page:** **P-PUB-01 Home / Landing** (Public surface · Doc-7D · template **`T-LANDING`** — `PT §2`)
 **Companions:** [`shared_conventions.md`](shared_conventions.md) (`SC`) · [`esc_registry.md`](esc_registry.md) (`ER`) · [`glossary.md`](glossary.md) (`GL`) · [`design_philosophy.md`](design_philosophy.md) (`DP`) · [`page_templates.md`](page_templates.md) (`PT`) · [`information_architecture.md`](information_architecture.md) (`IA`) · [`ux_patterns.md`](ux_patterns.md) (`UX`) · [`marketplace_ux.md`](marketplace_ux.md) (`MX`) · [`page_inventory.md`](page_inventory.md) (`PI`)
 
@@ -51,6 +51,7 @@ Master → ADR → Doc-2/Doc-3 → Doc-4A…4M → Doc-5A…5K → Doc-7A → Do
 | The **visual identity** of iVendorz — the flagship first impression | A generic SaaS marketing page with a hero image and a feature grid |
 | An **anonymous, read-only, published-only** Public-projection surface (Doc-7D §3) | A place that performs any authenticated mutation (every authed action routes to `(auth)` — §1.3) |
 | A **discovery launchpad** — search, browse, convert | A re-ranking / matching / recommendation surface (Content ≠ Presentation; no M3 — §0.2) |
+| A **single Doc-7D view** that *consumes* capabilities owned upstream (M2 search/discovery/vendors/categories; M5 trust) over the Doc-7B kit | A **platform / capability plan** — the capability model is the **M2 module + Doc-7B kit + `PI`/`PT` templates**; this companion **references them by pointer**, never re-owns or re-organizes them |
 
 ### 0.2 The three load-bearing constraints (honored on every section below)
 
@@ -136,6 +137,64 @@ taxonomy), `J-GST-03` (search), `J-GST-04` (view a vendor), and `J-GST-06` (conv
 > chrome (`IA §3.2`) — **no org-switcher, no notification center** (those are authenticated shell slots,
 > Doc-7C; `SC §7` shell slots). The nav is specified at the page level here; the authoritative shell is
 > Doc-7C/7D.
+
+### 1.4 Section data-binding matrix (consolidated)
+
+> **Inherits (`SC §2`):** GI · `T-LANDING`. A non-coining **roll-up** of bindings already stated
+> per section (§2.3, §4–§7, §9, §14) — added per the Track-1 board adjudication for traceability.
+
+Reads are owned by **Doc-7D / BC-MKT-6 §8** and **Doc-5G**; state behavior → **`SC §1` GI-05**;
+acceptance/perf conformance → **Doc-8** (`SC §8`). **No internal read-model is named** — the surface
+binds the public **contract/projection** (`SC §1` GI-02). This is presentation traceability, **not
+implementation authority**; it coins nothing.
+
+| Section | Binding (`SC §8`) | Bound contract / source (by pointer) | ESC handle (`ER`) | States |
+|---|---|---|---|---|
+| `SEC-HERO` | STATIC | marketing copy (centerpiece owns its own bindings) | — | `GI-05` |
+| `SEC-COMMAND-CENTER` | READ+ESC | `search_catalog` · `list_vendor_directory` (BC-MKT-6 §8); trust badge (Doc-5G) | `ESC-7-API-CATNAV` · `ESC-7-API/stats` · `ESC-7-AI` | `GI-05` |
+| `SEC-CATEGORY` | READ+ESC | `search_catalog` facets (BC-MKT-6 §8) | `ESC-7-API-CATNAV` | `GI-05` |
+| `SEC-INDUSTRY` | READ+ESC | `search_catalog` facets | `ESC-7-API-CATNAV` | `GI-05` |
+| `SEC-SUPPLIERS` | READ | `list_vendor_directory` · `get_public_vendor_profile` (BC-MKT-6 §8); trust badge (Doc-5G) | — | `GI-05` |
+| `SEC-PRODUCTS` | READ+ESC | `search_catalog` (BC-MKT-6 §8) | `ESC-7-API-PRODDETAIL` | `GI-05` |
+| `SEC-STATS` | READ+ESC | `search_catalog` facet counts **or omit** | `ESC-7-API/stats` | `GI-05` / omitted |
+| `SEC-PROCESS` | STATIC | marketing | — | — |
+| `SEC-TRUST` | READ | static explainer + public trust badge (Doc-5G) | — | `GI-05` |
+| `SEC-SUCCESS` | STATIC | curated editorial | — | — |
+| `SEC-PARTNERS` | STATIC | curated editorial | — | — |
+| `SEC-RESOURCES` | STATIC | CMS/MD content | — | — |
+| `SEC-CTA` | STATIC | routes to `(auth)` (Doc-7E) | — | — |
+| `SEC-FOOTER` | STATIC (live cats = READ+ESC) | mostly static; Categories column = `search_catalog` facets | `ESC-7-API-CATNAV` | `GI-05` |
+
+### 1.5 Net-new shared components — ownership, composition & states (by pointer)
+
+> **Inherits (`SC §2`):** GI · Doc-7B kit · `SC §7` tiers. Added per the Track-1 board adjudication.
+> The component-tier **taxonomy is owned by Doc-7B** (`SC §7`); data/contract ownership is **M2's**
+> (`CLAUDE.md §3`, BC-MKT-6 §8) and trust **M5's** (Doc-5G). This table **references** those owners —
+> it re-owns nothing and coins no component, tier, or state.
+
+| Component | Doc-7B tier (`SC §7`) | Owner-of-record | Data owner (by pointer) | Composes (one level) | States |
+|---|---|---|---|---|---|
+| `vendor-card` | App | Doc-7B kit | M2 (`list_vendor_directory` / `get_public_vendor_profile`) + M5 trust (Doc-5G) | `card` · `badge` · `button` · `trust-badge` | `GI-05` |
+| `capability-matrix` (4-flag, Invariant #1) | App | Doc-7B kit | M2 vendor profile | `badge` | `GI-05` |
+| `category-tile` | App | Doc-7B kit | M2 categories (facets) | `card` · `button` · Lucide glyph | `GI-05` |
+| `product-card` | App | Doc-7B kit | M2 (`search_catalog`) | `card` · `currency-display` | `GI-05` |
+| Industrial Category Explorer | App (complex) | Doc-7B kit | M2 categories (facets) | `popover`/`sheet` · `button` | `GI-05` |
+| `stat-card` | App | Doc-7B kit | M2 facet aggregate (gap → `ER`) | `card` | `GI-05` |
+| `score-ring` (read-only illustration) | App | Doc-7B kit | M5 (Doc-5G, displayed-never-computed) | SVG (no data) | `GI-05` |
+| Command Center (Extractable Unit) | App (page-local until extracted) | page-local now → Doc-7B on extraction | M2 search reads (BC-MKT-6 §8) | `input` · `button` · `popover` · `badge` · `card` | `GI-05` |
+
+- **Owner-of-record = the Doc-7B shared kit.** A page **never forks** a kit component; duplication is
+  prevented by the kit being owner-of-record, **not** by a page-local registry. The data/contract owner
+  stays **M2** and trust/tier stays **M5** (Doc-5G) — referenced, never re-owned (reference-never-restate,
+  `CLAUDE.md §11`).
+- **Composes** is a **one-level** legend (primitives/embeddeds by pointer); it does **not** restate
+  frozen primitive internals or re-define `SC §7` tiers.
+- **States:** every composition renders the **frozen `SC §1` GI-05 four primitives** — Loading=skeleton ·
+  Empty=contract empty · Error=branch `error_class` (+ `reference_id`) · Not-found=byte-identical to
+  absence. **No `Permission` / `Success` / `Partial` state is coined:** the surface is anonymous (no
+  auth/permission states — authed actions route to `(auth)`, §1.3) and `Partial` would risk **GI-12**
+  byte-equivalence. An **unverified vendor / absent trust badge is absence** (GI-05 Empty/Not-found),
+  **not** a "pending" label.
 
 ---
 
@@ -286,6 +345,9 @@ error branches on `error_class` with `reference_id`, no protected enrichment.)*
   its full governance — **AI suggests; modules decide**, never ranks to a winner, never auto-selects,
   never re-ranks M3, never discloses an excluded/blacklisted/buyer-private signal (`SC §1` GI-11/GI-12;
   `UX §5.5`). The public landing never hosts that panel.
+- **Ownership (delta):** the reserved affordance is a **page-local presentation placeholder** only; its
+  activation contract and any future AI widget API are **owned upstream by M9** (`Doc-4K`/`Doc-5K`) and
+  gated by **`ER ESC-7-AI`** — **not authored here** (Invariant #12; `SC §1` GI-11).
 
 ### 2.10 Governance summary (Command Center)
 
@@ -294,6 +356,11 @@ error branches on `error_class` with `reference_id`, no protected enrichment.)*
 - Binds only the three frozen Public reads + public trust badge; every other dynamic entry is an `ER`
   ESC with a registered interim (§19).
 - No matching, no recommendation, no client-computed totals; trust displayed never computed.
+- **Shared capability (reuse):** the Command Center is the **public presentation of the IA §5.2 Universal
+  Command Center** search capability (owned by **M2** — `CLAUDE.md §3`; reads `BC-MKT-6 §8`), shared with
+  the authenticated surfaces. It remains an **Extractable Unit (extraction deferred)** and is classified
+  under `SC §7` (Doc-7B tier); cross-surface reuse is governed in `PI`/`PT` and on extraction —
+  referenced by pointer, never re-owned here.
 
 ---
 
@@ -335,6 +402,9 @@ Deltas:   First-viewport identity slot; hosts the Command Center (§2). Static m
   not a saturated commerce gradient (`DP §1.4`).
 - **Data binding:** **static marketing copy.** The only dynamic element is the embedded Command Center
   (§2). Trust strip counts are qualitative unless a contract aggregate exists → **`ER ESC-7-API/stats`**.
+- **Rendering (delta):** the Hero is a **pure Server Component** — static markup, **no client island, no
+  hydration** (rendering posture inherited; `LP §16`, `SC §1` GI-02). The only interactive island in the
+  first viewport is the embedded Command Center (§2).
 - **Delta A11y:** exactly one `<h1>`; line-art is decorative (`aria-hidden`, empty `alt`) — it **never
   encodes data** (`DP §4.5`). (Baseline a11y → `SC §1` GI-06; responsive → GI-07.)
 
@@ -380,6 +450,11 @@ consumer "mega menu" — denser, technical, professional). On the landing page t
   `search_catalog` **facets** only; product counts via facet aggregations where available;
   featured-category selection curated/static until the projection lands). Featured suppliers per node
   need a public vendor-by-category read (absent → same handle).
+- **Tile presentation (delta):** category tiles use a **single-line label with ellipsis truncation**
+  (full name via `title`/`aria-label`) for long labels; a **default industrial glyph** (`DP §10` set)
+  renders when a node has no icon; the featured tile count is fixed by the **curated/static seed**
+  (`ER ESC-7-API-CATNAV`), with surplus nodes reached via "View all". No "maximum categories" data rule
+  is coined here — categories are **M2-owned** (taxonomy; `CLAUDE.md §3`).
 - **Delta A11y:** tiles are links with icon + text label (never color/icon-only); explorer columns are
   keyboard-navigable; hover-drill has a keyboard/focus equivalent. (Baseline a11y → `SC §1` GI-06;
   responsive incl. four-column → accordion drawer on mobile → GI-07 / `UX §3.2`/`§9`; states → GI-05;
@@ -440,6 +515,13 @@ curated, premium showcase.
   "featured" selection is editorial/static, **not** a computed score sort.
 - **Non-disclosure:** published-only; a vendor blacklisted by some buyer **still appears** (the surface
   has no exclusion concept — Invariant #11; Doc-7D §3.2; `SC §1` GI-12). No count of "excluded"/"private".
+- **Card edge-cases (delta):** uniform card height via grid row alignment (no variable-height ragging);
+  **long vendor names** clamp/truncate per `DP` type scale with the full name accessible; **missing logo**
+  → identity fallback (no broken image); **no products / few-or-zero capability flags** → render the
+  4-flag matrix per **Invariant #1** (matrix, never a label) with absent flags shown **off, not hidden**.
+  **Unverified / no trust badge is absence, not a state** — bind to `SC §1` GI-05 (Empty/Not-found =
+  byte-identical to absence) + GI-12; the trust/tier badge stays the **read-only Doc-5G public projection**
+  (displayed-never-computed; detail never public — Doc-5G R10). No "pending"/"unverified" badge is coined.
 - **Delta A11y:** each card a self-contained article with a clear heading; trust/tier/capability conveyed
   with **text + icon**, not color alone; "View profile" has an accessible name including the vendor.
   (Baseline a11y → GI-06; responsive card grid 4→2→1 → GI-07; states → GI-05.)
