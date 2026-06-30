@@ -26,6 +26,7 @@ import {
   DeliverySection,
   VendorSection,
   BudgetSection,
+  CommunicationSection,
   ReviewSection,
 } from "./rfq-sections";
 import { RFQ_WIZARD_STEPS } from "./rfq-options";
@@ -138,6 +139,7 @@ export function RfqCreateView({ data }: { data: RfqCreateData }) {
           <DeliverySection form={form} />
           <VendorSection form={form} />
           <BudgetSection form={form} />
+          <CommunicationSection form={form} />
           <TitledCard title="Review">
             <ReviewSection form={form} />
           </TitledCard>
