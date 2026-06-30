@@ -23,8 +23,9 @@ import {
   TitledCard,
   RequirementSection,
   TechnicalSection,
-  LogisticsSection,
+  DeliverySection,
   VendorSection,
+  BudgetSection,
   ReviewSection,
 } from "./rfq-sections";
 import { RFQ_WIZARD_STEPS } from "./rfq-options";
@@ -134,8 +135,9 @@ export function RfqCreateView({ data }: { data: RfqCreateData }) {
           <TitledCard title="Attachments">
             <UploadArea attachments={form.attachments} />
           </TitledCard>
-          <LogisticsSection form={form} />
+          <DeliverySection form={form} />
           <VendorSection form={form} />
+          <BudgetSection form={form} />
           <TitledCard title="Review">
             <ReviewSection form={form} />
           </TitledCard>

@@ -72,37 +72,22 @@ export const CONDITION_OPTIONS: Option[] = [
   { value: "used", label: "Used" },
 ];
 
-/** Incoterms® 2020 — the real international standard set (not invented). */
-export const INCOTERM_OPTIONS: Option[] = [
-  { value: "EXW", label: "EXW — Ex Works" },
-  { value: "FCA", label: "FCA — Free Carrier" },
-  { value: "CPT", label: "CPT — Carriage Paid To" },
-  { value: "CIP", label: "CIP — Carriage & Insurance Paid To" },
-  { value: "DAP", label: "DAP — Delivered At Place" },
-  { value: "DPU", label: "DPU — Delivered At Place Unloaded" },
-  { value: "DDP", label: "DDP — Delivered Duty Paid" },
-  { value: "FOB", label: "FOB — Free On Board" },
-  { value: "CFR", label: "CFR — Cost & Freight" },
-  { value: "CIF", label: "CIF — Cost, Insurance & Freight" },
+// NOTE (Board ruling 2026-07-01): payment terms, incoterms, and tax are COMMERCIAL terms the VENDOR defines
+// in its quotation — NOT what the buyer requests. They were removed from the RFQ create form (the buyer
+// describes the need; the vendor defines how/under what terms it supplies). Do not re-add them here.
+
+/** Delivery site kind — presentation list (dev-doc capture). */
+export const DELIVERY_SITE_OPTIONS: Option[] = [
+  { value: "factory", label: "Factory" },
+  { value: "warehouse", label: "Warehouse" },
+  { value: "site", label: "Project site" },
 ];
 
-/**
- * Payment PREFERENCE — presentation list. NOTE (R8 firewall): the platform NEVER handles buyer↔vendor money
- * (no escrow/wallet/settlement). This is a stated preference only — it moves no funds and gates nothing.
- */
-export const PAYMENT_OPTIONS: Option[] = [
-  { value: "advance", label: "Advance payment" },
-  { value: "on_delivery", label: "Payment on delivery" },
-  { value: "lc", label: "Letter of credit (LC)" },
-  { value: "credit_30", label: "Credit — 30 days" },
-  { value: "credit_60", label: "Credit — 60 days" },
-];
-
-/** Tax handling preference — presentation list. */
-export const TAX_OPTIONS: Option[] = [
-  { value: "inclusive", label: "Price inclusive of tax" },
-  { value: "exclusive", label: "Price exclusive of tax" },
-  { value: "exempt", label: "Tax exempt" },
+/** Urgency — presentation guidance only; helps vendors prepare, never a matching weight (R6). */
+export const URGENCY_OPTIONS: Option[] = [
+  { value: "standard", label: "Standard" },
+  { value: "urgent", label: "Urgent" },
+  { value: "critical", label: "Critical" },
 ];
 
 /** Vendor type preference — presentation list (a routing/preference hint, not a matching weight). */
@@ -124,7 +109,8 @@ export const RFQ_WIZARD_STEPS: WizardStep[] = [
   { key: "requirement", label: "Requirement" },
   { key: "technical", label: "Technical" },
   { key: "attachments", label: "Attachments" },
-  { key: "logistics", label: "Logistics" },
+  { key: "delivery", label: "Delivery" },
   { key: "vendors", label: "Vendor preferences" },
+  { key: "budget", label: "Budget & priority" },
   { key: "review", label: "Review" },
 ];

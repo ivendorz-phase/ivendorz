@@ -24,7 +24,7 @@ export function UploadArea({ attachments }: { attachments?: RfqAttachment[] }) {
       {files.length === 0 ? (
         <EmptyState
           title="No attachments yet"
-          description="Attach drawings, specifications, or a bill of quantities for vendors to quote against."
+          description="Attach drawings, BOQ, datasheets, images, or technical documents for vendors to quote against."
           className="py-6"
         />
       ) : (

@@ -3,7 +3,8 @@
 // integration). Reuses the kit `Card`/`FormField` + the buyer `Textarea`/`Select` controls + `Badge`. The
 // PINNED frozen fields (category, work_nature, scope_text, no_formal_spec, budget/currency, routing_mode) are
 // labelled by intent; the rest are the dev-doc capture (see rfq-form-models.ts). No matching weight is set
-// by the buyer (R6); no AI; no money moves (R8 — payment is a stated preference only).
+// by the buyer (R6); no AI. COMMERCIAL terms (payment / incoterms / tax) are NOT here — the vendor defines
+// them in its quotation (Board ruling 2026-07-01); the buyer states only optional budget GUIDANCE (R8).
 
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
@@ -17,9 +18,8 @@ import {
   FINANCIAL_TIER_OPTIONS,
   UNIT_OPTIONS,
   CONDITION_OPTIONS,
-  INCOTERM_OPTIONS,
-  PAYMENT_OPTIONS,
-  TAX_OPTIONS,
+  DELIVERY_SITE_OPTIONS,
+  URGENCY_OPTIONS,
   VENDOR_TYPE_OPTIONS,
 } from "./rfq-options";
 import type { RfqDraftForm } from "./rfq-form-models";
@@ -180,10 +180,10 @@ export function TechnicalSection({ form }: { form: RfqDraftForm }) {
   );
 }
 
-// ── Phase 5 — Logistics & commercial ──────────────────────────────────────────────────────────────────
-export function LogisticsSection({ form }: { form: RfqDraftForm }) {
+// ── Delivery requirements ─────────────────────────────────────────────────────────────────────────────
+export function DeliverySection({ form }: { form: RfqDraftForm }) {
   return (
-    <SectionCard title="Logistics & commercial">
+    <SectionCard title="Delivery requirements">
       <FormField
         id="rfq-location"
         label="Delivery location"
@@ -191,48 +191,62 @@ export function LogisticsSection({ form }: { form: RfqDraftForm }) {
       />
       <FormField
         id="rfq-district"
-        label="District"
+        label="Delivery district"
         description="At least a district is required to submit."
         inputProps={{ defaultValue: form.district, placeholder: "e.g. Gazipur" }}
       />
       <FormField
         id="rfq-date"
-        label="Delivery date"
+        label="Required delivery date"
         inputProps={{ defaultValue: form.deliveryDate, type: "date" }}
       />
-      <div className="grid grid-cols-[1fr_7rem] gap-3">
-        <FormField
-          id="rfq-budget"
-          label="Budget"
-          description="Estimated value — required to submit."
-          inputProps={{ defaultValue: form.budget, type: "number", inputMode: "decimal", min: 0 }}
-        />
-        <FormField id="rfq-currency" label="Currency">
-          <Select
-            options={[{ value: "BDT", label: "BDT" }]}
-            defaultValue={form.currency ?? "BDT"}
-          />
-        </FormField>
-      </div>
-      <FormField id="rfq-payment" label="Payment preference">
+      <FormField id="rfq-site" label="Delivery site">
         <Select
-          options={PAYMENT_OPTIONS}
-          placeholder="Select preference"
-          defaultValue={form.paymentPreference ?? ""}
+          options={DELIVERY_SITE_OPTIONS}
+          placeholder="Factory / Warehouse / Site"
+          defaultValue={form.deliverySite ?? ""}
         />
       </FormField>
-      <FormField id="rfq-incoterm" label="Incoterms">
-        <Select
-          options={INCOTERM_OPTIONS}
-          placeholder="Select incoterm"
-          defaultValue={form.incoterm ?? ""}
+      <FormField id="rfq-instructions" label="Delivery instructions" className="sm:col-span-2">
+        <Textarea
+          rows={3}
+          defaultValue={form.deliveryInstructions}
+          placeholder="Access, unloading, timing, packaging…"
         />
       </FormField>
-      <FormField id="rfq-tax" label="Tax">
+    </SectionCard>
+  );
+}
+
+// ── Budget & priority (OPTIONAL — commercial GUIDANCE, not commercial terms; payment/incoterms/tax live
+//    on the VENDOR quotation, Board ruling 2026-07-01) ────────────────────────────────────────────────
+export function BudgetSection({ form }: { form: RfqDraftForm }) {
+  return (
+    <SectionCard title="Budget & priority (optional)">
+      <FormField
+        id="rfq-budget"
+        label="Estimated budget (BDT)"
+        description="Optional guidance — required only at submit. No currency selector: BDT at create."
+        inputProps={{
+          defaultValue: form.budget,
+          type: "number",
+          inputMode: "decimal",
+          min: 0,
+          placeholder: "e.g. 1,800,000",
+        }}
+      />
+      <FormField id="rfq-urgency" label="Urgency">
         <Select
-          options={TAX_OPTIONS}
-          placeholder="Select tax handling"
-          defaultValue={form.tax ?? ""}
+          options={URGENCY_OPTIONS}
+          placeholder="Standard"
+          defaultValue={form.urgency ?? ""}
+        />
+      </FormField>
+      <FormField id="rfq-special" label="Special instructions" className="sm:col-span-2">
+        <Textarea
+          rows={3}
+          defaultValue={form.specialInstructions}
+          placeholder="Anything else vendors should know — not commercial terms (those come in the quote)…"
         />
       </FormField>
     </SectionCard>
@@ -268,7 +282,11 @@ export function VendorSection({ form }: { form: RfqDraftForm }) {
           defaultValue={form.manufacturerOrImporter ?? ""}
         />
       </FormField>
-      <FormField id="rfq-tier" label="Business tier">
+      <FormField
+        id="rfq-tier"
+        label="Preferred vendor classification"
+        description="Optional — preferred Financial Tier (a capability tier, not a plan)."
+      >
         <Select
           options={FINANCIAL_TIER_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
           placeholder="Any tier"
@@ -322,16 +340,18 @@ export function ReviewSection({ form }: { form: RfqDraftForm }) {
     { label: "Location", value: dash(form.deliveryLocation) },
     { label: "District", value: dash(form.district) },
     { label: "Needed by", value: dash(form.deliveryDate) },
-    {
-      label: "Budget",
-      value: form.budget ? `${form.budget} ${form.currency ?? "BDT"}` : "—",
-    },
+    { label: "Site", value: dash(form.deliverySite) },
   ];
   const vendor: DescriptionItem[] = [
     { label: "Routing", value: dash(form.routingMode) },
     { label: "Vendor type", value: dash(form.manufacturerOrImporter) },
+    { label: "Classification", value: dash(form.financialTier) },
     { label: "Verified only", value: form.verifiedOnly ? "Yes" : "No" },
     { label: "Accept alternatives", value: form.acceptAlternatives ? "Yes" : "No" },
+  ];
+  const budget: DescriptionItem[] = [
+    { label: "Estimated budget", value: form.budget ? `${form.budget} BDT` : "—" },
+    { label: "Urgency", value: dash(form.urgency) },
   ];
   const fileCount = form.attachments?.length ?? 0;
 
@@ -350,6 +370,7 @@ export function ReviewSection({ form }: { form: RfqDraftForm }) {
       </TitledCard>
       <SummaryCard title="Delivery" items={delivery} />
       <SummaryCard title="Vendor preferences" items={vendor} />
+      <SummaryCard title="Budget & priority" items={budget} />
     </div>
   );
 }

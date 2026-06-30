@@ -80,24 +80,32 @@ export interface RfqDraftForm {
   // Phase 4 — Attachments (`spec_document_ids[]` at wiring; presentation-only here)
   attachments?: RfqAttachment[];
 
-  // Phase 5 — Logistics & commercial (`delivery_geography` jsonb + dev-doc capture)
+  // Delivery requirements (`delivery_geography` jsonb + dev-doc capture). NOTE: payment terms / incoterms /
+  // tax are NOT here — they are COMMERCIAL terms the vendor defines in its quotation (Board ruling 2026-07-01),
+  // not what the buyer requests. The buyer describes the NEED; the vendor defines how/under what terms it supplies.
   deliveryLocation?: string;
   district?: string;
   deliveryDate?: string;
-  /** `estimated_value` (numeric) + `currency` <BDT>. */
-  budget?: string;
-  currency?: RfqCurrency;
-  paymentPreference?: string;
-  incoterm?: string;
-  tax?: string;
+  /** Delivery site kind — Factory / Warehouse / Site (dev-doc capture). */
+  deliverySite?: string;
+  /** Free-text delivery instructions (dev-doc capture). */
+  deliveryInstructions?: string;
 
-  // Phase 6 — Vendor preferences (`routing_mode` frozen + dev-doc preference hints; never matching weights)
+  // Vendor preferences (`routing_mode` frozen + dev-doc preference hints; never matching weights, R6)
   routingMode?: RoutingMode;
   preferredVendor?: string;
   verifiedOnly?: boolean;
   manufacturerOrImporter?: string;
+  /** Preferred vendor classification — the frozen Financial Tier A–E hint (Inv #10 ≠ plan). Optional. */
   financialTier?: FinancialTier;
   acceptAlternatives?: boolean;
+
+  // Budget & priority (OPTIONAL — commercial GUIDANCE, not commercial terms). `estimated_value` + `currency`<BDT>
+  // (no currency selector — BDT only at create); urgency + notes are dev-doc capture.
+  budget?: string;
+  currency?: RfqCurrency;
+  urgency?: string;
+  specialInstructions?: string;
 }
 
 /** Submission states for Phase 8 (presentation only — NO real submit occurs this milestone). */
