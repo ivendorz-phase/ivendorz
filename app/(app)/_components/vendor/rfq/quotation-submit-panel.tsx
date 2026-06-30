@@ -10,7 +10,7 @@
 // client-decremented). No AI advisory in this build (render-only-if-wired → omitted). RSC-friendly.
 import { Button } from "@/frontend/primitives/button";
 import { QuotaMeter } from "./quota-meter";
-import { PresentationFormNote } from "../company/presentation-form-note";
+import { PresentationFormNote } from "../shared";
 import type { QuotaView } from "./types";
 
 export interface QuotationSubmitPanelProps {

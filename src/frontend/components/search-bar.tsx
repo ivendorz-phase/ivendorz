@@ -1,32 +1,35 @@
 "use client";
 
-// SearchBar — the real catalog search field (Doc-7D · landing_page_spec §2 · M2.3 Phase 1). A Client
-// Component: keyboard support (⌘K/Ctrl-K focus · Esc clear · Enter submit), a loading affordance, and
-// URL SYNCHRONIZATION — on submit it navigates to the results route (`/search?q=`). PRESENTATION-ONLY:
-// it fetches nothing; the results page reads `?q=` and renders the interim seed-filtered results. The
-// wired `search_catalog` (BC-MKT-6 §8) replaces the seed filter later; this never re-ranks M3 (GI-04).
+// SearchBar (Doc-7B kit, App tier; promoted from the Public surface after M2.3 exercised its API). The
+// real catalog search field: keyboard support (⌘K/Ctrl-K focus · Esc clear · Enter submit), a loading
+// affordance, and URL SYNCHRONIZATION — on submit it navigates to the surface-supplied results route
+// (route-agnostic). PRESENTATION-ONLY: it fetches nothing. ONE canonical implementation — differences via
+// props (action, label), never a fork.
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Search, Loader2 } from "lucide-react";
-import { Input } from "@/frontend/primitives/input";
-import { Button } from "@/frontend/primitives/button";
-import { cn } from "@/frontend/lib/cn";
+import { Input } from "../primitives/input";
+import { Button } from "../primitives/button";
+import { cn } from "../lib/cn";
 
 export interface SearchBarProps {
-  /** Initial query — the server reads `?q=` and passes it (keep the field in sync after navigation). */
+  /** Results route to submit to — surface-supplied (route-agnostic). On submit → `${action}?q=…`. */
+  action: string;
+  /** Initial query — the surface reads `?q=` and passes it (kept in sync after navigation). */
   defaultQuery?: string;
   placeholder?: string;
-  /** Results route to submit to. */
-  action?: string;
-  /** Autofocus on mount (e.g. on the results page). */
+  /** Accessible name for the search landmark + input. */
+  label?: string;
+  /** Autofocus on mount. */
   autoFocus?: boolean;
   className?: string;
 }
 
 export function SearchBar({
+  action,
   defaultQuery = "",
   placeholder = "Search products, suppliers, categories…",
-  action = "/search",
+  label = "Search the marketplace",
   autoFocus = false,
   className,
 }: SearchBarProps) {
@@ -35,7 +38,7 @@ export function SearchBar({
   const [pending, startTransition] = React.useTransition();
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  // Page-level ⌘K / Ctrl-K focuses the field (mirrors the landing Command Center).
+  // Page-level ⌘K / Ctrl-K focuses the field.
   React.useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -46,6 +49,11 @@ export function SearchBar({
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, []);
+
+  // Keep the field in sync with the URL query after navigation (no React-key remount → focus survives).
+  React.useEffect(() => {
+    setQuery(defaultQuery);
+  }, [defaultQuery]);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,9 +67,15 @@ export function SearchBar({
   }
 
   return (
-    <form role="search" onSubmit={submit} className={cn("flex items-center gap-2", className)}>
+    <form
+      role="search"
+      aria-label={label}
+      aria-busy={pending}
+      onSubmit={submit}
+      className={cn("flex items-center gap-2", className)}
+    >
       <label className="relative flex-1">
-        <span className="sr-only">Search the marketplace</span>
+        <span className="sr-only">{label}</span>
         <Search
           aria-hidden="true"
           className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
@@ -78,13 +92,21 @@ export function SearchBar({
           className="h-11 pl-9 pr-3 text-base"
         />
       </label>
-      <Button type="submit" size="lg" aria-label="Search" disabled={pending}>
+      <Button
+        type="submit"
+        size="lg"
+        aria-label={pending ? "Searching" : "Search"}
+        disabled={pending}
+      >
         {pending ? (
           <Loader2 aria-hidden="true" className="animate-spin" />
         ) : (
           <Search aria-hidden="true" />
         )}
       </Button>
+      <span role="status" aria-live="polite" className="sr-only">
+        {pending ? "Searching…" : ""}
+      </span>
     </form>
   );
 }

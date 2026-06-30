@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SearchBar } from "../_components/discovery";
+import { SearchBar } from "@/frontend/components/search-bar";
 import { FeaturedCategories } from "../_components/landing/featured-categories";
 import { SupplierShowcase } from "../_components/landing/supplier-showcase";
 import { PopularProducts } from "../_components/landing/popular-products";
@@ -26,7 +26,7 @@ export default function MarketplacePage() {
             Discover verified industrial suppliers and products across Bangladesh.
           </p>
           <div className="mt-5 max-w-2xl">
-            <SearchBar />
+            <SearchBar action="/search" />
           </div>
         </div>
       </section>

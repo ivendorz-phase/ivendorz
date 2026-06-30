@@ -9,7 +9,7 @@ import { CurrencyDisplay } from "@/frontend/components/currency-display";
 import { StatusChip, type StatusTone } from "@/frontend/components/status-chip";
 import { CapabilityMatrix } from "@/frontend/components/capability-matrix";
 import { CategoryAssignmentList } from "./category-assignment-list";
-import { DescriptionList, type DescriptionItem } from "./description-list";
+import { DescriptionList, type DescriptionItem } from "../shared";
 import { GovernanceBandsPlaceholder } from "./governance-bands-placeholder";
 import { TierChip } from "./tier-chip";
 import type {

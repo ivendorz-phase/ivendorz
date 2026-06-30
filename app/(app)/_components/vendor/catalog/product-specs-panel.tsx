@@ -6,7 +6,7 @@ import { FileText, Plus } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
 import { EmptyState } from "@/frontend/components/empty-state";
 import { StatusChip } from "@/frontend/components/status-chip";
-import { PresentationFormNote } from "../company/presentation-form-note";
+import { PresentationFormNote } from "../shared";
 import type { SpecDocType, SpecDocumentView } from "./types";
 
 const DOC_TYPE_LABEL: Record<SpecDocType, string> = {

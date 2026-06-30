@@ -8,9 +8,8 @@
 import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
 import { CurrencyDisplay } from "@/frontend/components/currency-display";
-import { DescriptionList, type DescriptionItem } from "../company/description-list";
+import { DescriptionList, type DescriptionItem, PresentationFormNote } from "../shared";
 import { EngagementStatusChip } from "./engagement-status-chip";
-import { PresentationFormNote } from "../company/presentation-form-note";
 import type { EngagementView } from "./types";
 
 export interface EngagementOverviewProps {

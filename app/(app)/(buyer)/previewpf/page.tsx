@@ -34,7 +34,7 @@ export default function PreviewPlatformFixes() {
             <CardTitle className="text-sm font-semibold">Delivery terms</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0 text-sm text-muted-foreground">
-            Status chips above use the darker `*-muted` ink — P-4.
+            Status chips above use the darker muted ink — P-4.
           </CardContent>
         </Card>
       </div>

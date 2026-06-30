@@ -10,7 +10,7 @@ import { FileLink } from "@/frontend/components/file-link";
 import { FormField } from "@/frontend/components/form-field";
 import { PresentationContextBanner } from "./presentation-context-banner";
 import { VisibilityChip } from "./status-chips";
-import { PresentationFormNote } from "../company/presentation-form-note";
+import { PresentationFormNote } from "../shared";
 import type { SeoSettingsView } from "./types";
 
 const TEXTAREA_CLASS =

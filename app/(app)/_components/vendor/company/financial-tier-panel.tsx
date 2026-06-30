@@ -9,7 +9,7 @@ import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
 import { FormField } from "@/frontend/components/form-field";
 import { MatchingContextBanner } from "./matching-context-banner";
-import { PresentationFormNote } from "./presentation-form-note";
+import { PresentationFormNote } from "../shared";
 import { TierChip } from "./tier-chip";
 import { TierHistoryList } from "./tier-history-list";
 import type { FinancialTier, TierHistoryEntry, VendorProfileView } from "./types";

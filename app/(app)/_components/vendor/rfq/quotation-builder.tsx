@@ -4,11 +4,11 @@
 // frozen-required `invitation_id` + `rfq_id` are resolved server-side from the grant (not vendor-typed
 // [m-4]). Draft persistence is client-local-only pending [ESC-7G-Q-DRAFT] — surfaced as an honest
 // "saved on this device" note, NOT a server-persisted guarantee. The seven sections compose into the
-// step rail. Server component; passes server-rendered sections through the client step wrapper.
+// step rail. Server component; passes server-rendered sections through the shared WorkspaceTabs (M8).
 import { Card, CardContent } from "@/frontend/primitives/card";
+import { WorkspaceTabs } from "../shared";
 import { WindowStateChip } from "./window-state-chip";
 import { QuotaMeter } from "./quota-meter";
-import { QuotationBuilderSteps } from "./quotation-builder-steps";
 import { PriceBreakdownTable } from "./price-breakdown-table";
 import { QuotationTermsField } from "./quotation-terms-fields";
 import { QuotationAttachments } from "./quotation-attachments";
@@ -82,9 +82,9 @@ export function QuotationBuilder({
         </CardContent>
       </Card>
 
-      <QuotationBuilderSteps
+      <WorkspaceTabs
         ariaLabel="Quotation steps"
-        steps={[
+        tabs={[
           {
             value: "price",
             label: "1 · Price",

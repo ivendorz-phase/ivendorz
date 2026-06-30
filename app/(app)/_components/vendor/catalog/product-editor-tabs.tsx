@@ -1,10 +1,9 @@
-"use client";
-
-// Tabbed Product Editor (companion §5: S2 Content · S3 Specifications · S6/S7 Publishing). Thin client
-// wrapper around the kit Tabs; the three section contents are server-rendered and passed in as props.
-// Reuses the kit Tabs primitive (no duplication).
+// ProductEditorTabs (companion §5: S2 Content · S3 Specifications · S6/S7 Publishing). Thin feature
+// adapter over the shared WorkspaceTabs infrastructure (Milestone 8): it only maps the three named
+// section slots to tabs and owns no tab logic. The section contents are server-rendered and passed in
+// as props. Render is byte-identical to the pre-extraction wrapper. RSC-friendly.
 import type { ReactNode } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/frontend/primitives/tabs";
+import { WorkspaceTabs } from "../shared";
 
 export interface ProductEditorTabsProps {
   content: ReactNode;
@@ -14,21 +13,12 @@ export interface ProductEditorTabsProps {
 
 export function ProductEditorTabs({ content, specifications, publishing }: ProductEditorTabsProps) {
   return (
-    <Tabs defaultValue="content" className="w-full">
-      <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1">
-        <TabsTrigger value="content">Content</TabsTrigger>
-        <TabsTrigger value="specifications">Specifications</TabsTrigger>
-        <TabsTrigger value="publishing">Publishing</TabsTrigger>
-      </TabsList>
-      <TabsContent value="content" className="mt-4">
-        {content}
-      </TabsContent>
-      <TabsContent value="specifications" className="mt-4">
-        {specifications}
-      </TabsContent>
-      <TabsContent value="publishing" className="mt-4">
-        {publishing}
-      </TabsContent>
-    </Tabs>
+    <WorkspaceTabs
+      tabs={[
+        { value: "content", label: "Content", content },
+        { value: "specifications", label: "Specifications", content: specifications },
+        { value: "publishing", label: "Publishing", content: publishing },
+      ]}
+    />
   );
 }

@@ -8,7 +8,7 @@ import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
 import { PresentationContextBanner } from "./presentation-context-banner";
 import { MicrositeStatusChip } from "./status-chips";
-import { PresentationFormNote } from "../company/presentation-form-note";
+import { PresentationFormNote } from "../shared";
 import type { MicrositeView } from "./types";
 
 export interface PreviewPublishPanelProps {

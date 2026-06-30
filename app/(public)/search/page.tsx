@@ -1,25 +1,28 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AlertTriangle, Info } from "lucide-react";
-import { SearchBar, FilterSidebar } from "../_components/discovery";
+import { Info } from "lucide-react";
+import { SearchBar } from "@/frontend/components/search-bar";
+import { FilterSidebar } from "@/frontend/components/filter-sidebar";
 import { VENDORS, PRODUCTS, CATEGORY_GROUPS, VENDOR_FACETS } from "../_components/discovery/seed";
 import { VendorCard } from "@/frontend/components/vendor-card";
 import { ProductCard } from "@/frontend/components/product-card";
 import { CategoryTile } from "@/frontend/components/category-tile";
 import { ResultsGrid } from "@/frontend/components/results-grid";
-import { EmptyState } from "@/frontend/components/empty-state";
+import { ErrorState } from "@/frontend/components/error-state";
 import { PaginationControl } from "@/frontend/components/pagination-control";
 import { Skeleton } from "@/frontend/primitives/skeleton";
+import { Button } from "@/frontend/primitives/button";
 import { cn } from "@/frontend/lib/cn";
 
 // P-PUB-10 Search Experience (Doc-7D Public surface · landing_page_spec §2 · M2.3). PRESENTATION &
 // COMPOSITION ONLY: anonymous, read-only, binds NO Doc-5 contract. Reuses the kit cards + ONE ResultsGrid
 // across Products / Vendors / Categories (no new card types). The query is URL-synced (?q=); results are
-// an INTERIM seed filter standing in for `search_catalog` (BC-MKT-6 §8) — never a real search/rank (GI-04).
+// an INTERIM seed filter standing in for `search_catalog` (BC-MKT-6 §8) — disclosed to the visitor (header
+// note) and never presented as a real search/rank (GI-04). Removed when the read is wired.
 //
 // GOVERNANCE: cursor pagination only, no offset/page-number/total (GI-03); empty = byte-identical to
-// absence (Invariant #11). The `?state=` param is a PRESENTATION/QA HARNESS to preview the loading /
-// partial / error states (which a wired search will drive) — it fabricates no data and is not user-facing.
+// absence (Invariant #11). The `?state=` loading/partial/error preview is a DEV/QA harness — honored ONLY
+// outside production so a real visitor can never be shown a fabricated system state.
 export const metadata: Metadata = {
   title: "Search · iVendorz",
   description: "Search verified industrial suppliers and products across Bangladesh.",
@@ -33,28 +36,81 @@ const TABS = [
   { key: "categories", label: "Categories" },
 ] as const;
 
+// Per-tab grid geometry — used for BOTH the loading skeleton and the real grid so they don't layout-shift.
+const TAB_GRID: Record<
+  string,
+  { columnsClassName: string; variant: "vendor" | "product" | "category" }
+> = {
+  vendors: {
+    columnsClassName: "grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3",
+    variant: "vendor",
+  },
+  products: {
+    columnsClassName: "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4",
+    variant: "product",
+  },
+  categories: {
+    columnsClassName: "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4",
+    variant: "category",
+  },
+};
+
 function contains(haystack: string, needle: string) {
   return haystack.toLowerCase().includes(needle);
 }
 
-/** Presentation skeleton grid for the loading state (kit Skeleton). */
-function ResultSkeleton() {
+/** Tab-shaped loading skeleton (kit Skeleton). aria-hidden + a visually-hidden status announce loading. */
+function ResultSkeleton({
+  columnsClassName,
+  variant,
+}: {
+  columnsClassName: string;
+  variant: "vendor" | "product" | "category";
+}) {
+  const count = variant === "category" ? 8 : 6;
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="rounded-lg border border-border p-4">
-          <div className="flex items-center gap-3">
-            <Skeleton className="size-10 rounded-md" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="h-3 w-1/3" />
+    <>
+      <span role="status" className="sr-only">
+        Loading results…
+      </span>
+      <div aria-hidden="true" className={cn("grid", columnsClassName)}>
+        {Array.from({ length: count }).map((_, i) => {
+          if (variant === "product") {
+            return (
+              <div key={i} className="overflow-hidden rounded-lg border border-border">
+                <Skeleton className="aspect-[4/3] w-full rounded-none" />
+                <div className="space-y-2 p-3">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                  <Skeleton className="h-4 w-1/3" />
+                </div>
+              </div>
+            );
+          }
+          if (variant === "category") {
+            return (
+              <div key={i} className="flex items-center gap-3 rounded-lg border border-border p-4">
+                <Skeleton className="size-10 rounded-md" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            );
+          }
+          return (
+            <div key={i} className="rounded-lg border border-border p-4">
+              <div className="flex items-center gap-3">
+                <Skeleton className="size-10 rounded-md" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-3 w-1/3" />
+                </div>
+              </div>
+              <Skeleton className="mt-3 h-6 w-full" />
+              <Skeleton className="mt-4 h-8 w-full" />
             </div>
-          </div>
-          <Skeleton className="mt-3 h-6 w-full" />
-          <Skeleton className="mt-4 h-8 w-full" />
-        </div>
-      ))}
-    </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
 
@@ -67,10 +123,11 @@ export default async function SearchPage({
   const q = (sp.q ?? "").trim();
   const ql = q.toLowerCase();
   const activeTab = TABS.some((t) => t.key === sp.tab) ? (sp.tab as string) : "products";
-  const demoState = sp.state; // "loading" | "partial" | "error" — presentation/QA harness only.
+  // The `?state=` preview harness is honored ONLY outside production (never shown to a real visitor).
+  const demoState = process.env.NODE_ENV !== "production" ? sp.state : undefined;
 
   // INTERIM stand-in for `search_catalog`: a substring filter over the curated seed. NOT a real
-  // search/match/rank (GI-04) — replaced wholesale when the public read is wired.
+  // search/match/rank (GI-04) — Array.filter preserves seed order; replaced wholesale when wired.
   const allCategories = CATEGORY_GROUPS.flatMap((g) => g.categories);
   const products = ql
     ? PRODUCTS.filter(
@@ -84,24 +141,30 @@ export default async function SearchPage({
 
   const tabHref = (tab: string) =>
     q ? `/search?q=${encodeURIComponent(q)}&tab=${tab}` : `/search?tab=${tab}`;
+  const grid = TAB_GRID[activeTab];
 
   function renderResults() {
     if (demoState === "error") {
-      // A wired error would branch on `error_class` and show a `reference_id` (GI-05); this is the shell.
       return (
-        <EmptyState
-          icon={<AlertTriangle aria-hidden="true" />}
-          title="Search is unavailable right now"
-          description="We couldn’t complete your search. Please try again in a moment."
+        <ErrorState
+          errorClass="DEPENDENCY"
+          message="We couldn’t complete your search. Please try again in a moment."
+          action={
+            <Button asChild variant="outline" size="sm">
+              <Link href={q ? `/search?q=${encodeURIComponent(q)}` : "/search"}>Try again</Link>
+            </Button>
+          }
         />
       );
     }
-    if (demoState === "loading") return <ResultSkeleton />;
+    if (demoState === "loading")
+      return <ResultSkeleton columnsClassName={grid.columnsClassName} variant={grid.variant} />;
 
     if (activeTab === "vendors") {
       return (
         <ResultsGrid
           count={vendors.length}
+          columnsClassName={grid.columnsClassName}
           footer={<PaginationControl hasMore hasPrevious={false} />}
         >
           {vendors.map((v) => (
@@ -112,10 +175,7 @@ export default async function SearchPage({
     }
     if (activeTab === "categories") {
       return (
-        <ResultsGrid
-          count={categories.length}
-          columnsClassName="grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
-        >
+        <ResultsGrid count={categories.length} columnsClassName={grid.columnsClassName}>
           {categories.map((c) => (
             <CategoryTile
               key={c.slug}
@@ -129,7 +189,7 @@ export default async function SearchPage({
     return (
       <ResultsGrid
         count={products.length}
-        columnsClassName="grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4"
+        columnsClassName={grid.columnsClassName}
         footer={<PaginationControl hasMore hasPrevious={false} />}
       >
         {products.map((p) => (
@@ -142,7 +202,7 @@ export default async function SearchPage({
   return (
     <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-8 sm:px-6">
       <header className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-iv-ink-heading sm:text-3xl">
+        <h1 className="text-3xl font-bold tracking-tight text-iv-ink-heading sm:text-4xl">
           {q ? (
             <>
               Search results for <span className="text-iv-navy-700">“{q}”</span>
@@ -152,8 +212,13 @@ export default async function SearchPage({
           )}
         </h1>
         <div className="mt-4 max-w-2xl">
-          <SearchBar key={q} defaultQuery={q} />
+          <SearchBar action="/search" defaultQuery={q} />
         </div>
+        {/* Honest interim disclosure (byte-neutral) — live catalog search is not yet wired. Removed when
+            `search_catalog` lands. Mirrors the Command Center's honest hint; no counts, no exclusion copy. */}
+        <p className="mt-2 text-xs text-muted-foreground">
+          Live catalog search is coming soon — showing example listings from across the marketplace.
+        </p>
       </header>
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
@@ -167,7 +232,7 @@ export default async function SearchPage({
           {/* Result-type tabs as URL links (server-rendered; aria-current, no client-computed counts — GI-03). */}
           <nav
             aria-label="Result type"
-            className="mb-4 inline-flex items-center gap-1 rounded-md bg-muted p-1"
+            className="mb-4 inline-flex h-9 items-center justify-center gap-1 rounded-md bg-muted p-1"
           >
             {TABS.map((t) => {
               const active = t.key === activeTab;
@@ -189,14 +254,21 @@ export default async function SearchPage({
             })}
           </nav>
 
-          {demoState === "partial" ? (
-            <div className="mb-4 flex items-center gap-2 rounded-md border border-border bg-iv-info-subtle px-3 py-2 text-sm text-iv-info-base">
-              <Info aria-hidden="true" className="size-4 shrink-0" />
-              Showing partial results while we finish searching…
-            </div>
-          ) : null}
+          {/* Labelled live region so loading→loaded / partial / error transitions are perceivable to AT. */}
+          <section
+            aria-label="Search results"
+            aria-live="polite"
+            aria-busy={demoState === "loading" ? true : undefined}
+          >
+            {demoState === "partial" ? (
+              <div className="mb-4 flex items-center gap-2 rounded-md border border-border bg-iv-info-subtle px-3 py-2 text-sm text-iv-info-base">
+                <Info aria-hidden="true" className="size-4 shrink-0" />
+                Showing partial results while we finish searching…
+              </div>
+            ) : null}
 
-          {renderResults()}
+            {renderResults()}
+          </section>
         </div>
       </div>
     </div>

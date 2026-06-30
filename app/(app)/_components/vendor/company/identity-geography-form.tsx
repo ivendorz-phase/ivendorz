@@ -6,7 +6,7 @@
 import { Button } from "@/frontend/primitives/button";
 import { FormField } from "@/frontend/components/form-field";
 import { MatchingContextBanner } from "./matching-context-banner";
-import { PresentationFormNote } from "./presentation-form-note";
+import { PresentationFormNote } from "../shared";
 import type { VendorProfileView } from "./types";
 
 export interface IdentityGeographyFormProps {

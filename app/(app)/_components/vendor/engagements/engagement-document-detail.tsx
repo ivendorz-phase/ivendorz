@@ -13,7 +13,7 @@ import { StatusChip } from "@/frontend/components/status-chip";
 import { FileLink } from "@/frontend/components/file-link";
 import { EmptyState } from "@/frontend/components/empty-state";
 import { DOC_KIND_LABEL } from "./document-status-chip";
-import { PresentationFormNote } from "../company/presentation-form-note";
+import { PresentationFormNote } from "../shared";
 import type { EngagementDocumentView } from "./types";
 
 export interface EngagementDocumentDetailProps {

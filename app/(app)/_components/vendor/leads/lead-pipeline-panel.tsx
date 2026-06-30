@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/
 import { FormField } from "@/frontend/components/form-field";
 import { CurrencyDisplay } from "@/frontend/components/currency-display";
 import { LeadStageChip } from "./lead-stage-chip";
-import { PresentationFormNote } from "../company/presentation-form-note";
+import { PresentationFormNote } from "../shared";
 import type { LeadView } from "./types";
 
 export interface LeadPipelinePanelProps {

@@ -44,6 +44,9 @@ export function WorkspaceTabs({
 }: WorkspaceTabsProps) {
   return (
     <Tabs defaultValue={defaultValue ?? tabs[0]?.value} className={className}>
+      {/* When ariaLabel is undefined React omits the attribute entirely (standard behavior) — so the
+          three adapters that pass no ariaLabel render a TabsList with NO aria-label, byte-identical to
+          their pre-extraction markup. */}
       <TabsList aria-label={ariaLabel} className={listClassName}>
         {tabs.map((tab) => (
           <TabsTrigger key={tab.value} value={tab.value}>

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/
 import { CurrencyDisplay } from "@/frontend/components/currency-display";
 import { FileLink } from "@/frontend/components/file-link";
 import { EmptyState } from "@/frontend/components/empty-state";
-import { DescriptionList, type DescriptionItem } from "../company/description-list";
+import { DescriptionList, type DescriptionItem } from "../shared";
 import type { RfqSnapshotView, WorkNature } from "./types";
 
 const WORK_NATURE_LABEL: Record<WorkNature, string> = {

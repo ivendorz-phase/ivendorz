@@ -7,7 +7,7 @@ import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
 import { CategoryAssignmentList } from "./category-assignment-list";
 import { MatchingContextBanner } from "./matching-context-banner";
-import { PresentationFormNote } from "./presentation-form-note";
+import { PresentationFormNote } from "../shared";
 import type { CategoryAssignmentView, CategoryOption } from "./types";
 
 export interface CategoriesPanelProps {

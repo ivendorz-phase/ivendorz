@@ -11,8 +11,7 @@ import { Input } from "@/frontend/primitives/input";
 import { FormField } from "@/frontend/components/form-field";
 import { PresentationContextBanner } from "./presentation-context-banner";
 import { DomainStatusChip } from "./status-chips";
-import { PresentationFormNote } from "../company/presentation-form-note";
-import { DescriptionList, type DescriptionItem } from "../company/description-list";
+import { DescriptionList, type DescriptionItem, PresentationFormNote } from "../shared";
 import type { CustomDomainView } from "./types";
 
 export interface CustomDomainPanelProps {

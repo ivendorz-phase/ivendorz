@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/
 import { FileLink } from "@/frontend/components/file-link";
 import { FormField } from "@/frontend/components/form-field";
 import { MatchingContextBanner } from "../company/matching-context-banner";
-import { PresentationFormNote } from "../company/presentation-form-note";
+import { PresentationFormNote } from "../shared";
 import type { ProductView } from "./types";
 
 const TEXTAREA_CLASS =

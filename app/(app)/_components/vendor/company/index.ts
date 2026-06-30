@@ -28,13 +28,8 @@ export {
 } from "./category-assignment-list";
 export { VerifiedMarker, type VerifiedMarkerProps } from "./verified-marker";
 export { MatchingContextBanner, type MatchingContextBannerProps } from "./matching-context-banner";
-export {
-  DescriptionList,
-  type DescriptionListProps,
-  type DescriptionItem,
-} from "./description-list";
 export { GovernanceBandsPlaceholder } from "./governance-bands-placeholder";
-export { PresentationFormNote } from "./presentation-form-note";
+// PresentationFormNote + DescriptionList promoted to vendor/shared (Milestone 8) — import from there.
 
 export type {
   FinancialTier,

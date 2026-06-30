@@ -8,7 +8,7 @@ import { Input } from "@/frontend/primitives/input";
 import { FormField } from "@/frontend/components/form-field";
 import { CapabilityMatrix } from "@/frontend/components/capability-matrix";
 import { MatchingContextBanner } from "./matching-context-banner";
-import { PresentationFormNote } from "./presentation-form-note";
+import { PresentationFormNote } from "../shared";
 import { VerifiedMarker } from "./verified-marker";
 import type { CapacityProfileView, VendorProfileView } from "./types";
 

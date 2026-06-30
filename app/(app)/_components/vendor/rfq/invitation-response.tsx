@@ -9,7 +9,7 @@ import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
 import { InvitationStateChip } from "./state-chips";
 import { QuotaMeter } from "./quota-meter";
-import { PresentationFormNote } from "../company/presentation-form-note";
+import { PresentationFormNote } from "../shared";
 import type { InvitationView, QuotaView } from "./types";
 
 export interface InvitationResponseProps {

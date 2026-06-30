@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/
 import { FileLink } from "@/frontend/components/file-link";
 import { PresentationContextBanner } from "./presentation-context-banner";
 import { VisibilityChip } from "./status-chips";
-import { PresentationFormNote } from "../company/presentation-form-note";
+import { PresentationFormNote } from "../shared";
 import type { BrandingAssetType, BrandingAssetView } from "./types";
 
 const ASSET_TYPES: { type: BrandingAssetType; label: string; description: string }[] = [

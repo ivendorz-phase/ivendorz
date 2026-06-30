@@ -9,7 +9,7 @@ import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
 import { ProductStatusChip } from "./product-status-chip";
 import { PublishAllowanceIndicator } from "./publish-allowance";
-import { PresentationFormNote } from "../company/presentation-form-note";
+import { PresentationFormNote } from "../shared";
 import type { ProductStatus, PublishAllowanceView } from "./types";
 
 export interface ProductPublishPanelProps {

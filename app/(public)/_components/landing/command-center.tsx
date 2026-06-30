@@ -19,6 +19,7 @@
 // page-local per spec §1.5 / §2.
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Search,
   LayoutGrid,
@@ -76,6 +77,7 @@ export interface CommandCenterProps {
 }
 
 export function CommandCenter({ popularSearches = DEFAULT_POPULAR_SEARCHES }: CommandCenterProps) {
+  const router = useRouter();
   const [query, setQuery] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
   const hintId = "cc-search-hint";
@@ -101,9 +103,11 @@ export function CommandCenter({ popularSearches = DEFAULT_POPULAR_SEARCHES }: Co
   }
 
   function onSubmit(e: React.FormEvent) {
-    // Marketplace search binds M2 `search_catalog` (Doc-7D PR2/PR6) — wired in a later wave. Presentation
-    // shell only: submitting navigates nowhere and fabricates no results (no API invention).
+    // Marketplace search → the Search Experience (M2.3). URL-synced navigation only; fetches nothing here
+    // (the /search page renders the interim seed-filtered results; the wired `search_catalog` lands later).
     e.preventDefault();
+    const term = query.trim();
+    router.push(term ? `/search?q=${encodeURIComponent(term)}` : "/search");
   }
 
   function fill(term: string) {

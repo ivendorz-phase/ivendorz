@@ -1,15 +1,15 @@
-// FilterSidebar — data-driven facet filters (Doc-7D · M2.3 Phase 2). PRESENTATION-ONLY: renders the
-// `facets[]` the surface supplies (no hardcoded filters), as uncontrolled native checkboxes with NO
-// wiring (the canonical kit controls [ESC-7B-SWITCH]/[ESC-7B-SELECT] are pending; live faceting wires to
-// `search_catalog` facets later). A Server Component — labels WRAP their input (no ids), so it renders
-// safely more than once across breakpoints. <fieldset>/<legend> expose each group to AT (WCAG 1.3.1).
+// FilterSidebar (Doc-7B kit, App tier; promoted from the Public surface after M2.3 exercised its API).
+// Data-driven facet filters: renders the `facets[]` the surface supplies (no hardcoded filters), as
+// uncontrolled native checkboxes with NO wiring (the canonical kit controls [ESC-7B-SWITCH]/[ESC-7B-SELECT]
+// are pending; live faceting wires to a facet read later). A Server Component — labels WRAP their input
+// (no ids), so it renders safely more than once across breakpoints. <fieldset>/<legend> expose each group
+// to AT (WCAG 1.3.1). ONE canonical implementation.
 //
 // GOVERNANCE: facets are presentation over the contract facet set — they imply no matching/ranking
 // (GI-04) and expose no buyer-private / exclusion signal (Invariant #11; GI-12). "Apply"/"Clear" are
-// inert affordances until the facet read is wired. Held Public-local (not yet kit-promoted) until the
-// facet model stabilises across surfaces (M2.3A).
-import { Button } from "@/frontend/primitives/button";
-import { Separator } from "@/frontend/primitives/separator";
+// inert affordances until the facet read is wired.
+import { Button } from "../primitives/button";
+import { Separator } from "../primitives/separator";
 
 /** One selectable facet option (presentation label only — no value/wiring). */
 export interface FilterFacet {

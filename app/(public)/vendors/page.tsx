@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { FilterSidebar } from "../_components/discovery";
+import { FilterSidebar } from "@/frontend/components/filter-sidebar";
 import { VendorCard } from "@/frontend/components/vendor-card";
 import { ResultsGrid } from "@/frontend/components/results-grid";
 import { PaginationControl } from "@/frontend/components/pagination-control";

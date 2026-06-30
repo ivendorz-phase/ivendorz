@@ -9,7 +9,7 @@ import { EmptyState } from "@/frontend/components/empty-state";
 import { FormField } from "@/frontend/components/form-field";
 import { PresentationContextBanner } from "./presentation-context-banner";
 import { MicrositeStatusChip, VisibilityChip } from "./status-chips";
-import { PresentationFormNote } from "../company/presentation-form-note";
+import { PresentationFormNote } from "../shared";
 import type { LayoutTemplate, MicrositeSectionView, MicrositeView } from "./types";
 
 const SELECT_CLASS =
