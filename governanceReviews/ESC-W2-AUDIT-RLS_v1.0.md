@@ -186,6 +186,17 @@ re-freeze**. **D4 is PAUSED per owner directive** ("stop before D4"); the realiz
 audit-service change + the `appendAuditRecord` facade) awaits the owner's go-ahead and is bound by the Doc-6B patch's
 normative **Deployment Constraint**.
 
+**D4/D5 implementation addendum (2026-06-30, owner-authorized).** D4 is **realized**: migration
+`20260630090000_audit_context_append_policy` (the `audit_records_context_append` `FOR INSERT` policy on the parent +
+DEFAULT partition, byte-equivalent to the approved patch); the audit service now appends via **`createMany`**
+(non-`RETURNING`, app-minted UUIDv7, on the caller's executor — Deployment Constraint satisfied; verified against the
+generated Prisma client that `createMany` returns a count and emits no `RETURNING`, vs `createManyAndReturn`); and the
+concrete `appendAuditRecord` facade is exposed (mirrors `allocateHumanReference`). Static gates green (tsc/eslint/
+prettier); **4/4 adversarial verification lenses PASS** (migration-SQL/RLS · Prisma correctness · test-rigor non-vacuous
+· governance/invariants). **D5 conformance tests are written + statically verified** but **NOT yet executed** — the
+local Postgres / Docker daemon is down. **The green D5 run against `postgres:16` is the gate before D6 (ESC RESOLVED);
+D6/D7 are not started.**
+
 **Status after D1:** the ESC stays **OPEN — ruled R-b**, not yet RESOLVED (RESOLVED at D6, after the
 human-approved patches + the green conformance test). The feature-work freeze (`BOARD-SPRINT` §7) remains in
 effect until sprint exit.

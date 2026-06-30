@@ -12,14 +12,8 @@ import * as React from "react";
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/frontend/primitives/card";
 import { EmptyState } from "@/frontend/components/empty-state";
+import { formatInstant } from "./format";
 import type { ActivityEntry } from "./view-models";
-
-/** Format an ISO-8601 instant for display (presentation only; no business logic). */
-function formatInstant(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return new Intl.DateTimeFormat("en-BD", { dateStyle: "medium", timeStyle: "short" }).format(d);
-}
 
 export function ActivityTimeline({ entries }: { entries: ActivityEntry[] }) {
   return (

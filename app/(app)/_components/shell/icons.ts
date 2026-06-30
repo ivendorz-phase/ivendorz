@@ -1,5 +1,7 @@
 import {
   Boxes,
+  Briefcase,
+  CheckSquare,
   ClipboardList,
   CreditCard,
   FileText,
@@ -7,7 +9,9 @@ import {
   LayoutDashboard,
   Megaphone,
   Package,
+  Search,
   Settings,
+  Star,
   Store,
   UserPlus,
   Users,
@@ -33,6 +37,12 @@ export const NAV_ICONS = {
   settings: Settings,
   billing: CreditCard,
   team: UserPlus,
+  // Buyer workspace (Doc-7F §4.1).
+  discover: Search,
+  favorites: Star,
+  approvals: CheckSquare,
+  engagements: Briefcase,
+  crm: Users,
 } as const satisfies Record<string, LucideIcon>;
 
 export type NavIconKey = keyof typeof NAV_ICONS;

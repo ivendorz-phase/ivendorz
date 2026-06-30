@@ -13,16 +13,15 @@
 //  • R7 firewall — every figure is a contract read, never client-computed.
 //  • Engagement states use the pinned contract-authority set (§0.1 carried Flag-and-Halt).
 
-import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/frontend/primitives/button";
 import { EmptyState } from "@/frontend/components/empty-state";
 import { StatusChip } from "@/frontend/components/status-chip";
-import { CurrencyDisplay } from "@/frontend/components/currency-display";
 import { FileText, Plus } from "lucide-react";
 import { KpiStatCard } from "../_components/kpi-stat-card";
 import { WorkQueueCard, type QueueColumn } from "../_components/work-queue-card";
 import { ActivityTimeline } from "../_components/activity-timeline";
+import { formatDate, Money, Ref } from "../_components/format";
 import {
   rfqStateDisplay,
   quotationStateDisplay,
@@ -33,30 +32,7 @@ import type {
   RfqQueueRow,
   QuotationQueueRow,
   EngagementQueueRow,
-  MoneyValue,
 } from "../_components/view-models";
-
-/** Short date for queue cells (presentation only). */
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return new Intl.DateTimeFormat("en-BD", { dateStyle: "medium" }).format(d);
-}
-
-/** Render a `{ amount, currency }` value, or an em dash when the contract carries none. */
-function money(value: MoneyValue | undefined): React.ReactNode {
-  if (!value) return <span className="text-muted-foreground">—</span>;
-  return <CurrencyDisplay amount={value.amount} currency={value.currency} />;
-}
-
-/** Monospaced, tabular human ref (display label only; routes use the opaque id). */
-function Ref({ children }: { children: React.ReactNode }) {
-  return (
-    <span data-type="ref" className="font-mono text-xs text-muted-foreground">
-      {children}
-    </span>
-  );
-}
 
 const RFQ_COLUMNS: QueueColumn<RfqQueueRow>[] = [
   {
@@ -77,7 +53,7 @@ const RFQ_COLUMNS: QueueColumn<RfqQueueRow>[] = [
       return <StatusChip label={s.label} tone={s.tone} />;
     },
   },
-  { key: "value", header: "Value", numeric: true, render: (r) => money(r.value) },
+  { key: "value", header: "Value", numeric: true, render: (r) => <Money value={r.value} /> },
   {
     key: "updated",
     header: "Updated",
@@ -101,7 +77,7 @@ const QUOTATION_COLUMNS: QueueColumn<QuotationQueueRow>[] = [
       return <StatusChip label={s.label} tone={s.tone} />;
     },
   },
-  { key: "amount", header: "Amount", numeric: true, render: (q) => money(q.amount) },
+  { key: "amount", header: "Amount", numeric: true, render: (q) => <Money value={q.amount} /> },
   {
     key: "valid",
     header: "Valid until",
@@ -132,7 +108,7 @@ const ENGAGEMENT_COLUMNS: QueueColumn<EngagementQueueRow>[] = [
       return <StatusChip label={s.label} tone={s.tone} />;
     },
   },
-  { key: "value", header: "Value", numeric: true, render: (e) => money(e.value) },
+  { key: "value", header: "Value", numeric: true, render: (e) => <Money value={e.value} /> },
   {
     key: "updated",
     header: "Updated",
@@ -215,7 +191,7 @@ export function BuyerDashboardView({ data }: { data: BuyerDashboardViewModel | n
 
       {/* KPI stat-card band — every figure a contract read; counts non-disclosure-safe (Inv #11). */}
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <KpiStatCard label="Spend" value={kpis.spend ? money(kpis.spend) : undefined} />
+        <KpiStatCard label="Spend" value={kpis.spend ? <Money value={kpis.spend} /> : undefined} />
         <KpiStatCard
           label="Active RFQs"
           value={typeof kpis.activeRfqCount === "number" ? kpis.activeRfqCount : undefined}
