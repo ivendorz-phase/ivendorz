@@ -4,31 +4,12 @@
 // navigates into a `search_catalog` facet view (/marketplace · /categories, activated in M2.2). No
 // taxonomy tree or product counts are fabricated here (GI-03/GI-12).
 import Link from "next/link";
-import {
-  Gauge,
-  Layers,
-  Zap,
-  Cog,
-  HardHat,
-  FlaskConical,
-  LayoutGrid,
-  ArrowRight,
-} from "lucide-react";
+import { LayoutGrid, ArrowRight } from "lucide-react";
 import { Card } from "@/frontend/primitives/card";
 import { Button } from "@/frontend/primitives/button";
 import { LandingSection } from "./landing-section";
-import { CategoryTile, type CategoryVM } from "../discovery";
-
-// Curated static seed (editorial featured selection — [ESC-7-API-CATNAV] interim). Counts omitted:
-// no public facet-aggregate read is wired, and a count must never be client-computed.
-const FEATURED_CATEGORIES: CategoryVM[] = [
-  { slug: "valves-fittings", name: "Valves & Fittings", icon: Gauge },
-  { slug: "steel-metals", name: "Steel & Metals", icon: Layers },
-  { slug: "electrical-drives", name: "Electrical & Drives", icon: Zap },
-  { slug: "pumps-motors", name: "Pumps & Motors", icon: Cog },
-  { slug: "safety-ppe", name: "Safety & PPE", icon: HardHat },
-  { slug: "chemicals", name: "Chemicals", icon: FlaskConical },
-];
+import { CategoryTile } from "../discovery";
+import { FEATURED_CATEGORIES } from "../discovery/seed";
 
 export function FeaturedCategories() {
   return (

@@ -4,6 +4,9 @@
 export { VendorCard, type VendorCardProps } from "./vendor-card";
 export { ProductCard, type ProductCardProps } from "./product-card";
 export { CategoryTile, type CategoryTileProps } from "./category-tile";
+export { ResultsGrid, type ResultsGridProps } from "./results-grid";
+export { FilterSidebar, type FilterSidebarProps } from "./filter-sidebar";
+export { SearchBar, type SearchBarProps } from "./search-bar";
 export {
   vendorInitials,
   type VendorCardVM,

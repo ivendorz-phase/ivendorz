@@ -9,43 +9,8 @@
 // some buyer still appears, byte-identical (Invariant #11; GI-12). One card is intentionally unverified
 // to demonstrate that absence renders as absence — never a fabricated state.
 import { LandingSection } from "./landing-section";
-import { VendorCard, type VendorCardVM } from "../discovery";
-
-// Curated static showcase seed (editorial selection — never a computed score sort). Presentation data.
-const FEATURED_VENDORS: VendorCardVM[] = [
-  {
-    slug: "padma-valve-fittings",
-    name: "Padma Valve & Fittings Ltd.",
-    category: "Valves & Fittings",
-    location: "Dhaka · Tejgaon I/A",
-    verified: true,
-    capability: { can_supply: true, can_service: true, can_fabricate: true, can_consult: false },
-  },
-  {
-    slug: "bengal-steel-industries",
-    name: "Bengal Steel Industries",
-    category: "Steel & Metals",
-    location: "Chattogram · Kalurghat",
-    verified: true,
-    capability: { can_supply: true, can_service: false, can_fabricate: true, can_consult: false },
-  },
-  {
-    slug: "jamuna-electrical-drives",
-    name: "Jamuna Electrical & Drives",
-    category: "Electrical & Drives",
-    location: "Dhaka · Tongi",
-    // Intentionally unverified — demonstrates absence (no "Verified" badge), not a fabricated state.
-    capability: { can_supply: true, can_service: true, can_fabricate: false, can_consult: true },
-  },
-  {
-    slug: "meghna-pumps-motors",
-    name: "Meghna Pumps & Motors",
-    category: "Pumps & Motors",
-    location: "Narayanganj · Fatullah",
-    verified: true,
-    capability: { can_supply: true, can_service: true, can_fabricate: false, can_consult: false },
-  },
-];
+import { VendorCard } from "../discovery";
+import { FEATURED_VENDORS } from "../discovery/seed";
 
 export function SupplierShowcase() {
   return (

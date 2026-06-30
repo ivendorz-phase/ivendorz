@@ -40,7 +40,7 @@ export function Hero() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link href="/">Explore the marketplace</Link>
+              <Link href="/marketplace">Explore the marketplace</Link>
             </Button>
           </div>
         </div>

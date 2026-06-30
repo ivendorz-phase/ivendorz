@@ -20,10 +20,10 @@ import {
 import { Separator } from "@/frontend/primitives/separator";
 
 const NAV_LINKS = [
-  { href: "/", label: "Marketplace" }, // *
-  { href: "/", label: "Vendors" }, // *
-  { href: "/", label: "Pricing" }, // *
-  { href: "/", label: "Resources" }, // *
+  { href: "/marketplace", label: "Marketplace" }, // P-PUB-10 (M2.2)
+  { href: "/vendors", label: "Vendors" }, // P-PUB-12 (M2.2)
+  { href: "/", label: "Pricing" }, // * Wave-3, not yet built
+  { href: "/", label: "Resources" }, // * Wave-3, not yet built
 ];
 
 export function SiteHeader() {

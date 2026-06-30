@@ -47,7 +47,7 @@ const DEFAULT_POPULAR_SEARCHES = [
 ] as const;
 
 const AUTH_HREF = "/login"; // `(auth)` entry — Doc-7E owns the auth action (Doc-7D PR5).
-const PUBLIC_BROWSE_HREF = "/"; // interim placeholder for unbuilt public views (P-PUB-*), matching existing chrome.
+const PUBLIC_BROWSE_HREF = "/categories"; // Explore Categories → P-PUB-11 category browse (M2.2).
 
 interface CommandEntry {
   key: string;
