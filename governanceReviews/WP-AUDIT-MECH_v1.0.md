@@ -4,7 +4,7 @@
 |---|---|
 | **Type** | Architecture Board work package (additive resolution of a Flag-and-Halt) |
 | **Owner** | **Architecture Board** (presiding authority — CLAUDE.md §7); realization by Engineering once ruled |
-| **Status** | **OPEN — awaiting Board ruling.** No implementation until a mechanism is ratified. |
+| **Status** | **OPEN — Board ruled R-b (D1, 2026-06-30).** See [`ESC-W2-AUDIT-RLS` §7](ESC-W2-AUDIT-RLS_v1.0.md). The additive Doc-4B/Doc-6B patches **await HUMAN approval** (§8); no M0 implementation until ratified + frozen. |
 | **Opened by** | Wave 2 execution, M1 buyer-profile WRITE slice |
 | **Date** | 2026-06-30 |
 | **Resolves** | [`ESC-W2-AUDIT-RLS_v1.0`](ESC-W2-AUDIT-RLS_v1.0.md) (BLOCKER) — full problem statement + evidence there; **referenced by pointer, not restated** |

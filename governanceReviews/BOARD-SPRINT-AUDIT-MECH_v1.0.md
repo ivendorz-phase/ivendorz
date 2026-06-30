@@ -8,7 +8,7 @@
 |---|---|
 | **Type** | Board Sprint (platform milestone) |
 | **Owner** | **Architecture Board** (presiding authority — CLAUDE.md §7); realization by Engineering once ruled |
-| **Status** | **OPEN — ACTIVE.** |
+| **Status** | **OPEN — ACTIVE. D1 ruled R-b (2026-06-30)** — see [`ESC-W2-AUDIT-RLS` §7](ESC-W2-AUDIT-RLS_v1.0.md). D2–D7 pending; the additive Doc-4B/Doc-6B patches are architecture-affecting → **await HUMAN approval** (§8) before M0 realization. |
 | **Single objective** | **Resolve [`ESC-W2-AUDIT-RLS`](ESC-W2-AUDIT-RLS_v1.0.md).** Nothing else. |
 | **Date opened** | 2026-06-30 |
 | **Feature-work freeze** | **ALL feature work is paused** for the duration of this sprint (owner directive, 2026-06-30). No new application surfaces; no resumption of the M1 buyer-profile write or any other feature until the sprint exits. |
@@ -37,7 +37,7 @@ the ESC. Out of scope: anything that is not this mechanism (see `WP-AUDIT-MECH` 
 
 | # | Deliverable | Done when |
 |---|---|---|
-| **D1** | **Board decision** | The Board rules a mechanism (R-a…R-d or a Board alternative) and records it in `ESC-W2-AUDIT-RLS` §7 with binding conditions. Additive disposition; no frozen edit. |
+| **D1** ✅ | **Board decision** | ✅ **DONE — ruled R-b (2026-06-30).** The Board ruled the append-only INSERT-policy mechanism and recorded it in `ESC-W2-AUDIT-RLS` §7 with binding conditions. Additive disposition; no frozen edit. |
 | **D2** | **Additive Doc-4B patch** | The audit-write mechanism (M0 contract behavior — `core.append_audit_record.v1`, Doc-4B §A10) is patched additively + human-approved + frozen via the corpus process. |
 | **D3** | **Additive Doc-6B patch** | The audit-table RLS/realization (Doc-6B §2.2/§4.1) is patched additively to admit the ratified path, frozen via the corpus process. |
 | **D4** | **M0 implementation** | The mechanism is realized **once** in `src/modules/core`, and the concrete `appendAuditRecord` facade is exposed on `core/contracts/services.ts`. |
