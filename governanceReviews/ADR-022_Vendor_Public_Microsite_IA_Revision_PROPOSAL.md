@@ -1,5 +1,10 @@
 # ADR-022: Vendor Public Microsite Information Architecture — Single-Page → Multi-Page Route Composition
 
+> **✅ APPROVED (Architecture Board, 2026-07-01).** Ratified for realization; FE implementation (WBS M2.7→) is
+> unblocked. The **corpus fold** — carrying this into `generatedDocs/ADR-022_*.md` + registering in
+> `00_AUTHORITY_MAP.md`, and appending Doc-7D §10 — is a **human records action**, **not** performed by any AI
+> (CLAUDE.md §7: ADR Compendium rank 1, immutable to skills). This file stays the provenance copy.
+
 **Status:** **PROPOSED (DRAFT) — AWAITS HUMAN / ARCHITECTURE-REVIEW-BOARD APPROVAL.** A new ADR is a **new
 decision**; per CLAUDE.md §7 the ADR Compendium is **rank 1, immutable to skills** — this proposal is **NOT**
 folded into `generatedDocs/ADR_Compendium_v1.md` by any AI action. On approval, a human folds it into the

@@ -1,5 +1,9 @@
 # Doc-7D Additive Patch — Public Microsite Route Information Architecture
 
+> **✅ APPROVED (Architecture Board, 2026-07-01)** alongside ADR-022. The append of **§10** to Doc-7D and the
+> **v1.0 → v1.1** bump are a **human records action** — no AI edits the frozen Doc-7 series in place (CLAUDE.md
+> §11). FE realization (WBS M2.7→) proceeds against this ratified section.
+
 **Status:** **PROPOSED (DRAFT) — AWAITS HUMAN / ARCHITECTURE-REVIEW-BOARD APPROVAL.** Doc-7D is part of the
 frozen Doc-7 series (`Doc-7D_SERIES_FROZEN_v1.0`). Per CLAUDE.md §11, **a frozen document is never edited in
 place**; this is an **additive** patch that **adds one new section** and **alters no existing clause**. No AI

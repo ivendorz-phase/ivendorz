@@ -13,6 +13,7 @@ export { VendorHero, type VendorHeroProps } from "./vendor-hero";
 export { VendorSection, type VendorSectionProps } from "./vendor-section";
 export { VendorBreadcrumb, type VendorBreadcrumbProps } from "./vendor-breadcrumb";
 export { VendorVerifiedBadge } from "./vendor-verified-badge";
+export { VendorPageHeading, type VendorPageHeadingProps } from "./vendor-page-heading";
 
 // ── Company-website content (M2.6) — reusable, presentation-only, editorial stand-in (coins nothing). ──
 export { CompanyOverview, type CompanyOverviewProps } from "./company-overview";

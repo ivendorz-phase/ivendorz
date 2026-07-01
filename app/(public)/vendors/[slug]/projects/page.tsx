@@ -1,14 +1,50 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import {
+  ProjectShowcase,
+  VendorPageHeading,
+  VendorSection,
+  getCompanyContent,
+} from "../../../_components/microsite";
+import { getPublicVendorProfile } from "../../../_components/discovery/seed";
+import { getVendorOr404 } from "../get-vendor";
 
-// M2.5 route stub. The frozen microsite is a SINGLE page of sections (Doc-7D §4) — there is no separate
-// /projects page. This URL is a thin redirect to the home-page section anchor (owner-approved Hybrid;
-// see the M2.5 Flag-and-Halt). No multi-page architecture is invented; an unknown vendor 404s on the
-// canonical /vendors/[slug] page.
-export default async function VendorProjectsStub({
+// Vendor Microsite — PROJECTS page (M2.7 · ADR-022 / Doc-7D §10). Selected work: project cards with scope,
+// industry, equipment, and decorative galleries; "View details" disabled until the frozen `showcase_projects`
+// read is wired. Presentation-only; editorial stand-in (sector/role "client" only — never a fabricated name).
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const profile = getPublicVendorProfile(slug);
+  if (!profile) return { title: "Vendor · iVendorz" };
+  return {
+    title: `Projects · ${profile.name} · iVendorz`,
+    description: `Selected work delivered by ${profile.name}.`,
+  };
+}
+
+export default async function VendorProjectsPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  redirect(`/vendors/${slug}#projects`);
+  const profile = getVendorOr404(slug);
+  const content = getCompanyContent(profile);
+
+  return (
+    <>
+      <VendorPageHeading title="Projects" subtitle={profile.name} />
+
+      <VendorSection
+        id="projects"
+        title="Selected work"
+        description="Projects this supplier has delivered."
+      >
+        <ProjectShowcase projects={content.projects} />
+      </VendorSection>
+    </>
+  );
 }

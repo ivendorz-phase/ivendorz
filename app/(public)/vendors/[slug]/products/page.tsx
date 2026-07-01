@@ -1,14 +1,50 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { ProductShowcase, VendorPageHeading, VendorSection } from "../../../_components/microsite";
+import {
+  getPublicVendorProducts,
+  getPublicVendorProfile,
+} from "../../../_components/discovery/seed";
+import { getVendorOr404 } from "../get-vendor";
 
-// M2.5 route stub. The frozen microsite is a SINGLE page of sections (Doc-7D §4) — there is no separate
-// /products page. This URL is a thin redirect to the home-page section anchor (owner-approved Hybrid;
-// see the M2.5 Flag-and-Halt). No multi-page architecture is invented; an unknown vendor 404s on the
-// canonical /vendors/[slug] page.
-export default async function VendorProductsStub({
+// Vendor Microsite — PRODUCTS page (M2.7 · ADR-022 / Doc-7D §10). Categories + product grid + featured +
+// per-product detail links ([ESC-7-API-PRODDETAIL] in-search detail) + RFQ CTA — all via ProductShowcase.
+// Presentation-only; no standalone anonymous product page invented.
+const AUTH_HREF = "/login";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const profile = getPublicVendorProfile(slug);
+  if (!profile) return { title: "Vendor · iVendorz" };
+  return {
+    title: `Products · ${profile.name} · iVendorz`,
+    description: `Published products from ${profile.name}.`,
+  };
+}
+
+export default async function VendorProductsPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  redirect(`/vendors/${slug}#products`);
+  const profile = getVendorOr404(slug);
+  const products = getPublicVendorProducts(slug);
+
+  return (
+    <>
+      <VendorPageHeading title="Products" subtitle={profile.name} />
+
+      <VendorSection
+        id="products"
+        title="Product catalog"
+        description="Published products from this supplier."
+      >
+        <ProductShowcase products={products} authHref={AUTH_HREF} />
+      </VendorSection>
+    </>
+  );
 }

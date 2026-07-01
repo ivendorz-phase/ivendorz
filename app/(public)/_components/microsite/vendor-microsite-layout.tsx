@@ -1,9 +1,10 @@
-// VendorMicrositeLayout (M2.5) — the per-vendor content FRAME for the single-page microsite. It mounts
-// INSIDE the (public) shell (which already supplies SiteHeader + SiteFooter, Doc-7C) and composes the
-// vendor-branded presentation around the page sections: breadcrumb → brand header → sticky section nav →
-// {sections} → closing CTA band. It is presentation only — no chrome replacement, no data fetching here
-// (the route owner supplies `profile`). Reuses the kit + sibling microsite components; imports nothing
-// from the Vendor workspace. RSC-friendly (the only client piece is the nav's mobile drawer).
+// VendorMicrositeLayout (M2.5 · refactored M2.7 for ADR-022 / Doc-7D §10.3) — the shared per-vendor CHROME
+// SHELL for the multi-page microsite. It is now rendered by the route-group layout (`vendors/[slug]/layout.tsx`)
+// and wraps ALL seven pages: breadcrumb → brand header → sticky ROUTE nav → {active page} → closing CTA band.
+// It mounts INSIDE the (public) shell (which already supplies SiteHeader + SiteFooter, Doc-7C). Presentation
+// only — no chrome replacement, no page-data fetching here (the layout resolves `profile` for chrome only; each
+// page resolves its own data — Doc-7D §10.4). Reuses the kit + sibling microsite components; imports nothing
+// from the Vendor workspace. RSC-friendly (the only client piece is the nav's mobile drawer + active state).
 import type { ReactNode } from "react";
 import { VendorBreadcrumb } from "./vendor-breadcrumb";
 import { VendorMicrositeHeader } from "./vendor-microsite-header";
@@ -26,7 +27,7 @@ export function VendorMicrositeLayout({ profile, authHref, children }: VendorMic
       <div className="mt-4">
         <VendorMicrositeHeader profile={profile} authHref={authHref} />
       </div>
-      <VendorMicrositeNavigation />
+      <VendorMicrositeNavigation slug={profile.slug} />
       <div className="mt-8 flex flex-col gap-12">{children}</div>
       <div className="mt-12">
         <VendorMicrositeFooter profile={profile} authHref={authHref} />

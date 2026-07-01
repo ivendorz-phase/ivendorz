@@ -1,14 +1,13 @@
 import { redirect } from "next/navigation";
 
-// M2.6 route stub. The frozen microsite is a SINGLE page of sections (Doc-7D §4) — there is no separate
-// /certifications page. This URL is a thin redirect to the home-page section anchor (owner-approved
-// single-page model). No multi-page architecture is invented; an unknown vendor 404s on the canonical
-// /vendors/[slug] page.
-export default async function VendorCertificationsStub({
+// M2.7 back-compat redirect (ADR-022 / Doc-7D §10.2). "Certifications" is NOT a top-level route; its content
+// now lives on the Resources page. This stub preserves any existing/linked `/certifications` URL. (The
+// route-group layout resolves the vendor first, so an unknown slug 404s before this redirect runs.)
+export default async function VendorCertificationsRedirect({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  redirect(`/vendors/${slug}#certifications`);
+  redirect(`/vendors/${slug}/resources`);
 }
