@@ -161,3 +161,12 @@ edits implementation** (Raise ≠ Accept — CLAUDE.md §13). Each review gets a
   1. [OBS] EXEMPLARY field/contract discipline vs frozen `ops.get_engagement.v1` (Doc-4F §F5.8): VM carries only surfaced projected fields; `buyer_organization_id`/`vendor_controlling_org_id` deliberately OMITTED (not coined); `award_value_snapshot`+`currency` → `Money` (currency-driven, BDT never assumed); counterparty = OPAQUE `vendor_profile_id` ref + plain-language "display name isn't shown" (NO coined name); `rfq_id` interim link (not projected); documents section GATED not faked. All three gaps cite REGISTERED handles `ESC-7G-ENG-01/02/03` — kept in-code, never in user copy (self-review leak fixed).
   2. [OBS] MONEY BOUNDARY (DF-6/R8) exemplary: "record only… never holds, escrows, or moves funds… settled directly between the parties." `notFound()` + `not-found.tsx` byte-identical (Inv #11/H.9); party-scoped note; loading.tsx; strong reuse. A model for the remaining detail pages.
 - Result: page → ✅ Approved. Queue advanced (Team-2 → P-BUY-21).
+
+### RV-0016 · P-ADM-05 · Bans · Team-3
+- Date: 2026-07-01 · Reviewed: `app/(app)/admin/bans/page.tsx`, `_components/admin/bans/bans-seed.ts`
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] Governance CORRECT — the register shows PLATFORM bans (`VendorBanned`/M8 enforcement, admin-visible by design), explicitly NOT the buyer-private blacklist (Inv #11 governs the M4 CRM; documented in page + seed). Firewall (no Trust/Perf/Tier); R5 (rows→P-ADM-06 detail; the listing issues nothing); no fabricated totals; URL filter; cursor pagination; realistic BD-industrial seed (BAN-2026-* refs).
+  2. [OBS] 3rd `AdminQueueTable` consumer — patched table proven: the `ref` column's `font-mono` is td-only, so the "Ban" header stays sans (RV-0013 fix holds); columns-only config, custom `minWidthClassName`, no new table markup; a11y via the shared table.
+  3. [NIT] No route-level `loading.tsx` for /admin/bans — consistent with the other admin queues; add before the `J-ADM-04` read is wired (sync seed today). Non-gating.
+- Result: page → ✅ Approved. Queue advanced (Team-3 → P-ADM-06).

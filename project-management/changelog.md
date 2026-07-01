@@ -53,3 +53,7 @@
 2026-07-01 · P-BUY-20 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-2
 2026-07-01 · P-AUTH-05 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0014)
 2026-07-01 · P-BUY-20 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0015)
+2026-07-01 · P-ADM-05 · ⬜ Pending → 🟡 In Progress · Owner: Team-3
+2026-07-01 · P-ADM-05 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-3
+2026-07-01 · P-AUTH-06 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+2026-07-01 · P-ADM-05 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0016)

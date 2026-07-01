@@ -47,7 +47,7 @@ Verification = `P-VND-28` + `P-PUB-18` (Team-1) + `P-ADM-12/13`.
 | P-ADM-02 | Moderation queue | P1 | Ready | ✅ Approved | RV-0006 PASS (Team-4). NIT: add route-level `loading.tsx` before `J-ADM-01` wiring. OBS: extract shared `AdminQueueTable` at 2nd admin queue |
 | P-ADM-03 | Moderation case detail | P1 | Ready | ✅ Approved | RV-0008 PASS (Team-4). R5 (actions disabled), notFound() Inv #11, firewall, shares P-ADM-02 seed. OBS: vendor/dashboard+vendor/shared reuse now cross-workspace → shared-extraction candidate. NIT: loading.tsx |
 | P-ADM-04 | RFQ moderation | P1 | Ready | ✅ Approved | RV-0013 PASS (re-review). `className`/`headerClassName` split → headers sans again; P-ADM-02 byte-identical to approved (diff-verified); tsc green. `AdminQueueTable` now canonical for all admin queues |
-| P-ADM-05 | Bans | P2 | Ready | ⬜ | |
+| P-ADM-05 | Bans | P2 | Ready | ✅ Approved | RV-0016 PASS (Team-4). PLATFORM bans ≠ buyer-private blacklist (Inv #11, documented); firewall; R5; 3rd `AdminQueueTable` consumer (patched table = sans headers). NIT: loading.tsx |
 | P-ADM-06 | Ban detail / issue | P2 | Ready | ⬜ | emits `VendorBanned` |
 | P-ADM-07 | Vendor approval queue | P1 | Ready | ⬜ | |
 | P-ADM-08 | Category management | P1 | Ready | ⬜ | taxonomy admin-governed |
