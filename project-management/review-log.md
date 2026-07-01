@@ -86,3 +86,54 @@ edits implementation** (Raise ≠ Accept — CLAUDE.md §13). Each review gets a
   3. [OBS] Strong: R5 (queue decides nothing; rows→P-ADM-03), firewall (no Trust/Perf/Tier; status is case-state), no fabricated totals, realistic BD-industrial seed, real `J-ADM-01`; a11y — `<caption>`/`scope="col"`, filter `role="group"`+`aria-current`, sr-only action names; URL-driven filter; kit reuse (PageHeader/StatusChip/PaginationControl/EmptyState).
 - Disposition (author/authority): NIT/OBS non-gating; loading skeleton recommended before wiring.
 - Result: page → ✅ Approved. Queue advanced (Team-3 → P-ADM-03).
+
+### RV-0007 · P-AUTH-03 · Org setup (post-signup) · Team-1
+- Date: 2026-07-01 · Reviewed: `app/(auth)/org-setup/{page,org-setup-wizard}.tsx`
+- Verdict: **PASS**
+- Findings:
+  1. [NIT] Generic `[ESC-7-API]` marker for "participation not sent" (page.tsx:14, wizard:16) — participation not being a `create_organization` field is a design fact, not a deferred-API gap; cite a specific registered handle or drop the marker.
+  2. [NIT] Usage step is a hand-rolled native radio group (no kit RadioGroup primitive) — a11y-correct (fieldset/legend, sr-only radios in labelled cards, focus-within, error wiring). Same kit-gap class as the signup checkbox.
+  3. [OBS] EXEMPLARY field discipline: collects only frozen `name`; omits `org_type`/address/contact_info (unenumerated → not invented); `is_personal_org` server-set; usage = onboarding INTENT, never submitted. Functional client wizard; `info-muted` notice (P-4 convention); honest interim (creates no org); binds real `create_organization` (J-BUY-02); `(auth)` group, no sibling-disturbing layout.
+- Result: page → ✅ Approved. Queue advanced (Team-1 → P-AUTH-04).
+
+### RV-0008 · P-ADM-03 · Moderation case detail · Team-3
+- Date: 2026-07-01 · Reviewed: `app/(app)/admin/moderation/[caseId]/page.tsx`, `_components/admin/moderation/moderation-seed.ts`
+- Verdict: **PASS**
+- Findings:
+  1. [OBS — reinforces RV-0003 deferred MINOR] Reuses `vendor/dashboard/DashboardSection` + `vendor/shared/{DescriptionList,PresentationFormNote}` — now cross-WORKSPACE (vendor + admin). Reuse-not-duplicate is correct; the shared-extraction promotion candidate (→ neutral shared / platform) grows stronger. Deferred to the shared-extraction pass; non-blocking.
+  2. [NIT] No route-level `loading.tsx` for `[caseId]` — add before the `J-ADM-01` read is wired (sync seed today).
+  3. [OBS] Strong: R5 (decision affordances rendered-but-DISABLED + `PresentationFormNote`); `notFound()` on unknown id (Inv #11 byte-identical absence); firewall (no Trust/Perf/Tier); shares the P-ADM-02 seed (no duplicate case data); PageHeader h1 → section h2s; `<ol>` activity; good reuse + responsive.
+- Disposition (author/authority): OBS-1 deferred (shared extraction, cross-surface promotion — not a P-ADM-03 defect); NIT non-gating.
+- Result: page → ✅ Approved. Queue advanced (Team-3 → P-ADM-04).
+
+### RV-0009 · P-BUY-18 · Close lost · Team-2
+- Date: 2026-07-01 · Reviewed: `.../close-lost/{page,loading}.tsx`, `_components/close-lost/{close-lost-view.tsx,close-lost-view-models.ts}`
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] `reason_code` enum is VERBATIM-correct vs frozen Doc-4E §E8.5 POLICY list — `budget_dropped|requirement_changed|no_suitable_quotes|sourced_off_platform|other` (exact, in order; labels presentation-only); `reason_text` required-iff-`other` captured. Coins nothing.
+  2. [OBS] Non-penalizing (Doc-3 §9.5) EXEMPLARY: uniform closure note on both steps ("no penalty to any vendor… never told a buyer 'chose someone else'… for your own records"); no per-vendor outcome; no firewalled signal. `notFound()` byte-identical (Inv #11); `loading.tsx` present; functional GET-form confirm; inert destructive Close honestly parked.
+  3. [NIT] Conditional-required `reason_text` (iff `other`) and the reason `Select` are not natively `required` — submitting empty returns to the form (server is authoritative; UI states the rule via description). Consistent with the award GET-form pattern. Non-gating.
+- Result: page → ✅ Approved. Queue advanced (Team-2 → P-BUY-19).
+
+### RV-0010 · P-AUTH-04 · Password reset — request · Team-1
+- Date: 2026-07-01 · Reviewed: `app/(auth)/forgot-password/{page,forgot-password-form}.tsx`
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] Non-disclosure EXEMPLARY (Doc-7A §4.3/§8): a valid submit ALWAYS resolves to the uniform "If an account exists…" confirmation — existence never checked or revealed (no account-existence side-channel). Presentation-only (sends nothing; honest "nothing was sent"); `text-iv-success-muted`; `role="status"`; page h1 present (success h2 nested correctly); FormField a11y + autocomplete; binds Supabase Auth recovery.
+- Result: page → ✅ Approved. Queue advanced (Team-1 → P-AUTH-05).
+
+### RV-0011 · P-BUY-19 · Engagements · Team-2
+- Date: 2026-07-01 · Reviewed: `app/(app)/(buyer)/engagements/{page,engagements-list-view,loading}.tsx`, `_components/engagement-list-view-models.ts`
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] Projection discipline EXEMPLARY: VM + view render EXACTLY the 3 frozen `ops.list_engagements.v1` fields {engagement_id, human_ref, status} (Doc-4F §F5.8) — no coined counterparty/value/rfq_id/date (detail-only, P-BUY-20). Party-scoped genuine-empty (Inv #11); cursor pagination, no grand total (GI-03); contract order never re-ranked (GI-04); NO free-text search (status-enum filter only). PageHeader h1, DataListTable reuse, loading.tsx, honest empty variants.
+- Result: page → ✅ Approved. Queue advanced (Team-2 → P-BUY-20).
+
+### RV-0012 · P-ADM-04 · RFQ moderation · Team-3
+- Date: 2026-07-01 · Reviewed: `app/(app)/admin/rfq-moderation/page.tsx`, `_components/admin/admin-queue-table.tsx`, `_components/admin/moderation/moderation-queue-table.tsx` (refactor), `.../rfq-moderation/rfq-moderation-seed.ts`
+- Verdict: **PATCH REQUIRED**
+- Findings:
+  1. [MINOR] Shared `AdminQueueTable` applies each column's `className` to BOTH `<th>` and `<td>` (admin-queue-table.tsx:52,66), so cell-oriented classes leak onto headers: the `ref` column's `font-mono` renders the "Case"/"RFQ" HEADERS in monospace. For P-ADM-02 this is a visual REGRESSION vs the approved pre-extraction table (sans header) — the "render-equivalent" refactor claim is falsified; for P-ADM-04 it's an unintended monospace header. Fix: apply `className` to `<td>` only + add an optional `headerClassName`. High-leverage — every future admin queue inherits this table.
+  2. [OBS] Otherwise excellent and exactly the recommended extraction: `AdminQueueTable` correctly placed in the shared admin location (not a feature folder), generic over row type, RSC, composes kit Card; P-ADM-04 honors R5 (Pass/Reject rendered-but-DISABLED; PASS→matching / REJECT→draft), firewall (no signal), URL filter, cursor pagination, EmptyState; P-ADM-02 refactor otherwise reproduces the prior cells faithfully.
+- Disposition (author/authority = Team-3): patch the th/td className handling (restores P-ADM-02 equivalence + removes monospace headers).
+- Result: page → 🟥 Patch Required. Queue NOT advanced; returned to Team-3.

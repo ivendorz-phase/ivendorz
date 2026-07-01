@@ -25,8 +25,8 @@
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** `P-ADM-04` RFQ moderation (P1) — 🟥 Patch Required (RV-0012 — `AdminQueueTable` th/td className: td-only + `headerClassName`)
-- **Status:** 🟥 fixing (queue NOT advanced)
+- **Current Page:** `P-ADM-04` RFQ moderation (P1) — 🔵 Ready for Review (RV-0012 patched: th `headerClassName`, td `className`)
+- **Status:** 🔵 Ready for Review (re-review)
 - **Next Page:** `P-ADM-05` Bans (P2, Ready) — after P-ADM-04 is re-approved
 - **Updated:** 2026-07-01
 
