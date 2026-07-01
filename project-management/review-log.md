@@ -144,3 +144,20 @@ edits implementation** (Raise ≠ Accept — CLAUDE.md §13). Each review gets a
 - Findings:
   1. [RESOLVED] MINOR (RV-0012) — `AdminQueueColumn` now splits `className` (td-only) from `headerClassName` (th-only); header = `cn("px-4 py-3 font-medium", col.headerClassName)`, and NO column sets `headerClassName` → every header is `px-4 py-3 font-medium` (sans). Diff-verified: P-ADM-02's "Case" header is byte-identical to its approved pre-extraction markup (equivalence restored); P-ADM-04's "RFQ" header no longer monospace. `tsc --noEmit` EXIT 0. Page + column configs untouched.
 - Result: page → ✅ Approved. Queue advanced (Team-3 → P-ADM-05). P-ADM-02 stays ✅ Approved (render restored).
+
+### RV-0014 · P-AUTH-05 · Password reset — confirm · Team-1
+- Date: 2026-07-01 · Reviewed: `app/(auth)/reset-password/{page,reset-password-form}.tsx`
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] Non-disclosure EXEMPLARY (Doc-7A §4.3/§8): invalid/expired resolves to a UNIFORM notice with no account-existence wording; the recovery token is server-authoritative (client checks UX-only, never trusts/validates a token). Presentation-only (sets no password; honest "Nothing was changed"); `info-muted`; `role="status"`; each state carries an h1; `new-password` autocomplete + min-length/match UX validation.
+  2. [OBS] `?state=` dev preview harness is correctly PROD-GATED (`process.env.NODE_ENV !== "production"`) — a real visitor is never shown a fabricated state. The RIGHT dev-preview pattern (contrast: the committed `previewpf` route flagged in the platform review).
+  3. [NIT] In the completed/interim state the page h1 stays "Set a new password" while the panel reads "Almost there — nothing was changed" (slight heading/content mismatch). Non-gating.
+- Result: page → ✅ Approved. Queue advanced (Team-1 → P-AUTH-06).
+
+### RV-0015 · P-BUY-20 · Engagement detail · Team-2
+- Date: 2026-07-01 · Reviewed: `app/(app)/(buyer)/engagements/[engagementId]/{page,engagement-detail-view,loading,not-found}.tsx`, `_components/engagement-detail-view-models.ts`
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] EXEMPLARY field/contract discipline vs frozen `ops.get_engagement.v1` (Doc-4F §F5.8): VM carries only surfaced projected fields; `buyer_organization_id`/`vendor_controlling_org_id` deliberately OMITTED (not coined); `award_value_snapshot`+`currency` → `Money` (currency-driven, BDT never assumed); counterparty = OPAQUE `vendor_profile_id` ref + plain-language "display name isn't shown" (NO coined name); `rfq_id` interim link (not projected); documents section GATED not faked. All three gaps cite REGISTERED handles `ESC-7G-ENG-01/02/03` — kept in-code, never in user copy (self-review leak fixed).
+  2. [OBS] MONEY BOUNDARY (DF-6/R8) exemplary: "record only… never holds, escrows, or moves funds… settled directly between the parties." `notFound()` + `not-found.tsx` byte-identical (Inv #11/H.9); party-scoped note; loading.tsx; strong reuse. A model for the remaining detail pages.
+- Result: page → ✅ Approved. Queue advanced (Team-2 → P-BUY-21).

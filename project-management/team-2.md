@@ -25,7 +25,7 @@
 | P-BUY-17 | Award | P1 | Ready | ✅ Approved | RV-0005 PASS (re-review) — mock shortlist + working GET-form wizard nav (no default winner, R6); `<fieldset>/<legend>`. Both RV-0002 findings resolved |
 | P-BUY-18 | Close lost | P2 | Ready | ✅ Approved | RV-0009 PASS (Team-4). reason_code enum VERBATIM (Doc-4E §E8.5); non-penalizing exemplary; notFound Inv #11; GET-form + loading.tsx. NIT: conditional-required not native-enforced |
 | P-BUY-19 | Engagements | P1 | Ready | ✅ Approved | RV-0011 PASS (Team-4). Projection discipline exemplary — only the 3 frozen `list_engagements` fields; no free-text search; cursor pagination; genuine-empty (Inv #11) |
-| P-BUY-20 | Engagement detail | P1 | Ready | ⬜ | |
+| P-BUY-20 | Engagement detail | P1 | Ready | ✅ Approved | RV-0015 PASS (Team-4). EXEMPLARY — only projected `get_engagement` fields; currency-driven Money (BDT not assumed); counterparty opaque ref (no coined name); ENG-01/02/03 registered, in-code only; money-boundary; notFound byte-identical. Model detail page |
 | P-BUY-21 | Purchase order | P1 | Ready | ⬜ | `can_approve_po` distinct |
 | P-BUY-22 | Payments | P1 | Ready | ⬜ | **records only, no funds** (DF-6) |
 | P-BUY-23 | Trade invoice review | P2 | Ready | ⬜ | ≠ platform invoice |

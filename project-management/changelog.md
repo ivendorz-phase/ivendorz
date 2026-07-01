@@ -48,3 +48,8 @@
 2026-07-01 · P-ADM-04 · 🟠 Fixing → 🔵 Ready for Review · Owner: Team-3 (RV-0012 patched)
 2026-07-01 · P-AUTH-05 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
 2026-07-01 · P-ADM-04 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0013)
+2026-07-01 · P-AUTH-05 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
+2026-07-01 · P-BUY-20 · ⬜ Pending → 🟡 In Progress · Owner: Team-2
+2026-07-01 · P-BUY-20 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-2
+2026-07-01 · P-AUTH-05 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0014)
+2026-07-01 · P-BUY-20 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0015)

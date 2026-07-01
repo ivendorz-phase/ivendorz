@@ -5,22 +5,22 @@
 > (`team-1.md` / `team-2.md` / `team-3.md`) remain the **source record**; this file is the
 > **pointer**. Keep it tiny. On any change, also update the owning team file + `changelog.md`.
 
-**Updated:** 2026-07-01 · **Sprint:** Review cycle 6 — P-ADM-04 re-review ✅ Approved (shared table patched); queue clean → commit checkpoint
+**Updated:** 2026-07-01 · **Sprint:** Review cycle 7 — P-AUTH-05 & P-BUY-20 ✅ Approved; Team-1 & Team-2 advanced
 
 ---
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-AUTH-05` Password reset — confirm (P1)
-- **Status:** 🟡 In Progress
-- **Next Page:** `P-AUTH-06` 2FA challenge (P2, Ready)
+- **Current Page:** `P-AUTH-06` 2FA challenge (P2) — ⬜ Pending (P-AUTH-05 ✅ Approved, RV-0014)
+- **Status:** ⬜ queued to build
+- **Next Page:** `P-AUTH-07` Accept invitation / join org (P1, Ready)
 - **Updated:** 2026-07-01
 
 ## Team-2 — Buyer
 
-- **Current Page:** `P-BUY-20` Engagement detail (P1) — ⬜ Pending (P-BUY-19 ✅ Approved, RV-0011)
+- **Current Page:** `P-BUY-21` Purchase order (P1) — ⬜ Pending (P-BUY-20 ✅ Approved, RV-0015)
 - **Status:** ⬜ queued to build
-- **Next Page:** `P-BUY-21` Purchase order (P1, Ready)
+- **Next Page:** `P-BUY-22` Payments (P1, Ready)
 - **Updated:** 2026-07-01
 
 ## Team-3 — Vendor / Verification / Admin
