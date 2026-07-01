@@ -187,3 +187,18 @@ edits implementation** (Raise ≠ Accept — CLAUDE.md §13). Each review gets a
   2. [OBS] Cross-workspace reuse of `vendor/dashboard/DashboardSection` + `vendor/shared/{DescriptionList,PresentationFormNote}` continues (now 4+ admin consumers) — reinforces the RV-0003/0008 deferred shared-extraction promotion candidate. Non-blocking.
   3. [NIT] No route-level `loading.tsx` for `[banId]` — consistent with the other admin details; add before wiring.
 - Result: page → ✅ Approved. Queue advanced (Team-3 → P-ADM-07).
+
+### RV-0019 · P-AUTH-07 · Accept invitation / join org · Team-1
+- Date: 2026-07-02 · Reviewed: `app/(auth)/accept-invitation/{page,invitation-view}.tsx`
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] Governance clean: binds real `accept_invitation` (Doc-4C §C6); Org Role uses the FROZEN set (Manager — Inv #2, not invented); Users-act/Orgs-own note (Inv #5 — "Organizations own their records; by joining you act on behalf of this one"). Server-authoritative token (page validates/trusts nothing; org/role/inviter = realistic mock). Non-disclosure: invalid/expired → uniform notice, no org/account leak. `?state=` harness PROD-GATED (NODE_ENV); single h1 per state; `info-muted`/`warning-muted` (P-4); presentation-only accept/decline (honest interim, joins nothing).
+- Result: page → ✅ Approved. Queue advanced (Team-1 → P-AUTH-08).
+
+### RV-0020 · P-ADM-07 · Vendor approval queue · Team-3
+- Date: 2026-07-02 · Reviewed: `app/(app)/admin/vendor-approval/page.tsx`, `_components/admin/vendor-approval/vendor-approval-seed.ts`
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] FIREWALL exemplary — approval is a PROFILE-STATUS decision (M2 claim lifecycle + visibility, Inv #3), explicitly NOT a trust/performance score or financial tier (M5 owns the score; verification is separate, P-ADM-12/13). Seed carries no signal (grep-verified). R5: Approve/Reject rendered-but-DISABLED (`set_vendor_profile_status`→M2, real contract Doc-4D). URL filter; no fabricated total; cursor pagination; 4th `AdminQueueTable` consumer (patched table — "Ref" header sans).
+  2. [NIT] No route-level `loading.tsx` — consistent with the other admin queues; add before wiring.
+- Result: page → ✅ Approved. Queue advanced (Team-3 → P-ADM-08).

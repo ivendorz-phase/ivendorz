@@ -5,30 +5,30 @@
 > (`team-1.md` / `team-2.md` / `team-3.md`) remain the **source record**; this file is the
 > **pointer**. Keep it tiny. On any change, also update the owning team file + `changelog.md`.
 
-**Updated:** 2026-07-01 · **Sprint:** Review cycle 9 — P-AUTH-06 & P-ADM-06 ✅ Approved; Team-1 & Team-3 advanced
+**Updated:** 2026-07-02 · **Sprint:** Review cycle 10 — P-AUTH-07 & P-ADM-07 ✅ Approved; Team-1 & Team-3 advanced
 
 ---
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-AUTH-07` Accept invitation / join org (P1) — ⬜ Pending (P-AUTH-06 ✅ Approved, RV-0017)
+- **Current Page:** `P-AUTH-08` Email verification (P1) — ⬜ Pending (P-AUTH-07 ✅ Approved, RV-0019)
 - **Status:** ⬜ queued to build
-- **Next Page:** `P-AUTH-08` Email verification (P1, Ready)
-- **Updated:** 2026-07-01
+- **Next Page:** `P-ACC-01` Account overview (P1, Ready) — completes the Auth cluster; Account next
+- **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
 
 - **Current Page:** `P-BUY-21` Purchase order (P1) — ⬜ Pending (P-BUY-20 ✅ Approved, RV-0015)
 - **Status:** ⬜ queued to build
 - **Next Page:** `P-BUY-22` Payments (P1, Ready)
-- **Updated:** 2026-07-01
+- **Updated:** 2026-07-02
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** `P-ADM-07` Vendor approval queue (P1) — ⬜ Pending (P-ADM-06 ✅ Approved, RV-0018)
+- **Current Page:** `P-ADM-08` Category management (P1) — ⬜ Pending (P-ADM-07 ✅ Approved, RV-0020)
 - **Status:** ⬜ queued to build
-- **Next Page:** `P-ADM-08` Category management (P1, Ready)
-- **Updated:** 2026-07-01
+- **Next Page:** `P-ADM-09` Category editor (P1, Ready)
+- **Updated:** 2026-07-02
 
 ---
 
