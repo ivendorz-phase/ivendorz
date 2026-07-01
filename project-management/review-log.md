@@ -137,3 +137,10 @@ edits implementation** (Raise ≠ Accept — CLAUDE.md §13). Each review gets a
   2. [OBS] Otherwise excellent and exactly the recommended extraction: `AdminQueueTable` correctly placed in the shared admin location (not a feature folder), generic over row type, RSC, composes kit Card; P-ADM-04 honors R5 (Pass/Reject rendered-but-DISABLED; PASS→matching / REJECT→draft), firewall (no signal), URL filter, cursor pagination, EmptyState; P-ADM-02 refactor otherwise reproduces the prior cells faithfully.
 - Disposition (author/authority = Team-3): patch the th/td className handling (restores P-ADM-02 equivalence + removes monospace headers).
 - Result: page → 🟥 Patch Required. Queue NOT advanced; returned to Team-3.
+
+### RV-0013 · P-ADM-04 · RFQ moderation · Team-3 (re-review of RV-0012)
+- Date: 2026-07-01 · Reviewed: `_components/admin/admin-queue-table.tsx` (patch), `.../moderation/moderation-queue-table.tsx`, `admin/rfq-moderation/page.tsx`
+- Verdict: **PASS**
+- Findings:
+  1. [RESOLVED] MINOR (RV-0012) — `AdminQueueColumn` now splits `className` (td-only) from `headerClassName` (th-only); header = `cn("px-4 py-3 font-medium", col.headerClassName)`, and NO column sets `headerClassName` → every header is `px-4 py-3 font-medium` (sans). Diff-verified: P-ADM-02's "Case" header is byte-identical to its approved pre-extraction markup (equivalence restored); P-ADM-04's "RFQ" header no longer monospace. `tsc --noEmit` EXIT 0. Page + column configs untouched.
+- Result: page → ✅ Approved. Queue advanced (Team-3 → P-ADM-05). P-ADM-02 stays ✅ Approved (render restored).

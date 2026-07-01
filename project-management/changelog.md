@@ -46,3 +46,5 @@
 2026-07-01 · P-ADM-04 · 🔵 Ready for Review → 🟥 Patch Required · Owner: Team-3 (RV-0012)
 2026-07-01 · P-ADM-04 · 🟥 Patch Required → 🟠 Fixing · Owner: Team-3 (RV-0012)
 2026-07-01 · P-ADM-04 · 🟠 Fixing → 🔵 Ready for Review · Owner: Team-3 (RV-0012 patched)
+2026-07-01 · P-AUTH-05 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+2026-07-01 · P-ADM-04 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0013)
