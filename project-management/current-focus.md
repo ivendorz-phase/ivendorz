@@ -11,23 +11,23 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** — (idle)
-- **Status:** ⬜ awaiting kickoff
-- **Next Page:** `P-AUTH-02` Signup (P0, Ready)
+- **Current Page:** `P-AUTH-02` Signup (P0)
+- **Status:** 🔵 Ready for Review
+- **Next Page:** `P-AUTH-03` Org setup (post-signup) (P0, Ready)
 - **Updated:** 2026-07-01
 
 ## Team-2 — Buyer
 
-- **Current Page:** — (idle)
-- **Status:** ⬜ awaiting kickoff
-- **Next Page:** `P-BUY-17` Award (P1, Ready)
+- **Current Page:** `P-BUY-17` Award
+- **Status:** 🔵 Ready for Review
+- **Next Page:** `P-BUY-18` Close lost (P2, Ready)
 - **Updated:** 2026-07-01
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** — (idle)
-- **Status:** ⬜ awaiting kickoff
-- **Next Page:** `P-ADM-01` Admin dashboard (P1, Ready)
+- **Current Page:** `P-ADM-01` Admin dashboard
+- **Status:** 🔵 Ready for Review
+- **Next Page:** `P-ADM-02` Moderation queue (P1, Ready)
 - **Updated:** 2026-07-01
 
 ---

@@ -49,7 +49,7 @@ the status layer only. Work highest-priority `Ready` first; skip `Dependency ≠
 | ID | Title | Priority | Dependency | Status | Notes |
 |---|---|---|---|---|---|
 | P-AUTH-01 | Login | P0 | Ready | 🟩 Built | |
-| P-AUTH-02 | Signup | P0 | Ready | ⬜ | **next up** |
+| P-AUTH-02 | Signup | P0 | Ready | 🔵 | Ready for Review — presentation-only; account provisioning deferred `ESC-7-API-SIGNUP` |
 | P-AUTH-03 | Org setup (post-signup) | P0 | Ready | ⬜ | every user ≥1 org |
 | P-AUTH-04 | Password reset — request | P1 | Ready | ⬜ | |
 | P-AUTH-05 | Password reset — confirm | P1 | Ready | ⬜ | |
