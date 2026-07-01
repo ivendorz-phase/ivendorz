@@ -170,3 +170,20 @@ edits implementation** (Raise ≠ Accept — CLAUDE.md §13). Each review gets a
   2. [OBS] 3rd `AdminQueueTable` consumer — patched table proven: the `ref` column's `font-mono` is td-only, so the "Ban" header stays sans (RV-0013 fix holds); columns-only config, custom `minWidthClassName`, no new table markup; a11y via the shared table.
   3. [NIT] No route-level `loading.tsx` for /admin/bans — consistent with the other admin queues; add before the `J-ADM-04` read is wired (sync seed today). Non-gating.
 - Result: page → ✅ Approved. Queue advanced (Team-3 → P-ADM-06).
+
+### RV-0017 · P-AUTH-06 · 2FA challenge · Team-1
+- Date: 2026-07-01 · Reviewed: `app/(auth)/2fa/{page,two-factor-form}.tsx`
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] Server-authoritative + presentation-only (verifies nothing; honest "Nothing was verified"). `?state=` dev harness PROD-GATED (`NODE_ENV !== "production"`). TOTP (6-digit, inputMode numeric, `one-time-code`) + backup-code toggle; uniform `role="alert"` error using `danger-muted`; interim `info-muted` (P-4 convention); h1 per state; FormField a11y; auth-shell reuse.
+  2. [NIT] Done/interim state keeps the page h1 "Two-factor authentication" (same benign heading/content mismatch as P-AUTH-05). Non-gating.
+- Result: page → ✅ Approved. Queue advanced (Team-1 → P-AUTH-07).
+
+### RV-0018 · P-ADM-06 · Ban detail / issue · Team-3
+- Date: 2026-07-01 · Reviewed: `app/(app)/admin/bans/[banId]/page.tsx`, `_components/admin/bans/bans-seed.ts`
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] R5 — Lift/Re-issue/Extend rendered-but-DISABLED (`issue_ban`/`lift_ban` owned by M8, emit `VendorBanned`) + PresentationFormNote; `notFound()` byte-identical (Inv #11); platform-ban ≠ buyer-private blacklist (documented, line 84); firewall (no Trust/Perf/Tier); extends the P-ADM-05 seed (getBan/getBanDetail — no duplicate data); PageHeader h1 → section h2s; activity `<ol>`.
+  2. [OBS] Cross-workspace reuse of `vendor/dashboard/DashboardSection` + `vendor/shared/{DescriptionList,PresentationFormNote}` continues (now 4+ admin consumers) — reinforces the RV-0003/0008 deferred shared-extraction promotion candidate. Non-blocking.
+  3. [NIT] No route-level `loading.tsx` for `[banId]` — consistent with the other admin details; add before wiring.
+- Result: page → ✅ Approved. Queue advanced (Team-3 → P-ADM-07).

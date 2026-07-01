@@ -108,3 +108,37 @@ export const BANS: BanVM[] = [
     status: "active",
   },
 ];
+
+export interface BanActivityVM {
+  label: string;
+  detail?: string;
+}
+
+export interface BanDetailVM extends BanVM {
+  /** What the ban restricts (derived from scope). */
+  enforcement: string;
+  activity: BanActivityVM[];
+}
+
+const ENFORCEMENT: Record<BanVM["scope"], string> = {
+  Platform: "Full platform access is suspended for this party.",
+  Marketplace: "The party is removed from marketplace discovery and listings.",
+  RFQ: "The party is blocked from submitting or receiving RFQs.",
+};
+
+/** Look up a single ban (route param) — `undefined` → the detail page renders a byte-equivalent 404. */
+export function getBan(id: string): BanVM | undefined {
+  return BANS.find((b) => b.id === id);
+}
+
+/** Editorial detail overlay for a ban (presentation stand-in; the wired `J-ADM-04` read is not wired yet). */
+export function getBanDetail(id: string): BanDetailVM | undefined {
+  const b = getBan(id);
+  if (!b) return undefined;
+
+  const activity: BanActivityVM[] = [{ label: "Ban issued", detail: `by ${b.issuedBy}` }];
+  if (b.status === "lifted") activity.push({ label: "Ban lifted" });
+  if (b.status === "expired") activity.push({ label: "Ban expired", detail: b.expiry });
+
+  return { ...b, enforcement: ENFORCEMENT[b.scope], activity };
+}
