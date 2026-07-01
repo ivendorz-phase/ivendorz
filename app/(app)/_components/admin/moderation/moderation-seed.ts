@@ -138,3 +138,46 @@ export const MODERATION_CASES: ModerationCaseVM[] = [
     age: "5d ago",
   },
 ];
+
+export interface ModerationActivityVM {
+  label: string;
+  at: string;
+}
+
+export interface ModerationCaseDetailVM extends ModerationCaseVM {
+  /** Report origin (generic — never a fabricated individual). */
+  reportedBy: string;
+  /** Case summary prose (editorial stand-in). */
+  description: string;
+  /** Case history (editorial — derived from the case state). */
+  activity: ModerationActivityVM[];
+}
+
+/** Look up a single case (route param) — `undefined` → the detail page renders a byte-equivalent 404. */
+export function getModerationCase(id: string): ModerationCaseVM | undefined {
+  return MODERATION_CASES.find((c) => c.id === id);
+}
+
+/** Editorial detail overlay for a case (presentation stand-in; the wired `J-ADM-01` read is not wired yet). */
+export function getModerationCaseDetail(id: string): ModerationCaseDetailVM | undefined {
+  const c = getModerationCase(id);
+  if (!c) return undefined;
+
+  const activity: ModerationActivityVM[] = [{ label: "Case created", at: c.age }];
+  if (c.assignee !== "Unassigned") activity.push({ label: `Assigned to ${c.assignee}`, at: c.age });
+  if (c.status === "in_review") activity.push({ label: "Moved to review", at: c.age });
+  if (c.status === "escalated") activity.push({ label: "Escalated for senior review", at: c.age });
+  if (c.status === "resolved" || c.status === "dismissed") {
+    activity.push({
+      label: `Marked ${MODERATION_STATUS_META[c.status].label.toLowerCase()}`,
+      at: c.age,
+    });
+  }
+
+  return {
+    ...c,
+    reportedBy: "Platform signal",
+    description: `${c.subjectType} “${c.subject}” was flagged for ${c.reason.toLowerCase()}. Confirm the report against policy and record a decision — Admin decides, the owning module applies the effect.`,
+    activity,
+  };
+}

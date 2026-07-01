@@ -50,7 +50,7 @@ the status layer only. Work highest-priority `Ready` first; skip `Dependency ≠
 |---|---|---|---|---|---|
 | P-AUTH-01 | Login | P0 | Ready | 🟩 Built | |
 | P-AUTH-02 | Signup | P0 | Ready | ✅ Approved | RV-0004 PASS (re-review) — `ESC-7-API-SIGNUP` registered; notice → `text-iv-info-muted`. Both RV-0001 findings resolved |
-| P-AUTH-03 | Org setup (post-signup) | P0 | Ready | ⬜ | every user ≥1 org |
+| P-AUTH-03 | Org setup (post-signup) | P0 | Ready | 🔵 | Ready for Review — presentation-only 2-step wizard; binds `create_organization` (frozen `name` only; participation = intent, `[ESC-7-API]`, not sent) |
 | P-AUTH-04 | Password reset — request | P1 | Ready | ⬜ | |
 | P-AUTH-05 | Password reset — confirm | P1 | Ready | ⬜ | |
 | P-AUTH-06 | 2FA challenge | P2 | Ready | ⬜ | |

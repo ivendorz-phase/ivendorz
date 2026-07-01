@@ -11,8 +11,8 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-AUTH-03` Org setup (post-signup) (P0) — ⬜ Pending (P-AUTH-02 ✅ Approved, RV-0004)
-- **Status:** ⬜ queued to build
+- **Current Page:** `P-AUTH-03` Org setup (post-signup) (P0)
+- **Status:** 🔵 Ready for Review
 - **Next Page:** `P-AUTH-04` Password reset — request (P1, Ready)
 - **Updated:** 2026-07-01
 
@@ -25,8 +25,8 @@
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** `P-ADM-03` Moderation case detail (P1) — ⬜ Pending (P-ADM-02 ✅ Approved, RV-0006)
-- **Status:** ⬜ queued to build
+- **Current Page:** `P-ADM-03` Moderation case detail (P1)
+- **Status:** 🔵 Ready for Review
 - **Next Page:** `P-ADM-04` RFQ moderation (P1, Ready)
 - **Updated:** 2026-07-01
 
