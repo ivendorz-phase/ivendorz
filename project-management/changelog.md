@@ -68,3 +68,9 @@
 2026-07-01 · P-AUTH-07 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
 2026-07-02 · P-AUTH-07 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0019)
 2026-07-02 · P-ADM-07 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0020)
+2026-07-02 · P-AUTH-08 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+2026-07-02 · P-AUTH-08 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
+2026-07-02 · P-BUY-21 · ⬜ Pending → 🟡 In Progress · Owner: Team-2
+2026-07-02 · P-BUY-21 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-2
+2026-07-02 · P-AUTH-08 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0021)
+2026-07-02 · P-BUY-21 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0022)

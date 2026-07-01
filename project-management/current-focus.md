@@ -5,22 +5,22 @@
 > (`team-1.md` / `team-2.md` / `team-3.md`) remain the **source record**; this file is the
 > **pointer**. Keep it tiny. On any change, also update the owning team file + `changelog.md`.
 
-**Updated:** 2026-07-02 · **Sprint:** Review cycle 10 — P-AUTH-07 & P-ADM-07 ✅ Approved; Team-1 & Team-3 advanced
+**Updated:** 2026-07-02 · **Sprint:** Review cycle 11 — P-AUTH-08 (RV-0021) & P-BUY-21 (RV-0022) ✅ Approved; Team-1 & Team-2 advanced
 
 ---
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-AUTH-08` Email verification (P1) — ⬜ Pending (P-AUTH-07 ✅ Approved, RV-0019)
+- **Current Page:** `P-ACC-01` Account overview (P1) — ⬜ Pending (P-AUTH-08 ✅ Approved, RV-0021; Auth cluster complete)
 - **Status:** ⬜ queued to build
-- **Next Page:** `P-ACC-01` Account overview (P1, Ready) — completes the Auth cluster; Account next
+- **Next Page:** `P-ACC-02` User profile (P1, Ready)
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
 
-- **Current Page:** `P-BUY-21` Purchase order (P1) — ⬜ Pending (P-BUY-20 ✅ Approved, RV-0015)
+- **Current Page:** `P-BUY-22` Payments (P1) — ⬜ Pending (P-BUY-21 ✅ Approved, RV-0022). **Records only, no funds** (DF-6)
 - **Status:** ⬜ queued to build
-- **Next Page:** `P-BUY-22` Payments (P1, Ready)
+- **Next Page:** `P-BUY-23` Trade invoice review (P2, Ready)
 - **Updated:** 2026-07-02
 
 ## Team-3 — Vendor / Verification / Admin

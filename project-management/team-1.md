@@ -55,7 +55,7 @@ the status layer only. Work highest-priority `Ready` first; skip `Dependency ≠
 | P-AUTH-05 | Password reset — confirm | P1 | Ready | ✅ Approved | RV-0014 PASS (Team-4). Non-disclosure exemplary (uniform invalid/expired); `?state=` harness PROD-GATED (NODE_ENV) — the right dev-preview pattern; server-authoritative token |
 | P-AUTH-06 | 2FA challenge | P2 | Ready | ✅ Approved | RV-0017 PASS (Team-4). Server-authoritative; `?state=` PROD-GATED; TOTP+backup toggle; uniform role=alert error (danger-muted); P-4 inks. NIT: h1 in done state |
 | P-AUTH-07 | Accept invitation / join org | P1 | Ready | ✅ Approved | RV-0019 PASS (Team-4). Real `accept_invitation`; frozen Org Role (Manager, not invented); Users-act/Orgs-own; non-disclosing invalid; `?state=` PROD-GATED |
-| P-AUTH-08 | Email verification | P1 | Ready | ⬜ | |
+| P-AUTH-08 | Email verification | P1 | Ready | ✅ Approved | RV-0021 PASS (Team-4). Server-authoritative token; non-disclosing invalid/expired; `?state=` PROD-GATED (NODE_ENV); one h1 per state; P-4 inks (AA-verified 4.70/4.75:1 on tints); Resend sends nothing (honest). Completes the Auth cluster |
 
 ## Account & Identity — `P-ACC-*` (Doc-7E)
 
