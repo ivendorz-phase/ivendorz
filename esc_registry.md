@@ -77,8 +77,23 @@ already accepts a `stage` filter (Doc-4F BC-OPS-3); `ESC-7G-Q-01` — bound to `
 
 ---
 
+### Classification & Matching Decisions (2026-07-01)
+
+Source: `governanceReviews/CLASSIFICATION-DECISION-RECONCILIATION_v1.0.md` (+ `ADR-023` proposal + three
+additive patch proposals + `MATCHING-ENGINE-RECONCILIATION_v1.0.md`). All human-Board gated.
+
+| Handle | Scope / gap | Interim presentation | Channel |
+|---|---|---|---|
+| **`ESC-MKT-VENDORTYPE`** | `vendor_type_preset` enumerates **no values**; net-new vendor "commercial capability" facets (brand/OEM-authorization) unmodeled | Define the value set as metadata (Manufacturer/Supplier/…); commercial-capability facets deferred | Additive `Doc-4D_VendorTypePreset_Values` patch (Board); net-new facets → future M2 patch |
+| **`ESC-IDN-BUYERTYPE`** | No buyer-type/segmentation on the profile; Procurement Maturity + department/role/frequency/approval-authority unmodeled | Add `buyer_type` on `buyer_profiles` (Invariant-#2-safe); maturity/role/etc. reserved | Additive `Doc-2_BuyerType` patch v1.0.5 + Doc-6C (Board); net-new fields → future M1 patch |
+| **`ESC-CLASS-INDUSTRY`** | Industry taxonomy **not modeled** (supersedes the note below) | Recommend M2-owned 4-level Industry→Sector→Sub-Sector→Application, referenced by ID (Inv #7) | Human Architecture Board — module-ownership decision (`Doc-2_IndustryTaxonomy` patch v1.0.6) |
+| **`ESC-RFQ-PROCCAT`** | Buyer "procurement category" (Mechanical/HVAC) vs the frozen category tree | **Reuse `marketplace.categories`**; coin no new entity | Confirm (no patch expected) — Board note |
+| **`ESC-RFQ-MATCH-EVOLVE`** | Weighted-engine evolution (policy layer; industry/business-type ranking; subscription-in-rank) | Firewalls hold: no payment/plan input to rank (`Doc-3 §12.1/§4B`); bands not raw scores; industry deferred | M3 owner + Board (`MATCHING-ENGINE-RECONCILIATION_v1.0.md`); each item = its own additive M3 patch |
+
 ### Known non-ESC gaps (recorded, not escalations)
-- **Industry / Brand / Standard / Manufacturer taxonomies** are **not modeled** in the frozen corpus.
+- **Industry taxonomy** — now tracked as **`ESC-CLASS-INDUSTRY`** above (was: "not modeled"); the
+  `Doc-2_IndustryTaxonomy` patch proposal recommends an M2-owned model for Board ratification.
+- **Brand / Standard / Manufacturer taxonomies** remain **not modeled** in the frozen corpus.
   Navigation may *reference* them as wayfinding dimensions but **coins no data model**; introducing any
   is a module-ownership / architecture decision (escalate), not an IA/UX decision. See `IA §5.3`, `GL`.
 
