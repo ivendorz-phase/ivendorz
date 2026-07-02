@@ -4,6 +4,11 @@
 // there is NO score penalty (firewall; non-leaking copy, §6.5). All actions are disabled in the
 // presentation phase. The "Start quotation" CTA links to S4; one quota unit is used only at SUBMIT.
 // Presentation-only; RSC-friendly.
+//
+// FE-VEN-05 delta (clearer respond/decline affordances): Decline reads as the more consequential
+// action (outline + destructive-toned label, matching the kit's existing outline/destructive
+// vocabulary — no new variant), and `aria-describedby` ties it directly to the no-penalty consequence
+// note so the causal link ("declining does X") is announced together, not just visually adjacent.
 import Link from "next/link";
 import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
@@ -50,12 +55,18 @@ export function InvitationResponse({
             <Button type="button" disabled>
               Accept invitation
             </Button>
-            <Button type="button" variant="outline" disabled>
+            <Button
+              type="button"
+              variant="outline"
+              className="text-destructive hover:text-destructive"
+              aria-describedby="invitation-decline-note"
+              disabled
+            >
               Decline
             </Button>
           </div>
         ) : null}
-        <p className="text-xs text-muted-foreground">
+        <p id="invitation-decline-note" className="text-xs text-muted-foreground">
           Declining is permanent for this invitation. You can still be invited to other RFQs, and it
           carries no score penalty.
         </p>
