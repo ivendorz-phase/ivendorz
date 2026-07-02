@@ -264,3 +264,11 @@
 2026-07-02 · P-ACC-18 · ✅ Approved → ✅ committed · Owner: Team-1
 2026-07-02 · P-ACC-19 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
 2026-07-02 · BX-01 · ✅ Approved → ✅ committed (08dcb7a) · Owner: Team-2
+2026-07-02 · P-ADM-22 · ✅ Approved → ✅ committed (b100b36) · Owner: Team-3
+2026-07-02 · P-ADM-23 · ⬜ Pending → 🟡 In Progress · Owner: Team-3
+2026-07-02 · P-ADM-23 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-3
+2026-07-02 · P-ACC-19 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
+2026-07-02 · P-ACC-19 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0072 — BC-BILL-4 real & verified; Inv#10 + money-boundary + moat; signed deltas)
+2026-07-02 · P-ADM-23 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0073 — is_active on detail closes RV-0063/0065; activate_plan draft-only §HB-1.1a; additive seed)
+2026-07-02 · P-ACC-19 · ✅ Approved → ✅ committed · Owner: Team-1
+2026-07-02 · P-ACC-20 · ⬜ Pending → 🟡 In Progress · Owner: Team-1

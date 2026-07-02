@@ -11,9 +11,9 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-ACC-19` Lead credits (P2) — 🟡 In Progress (P-ACC-18 ✅ committed)
-- **Status:** 🟡 building (presentation-only; lead balance + transactions, BC-BILL-4; Inv #10 numeric; platform-revenue only)
-- **Next Page:** _(confirm from team-1.md after P-ACC-19)_
+- **Current Page:** `P-ACC-20` Platform invoices (P2) — 🟡 In Progress (P-ACC-19 ✅ committed)
+- **Status:** 🟡 building (presentation-only; `list_platform_invoices` BC-BILL-5; opaque platform_invoice_id ref; ≠ trade invoices)
+- **Next Page:** _(confirm from team-1.md after P-ACC-20)_
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
@@ -25,9 +25,9 @@
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** `P-ADM-23` Plan editor (P2) — ⬜ Pending (P-ADM-22 ✅ Approved, RV-0065). `activate_plan` admin-only (R5); is_active surfaces here (get_plan detail)
-- **Status:** ⬜ queued to build — M7 editor: `create/update/retire_plan` + `activate_plan` (R5, M7-owned); Inv#10 plan≠tier + entitlements by value; is_active editable here (get_plan projects it)
-- **Next Page:** `P-ADM-24` Entitlements / bundles (P2, Ready)
+- **Current Page:** `P-ADM-24` Entitlements / bundles (P2) — ⬜ Pending (P-ADM-23 ✅ Approved, RV-0073). `bundle_plan_entitlement`
+- **Status:** ⬜ queued to build — BC-BILL-1 entitlements catalog + bundling; Inv#10 type boolean/numeric/enum, slug UNIQUE; entitlements by value never plan-name; R5 (create/update_entitlement + bundle_plan_entitlement M7-owned)
+- **Next Page:** `P-ADM-25` Identity ops — orgs (P2, Ready) — no active-org
 - **Updated:** 2026-07-02
 
 ---
