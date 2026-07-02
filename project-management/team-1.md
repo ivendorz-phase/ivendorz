@@ -24,7 +24,7 @@ the status layer only. Work highest-priority `Ready` first; skip `Dependency ≠
 | P-PUB-09 | Industry page | P2 | Waiting API | ⬜ | `ESC-7-API-CATNAV` |
 | P-PUB-10 | Catalog search results | P1 | Ready | 🟩 Built | |
 | P-PUB-11 | Product detail (public) | P1 | Waiting API | ⬜ | `ESC-7-API-PRODDETAIL`; modal-only today |
-| P-PUB-12 | Vendor directory | P1 | Ready | 🟩 Built | |
+| P-PUB-12 | Vendor directory | P1 | Ready | ✅ Approved | RV-0118 PASS both lanes (checkpoint `4812157`). Spec's Toolbar delta (query · sort · filter trigger · density) named search as a gap the page never had — added `<SearchBar action="/search" .../>` to the header, reusing the existing Doc-7B kit component `/categories` already promotes for Public-surface use; points at `/search`'s real `?q=`-consuming Vendors tab rather than duplicating filter logic here. Sort/density stay cited-not-built (no kit primitive exists). Zero kit/token change; single-file 13-line delta. 0 B/M/M both lanes, 2 OBS total (same observation independently reached both lanes: empty submit lands on `/search`'s default Products tab, pre-existing/out-of-scope) |
 | P-PUB-13 | Vendor profile / microsite | P1 | Ready | 🟩 Built | |
 | P-PUB-14 | Microsite — Products | P1 | Ready | 🟩 Built | |
 | P-PUB-15 | Microsite — Projects | P1 | Ready | 🟩 Built | |

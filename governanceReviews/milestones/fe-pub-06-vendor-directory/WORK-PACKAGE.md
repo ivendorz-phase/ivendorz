@@ -1,4 +1,5 @@
-# WORK PACKAGE — FE-PUB-06 Vendor Directory (Started — scope complete, submitted to Review-A)
+# WORK PACKAGE — FE-PUB-06 Vendor Directory (✅ Closed — RV-0118, A:PASS ∧ B:PASS, Dev-team
+self-close per Amendment v1.3 §13)
 
 - **Lane:** G (anonymous contract surface)
 - **Reviewed-SHA record:** `4812157` (scope complete — SearchBar entry point added)
@@ -50,10 +51,22 @@ A:PASS ∧ B:PASS gate the owning Dev team self-closes per `review-process.md` A
 
 ## Key dates
 
-Created 2026-07-03 · Started 2026-07-03 · Paused — · Resumed — · Closed —
+Created 2026-07-03 · Started 2026-07-03 · Paused — · Resumed — · Closed 2026-07-03
 
 ## DoD confirmation (checked at close)
 
-☐ page DoD ☐ responsive D/T/M ☐ WCAG-AA ☐ tsc/eslint/prettier ☐ realistic mock data ☐ Review A
-PASS ☐ Review B PASS (B/M/M=0) ☐ gate approval ☐ no TODO/dead code ☐ no duplicate components ☐
-promotion candidates registered ☐ tracker updated ☐ card closed
+☑ page DoD ☑ responsive D/T/M (Playwright 390/768/1280, Review-B) ☑ WCAG-AA (axe-core, 0
+violations all 3 viewports) ☑ tsc/eslint/prettier ☑ realistic mock data (existing seed, real
+submit flow verified end-to-end) ☑ Review A PASS (RV-0118, 1 OBS, B/M/M=0) ☑ Review B PASS
+(RV-0118, 1 OBS, B/M/M=0) ☑ gate approval (A:PASS ∧ B:PASS on `4812157` — the clean gate is the
+approval signal per Amendment v1.3 §13) ☑ no TODO/dead code ☑ no duplicate components (reuses kit
+`SearchBar` only; no new primitive) ☑ promotion candidates registered (none raised — pure reuse,
+no duplication pattern surfaced) ☑ tracker updated ☑ card closed
+
+## Close record
+
+**✅ Closed 2026-07-03.** Review-A: PASS (0 B/M/M, 1 OBS). Review-B: PASS (0 B/M/M, 1 OBS — same
+observation independently reached). No fix-and-reverify cycle — both lanes passed on the first
+submission. Dev-team self-close per Amendment v1.3 §13. Full record:
+`project-management/review-log.md` RV-0118. Milestone-close commit:
+`milestone(FE-PUB-06): close — RV-0118 A:PASS B:PASS`.

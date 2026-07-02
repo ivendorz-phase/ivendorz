@@ -14,7 +14,10 @@ Roadmap: [`fe-program-wbs.md`](fe-program-wbs.md) · pointer: [`current-focus.md
 self-close 2026-07-02 @ `1275f70`) · ~~FE-PUB-04 Category Page~~ ✅ **Closed** (RV-0116, A:PASS ∧
 B:PASS, 0 B/M/M both lanes, no fix-and-reverify cycle, Dev-team self-close 2026-07-03 @ `4777e84`
 — new drill-down route realizing P-PUB-08, which was tracked "🟩 Built" but never actually
-existed) · `FE-PUB-06` ← next (WP card pending kickoff) → FE-PUB-07 → FE-PUB-01 ·
+existed) · ~~FE-PUB-06 Vendor Directory~~ ✅ **Closed** (RV-0118, A:PASS ∧ B:PASS, 0 B/M/M both
+lanes, no fix-and-reverify cycle, Dev-team self-close 2026-07-03 @ `4812157` — added the
+spec-declared search entry point missing from P-PUB-12, reusing the existing `SearchBar` kit
+component) · `FE-PUB-07` ← next (WP card pending kickoff) → FE-PUB-01 ·
 ~~FE-PUB-05~~ ⛔ `ESC-7-API-PRODDETAIL` (skip while gated).
 
 **Team-2 (Buyer):**

@@ -12,17 +12,18 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-1 — Public / Platform (FE-PUB · FE-PF)
 
-- **Current Milestone:** _(none — `FE-PUB-04` Category Page ✅ **Closed**, RV-0116, A:PASS ∧ B:PASS
-  (0 B/M/M both lanes, 4 OBS total, no fix-and-reverify cycle), checkpoint `4777e84`; Dev-team
-  self-close per Amendment v1.3 §13. FE-PUB-03 also ✅ Closed, RV-0111. Second FE-PUB milestone
-  this session to pass both lanes clean on the first submission)_
-- **Current Page:** _(none — P-PUB-08 (Category page) was tracked "🟩 Built | partial" but never
-  actually existed; new drill-down route `marketplace/category/[slug]` under the registered
-  `ESC-7-API-CATNAV` interim, disclosed in-page; Vendors/Products tabs reuse kit
-  `FilterSidebar`/`VendorCard`/`ProductCard`/`ResultsGrid`/`PaginationControl` only; 3 previously-dead
-  `?category=` links repointed to the real route)_
-- **Pipeline stage:** idle — pulling `FE-PUB-06` next (WP card pending kickoff)
-- **Next Milestone:** FE-PUB-06 → FE-PUB-07 → FE-PUB-01 (skip FE-PUB-05 ⛔)
+- **Current Milestone:** _(none — `FE-PUB-06` Vendor Directory ✅ **Closed**, RV-0118, A:PASS ∧
+  B:PASS (0 B/M/M both lanes, 1 OBS total, no fix-and-reverify cycle), checkpoint `4812157`;
+  Dev-team self-close per Amendment v1.3 §13. FE-PUB-03/04 also ✅ Closed. Third consecutive FE-PUB
+  milestone this session to pass both lanes clean on the first submission)_
+- **Current Page:** _(none — P-PUB-12 (Vendor directory, `app/(public)/vendors/page.tsx`) had zero
+  search entry point despite the spec's Toolbar delta naming query search; added `<SearchBar
+  action="/search" .../>` reusing the existing Doc-7B kit component `/categories` already uses the
+  same way — points at `/search`'s real `?q=`-consuming Vendors tab rather than duplicating filter
+  logic in this page. Sort/density [also spec-named] stay cited-not-built, no kit primitive exists.
+  Single-file, 13-line delta)_
+- **Pipeline stage:** idle — pulling `FE-PUB-07` next (WP card pending kickoff)
+- **Next Milestone:** FE-PUB-07 → FE-PUB-01 (skip FE-PUB-05 ⛔)
 
 ## Team-2 — Buyer (FE-BUY / FE-CLN)
 
@@ -37,13 +38,12 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   field-for-field with the public discovery seed (`app/(public)/_components/discovery/seed.ts`
   `VENDORS`) so every card's slug resolves against the microsite instead of two divergent mock
   catalogs. P-BUY-03 superseded (no build, `/discover` = the directory). P-BUY-05 out of scope,
-  stays held. `tsc`/`eslint`/`prettier --check` clean. **Live browser verification blocked** — the
-  shared dev server on :3000 is currently 500ing on a turbopack chunk-manifest corruption from
-  ~15 accumulated concurrent `next dev` processes across parallel team sessions (pre-existing
-  environment condition, unrelated to this 2-file content diff — flagged to the owner separately,
-  not fixed unilaterally). Verification is static-only pending a clean dev server: typecheck/lint/
-  format clean + exact slug/name/category/location/verified/capability parity against the
-  already-shipped public seed and its `.find()`-based resolver.
+  stays held. `tsc`/`eslint`/`prettier --check` clean. **Live-verified** — after the owner
+  authorized a cleanup of ~30 stale/zombie `next dev` processes that had accumulated across
+  parallel team sessions and corrupted the shared turbopack chunk cache (500s repo-wide), the
+  surviving clean dev server confirms `/discover` 200 with all 8 cards linking `/vendors/[slug]`,
+  and `/vendors/padma-valve-fittings` 200 rendering the matching "Padma Valve & Fittings Ltd."
+  profile — card identity and microsite identity now match end-to-end.
 - **Pipeline stage:** 🔵A — awaiting Review-A (fresh context)
 - **Next Milestone:** none queued after FE-BUY-10 closes — Team-2's FE-BUY/FE-CLN queue is
   otherwise exhausted this session.
@@ -67,8 +67,8 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 _(`FE-BUY-10` (Team-2) checkpointed 2026-07-03, awaiting Review-A — WP card
   `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`. Otherwise clear —
-  `FE-PUB-03` (RV-0111), `FE-PUB-04` (RV-0116), `FE-VEN-04` (RV-0110), `FE-BUY-07` (RV-0112) all
-  cleared A and closed.)_
+  `FE-PUB-03` (RV-0111), `FE-PUB-04` (RV-0116), `FE-PUB-06` (RV-0118), `FE-VEN-04` (RV-0110),
+  `FE-BUY-07` (RV-0112) all cleared A and closed.)_
 
 ## Review Team 5 — Quality & Adversarial (B lane) — queue
 
@@ -85,8 +85,12 @@ _(B-lane clear — nothing at 🔵B awaiting Review-B.)_
   every other surface's "blacklist" mention is a non-disclosure comment), FE-CLN-01 (RV-0115 freeze
   remediation, 18 files; frozen-kit-untouched, new `Callout` de-dupes ~8 inline callouts [buyer-scoped,
   no kit primitive re-impl], escalated shell a11y bug correctly pre-existing/not-fixed-unilaterally),
-  FE-BUY-05 (RV-0108), FE-BUY-06 (RV-0109 Award). _(RV-0114/RV-0115 review-log concurrence lines were
-  swapped by a concurrent-writer race — Team-5 repaired both in place.)_
+  FE-PUB-04 (RV-0116 Category Page, new `marketplace/category/[slug]` route; kit-reuse no-primitive,
+  notFound byte-identical [Inv#11], filter-not-sort [R6/GI-04], real counts [GI-03], ESC-7-API-CATNAV
+  disclosed), FE-PUB-06 (RV-0118 Vendor Directory, single-file `SearchBar` reuse; no new primitive,
+  no filter-logic duplication, R6/GI-04 clean — pure navigation), FE-BUY-05 (RV-0108), FE-BUY-06
+  (RV-0109 Award). _(RV-0114/RV-0115 review-log concurrence lines were swapped by a concurrent-writer
+  race — Team-5 repaired both in place.)_
 - _Prior full-B (routed to Team-5): FE-PUB-02 (RV-0107). Earlier closed: FE-BUY-04 (RV-0102),
   FE-VEN-06/07/08/13 (RV-0103/0104/0105/0106)._
 
