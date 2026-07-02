@@ -104,3 +104,12 @@
 2026-07-02 · P-ACC-02 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0030)
 2026-07-02 · P-BUY-24 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0031)
 2026-07-02 · P-ADM-10 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0032)
+2026-07-02 · P-ACC-03 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+2026-07-02 · P-ADM-11 · ⬜ Pending → 🟡 In Progress · Owner: Team-3
+2026-07-02 · P-ADM-11 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-3
+2026-07-02 · P-ACC-03 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
+2026-07-02 · P-BUY-25 · ⬜ Pending → 🟡 In Progress · Owner: Team-2
+2026-07-02 · P-ADM-11 · 🔵 Ready for Review → 🟥 Patch Required · Owner: Team-3 (RV-0033)
+2026-07-02 · P-ACC-03 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0034)
+2026-07-02 · P-ADM-11 · 🟥 Patch Required → 🟠 Fixing · Owner: Team-3 (RV-0033)
+2026-07-02 · P-ADM-11 · 🟠 Fixing → 🔵 Ready for Review · Owner: Team-3 (RV-0033 patched)

@@ -16,6 +16,7 @@ export const ACCOUNT_NAV: NavSection[] = [
     items: [
       { label: "Overview", href: "/account/overview", icon: "account" },
       { label: "Profile", href: "/account/profile", icon: "settings" },
+      { label: "Security", href: "/account/security", icon: "security" },
     ],
   },
   {

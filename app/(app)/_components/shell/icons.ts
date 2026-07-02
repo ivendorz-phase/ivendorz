@@ -13,6 +13,7 @@ import {
   Inbox,
   KeyRound,
   LayoutDashboard,
+  Lock,
   Megaphone,
   Package,
   Search,
@@ -64,6 +65,7 @@ export const NAV_ICONS = {
   members: Users,
   roles: ShieldCheck,
   delegation: KeyRound,
+  security: Lock,
 } as const satisfies Record<string, LucideIcon>;
 
 export type NavIconKey = keyof typeof NAV_ICONS;
