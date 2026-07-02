@@ -11,8 +11,8 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** _(none — buildable queue EXHAUSTED)_ — `P-SH-05` ✅ Approved (RV-0100). Team-1 P1/P2/P3 buildable set COMPLETE
-- **Status:** ✅ P-SH-05 Maintenance done (RV-0100). **Team-1 buildable queue EXHAUSTED** — remaining P-PUB-01/07/08/10/12–17/19 already 🟩 Built; P-PUB-09/11 Waiting-API ([ESC-7-API-CATNAV/PRODDETAIL]); P-ACC-12 Waiting-Decision. Team-1 loop IDLES until a new page flips 🔵. **Owner ratify:** global-search + full-page-notifications mount (corpus-silent). Chrome follow-up: SiteHeader "Pricing" nav → /pricing (RV-0087)
+- **Current Page:** _(none — buildable queue EXHAUSTED; auto-loop STOPPED by owner "done")_ — `P-SH-05` ✅ Approved (RV-0100) + **committed 204dbf0**. Team-1 P1/P2/P3 buildable set COMPLETE + all committed
+- **Status:** ✅ Team-1 buildable set DONE + committed. 5-min auto-loop STOPPED (owner "done"). Remaining ⬜ = P-PUB-09/11 Waiting-API ([ESC-7-API-CATNAV/PRODDETAIL]); P-ACC-12 Waiting-Decision ([ESC-IDN-DELEG-EXPIRY]) — all owner/API-gated. **Owner decisions still open (non-blocking):** (1) ratify global-search /account/search + notifications /notifications shell mount; (2) SiteHeader "Pricing" nav → /pricing chrome wiring (RV-0087). Resume on owner say-so / unblock.
 - **Next Page:** _(owner-gated / Waiting-API — no buildable Ready page)_; SKIP P-PUB-09/11 Waiting-API
 - **Updated:** 2026-07-02
 
