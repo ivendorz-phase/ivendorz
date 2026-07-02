@@ -24,8 +24,12 @@ import {
 import { PresentationFormNote } from "../shared";
 import type { SpecLibraryEntryView } from "./types";
 
+// Matches kit `Input`'s full class string (contact-form.tsx precedent) — RV-0110 finding 5 /
+// RV-0110 Review-B MINOR: the shorter string (also present in product-content-form.tsx, untouched
+// here — out of scope) omits `text-iv-ink-strong`, so entered text would render off-token once
+// enabled in the integration phase.
 const TEXTAREA_CLASS =
-  "min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-iv-ink-strong shadow-iv-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-destructive";
 
 export interface SpecEntryDialogProps {
   trigger: ReactNode;
