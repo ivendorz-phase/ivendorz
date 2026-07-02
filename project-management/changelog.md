@@ -234,3 +234,10 @@
 2026-07-02 · P-BUY-13 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-2 (Routing log/invitations sub-route; §E6.7 get_routing_log+list_invitations; NO vendor field/column — frozen projection governs; deferral invisible Doc-3 §4.2; aggregate routing log, no pipeline_counts breakout; R6 no buyer affordance; axe 0 own-content; 2-reviewer PASS/PASS 0 gating)
 2026-07-02 · P-ADM-22 · 🟥 Patch Required → 🟠 Fixing · Owner: Team-3 (RV-0063)
 2026-07-02 · P-ADM-22 · 🟠 Fixing → 🔵 Ready for Review · Owner: Team-3 (RV-0063 patched — dropped is_active column, not in list_plans projection)
+2026-07-02 · P-BUY-13 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0064 — non-disclosure exemplary)
+2026-07-02 · P-ADM-22 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0065 — re-review; RV-0063 MAJOR resolved, is_active column dropped)
+2026-07-02 · P-BUY-13 · ✅ Approved → ✅ committed (71e107c) · Owner: Team-2
+2026-07-02 · P-ACC-13 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
+2026-07-02 · P-ACC-13 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0066 — no-auto-approve exemplary; contract verbatim)
+2026-07-02 · P-ACC-13 · ✅ Approved → ✅ committed · Owner: Team-1
+2026-07-02 · P-ACC-15 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
