@@ -5,6 +5,9 @@
 // the "typical flow" line is shown as guidance only. Stage-advance is the only state write — and
 // `won`/`lost` is PRIVATE CRM, never the RFQ award and never a governance signal (R6 firewall). Every
 // action is disabled in the presentation phase. Uncontrolled controls; native interim. RSC-friendly.
+//
+// FE-VEN-07 delta (P-VND-22): renders `lead.created_at` — a field already typed on `LeadView`
+// ("Lead created … (from your invitation)") but never surfaced anywhere on the detail page.
 import { Button } from "@/frontend/primitives/button";
 import { Input } from "@/frontend/primitives/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
@@ -26,6 +29,12 @@ export function LeadPipelinePanel({ lead }: LeadPipelinePanelProps) {
         <LeadStageChip stage={lead?.stage} />
       </CardHeader>
       <CardContent className="space-y-5">
+        {lead?.created_at ? (
+          <p className="text-sm text-muted-foreground">
+            Lead created {lead.created_at} (from your invitation)
+          </p>
+        ) : null}
+
         <div className="space-y-2">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Advance stage
