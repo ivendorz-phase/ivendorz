@@ -11,9 +11,9 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-PUB-06` For Vendors (segment) (P2) — ⬜ next (P-PUB-05 ✅ Approved, RV-0089). static
-- **Status:** ⬜ queued — static segment marketing; grounded vendor value props (received-only leads/invitations, decline=no penalty, verified/trust M5-displayed-not-self-set, microsite); no fabrication; binds no contract. Chrome follow-up open: SiteHeader "Pricing" nav → /pricing (RV-0087)
-- **Next Page:** P-PUB-06/18/21/22/24 + P-SH-01/02/06 (P2), then P-PUB-20/23 + P-SH-05 (P3); SKIP P-PUB-09/11 Waiting-API
+- **Current Page:** `P-PUB-18` Trust & verification explainer (P2) — ⬜ next (P-PUB-06 ✅ Approved, RV-0090). segment pages 05/06 done
+- **Status:** ⬜ queued — verification surface: trust=binary Verified only, NO score/band ([ESC-7G-SCORE-DISPLAY], M5 owns), firewall Inv#6, verification KIND not band. Chrome follow-up open: SiteHeader "Pricing" nav → /pricing (RV-0087)
+- **Next Page:** P-PUB-18/21/22/24 + P-SH-01/02/06 (P2), then P-PUB-20/23 + P-SH-05 (P3); SKIP P-PUB-09/11 Waiting-API
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
