@@ -16,12 +16,13 @@ import { PopularProducts } from "../_components/landing/popular-products";
 // sections — zero duplicate components).
 //
 // GOVERNANCE: interim per [ESC-7-API-CATNAV] — the full anonymous taxonomy tree is blocked, so the tree
-// is a CURATED navigation seed (industries are wayfinding only, NOT a coined corpus taxonomy). Tiles
-// link into `search_catalog` facet views (/marketplace?category=…); the capability cards below use the
-// SAME honest-interim posture (`/marketplace?capability=…`, not yet read by the marketplace page — no
-// search-API change made here). No counts are fabricated (GI-03). "Popular categories" is an EDITORIAL
-// curated subset (`FEATURED_CATEGORIES`), never a computed rank (GI-04) — same seed the landing page and
-// /marketplace already use, so the "popular" set is consistent site-wide.
+// is a CURATED navigation seed (industries are wayfinding only, NOT a coined corpus taxonomy). Tiles link
+// into the real P-PUB-08 category page (/marketplace/category/[slug], FE-PUB-04 delta) — a `search_catalog`
+// category-facet read stand-in over the same curated seed. The capability cards below stay a SEPARATE
+// honest-interim posture (`/marketplace?capability=…`, not yet consumed by any page — out of FE-PUB-04's
+// scope, no search-API change made here). No counts are fabricated (GI-03). "Popular categories" is an
+// EDITORIAL curated subset (`FEATURED_CATEGORIES`), never a computed rank (GI-04) — same seed the landing
+// page and /marketplace already use, so the "popular" set is consistent site-wide.
 const CAPABILITY_CARDS = [
   { key: "can_supply", label: "Supply", description: "Sell or supply goods", icon: Package },
   { key: "can_service", label: "Service", description: "Provide services", icon: Wrench },
@@ -66,7 +67,7 @@ export default function CategoriesPage() {
             <CategoryTile
               key={category.slug}
               category={category}
-              href={`/marketplace?category=${encodeURIComponent(category.slug)}`}
+              href={`/marketplace/category/${encodeURIComponent(category.slug)}`}
             />
           ))}
         </div>
@@ -119,7 +120,7 @@ export default function CategoriesPage() {
                     <CategoryTile
                       key={category.slug}
                       category={category}
-                      href={`/marketplace?category=${encodeURIComponent(category.slug)}`}
+                      href={`/marketplace/category/${encodeURIComponent(category.slug)}`}
                     />
                   ))}
                 </div>

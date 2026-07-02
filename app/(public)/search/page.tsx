@@ -186,7 +186,7 @@ export default async function SearchPage({
             <CategoryTile
               key={c.slug}
               category={c}
-              href={`/marketplace?category=${encodeURIComponent(c.slug)}`}
+              href={`/marketplace/category/${encodeURIComponent(c.slug)}`}
             />
           ))}
         </ResultsGrid>

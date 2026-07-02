@@ -1,8 +1,8 @@
 // SEC-CATEGORY + SEC-INDUSTRY — Featured Categories grid + Industry Explorer entry (landing_page_spec
 // §4 · Doc-7D). PRESENTATION-ONLY Server Component. Interim per [ESC-7-API-CATNAV]: the full anonymous
 // taxonomy tree is blocked, so the featured selection is a CURATED STATIC SEED and each tile/entry
-// navigates into a `search_catalog` facet view (/marketplace · /categories, activated in M2.2). No
-// taxonomy tree or product counts are fabricated here (GI-03/GI-12).
+// navigates into the P-PUB-08 category page (/marketplace/category/[slug], FE-PUB-04), a `search_catalog`
+// facet-read stand-in. No taxonomy tree or product counts are fabricated here (GI-03/GI-12).
 import Link from "next/link";
 import { LayoutGrid, ArrowRight } from "lucide-react";
 import { Card } from "@/frontend/primitives/card";
@@ -27,7 +27,7 @@ export function FeaturedCategories() {
           <CategoryTile
             key={category.slug}
             category={category}
-            href={`/marketplace?category=${encodeURIComponent(category.slug)}`}
+            href={`/marketplace/category/${encodeURIComponent(category.slug)}`}
           />
         ))}
       </div>
