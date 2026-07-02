@@ -1,7 +1,7 @@
 # WORK PACKAGE — FE-VEN-08 Engagements
 
 - **Lane:** G (money-boundary adjacency — DF-6; contract-bound renders)
-- **Reviewed-SHA record:** _(filled at 🔵A)_
+- **Reviewed-SHA record:** `ec8306b` (scope complete — the sole in-scope page checkpointed)
 - **Value:** Vendor Growth · **Priority:** P1 · **Size:** L · **Risk:** Med
 
 ## In scope (the delta — a frozen-conformance fix over the vendor workspace E1-E5 stock)
@@ -54,10 +54,18 @@ Builder = **Team-3** · Maintainer = **Team-3** · Review A → Review B (fresh 
 ## Key dates
 
 Created 2026-07-02 · Started 2026-07-02 (owner: "approve close, continue to FE-VEN-08") ·
-Paused — · Resumed — · Closed —
+Paused — · Resumed — · Scope complete 2026-07-02 (checkpoint `ec8306b`) · **Closed 2026-07-02**
+(owner-approved, RV-0105)
 
 ## DoD confirmation (checked at Board close — carry-forward: delta-only over 🟩 legacy pages)
 
-☐ page DoD (1 page) ☐ responsive D/T/M ☐ WCAG-AA ☐ tsc/eslint/prettier ☐ realistic mock data ☐
-Review A PASS ☐ Review B PASS (B/M/M=0) ☐ Board approved ☐ no TODO/dead code ☐ no duplicate
-components ☐ promotion candidates registered ☐ tracker updated ☐ card closed
+☑ page DoD (1 page) ☑ responsive D/T/M (N/A — no layout/breakpoint change; button/copy swap only)
+☑ WCAG-AA (B confirmed: real labeled buttons in every branch, no regression) ☑ tsc/eslint/prettier
+(independently re-verified by both A and B) ☑ realistic mock data — N/A by design: genuine-empty
+received-only pattern; B render-verified all 5 status branches via a disposable harness anyway ☑
+Review A PASS (RV-0105, 11 OBS — incl. independent trace of the frozen-conformance claim to
+`Doc-4F_PassB_Part2_BC-OPS-2_FROZEN.md`) ☑ Review B PASS (RV-0105, 11 OBS + 1 non-gating NIT,
+B/M/M=0) ☑ Board approved (owner, 2026-07-02) ☑ no TODO/dead code (B confirmed) ☑ no duplicate
+components (B confirmed — `nextLegalEdge` is genuinely new logic) ☑ promotion candidates
+registered — none flagged ☑ tracker updated
+(current-focus/execution-board/team-3/changelog/fe-program-wbs) ☑ card closed

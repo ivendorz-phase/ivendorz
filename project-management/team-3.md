@@ -38,7 +38,7 @@ Verification = `P-VND-28` + `P-PUB-18` (Team-1) + `P-ADM-12/13`.
 | P-VND-21 | Leads pipeline | P1 | Ready | 🟩 Built | system-created leads. **FE-VEN-07 enhancement CLOSED** (RV-0104, `4636bf2`): next-action pill on Board cards |
 | P-VND-22 | Lead detail | P1 | Ready | 🟩 Built | **FE-VEN-07 enhancement CLOSED** (RV-0104, `b1810fe`): lead created_at provenance |
 | P-VND-23 | Engagements (vendor) | P1 | Ready | 🟩 Built | |
-| P-VND-24 | Engagement detail (vendor) | P1 | Ready | 🟩 Built | |
+| P-VND-24 | Engagement detail (vendor) | P1 | Ready | 🟩 Built | **FE-VEN-08 enhancement CLOSED** (RV-0105, `ec8306b`): frozen-conformant lifecycle single-next-legal-edge fix (was status-blind — always showed the same button on all 4 statuses) |
 | P-VND-25 | Delivery challan | P2 | Ready | 🟩 Built | upload path → `ESC-7-API/upload` |
 | P-VND-26 | Trade invoice issue | P2 | Ready | 🟩 Built | records only (DF-6) |
 | P-VND-27 | Finance / payments (vendor) | P2 | Ready | ⬜ | placeholder today |
