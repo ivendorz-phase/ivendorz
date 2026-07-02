@@ -12,18 +12,21 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-1 — Public / Platform (FE-PUB · FE-PF)
 
-- **Current Milestone:** _(none — `FE-PUB-06` Vendor Directory ✅ **Closed**, RV-0118, A:PASS ∧
-  B:PASS (0 B/M/M both lanes, 1 OBS total, no fix-and-reverify cycle), checkpoint `4812157`;
-  Dev-team self-close per Amendment v1.3 §13. FE-PUB-03/04 also ✅ Closed. Third consecutive FE-PUB
-  milestone this session to pass both lanes clean on the first submission)_
-- **Current Page:** _(none — P-PUB-12 (Vendor directory, `app/(public)/vendors/page.tsx`) had zero
-  search entry point despite the spec's Toolbar delta naming query search; added `<SearchBar
-  action="/search" .../>` reusing the existing Doc-7B kit component `/categories` already uses the
-  same way — points at `/search`'s real `?q=`-consuming Vendors tab rather than duplicating filter
-  logic in this page. Sort/density [also spec-named] stay cited-not-built, no kit primitive exists.
-  Single-file, 13-line delta)_
-- **Pipeline stage:** idle — pulling `FE-PUB-07` next (WP card pending kickoff)
-- **Next Milestone:** FE-PUB-07 → FE-PUB-01 (skip FE-PUB-05 ⛔)
+- **Current Milestone:** _(none — `FE-PUB-07` Search Result (audit) ✅ **Closed**, RV-0119, A:PASS
+  ∧ B:ISSUES-non-gating, audit-only zero code delta; Dev-team self-close per Amendment v1.3 §13.
+  FE-PUB-03/04/06 also ✅ Closed)_
+- **Current Page:** _(none — P-PUB-10/19/20 thoroughly audited: `/search` confirmed clean [no dead
+  link, no TODO, `?state=` harness confirmed NODE_ENV-gated], P-PUB-19 confirmed to have no
+  separate route [realized by the same `/search` surface], P-PUB-20 [public Compare] confirmed
+  zero drift since its RV-0098 approval. **Genuine finding carried forward, not fixed here**:
+  Review-B's hands-on pass found 4 of 5 curated "Popular search" terms on the landing page's
+  Command Center [`command-center.tsx`'s `DEFAULT_POPULAR_SEARCHES`] produce dead-end empty
+  results on `/search` — a content mismatch against the seed, MAJOR, but owned by the
+  not-yet-started `FE-PUB-01` [landing], not by this milestone's pages; ruled non-gating per §13,
+  carried forward as FE-PUB-01's lead scope item)_
+- **Pipeline stage:** idle — pulling `FE-PUB-01` next (pre-diagnosed fix in hand; WP card pending
+  kickoff)
+- **Next Milestone:** FE-PUB-01 (skip FE-PUB-05 ⛔)
 
 ## Team-2 — Buyer (FE-BUY / FE-CLN)
 
@@ -53,20 +56,16 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-3 — Vendor (FE-VEN)
 
-- **Current Milestone:** _(none — `FE-VEN-04` remainder (Catalog) ✅ **Closed**, RV-0110, A:PASS ∧
-  B:PASS, 0 BLOCKER/MAJOR/MINOR both lanes, 21 OBS total, one fix-and-reverify cycle [1 MINOR
-  textarea token drift, raised → fixed → re-verified], checkpoint `4b4dc5c`; Dev-team self-close
-  per Amendment v1.3 §13)_
-- **Current Page:** _(none — P-VND-09 `4b4dc5c` Spec library shipped: new route
-  `workspace/company/spec-library`, `SpecLibraryList`/`SpecEntryDialog` against the frozen
-  `create/update_spec_library_entry.v1` pair; FE-VEN-04 Catalog now fully closed — 07/08/11
-  legacy, 09 this milestone, 10 stays ⛔)_
-- **Pipeline stage:** idle — `FE-VEN-09` Trust Center **UNGATED 2026-07-03** (Board ruled
-  `ESC-7G-SCORE-DISPLAY`/`ESC-7B-TRUSTSCORE`: Trust Score band+numeric+badges+factors permitted on
-  any public-facing surface, no corpus patch; Performance Score NOT covered, stays band-only). WP
-  card not yet authored — owner kickoff pending.
-- **Next Milestone:** FE-VEN-09 (P-VND-28, now buildable) · FE-VEN-10/11/12 still at Board kickoff
-  scoping (unaffected)
+- **Current Milestone:** `FE-VEN-09` Trust Center — **🔵A Review-A** (checkpoint `32fe6fb`; scope
+  complete — sole in-scope page P-VND-28 built; ungated same-session by the Board ruling resolving
+  `ESC-7G-SCORE-DISPLAY`/`ESC-7B-TRUSTSCORE`. FE-VEN-04 remainder also ✅ Closed prior, RV-0110)
+- **Current Page:** _(sole in-scope page — P-VND-28 `32fe6fb` Trust & Performance dashboard: new
+  `workspace/trust/page.tsx` replacing the placeholder; `TrustScoreCard`+`TrustScoreRing` [band +
+  numeric, now permitted], `PerformanceScoreCard` [band-only, numeric never public — frozen
+  contract restriction, unaffected by the ruling], `VerifiedTierCard` [reuses existing `TierChip`,
+  no duplication] — submitted to Review-A; Team-3 STOPS, does not pull further work before gate)_
+- **Pipeline stage:** submitted to Review-A (Lane G)
+- **Next Milestone:** FE-VEN-10/11/12 still at Board kickoff scoping (unaffected)
 
 ---
 
@@ -74,8 +73,8 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 _(`FE-BUY-10` (Team-2) checkpointed 2026-07-03, awaiting Review-A — WP card
   `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`. Otherwise clear —
-  `FE-PUB-03` (RV-0111), `FE-PUB-04` (RV-0116), `FE-PUB-06` (RV-0118), `FE-VEN-04` (RV-0110),
-  `FE-BUY-07` (RV-0112) all cleared A and closed.)_
+  `FE-PUB-03` (RV-0111), `FE-PUB-04` (RV-0116), `FE-PUB-06` (RV-0118), `FE-PUB-07` (RV-0119),
+  `FE-VEN-04` (RV-0110), `FE-BUY-07` (RV-0112) all cleared A and closed.)_
 
 ## Review Team 5 — Quality & Adversarial (B lane) — queue
 
@@ -99,9 +98,12 @@ _(B-lane clear — nothing at 🔵B awaiting Review-B.)_
   FE-PUB-04 (RV-0116 Category Page, new `marketplace/category/[slug]` route; kit-reuse no-primitive,
   notFound byte-identical [Inv#11], filter-not-sort [R6/GI-04], real counts [GI-03], ESC-7-API-CATNAV
   disclosed), FE-PUB-06 (RV-0118 Vendor Directory, single-file `SearchBar` reuse; no new primitive,
-  no filter-logic duplication, R6/GI-04 clean — pure navigation), FE-BUY-05 (RV-0108), FE-BUY-06
-  (RV-0109 Award). _(RV-0114/RV-0115 review-log concurrence lines were swapped by a concurrent-writer
-  race — Team-5 repaired both in place.)_
+  no filter-logic duplication, R6/GI-04 clean — pure navigation), FE-PUB-07 (RV-0119 Search Result
+  audit, zero code delta on P-PUB-10/19/20; the adversarial pass's genuine MAJOR find [landing-page
+  "Popular search" dead ends] correctly attributed outside scope to the not-yet-started FE-PUB-01,
+  carried forward not swept under the rug), FE-BUY-05 (RV-0108), FE-BUY-06 (RV-0109 Award).
+  _(RV-0114/RV-0115 review-log concurrence lines were swapped by a concurrent-writer race — Team-5
+  repaired both in place.)_
 - _Prior full-B (routed to Team-5): FE-PUB-02 (RV-0107). Earlier closed: FE-BUY-04 (RV-0102),
   FE-VEN-06/07/08/13 (RV-0103/0104/0105/0106)._
 

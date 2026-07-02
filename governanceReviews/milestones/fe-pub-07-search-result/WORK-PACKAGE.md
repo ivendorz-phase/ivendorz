@@ -1,4 +1,5 @@
-# WORK PACKAGE — FE-PUB-07 Search Result (Started — audit complete, submitted to Review-A)
+# WORK PACKAGE — FE-PUB-07 Search Result (✅ Closed — RV-0119, A:PASS ∧ B:ISSUES-non-gating,
+Dev-team self-close per Amendment v1.3 §13)
 
 - **Lane:** G (anonymous contract surface; touches nothing, but the audit itself needs independent
   confirmation before close, same disposition as FE-BUY-09)
@@ -55,9 +56,33 @@ A:PASS ∧ B:PASS gate the owning Dev team self-closes per `review-process.md` A
 
 ## Key dates
 
-Created 2026-07-03 · Started 2026-07-03 · Paused — · Resumed — · Closed —
+Created 2026-07-03 · Started 2026-07-03 · Paused — · Resumed — · Closed 2026-07-03
 
 ## DoD confirmation (checked at close)
 
-☐ audit complete, no safe change found ☐ Review A PASS ☐ Review B PASS (B/M/M=0) ☐ gate approval
-☐ tracker updated ☐ card closed
+☑ audit complete, no safe change found on P-PUB-10/19/20 ☑ Review A PASS (RV-0119, 1 MINOR
+[WP-card doc fix, corrected] + 5 OBS) ☑ Review B ISSUES-but-non-gating (RV-0119, 1 MAJOR attributed
+to the separate not-yet-started `FE-PUB-01` milestone via §13 Validate Findings, B/M/M=0 for THIS
+milestone's own scope) ☑ gate approval (A:PASS on P-PUB-10/19/20's own scope; the MAJOR belongs to
+a different milestone, not reopened here) ☑ tracker updated ☑ card closed
+
+## Genuine finding discovered during review — carried forward, not fixed here
+
+Review-B's hands-on adversarial pass found that 4 of 5 curated "Popular" search terms in the
+landing page's Command Center (`app/(public)/_components/landing/command-center.tsx`'s
+`DEFAULT_POPULAR_SEARCHES`: "ball valves", "VFD drives", "gear pumps", "industrial PPE") produce a
+dead-end "No results to show" on `/search` — a content mismatch against `discovery/seed.ts`'s
+actual product names, not a route/contract/governance defect. `command-center.tsx` is landing-page
+content owned by `FE-PUB-01` (next in Team-1's queue, not yet started), not by any of this
+milestone's owned pages. Per the §13 Validate Findings gate (see RV-0119's full disposition),
+ruled non-gating for FE-PUB-07 and carried forward as `FE-PUB-01`'s lead, pre-diagnosed scope item
+rather than fixed ad hoc or silently dropped.
+
+## Close record
+
+**✅ Closed 2026-07-03.** Review-A: PASS (1 MINOR — WP-card doc correction, fixed; 5 OBS).
+Review-B: ISSUES on a finding attributed outside this milestone's scope (1 MAJOR, carried to
+`FE-PUB-01`; 1 OBS). Gate for THIS milestone's own scope (P-PUB-10/19/20): BLOCKER=MAJOR=MINOR=0.
+Dev-team self-close per Amendment v1.3 §13. Full record: `project-management/review-log.md`
+RV-0119. Milestone-close commit: `milestone(FE-PUB-07): close — RV-0119 A:PASS B:ISSUES-non-gating
+(audit-only, no code delta)`.

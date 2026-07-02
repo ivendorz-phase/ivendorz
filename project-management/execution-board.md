@@ -17,8 +17,12 @@ B:PASS, 0 B/M/M both lanes, no fix-and-reverify cycle, Dev-team self-close 2026-
 existed) · ~~FE-PUB-06 Vendor Directory~~ ✅ **Closed** (RV-0118, A:PASS ∧ B:PASS, 0 B/M/M both
 lanes, no fix-and-reverify cycle, Dev-team self-close 2026-07-03 @ `4812157` — added the
 spec-declared search entry point missing from P-PUB-12, reusing the existing `SearchBar` kit
-component) · `FE-PUB-07` ← next (WP card pending kickoff) → FE-PUB-01 ·
-~~FE-PUB-05~~ ⛔ `ESC-7-API-PRODDETAIL` (skip while gated).
+component) · ~~FE-PUB-07 Search Result~~ ✅ **Closed** (RV-0119, A:PASS ∧ B:ISSUES-non-gating,
+audit-only zero code delta, Dev-team self-close 2026-07-03 — P-PUB-10/19/20 confirmed complete;
+a genuine MAJOR finding [landing "Popular search" dead ends] surfaced by the adversarial pass but
+correctly attributed to the separate, not-yet-started `FE-PUB-01`, carried forward not fixed here)
+· `FE-PUB-01` ← next (pre-diagnosed fix in hand) · ~~FE-PUB-05~~ ⛔ `ESC-7-API-PRODDETAIL` (skip
+while gated).
 
 **Team-2 (Buyer):**
 ~~FE-BUY-04..09~~ ✅ **All Closed** this session (RV-0102/0108/0109/0112/0113/0114 @ `5a4550c`/
@@ -39,8 +43,8 @@ surfaces for P-BUY-03/04, hold P-BUY-05 build; P-BUY-04 link-out repointed to th
 (RV-0105, board-approved 2026-07-02 @ `ec8306b`) · ~~FE-VEN-13~~ ✅ **Closed** (RV-0106,
 board-approved 2026-07-02 @ `34395b2`, after one fix-and-reverify cycle) · ~~FE-VEN-04 remainder~~
 ✅ **Closed** (RV-0110, Dev-team self-close 2026-07-02 @ `4b4dc5c`, after one fix-and-reverify
-cycle) · Team-3 **idle** — `FE-VEN-09` Trust Center **UNGATED 2026-07-03** (Board ruled
-`ESC-7G-SCORE-DISPLAY`/`ESC-7B-TRUSTSCORE`, agenda #2; WP card pending kickoff) → FE-VEN-10/11/12
+cycle) · `FE-VEN-09 Trust Center` ← current (🔵A Review-A @ `32fe6fb` — P-VND-28, scope complete,
+ungated same-session by the Board ruling; awaiting Review-A, Team-3 holds) → FE-VEN-10/11/12
 still at Board kickoff scoping (unaffected by this ruling).
 
 **Review Team 5 standing backlog (B lane):** Step-3 Public baseline sweep (QCT 5-step Step 3) at a
