@@ -18,16 +18,16 @@
 
 ## Team-2 — Buyer
 
-- **Current Page:** `P-BUY-23` Trade invoice review (P2) — ⬜ Pending (P-BUY-22 ✅ Approved, RV-0024). ≠ platform invoice
+- **Current Page:** `P-BUY-24` Challan (P2) — ⬜ Pending (P-BUY-23 ✅ Approved, RV-0028)
 - **Status:** ⬜ queued to build
-- **Next Page:** `P-BUY-24` Challan (P2, Ready)
+- **Next Page:** `P-BUY-25` WCC (P2, Ready)
 - **Updated:** 2026-07-02
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** `P-ADM-08` Category management (P1) — 🔵 Ready for Review (RV-0026 patched; awaiting Team-4 re-review)
-- **Status:** 🔵 Ready for Review — action-map = frozen linear edges `{draft:[Approve], active:[Retire], retired:[]}`; terminal cell "—"
-- **Next Page:** `P-ADM-09` Category editor (P1, Ready)
+- **Current Page:** `P-ADM-09` Category editor (P1) — ⬜ Pending (P-ADM-08 ✅ Approved, RV-0027)
+- **Status:** ⬜ queued to build
+- **Next Page:** `P-ADM-10` Ad review queue (P2, Ready)
 - **Updated:** 2026-07-02
 
 ---

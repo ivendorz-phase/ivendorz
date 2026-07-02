@@ -9,7 +9,13 @@
 // values from `view-models.ts`. Adding a state here without it existing in the frozen union is forbidden.
 
 import type { StatusTone } from "@/frontend/components/status-chip";
-import type { RfqState, QuotationState, EngagementState, PaymentStatus } from "./view-models";
+import type {
+  RfqState,
+  QuotationState,
+  EngagementState,
+  PaymentStatus,
+  TradeInvoiceStatus,
+} from "./view-models";
 
 export interface StateDisplay {
   label: string;
@@ -83,4 +89,21 @@ const PAYMENT_STATUS_DISPLAY: Record<PaymentStatus, StateDisplay> = {
 
 export function paymentStatusDisplay(status: PaymentStatus): StateDisplay {
   return PAYMENT_STATUS_DISPLAY[status];
+}
+
+/**
+ * Trade-invoice status → label + tone (Doc-4F §F5.5 / Doc-2 §10.5 `issued → partially_paid → paid |
+ * disputed | cancelled`). Neutral cues — `disputed` is `warning` (an attention state, not a vendor
+ * judgement); the platform records the obligation, never moves funds (DF-6). NO "approved" status exists.
+ */
+const TRADE_INVOICE_STATUS_DISPLAY: Record<TradeInvoiceStatus, StateDisplay> = {
+  issued: { label: "Issued", tone: "info" },
+  partially_paid: { label: "Partially paid", tone: "brand" },
+  paid: { label: "Paid", tone: "success" },
+  disputed: { label: "Disputed", tone: "warning" },
+  cancelled: { label: "Cancelled", tone: "neutral" },
+};
+
+export function tradeInvoiceStatusDisplay(status: TradeInvoiceStatus): StateDisplay {
+  return TRADE_INVOICE_STATUS_DISPLAY[status];
 }

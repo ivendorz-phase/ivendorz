@@ -53,6 +53,13 @@ export type EngagementState = "open" | "in_delivery" | "completed" | "closed";
  */
 export type PaymentStatus = "recorded" | "confirmed";
 
+/**
+ * Trade-invoice status — the frozen `trade_invoices` machine (Doc-4F §F5.5 / Doc-2 §10.5):
+ * `issued → partially_paid → paid | disputed | cancelled`. A trade invoice is an M4 inter-party record —
+ * it is NOT `billing.platform_invoices` (M7), carries no funds (DF-6). There is NO "approved" status.
+ */
+export type TradeInvoiceStatus = "issued" | "partially_paid" | "paid" | "disputed" | "cancelled";
+
 /** A monetary value pair — `{ amount, currency }`, BDT default at the render site only (GI-08; Doc-2 §0.4). */
 export interface MoneyValue {
   amount: number;
