@@ -1,7 +1,7 @@
-# WORK PACKAGE — FE-VEN-05 Vendor RFQ Workspace (DRAFT — awaiting owner kickoff approval)
+# WORK PACKAGE — FE-VEN-05 Vendor RFQ Workspace
 
 - **Lane:** G (Procurement Moat; non-disclosure adjacency; contract-bound renders)
-- **Reviewed-SHA record:** _(filled at 🔵A)_
+- **Reviewed-SHA record:** `e2f8642` (scope complete — both in-scope pages checkpointed)
 - **Value:** Procurement Moat · **Priority:** P1 · **Size:** M · **Risk:** Med
 
 ## In scope (the delta — enhancement over the vendor workspace M5 stock)
@@ -33,7 +33,8 @@ Builder = **Team-3** · Maintainer = **Team-3** · Review A → Review B (fresh 
 
 ## Key dates
 
-Created 2026-07-02 · Started — · Paused — · Resumed — · Closed —
+Created 2026-07-02 · Started 2026-07-02 (owner kickoff approved) · Paused — · Resumed — ·
+Closed —
 
 ## DoD confirmation (checked at Board close — carry-forward: delta-only over 🟩 legacy pages)
 

@@ -16,7 +16,8 @@ Roadmap: [`fe-program-wbs.md`](fe-program-wbs.md) · pointer: [`current-focus.md
 FE-BUY-08 → FE-BUY-09 → FE-CLN-01 (F2-Z batch). FE-BUY-10 🅿 parked.
 
 **Team-3 (Vendor):**
-`FE-VEN-05 RFQ Workspace` ← current · FE-VEN-06 → FE-VEN-07 → FE-VEN-08 → FE-VEN-13 (Ads) →
+`FE-VEN-05 RFQ Workspace` ← current (🔵A Review-A @ `e2f8642` — scope complete, P-VND-15/16
+delta; awaiting Review-A, Team-3 holds) · FE-VEN-06 → FE-VEN-07 → FE-VEN-08 → FE-VEN-13 (Ads) →
 FE-VEN-04 remainder (P-VND-09) · FE-VEN-10/11/12 at Board kickoff scoping. FE-VEN-09 ⛔.
 
 **Review Team 5 standing backlog (B lane):** Step-3 Public baseline sweep (QCT 5-step Step 3) at a

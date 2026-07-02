@@ -113,6 +113,8 @@ Build ONE page at a time:
     trust band-only, no invented perf budgets, neutral routing)
   - realistic industrial-procurement mock data; mobile-responsive; WCAG-AA
 Per page: DoD self-check → changelog line → checkpoint commit feat(FE-XXX-NN): P-YYYY … [checkpoint].
+PAGE BOUNDARY (binding — commit-policy amendment v1.1): the checkpoint commit MUST land BEFORE you
+start the next page. Never carry uncommitted work across a page boundary; never bundle two pages.
 When the WP scope is complete: set 🔵A at the checkpoint SHA in execution-board.md + changelog.
 STOP. Never pull the next milestone before Board close.
 ```

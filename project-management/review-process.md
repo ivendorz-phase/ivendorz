@@ -1,9 +1,9 @@
 # Review Process — Frontend Program Management
 
-**Frontend Program Management · v1.1 · Status: FROZEN (Board-ratified v1.0 at cutover, plan v6,
-2026-07-02 · amendment v1.1 same day — §11).** Changes require an **additive amendment + version
-bump** (the CLAUDE.md constitution pattern). Non-authoritative under the frozen corpus — on any
-conflict the corpus wins (§7) and this file is patched to match. **Owner (maintains):
+**Frontend Program Management · v1.2 · Status: FROZEN (Board-ratified v1.0 at cutover, plan v6,
+2026-07-02 · amendments v1.1 §11 + v1.2 §12, same day).** Changes require an **additive amendment
++ version bump** (the CLAUDE.md constitution pattern). Non-authoritative under the frozen corpus —
+on any conflict the corpus wins (§7) and this file is patched to match. **Owner (maintains):
 Architecture Board.**
 
 Companions: [`fe-program-wbs.md`](fe-program-wbs.md) (roadmap) ·
@@ -166,3 +166,11 @@ the **Review-A lane** (ex-Team-4 QCT — number, RV ledger, and stable-target di
 and "Review B/Review-B" are **lane names** — read them as staffed by Team 4 and Team 5
 respectively. States 🔵A/🔵B, the RV template's lane fields, and every rule in §§1–10 are
 unchanged. (This supersedes the cutover-day mapping that had assigned Team-4 to the quality lane.)
+
+## 12. Amendment v1.2 — page-boundary commit rule (owner directive, 2026-07-02; additive)
+
+**Teams 1/2/3 MUST commit before starting a new page** — the checkpoint commit IS the page
+boundary. Sequence per page: build → page DoD self-check → changelog line →
+`feat(FE-XXX-NN): P-YYYY <summary> [checkpoint]` → only then the next page. Never carry
+uncommitted work across a page boundary; never bundle two pages in one checkpoint. Full decision:
+`governanceReviews/BOARD-DECISION-FE-COMMIT-POLICY_v1.0.md` amendment v1.1 (owner-signed).

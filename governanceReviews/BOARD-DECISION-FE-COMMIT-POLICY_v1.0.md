@@ -45,6 +45,24 @@ cutover plan v6, 2026-07-02** — the plan carried this decision as an explicitl
 change (5th-review MAJOR finding "commit-policy needs its own decision record", accepted), and the
 plan-approval gate is owner-only under the Board pen split.
 
+## Amendment v1.1 — page-boundary commit rule (owner directive, 2026-07-02; additive)
+
+**Teams 1/2/3 MUST commit before starting a new page.** The per-page checkpoint commit is not
+optional timing — it is the **page boundary**: a team may not begin work on the next in-scope page
+while the previous page's work is uncommitted. One page = one checkpoint commit, always, in order.
+
+- Sequence per page: build → page-standards DoD self-check → changelog line →
+  `feat(FE-XXX-NN): P-YYYY <summary> [checkpoint]` → only THEN start the next page.
+- Never carry uncommitted work across a page boundary; never bundle two pages in one checkpoint.
+- Rationale: keeps every page an isolated, revertible checkpoint (the proven page-loop cadence,
+  now inside milestones); guarantees the milestone's 🔵A stable-target SHA is always one commit
+  away; prevents multi-page loss.
+- Reference behavior: FE-VEN-05 (`c509934` P-VND-15 → `e2f8642` P-VND-16) — one checkpoint per
+  page, in scope order.
+
+**Sign-off:** owner directive in session, 2026-07-02 ("team 1, 2, 3 should commit when start new
+page works").
+
 ---
 
 *Non-authoritative process decision. Conforms upward; on any conflict the frozen corpus wins (§7).*

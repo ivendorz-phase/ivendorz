@@ -27,10 +27,12 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-3 — Vendor (FE-VEN)
 
-- **Current Milestone:** `FE-VEN-05` RFQ Workspace — ⬜ Planned (WP card drafted, awaiting owner
-  kickoff approval)
-- **Current Page:** _(none — starts at kickoff)_
-- **Pipeline stage:** pre-kickoff
+- **Current Milestone:** `FE-VEN-05` RFQ Workspace — **🔵A Review-A** (**owner kickoff APPROVED
+  2026-07-02**, WP card Started; scope complete at checkpoint `e2f8642`)
+- **Current Page:** _(both in-scope pages built — P-VND-15 `c509934` needs-response-first +
+  urgency-aware inbox ordering; P-VND-16 `e2f8642` clearer decline affordance — submitted to
+  Review-A; Team-3 STOPS, does not pull FE-VEN-06)_
+- **Pipeline stage:** submitted to Review-A (Lane G)
 - **Next Milestone:** FE-VEN-06 → 07 → 08 → FE-VEN-13 → FE-VEN-04 remainder (P-VND-09).
   FE-VEN-09 ⛔ · FE-VEN-10/11/12 at Board kickoff scoping
 
@@ -38,7 +40,8 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Review Team 4 — Architecture & Governance (A lane) — queue
 
-_(empty — first submission will be the first milestone to reach 🔵A; expected: FE-BUY-04)_
+- **`FE-VEN-05` RFQ Workspace** (Team-3) — at checkpoint `e2f8642`; P-VND-15/16 delta, Lane G.
+  First milestone to reach 🔵A under the new model.
 
 ## Review Team 5 — Quality & Adversarial (B lane) — queue
 
@@ -47,5 +50,7 @@ _(empty — first submission will be the first milestone to reach 🔵A; expecte
 
 ## Architecture Board — queue
 
-- **Kickoff approvals pending (owner):** WP cards for FE-BUY-04 · FE-VEN-05 · FE-PUB-02
+- **Kickoff approvals pending (owner):** WP card for FE-PUB-02 (FE-BUY-04/FE-VEN-05 already
+  approved)
+- **Review approval pending (owner-adjacent, once Review A/B PASS):** FE-VEN-05 milestone close
 - **Standing agenda:** [`execution-board.md`](execution-board.md) §Board standing agenda (10 items)
