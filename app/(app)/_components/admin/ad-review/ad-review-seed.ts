@@ -41,6 +41,22 @@ export const AD_PLACEMENT_LABEL: Record<AdPlacement, string> = {
   vendor_profile: "Vendor profile",
 };
 
+/** Extended detail for one ad (P-ADM-11) — additional frozen `advertisements` context. */
+export interface AdDetailVM extends AdReviewVM {
+  /** `advertisements.purchaser_organization_id` — the buying org (display name). */
+  purchaser: string;
+  /**
+   * `advertisements.platform_invoice_id` — a BARE UUID (DD-5, the Billing purchase ref). The ad
+   * projection carries NO Billing human_ref, so this is shown as the opaque id; never coin an "INV-…".
+   */
+  platformInvoiceId: string;
+  /** `schedule.start` / `schedule.end` split out for the detail record. */
+  startsOn: string;
+  endsOn: string;
+  /** Reason captured with a `reject` decision (frozen: reason required on reject). */
+  reviewReason?: string;
+}
+
 export const AD_REVIEWS: AdReviewVM[] = [
   {
     id: "ad-00051",
@@ -97,3 +113,60 @@ export const AD_REVIEWS: AdReviewVM[] = [
     status: "rejected",
   },
 ];
+
+// Detail context keyed by ad id (P-ADM-11). Purchaser org + the opaque `platform_invoice_id` (bare UUID,
+// DD-5 — NOT a coined Billing human ref) + split schedule; a `reviewReason` is present only where a `reject`
+// decision was recorded (frozen: reason required on reject).
+const AD_DETAILS: Record<string, Omit<AdDetailVM, keyof AdReviewVM>> = {
+  "ad-00051": {
+    purchaser: "Rupsha Engineering Works",
+    platformInvoiceId: "9f2c1a7e-4b83-4d21-a0c5-1e77b9a3d512",
+    startsOn: "1 Jul 2026",
+    endsOn: "31 Jul 2026",
+  },
+  "ad-00050": {
+    purchaser: "Bay Valves & Controls",
+    platformInvoiceId: "3b6d8e40-72af-4c19-9d5a-8c02f1e4a760",
+    startsOn: "5 Jul 2026",
+    endsOn: "4 Aug 2026",
+  },
+  "ad-00049": {
+    purchaser: "Meghna Bearings",
+    platformInvoiceId: "c1e93a54-0f27-4b6e-b8d1-5a9740c2ef38",
+    startsOn: "10 Jul 2026",
+    endsOn: "9 Aug 2026",
+  },
+  "ad-00048": {
+    purchaser: "Green Power Solutions",
+    platformInvoiceId: "7d40b2f1-6c8a-49e3-a217-0be5c93df184",
+    startsOn: "28 Jun 2026",
+    endsOn: "27 Jul 2026",
+  },
+  "ad-00047": {
+    purchaser: "Titas Instrumentation",
+    platformInvoiceId: "a58f0c93-2e11-4d7b-9f60-84c31a2b7e05",
+    startsOn: "25 Jun 2026",
+    endsOn: "24 Jul 2026",
+  },
+  "ad-00046": {
+    purchaser: "Padma Lubricants",
+    platformInvoiceId: "e2740db6-91c5-4a08-b3f7-6d19e5c840a2",
+    startsOn: "20 Jun 2026",
+    endsOn: "19 Jul 2026",
+    reviewReason:
+      "Creative references pricing claims that require substantiation before placement.",
+  },
+};
+
+/** Lookup one ad's summary row (P-ADM-11 header). */
+export function getAd(id: string): AdReviewVM | undefined {
+  return AD_REVIEWS.find((a) => a.id === id);
+}
+
+/** Lookup one ad's full detail (summary + context). Returns undefined for an unknown id (Invariant #11). */
+export function getAdDetail(id: string): AdDetailVM | undefined {
+  const summary = getAd(id);
+  const extra = AD_DETAILS[id];
+  if (!summary || !extra) return undefined;
+  return { ...summary, ...extra };
+}
