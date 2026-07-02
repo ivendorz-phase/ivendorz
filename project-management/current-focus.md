@@ -22,13 +22,13 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-2 — Buyer (FE-BUY)
 
-- **Current Milestone:** `FE-BUY-04` Quotation Detail (= the awaited BX-03) — **🟣 Board**
-  (gate satisfied: Review-A PASS ∧ Review-B PASS, RV-0102, 0 BLOCKER/MAJOR/MINOR, 14 OBS total;
-  checkpoint `5a4550c`; awaiting OWNER milestone-close approval — Team-2 STOPS, no FE-BUY-05)
-- **Current Page:** _(both in-scope pages built — P-BUY-14 `d5c09fe` information-hierarchy +
-  presentation fixture; P-BUY-16 `5a4550c` quotation-context cross-link — cleared Review-A, now
-  with Review Team 5; Team-2 STOPS, does not pull FE-BUY-05)_
-- **Pipeline stage:** Review-A PASS → Review-B PASS → awaiting Board (owner) close (Lane G)
+- **Current Milestone:** _(none — `FE-BUY-04` Quotation Detail ✅ **Closed** (= the awaited
+  BX-03), board-approved 2026-07-02, RV-0102, A:PASS ∧ B:PASS, 0 BLOCKER/MAJOR/MINOR, 14 OBS,
+  checkpoint `5a4550c`; Dev-team self-close per Amendment v1.3 §13, owner-directed)_
+- **Current Page:** _(none — P-BUY-14 `d5c09fe` information-hierarchy + presentation fixture and
+  P-BUY-16 `5a4550c` quotation-context cross-link both shipped)_
+- **Pipeline stage:** idle — pulling `FE-BUY-05` Supplier Comparison next (WP card pending
+  kickoff)
 - **Next Milestone:** FE-BUY-05 → 06 → 07 → 08 → 09 → FE-CLN-01 (F2-Z). FE-BUY-10 🅿 parked
 
 ## Team-3 — Vendor (FE-VEN)
@@ -67,8 +67,6 @@ _(`FE-VEN-13` cleared Review-B re-verification (RV-0106, checkpoint `34395b2`) �
 
 ## Architecture Board — queue
 
-- **Milestone-close approval pending (owner):** `FE-BUY-04` — gate satisfied (A:PASS ∧ B:PASS,
-  B/M/M=0, RV-0102); awaiting owner close decision
 - **Kickoff pending (owner, when resumed):** FE-VEN-04 remainder (P-VND-09, spec library) —
   Team-3's next queue item, not yet authored/kicked off
 - **Standing agenda:** [`execution-board.md`](execution-board.md) §Board standing agenda (10 items)

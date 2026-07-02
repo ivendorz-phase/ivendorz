@@ -36,11 +36,14 @@ Builder = **Team-2** · Maintainer = **Team-2** · Review A → Review B (fresh 
 
 ## Key dates
 
-Created 2026-07-02 · Started 2026-07-02 (owner kickoff approved) · Paused — · Resumed — · Closed —
+Created 2026-07-02 · Started 2026-07-02 (owner kickoff approved) · Paused — · Resumed — · Closed
+2026-07-02 (RV-0102, board-approved)
 
 ## DoD confirmation (checked at Board close — review-process.md §6, carry-forward rule applies:
 delta-only; P-BUY-14/16 are 🟩 legacy so the enhancement delta is the review surface)
 
-☐ page DoD (both pages) ☐ responsive D/T/M ☐ WCAG-AA ☐ tsc/eslint/prettier ☐ realistic mock data
-☐ Review A PASS ☐ Review B PASS (B/M/M=0) ☐ Board approved ☐ no TODO/dead code ☐ no duplicate
-components ☐ promotion candidates registered ☐ tracker updated ☐ card closed
+☑ page DoD (both pages) ☑ responsive D/T/M ☑ WCAG-AA ☑ tsc/eslint/prettier ☑ realistic mock data
+☑ Review A PASS (RV-0102, 5 OBS) ☑ Review B PASS (RV-0102, 9 OBS, B/M/M=0) ☑ Board approved
+(owner, 2026-07-02) ☑ no TODO/dead code ☑ no duplicate components (Review-A/B confirmed reuse of
+existing shell/buyer/kit primitives only) ☑ promotion candidates registered (none flagged — no new
+shared component surfaced) ☑ tracker updated ☑ card closed
