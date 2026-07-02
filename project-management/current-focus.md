@@ -56,15 +56,16 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-3 — Vendor (FE-VEN)
 
-- **Current Milestone:** `FE-VEN-09` Trust Center — **🔵A Review-A** (checkpoint `32fe6fb`; scope
-  complete — sole in-scope page P-VND-28 built; ungated same-session by the Board ruling resolving
-  `ESC-7G-SCORE-DISPLAY`/`ESC-7B-TRUSTSCORE`. FE-VEN-04 remainder also ✅ Closed prior, RV-0110)
-- **Current Page:** _(sole in-scope page — P-VND-28 `32fe6fb` Trust & Performance dashboard: new
-  `workspace/trust/page.tsx` replacing the placeholder; `TrustScoreCard`+`TrustScoreRing` [band +
-  numeric, now permitted], `PerformanceScoreCard` [band-only, numeric never public — frozen
-  contract restriction, unaffected by the ruling], `VerifiedTierCard` [reuses existing `TierChip`,
-  no duplication] — submitted to Review-A; Team-3 STOPS, does not pull further work before gate)_
-- **Pipeline stage:** submitted to Review-A (Lane G)
+- **Current Milestone:** _(none — `FE-VEN-09` Trust Center ✅ **Closed**, RV-0120, A:PASS ∧ B:PASS,
+  0 BLOCKER/MAJOR/MINOR both lanes, 2 OBS total, no fix-and-reverify cycle — both lanes clean on
+  first submission, checkpoint `32fe6fb`; Dev-team self-close per Amendment v1.3 §13. First
+  milestone built same-session as, and directly against, a Board ruling this session itself
+  formalized — both review lanes explicitly checked for self-serving interpretation, found none)_
+- **Current Page:** _(none — P-VND-28 `32fe6fb` Trust & Performance dashboard shipped: new
+  `workspace/trust/page.tsx` replacing the placeholder; Trust Score card [band+numeric ring, per
+  the ruling], Performance card [band-only, numeric never public — frozen contract restriction],
+  Verified Tier card [reuses existing `TierChip`, no duplication])_
+- **Pipeline stage:** idle
 - **Next Milestone:** FE-VEN-10/11/12 still at Board kickoff scoping (unaffected)
 
 ---
@@ -74,11 +75,12 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 _(`FE-BUY-10` (Team-2) checkpointed 2026-07-03, awaiting Review-A — WP card
   `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`. Otherwise clear —
   `FE-PUB-03` (RV-0111), `FE-PUB-04` (RV-0116), `FE-PUB-06` (RV-0118), `FE-PUB-07` (RV-0119),
-  `FE-VEN-04` (RV-0110), `FE-BUY-07` (RV-0112) all cleared A and closed.)_
+  `FE-VEN-04` (RV-0110), `FE-VEN-09` (RV-0120), `FE-BUY-07` (RV-0112) all cleared A and closed.)_
 
 ## Review Team 5 — Quality & Adversarial (B lane) — queue
 
-_(B-lane clear — nothing at 🔵B awaiting Review-B.)_
+_(B-lane clear — `FE-VEN-09` cleared, RV-0120 A:PASS ∧ B:PASS, 2 OBS, 0 findings B-lane, closed by
+  Team-3.)_
 
 - **`FE-PUB-03` Vendor Profile** (Team-1) — Review-B **PASS** (RV-0111, 0 B/M/M, 8 OBS, `1275f70`;
   render D/T/M + axe 0 mobile/desktop; sticky-bar no-occlusion + dup-control clean) → Team-1 self-close.

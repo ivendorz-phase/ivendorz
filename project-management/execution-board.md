@@ -43,9 +43,9 @@ surfaces for P-BUY-03/04, hold P-BUY-05 build; P-BUY-04 link-out repointed to th
 (RV-0105, board-approved 2026-07-02 @ `ec8306b`) · ~~FE-VEN-13~~ ✅ **Closed** (RV-0106,
 board-approved 2026-07-02 @ `34395b2`, after one fix-and-reverify cycle) · ~~FE-VEN-04 remainder~~
 ✅ **Closed** (RV-0110, Dev-team self-close 2026-07-02 @ `4b4dc5c`, after one fix-and-reverify
-cycle) · `FE-VEN-09 Trust Center` ← current (🔵A Review-A @ `32fe6fb` — P-VND-28, scope complete,
-ungated same-session by the Board ruling; awaiting Review-A, Team-3 holds) → FE-VEN-10/11/12
-still at Board kickoff scoping (unaffected by this ruling).
+cycle) · ~~FE-VEN-09 Trust Center~~ ✅ **Closed** (RV-0120, Dev-team self-close 2026-07-03 @
+`32fe6fb`, no fix-and-reverify cycle — both lanes clean on first submission) · Team-3 **idle** —
+FE-VEN-10/11/12 still at Board kickoff scoping (unaffected by this ruling).
 
 **Review Team 5 standing backlog (B lane):** Step-3 Public baseline sweep (QCT 5-step Step 3) at a
 stable post-cutover SHA — **owner-authorized 2026-07-02 (agenda #10)**; runs **before FE-PUB-02

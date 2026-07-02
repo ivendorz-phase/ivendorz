@@ -42,7 +42,7 @@ Verification = `P-VND-28` + `P-PUB-18` (Team-1) + `P-ADM-12/13`.
 | P-VND-25 | Delivery challan | P2 | Ready | 🟩 Built | upload path → `ESC-7-API/upload` |
 | P-VND-26 | Trade invoice issue | P2 | Ready | 🟩 Built | records only (DF-6) |
 | P-VND-27 | Finance / payments (vendor) | P2 | Ready | ⬜ | placeholder today |
-| P-VND-28 | Trust & performance | P1 | Waiting Decision | ⬜ | `ESC-7G-SCORE-DISPLAY` — **band-only, read-only** |
+| P-VND-28 | Trust & performance | P1 | Ready | 🟩 Built (RV-0120, `32fe6fb`) | `ESC-7G-SCORE-DISPLAY`/`ESC-7B-TRUSTSCORE` ruled 2026-07-03 — Trust band+numeric, Performance band-only |
 
 ## Admin Console — `P-ADM-*` (Doc-7H · no active-org)
 
