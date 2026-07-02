@@ -58,7 +58,7 @@ FE-PF-01 Design Tokens ✅ (ongoing ownership → FE-DS) · FE-PF-03 Platform Sh
 |---|---|---|---|---|---|---|---|
 | FE-PUB-01 Landing | Core Marketplace | P1 | M | Low | S: Step-3 baseline | P-PUB-01 | READY(enh) — owner-named polish item on the pre-loop 🟩 landing |
 | FE-PUB-02 Discovery | Core Marketplace | P1 | L | Med | S: Step-3 baseline | P-PUB-07, P-PUB-09 | ✅ Complete (RV-0107, A:PASS B:PASS, Dev-team self-close 2026-07-02 @ `5d9d94a`) — Categories index (P-PUB-07): featured categories, capability cards, search entry-point polish, featured vendors/products over the 🟩 stock, 22 OBS total, 0 B/M/M/NIT. P-PUB-09 stays ⛔ `ESC-7-API-CATNAV` (page-gate carve-out, not built). Promotion candidate raised: `FeaturedCategoryGrid` extraction |
-| FE-PUB-03 Vendor Profile | Vendor Growth | P1 | M | Med | S: Step-3 baseline | P-PUB-13..17 | READY(enh) — public microsite pages (🟩) |
+| FE-PUB-03 Vendor Profile | Vendor Growth | P1 | M | Med | S: Step-3 baseline | P-PUB-13..17 | ✅ Complete (RV-0111, A:PASS B:PASS, Dev-team self-close 2026-07-02 @ `1275f70`) — shared microsite-chrome delta: fixed stale pre-ADR-022 footer nav anchors → real routes; added spec-required sticky mobile enquire CTA. Favorite-vendor CTA + trust-ring cited out of scope (M4/Inv#6), not built |
 | FE-PUB-04 Category Page | Core Marketplace | P1 | S | Low | S: Step-3 baseline | P-PUB-08 | READY(enh) — 🟩 "partial, verify facets" |
 | FE-PUB-05 Product Detail | Core Marketplace | P1 | M | Med | H: `ESC-7-API-PRODDETAIL` | P-PUB-11 | ⛔ Gated — interim: modal from `search_catalog` |
 | FE-PUB-06 Vendor Directory | Vendor Growth | P1 | S | Low | S: Step-3 baseline | P-PUB-12 | READY(enh) — 🟩 |
@@ -77,7 +77,7 @@ FE-PF-01 Design Tokens ✅ (ongoing ownership → FE-DS) · FE-PF-03 Platform Sh
 | FE-BUY-05 Supplier Comparison | Procurement Moat | P1 | M | High | — | P-BUY-15 | ✅ Complete (RV-0108, A:PASS B:PASS, Dev-team self-close 2026-07-02 @ `79b738a`) — R6: read-only, System-generated, **never recommends**; 6 OBS total, 0 B/M/M |
 | FE-BUY-06 Award | Procurement Moat | P1 | S | High | — | P-BUY-17, P-BUY-18 | ✅ Complete (RV-0109, A:PASS B:PASS, Dev-team self-close 2026-07-02 @ `5654956`) — R6: no default winner, unranked; 10 OBS total, 0 B/M/M |
 | FE-BUY-07 Engagement | Buyer Productivity | P1 | L | Med | — | P-BUY-19..25 | ✅ Complete (RV-0112, A:PASS B:PASS after 1 fix-and-reverify cycle, Dev-team self-close 2026-07-02 @ `2d1b23e`) — Documents card dead-end fixed with static nav to PO/Payments/Trade-invoice/Challan/WCC; money boundary DF-6 |
-| FE-BUY-08 Dashboard Widgets | Buyer Productivity | P2 | S | Low | — | — (touches P-BUY-01) | READY(enh) — counts server-provided, never client-computed (R7, RV-0070 pattern) |
+| FE-BUY-08 Dashboard Widgets | Buyer Productivity | P2 | S | Low | — | — (touches P-BUY-01) | ✅ Complete (RV-0113, A:PASS B:PASS, Dev-team self-close 2026-07-02 @ `d501345`) — Engagement pipeline widget added alongside BX-01's Sourcing pipeline, counts server-provided, never client-computed (R7, RV-0070 pattern); 12 OBS total, 0 B/M/M; promotion candidate registered |
 | FE-BUY-09 CRM | Buyer Productivity | P2 | M | High | — | P-BUY-26, P-BUY-27 | READY(enh) — Inv#11 buyer-private; blacklist undetectable |
 | FE-BUY-10 Discovery & Favorites | Buyer Productivity | P2 | M | Med | H: owner decisions (P-BUY-03/04 route topology · P-BUY-05 favorites scope/projection) | P-BUY-02..05 | 🅿 Parked — P-BUY-02 ✅; rest owner-gated (Board agenda #3) |
 

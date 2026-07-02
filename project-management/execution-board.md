@@ -15,11 +15,9 @@ footer nav fix + sticky mobile CTA; awaiting Review-A, Team-1 holds) → FE-PUB-
 FE-PUB-07 → FE-PUB-01 · ~~FE-PUB-05~~ ⛔ `ESC-7-API-PRODDETAIL` (skip while gated).
 
 **Team-2 (Buyer):**
-~~FE-BUY-04~~ ✅ **Closed** (RV-0102 @ `5a4550c`) · ~~FE-BUY-05~~ ✅ **Closed** (RV-0108 @
-`79b738a`) · ~~FE-BUY-06~~ ✅ **Closed** (RV-0109 @ `5654956`) · ~~FE-BUY-07 Engagement~~ ✅
-**Closed** (RV-0112, Dev-team self-close 2026-07-02 @ `2d1b23e`, after 1 fix-and-reverify cycle) ·
-`FE-BUY-08 Dashboard Widgets` ← next (WP card pending kickoff) → FE-BUY-09 → FE-CLN-01 (F2-Z
-batch). FE-BUY-10 🅿 parked.
+~~FE-BUY-04..08~~ ✅ **All Closed** this session (RV-0102/0108/0109/0112/0113 @ `5a4550c`/
+`79b738a`/`5654956`/`2d1b23e`/`d501345`; FE-BUY-07 after 1 fix-and-reverify cycle) ·
+`FE-BUY-09 CRM` ← next (WP card pending kickoff) → FE-CLN-01 (F2-Z batch). FE-BUY-10 🅿 parked.
 
 **Team-3 (Vendor):**
 ~~FE-VEN-05~~ ✅ **Closed** (RV-0101 @ `e2f8642`) · ~~FE-VEN-06~~ ✅ **Closed** (RV-0103 @

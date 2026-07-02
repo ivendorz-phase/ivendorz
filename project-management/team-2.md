@@ -11,7 +11,7 @@
 
 | ID | Title | Priority | Dependency | Status | Notes |
 |---|---|---|---|---|---|
-| P-BUY-01 | Buyer dashboard | P1 | Ready | 🟩 Built | refinement item (owner-named) |
+| P-BUY-01 | Buyer dashboard | P1 | Ready | 🟩 Built | refinement item (owner-named). **FE-BUY-08 enhancement CLOSED** (RV-0113, `d501345`): Engagement pipeline widget added alongside the BX-01 Sourcing pipeline; `PipelineCard` promotion candidate registered (2 instances, watch for a 3rd) |
 | P-BUY-02 | Discover vendors | P1 | Ready | ✅ Approved | RV-0048 PASS (Team-4). Public projection only (Doc-4D §B.3); **trust=binary Verified only ([ESC-7G-SCORE-DISPLAY], no score/band, M5 owns); capability=4-flag matrix (Inv#1); discovery≠matching (DD-2, contract order, never re-ranked); non-disclosure clean (blacklist byte-identical §7.5); cursor.** Search box contract-legit (`search_catalog.query`). **`[PLAT-P7]` frozen-kit fix Team-4-verified (OFF-chip 5.12:1 AA; diff = sanctioned scope only; all VendorCard consumers benefit, P-PUB-12/16 stay ✅); PLAT-P7 CLOSED.** |
 | P-BUY-03 | Vendor directory (in-app) | P2 | Ready | ⬜ | **DEFERRED — route topology decision needed** (no buyer-nav entry; /discover already = P-BUY-02; is directory a /discover mode, /vendors, or a tab?). Owner to decide before build |
 | P-BUY-04 | Vendor profile (in-app) | P2 | Ready | ⬜ | trust read-only. **DEFERRED — same route question** (in-app profile route vs public /vendors/[slug] microsite); owner to decide |

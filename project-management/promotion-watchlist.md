@@ -31,6 +31,7 @@ Candidate → Approved (Board) → Extracted → Migrated → Old-removed → Cl
 | FE-SH-06 `ActivityTimeline` | shared lifecycle timeline (buyer activity, routing log) | buyer shared (P-BUY-10/13) | Kit owner | RV-0056 · RV-0064 | FE-CLN-03 | S | Candidate |
 | `Callout` (buyer inline dup ~10×) | FZ-05 freeze finding — extract before F2-Z closes | buyer surface (inline copies) | Team-2 → Kit owner | `BUYER_FRONTEND_FREEZE_REPORT_v1.0.md` FZ-05 | FE-CLN-01 | S | Candidate |
 | `EngagementDocumentFileCard` | already extracted at rule-of-three (PO/Challan/WCC) — watch for cross-surface need | buyer engagement docs | Team-2 | RV-0038 (byte-equivalence proof) | — | S | Deferred (single-surface today) |
+| `PipelineCard` (generic over `SourcingPipelineCard`/`EngagementPipelineCard`) | 2 structurally-parallel lifecycle-funnel widgets (RFQ + engagement); rule-of-three not yet met | buyer dashboard (both cards) | Team-2 | RV-0070 (Sourcing) · RV-0113 B#1 (Engagement, promotion-candidate flagged) | — | S | Deferred (2 instances only — extract if a 3rd funnel widget appears) |
 | `RadioRow` consolidation | FZ-04 — hand-rolled radios across buyer/account forms | buyer + account forms | Kit owner | freeze report FZ-04 · RV-0036/0066 (OBS) | FE-DS-06 | S | Candidate |
 
 FE-DS watch items (kit-owner scope, Board-gated): kit `FormField role="alert"` (FZ-09) · undefined

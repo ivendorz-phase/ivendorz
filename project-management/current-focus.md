@@ -12,27 +12,26 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-1 — Public / Platform (FE-PUB · FE-PF)
 
-- **Current Milestone:** `FE-PUB-03` Vendor Profile — **🔵A Review-A** (scope complete at checkpoint
-  `1275f70`; FE-PUB-02 ✅ Closed RV-0107 prior)
-- **Current Page:** _(shared microsite chrome delta — `vendor-microsite-footer.tsx` +
-  `vendor-microsite-layout.tsx` `1275f70`: fixed stale pre-ADR-022 footer nav anchors → real routes;
-  added fixed-bottom mobile-only enquire CTA (spec-required, was missing) — submitted to Review-A;
-  Team-1 STOPS, does not pull FE-PUB-04)_
-- **Pipeline stage:** submitted to Review-A (Lane G)
+- **Current Milestone:** _(none — `FE-PUB-03` Vendor Profile ✅ **Closed**, RV-0111, A:PASS ∧ B:PASS
+  (Review-B by Team-5, 8 OBS), 0 BLOCKER/MAJOR/MINOR both lanes, checkpoint `1275f70`; Dev-team
+  self-close per Amendment v1.3 §13. Second FE-PUB milestone through the full Dev→A→B pipeline)_
+- **Current Page:** _(none — shared microsite chrome delta `1275f70`: stale pre-ADR-022 footer nav
+  anchors → real routes + fixed-bottom mobile-only enquire CTA; Review-B verified sticky-bar
+  no-occlusion (pb-24 96px > 61px bar) + duplicate-control-clean + axe 0 mobile/desktop)_
+- **Pipeline stage:** idle — pulling `FE-PUB-04` next (WP card pending kickoff)
 - **Next Milestone:** FE-PUB-04 → FE-PUB-06 → FE-PUB-07 → FE-PUB-01 (skip FE-PUB-05 ⛔)
 
 ## Team-2 — Buyer (FE-BUY)
 
-- **Current Milestone:** _(none — `FE-BUY-07` Engagement ✅ **Closed**, RV-0112, A:PASS ∧ B:PASS
-  after 1 fix-and-reverify cycle, 0 BLOCKER/MAJOR/MINOR final, checkpoint `2d1b23e`; Dev-team
-  self-close per Amendment v1.3 §13. FE-BUY-04/05/06 also ✅ Closed — four milestones this
-  session, no kickoff-approval pause per owner directive)_
-- **Current Page:** _(none — P-BUY-20 `2d1b23e` engagement Documents card fixed: replaced the
-  permanent "Documents open in a later milestone" dead-end with plain navigation to the 5 already-
-  built document-kind routes (PO/Payments/Trade-invoice/Challan/WCC); Review-A caught and the
-  builder fixed an unwarranted per-engagement existence-claim caption before Review-B passed)_
-- **Pipeline stage:** idle — pulling `FE-BUY-08` Dashboard Widgets next (WP card pending kickoff)
-- **Next Milestone:** FE-BUY-08 → 09 → FE-CLN-01 (F2-Z). FE-BUY-10 🅿 parked
+- **Current Milestone:** _(none — `FE-BUY-08` Dashboard Widgets ✅ **Closed**, RV-0113, A:PASS ∧
+  B:PASS, 0 BLOCKER/MAJOR/MINOR, 12 OBS, checkpoint `d501345`; Dev-team self-close per Amendment
+  v1.3 §13. FE-BUY-04/05/06/07 also ✅ Closed — FIVE milestones this session, no kickoff-approval
+  pause per owner directive)_
+- **Current Page:** _(none — Engagement pipeline widget shipped alongside BX-01's Sourcing
+  pipeline on P-BUY-01, following the identical `RV-0070` governance pattern; a `PipelineCard`
+  promotion candidate registered [watch for a 3rd funnel widget])_
+- **Pipeline stage:** idle — pulling `FE-BUY-09` CRM next (WP card pending kickoff)
+- **Next Milestone:** FE-BUY-09 → FE-CLN-01 (F2-Z). FE-BUY-10 🅿 parked
 
 ## Team-3 — Vendor (FE-VEN)
 
@@ -51,18 +50,21 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Review Team 4 — Architecture & Governance (A lane) — queue
 
-- **`FE-PUB-03` Vendor Profile** (Team-1) — at checkpoint `1275f70`; shared microsite-chrome delta
-  (footer nav fix + sticky mobile CTA), Lane G. First submission for this milestone.
-- _(`FE-VEN-04` remainder cleared — RV-0110 A:PASS ∧ B:PASS, closed by Team-3.)_
+_(A-lane clear — `FE-PUB-03` (RV-0111), `FE-VEN-04` (RV-0110), `FE-BUY-07` (RV-0112) all cleared A
+  and closed. Nothing currently awaiting Review-A.)_
 
 ## Review Team 5 — Quality & Adversarial (B lane) — queue
 
 _(B-lane clear — nothing at 🔵B awaiting Review-B.)_
 
-- _Prior (all now ✅ Closed via dev-team self-commit): FE-PUB-02 (RV-0107, first public-track
-  milestone through the full Dev→A→B pipeline), FE-BUY-04 (RV-0102), FE-VEN-06 (RV-0103, recorded
-  by the vendor session pre-decision), FE-VEN-07 (RV-0104), FE-VEN-08 (RV-0105), FE-VEN-13
-  (RV-0106, one fix-and-reverify cycle)._
+- **`FE-PUB-03` Vendor Profile** (Team-1) — Review-B **PASS** (RV-0111, 0 B/M/M, 8 OBS, `1275f70`;
+  render D/T/M + axe 0 mobile/desktop; sticky-bar no-occlusion + dup-control clean) → Team-1 self-close.
+- **Post-verified (owner "Team-5 post-verifies each" ruling — mode-B, self-B'd + closed by the
+  parallel session, Team-5 independently concurred read-only, no defect):** FE-VEN-04 (RV-0110, same
+  textarea MINOR reached independently + `4b4dc5c` fix faithful), FE-BUY-07 (RV-0112, MAJOR caption
+  grep-confirmed gone, rationale in comments-only), FE-BUY-05 (RV-0108), FE-BUY-06 (RV-0109 Award).
+- _Prior full-B (routed to Team-5): FE-PUB-02 (RV-0107). Earlier closed: FE-BUY-04 (RV-0102),
+  FE-VEN-06/07/08/13 (RV-0103/0104/0105/0106)._
 
 - **Standing backlog:** Step-3 Public Shared Promotion baseline sweep — ✅ **DONE / PASS
   2026-07-02** (SHA `6007ea1`; 0 B/M/M; report
