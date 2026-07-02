@@ -5,5 +5,6 @@
 // carry a governance signal (Doc-4D §B.11/§18.3).
 export { AdList, type AdListProps } from "./ad-list";
 export { AdForm } from "./ad-form";
+export { AdDetailPanel, type AdDetailPanelProps } from "./ad-detail-panel";
 export { AdStatusChip, AD_PLACEMENT_LABEL } from "./ad-status-chip";
 export type { AdStatus, AdPlacement, AdScheduleView, AdListItemView, AdView } from "./types";
