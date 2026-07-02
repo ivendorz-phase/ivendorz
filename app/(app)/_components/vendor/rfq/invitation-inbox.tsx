@@ -13,11 +13,17 @@
 // most time-sensitive window (`window_urgency`) sorts first — fulfilling the promise already made by
 // `QuotationHomeSummary` ("appear at the top of your inbox"). Pure client-side reordering of the given
 // rows — no new field, no count, no fabricated total (GI-03); the group labels carry no numbers.
+//
+// FE-VEN-06 delta (P-VND-17 Quotations — co-located with P-VND-15 on this same S1/S2 page): each row
+// now also renders the vendor's OWN quotation state (`QuotationStateChip`, frozen Doc-4M) when one
+// exists on that RFQ — visibility-gated, per page_inventory's P-VND-17 binding. Closes the gap where
+// "Quotations" is its own left-nav destination but the merged listing showed no quotation-state signal.
+// Own-record fact only (ND-2/ND-3) — never another vendor's quotation/state.
 import Link from "next/link";
 import { MessageSquare } from "lucide-react";
 import { Card, CardContent } from "@/frontend/primitives/card";
 import { EmptyState } from "@/frontend/components/empty-state";
-import { RfqStateChip, InvitationStateChip } from "./state-chips";
+import { RfqStateChip, InvitationStateChip, QuotationStateChip } from "./state-chips";
 import { WindowStateChip } from "./window-state-chip";
 import type { InboxItemView, WindowUrgency } from "./types";
 
@@ -81,6 +87,7 @@ function InvitationRow({ item, basePath }: { item: InboxItemView; basePath: stri
             urgency={item.window_urgency}
           />
           <InvitationStateChip state={item.invitation_state} />
+          <QuotationStateChip state={item.quotation_state} />
         </div>
       </Link>
     </li>

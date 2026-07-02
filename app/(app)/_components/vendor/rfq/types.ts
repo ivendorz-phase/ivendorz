@@ -73,6 +73,10 @@ export interface InboxItemView {
   window_urgency?: WindowUrgency;
   /** Invitation state token (Doc-4M; vendor-visible entry = `delivered`). */
   invitation_state?: InvitationState;
+  /** Own quotation state on this RFQ (Doc-4M `QuotationState`) — visibility-gated: present only
+   *  when the vendor has actually started/submitted a quotation here (P-VND-17, page_inventory).
+   *  Own-record fact only; never a competitor's state (ND-2/ND-3). */
+  quotation_state?: QuotationState;
   /** Own-record fact only (§6.6 / ND-4): this vendor has an unread clarification message on its OWN
    *  thread — never an exclusion / "not matched" signal. */
   unread_clarification?: boolean;
