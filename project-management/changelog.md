@@ -187,3 +187,14 @@
 2026-07-02 · P-ADM-18 · 🔵 Ready for Review → 🟥 Patch Required · Owner: Team-3 (RV-0051)
 2026-07-02 · P-BUY-12 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0052)
 2026-07-02 · P-ACC-09 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
+2026-07-02 · P-ADM-18 · 🟥 Patch Required → 🟠 Fixing · Owner: Team-3 (RV-0051)
+2026-07-02 · P-ADM-18 · 🟠 Fixing → 🔵 Ready for Review · Owner: Team-3 (RV-0051 patched — rescoped to frozen campaign-detail read)
+2026-07-02 · P-BUY-12 · ✅ committed (86b2d2c) · Owner: Team-2
+2026-07-02 · P-BUY-05 · ⬜ DEFERRED (FLAG) — catalog_favorites=product|category not vendors (tracker note wrong; vendor favs=Operations) + list projects IDs-only (no target name, display-projection gap); owner decision needed · Owner: Team-2
+2026-07-02 · P-ADM-18 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0053)
+2026-07-02 · P-ACC-09 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0054)
+2026-07-02 · P-ADM-18 · ✅ Approved → ✅ committed (453f394) · Owner: Team-3
+2026-07-02 · P-ADM-19 · ⬜ Pending → 🟡 In Progress · Owner: Team-3
+2026-07-02 · P-ADM-19 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-3
+2026-07-02 · P-ACC-09 · ✅ Approved → ✅ committed · Owner: Team-1
+2026-07-02 · P-ACC-10 · ⬜ Pending → 🟡 In Progress · Owner: Team-1

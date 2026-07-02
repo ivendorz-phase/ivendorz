@@ -11,24 +11,24 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-ACC-09` Role editor (P2) — 🔵 Ready for Review (awaiting Team-4 QCT)
-- **Status:** 🔵 Ready for Review — create+edit role editor; permissions by slug (Inv #10); system read-only; delete-confirm; unknown→404; Doc-4C §C7; not committed
-- **Next Page:** `P-ACC-10` Permissions reference (P2, Ready) — permissions by reference (Inv #10)
+- **Current Page:** `P-ACC-10` Permissions reference (P2) — 🟡 In Progress (P-ACC-09 ✅ committed). permissions by reference (Inv #10)
+- **Status:** 🟡 building (presentation-only; read-only `list_permissions` catalog, Doc-4C §C7)
+- **Next Page:** `P-ACC-11` Delegation grants (P2, Ready)
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
 
-- **Current Page:** `P-BUY-05` Favorites (P2) — ⬜ Pending (P-BUY-12 ✅ Approved, RV-0052). /favorites nav-bound
-- **Status:** ⬜ queued to build — then P-BUY-10/11/13 (RFQ sub-views)
-- **Next Page:** `P-BUY-10` RFQ detail — activity (P2, Ready). **⚠️ P-BUY-03/04 DEFERRED — need OWNER route-topology decision** (in-app vendor directory/profile: /discover mode vs /vendors vs tab)
+- **Current Page:** `P-BUY-10` RFQ detail — activity (P2) — ⬜ Pending (P-BUY-12 ✅ Approved+committed). Next buildable (sub-view of /rfqs/[id])
+- **Status:** ⬜ queued to build. **P-BUY-05 DEFERRED (FLAG): catalog_favorites=product|category not vendors + IDs-only projection — owner decision needed**
+- **Next Page:** `P-BUY-11` RFQ version history (P2), then `P-BUY-13` Routing log. **⚠️ P-BUY-03/04 + P-BUY-05 all DEFERRED — need OWNER decisions** (03/04 route topology; 05 favorites scope+projection)
 - **Updated:** 2026-07-02
 - **Updated:** 2026-07-02
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** `P-ADM-18` Outreach contacts (P3) — 🟥 Patch Required (RV-0051): cross-campaign contacts list has no frozen read (`list_outreach_contacts` doesn't exist) — flag the read-gap+ESC (as ENG-03) OR rescope to P-ADM-17 detail, then re-review
-- **Status:** 🟥 Patch Required — stays with Team-3 (one-flag/rescope fix; rest fine; P-ADM-19 blocked)
-- **Next Page:** `P-ADM-19` Routing rules (P2, Ready) — stage-gated
+- **Current Page:** `P-ADM-19` Routing rules (P2) — 🔵 Ready for Review (stage-gated control-plane list, awaiting Team-4)
+- **Status:** 🔵 Ready for Review — stage-gate notice; Manage/New disabled (R5, M3-owned); illustrative rules grounded in Doc-3; no coined schema/score
+- **Next Page:** `P-ADM-20` Routing rule editor (P2, Ready)
 - **Updated:** 2026-07-02
 
 ---
