@@ -94,10 +94,11 @@ FE-PF-01 Design Tokens ✅ (ongoing ownership → FE-DS) · FE-PF-03 Platform Sh
 | FE-VEN-07 Leads | Vendor Growth | P1 | M | Med | — | P-VND-21, P-VND-22 | ✅ Complete (RV-0104, A:PASS B:PASS, board-approved 2026-07-02 @ `b1810fe`) — next-action pill on Board cards, lead created_at provenance; client-side "due first" reorder explicitly declined (existing disabled sort control owns it) |
 | FE-VEN-08 Engagements | Vendor Growth | P1 | L | Med | — | P-VND-23..26 | ✅ Complete (RV-0105, A:PASS B:PASS, board-approved 2026-07-02 @ `ec8306b`) — P-VND-24 frozen-conformant lifecycle single-next-legal-edge fix; P-VND-23 reviewed/conformant untouched; P-VND-25/26 correctly `ESC-7G-ENG-03`-gated untouched; P-VND-25 upload path still notes `ESC-7-API/upload` |
 | FE-VEN-09 Trust Center | Trust | P1 | M | High | — | P-VND-28 | ✅ Complete (RV-0120, A:PASS B:PASS, no fix-and-reverify cycle, Dev-team self-close 2026-07-03 @ `32fe6fb`) — Trust Score card (band+numeric ring, per the Board ruling), Performance card (band/`level` only — numeric never public, frozen contract restriction), Verified Tier card (reuses `TierChip`); 2 OBS total, 0 B/M/M |
-| FE-VEN-10 Billing | Platform | P2 | S | Med | H: Board kickoff scoping | P-VND-27 | READY(build, kickoff-scoped) — vendor-context view **reusing P-ACC-16..21**; Builder = T3 for the adaptation, reused surfaces stay T1-maintained; **composition only — forking an account page = Flag-and-Halt** |
-| FE-VEN-11 Organization | Platform | P3 | S | Med | H: Board kickoff scoping | — (reuses P-ACC-04..11) | READY(kickoff-scoped) — same rule as FE-VEN-10 |
-| FE-VEN-12 Settings | Platform | P3 | S | Med | H: Board kickoff scoping | — (reuses P-ACC-02/03/13/15) | READY(kickoff-scoped) — same rule as FE-VEN-10 |
+| FE-VEN-10 Billing | Platform | P2 | S | Med | H: FE-VEN-14 report + Board route-topology ruling | P-VND-27 | READY(build, kickoff-scoped) — vendor-context view **reusing P-ACC-16..21**; Builder = T3 for the adaptation, reused surfaces stay T1-maintained; **composition only — forking an account page = Flag-and-Halt** |
+| FE-VEN-11 Organization | Platform | P3 | S | Med | H: FE-VEN-14 report + Board route-topology ruling | — (reuses P-ACC-04..11) | READY(kickoff-scoped) — same rule as FE-VEN-10 |
+| FE-VEN-12 Settings | Platform | P3 | S | Med | H: FE-VEN-14 report + Board route-topology ruling | — (reuses P-ACC-02/03/13/15) | READY(kickoff-scoped) — same rule as FE-VEN-10; P-ACC-13 leg contingent on FE-VEN-14 §6.1 |
 | FE-VEN-13 Ads | Vendor Growth | P2 | M | Low | — | P-VND-12..14 | ✅ Complete (RV-0106, A:PASS B:PASS-after-fix, board-approved 2026-07-02 @ `34395b2`) — fresh 3-page build; P-VND-13 create-only (no `update_advertisement` contract exists); admin reviews via P-ADM-10/11 (M8 owns the effect, R5) |
+| FE-VEN-14 Vendor↔Account Composition | Platform | P2 | S | Low | — | — (documentation only, owns no page) | 🟡 In Progress — reuse/composition report for FE-VEN-10/11/12, `governanceReviews/FE-VEN-14-VENDOR-ACCOUNT-COMPOSITION-REPORT_v1.0.md`; Lane L; unblocks 10/11/12 once the Board rules its route-topology recommendation + 2 routed findings |
 
 ## Track 4 — FE-SH Shared Components (owns 0 pages — Board-gated promotions)
 
@@ -143,8 +144,7 @@ flowchart LR
     SVG["official brand SVGs"] -.H.-> PF02["FE-PF-02"]
     PD["ESC-7-API-PRODDETAIL"] -.H.-> PUB05["FE-PUB-05"]
     TAX["taxonomy P1 + package approval"] -.H.-> PUB09["FE-PUB-09"]
-    SD["ESC-7G-SCORE-DISPLAY"] -.H.-> VEN09["FE-VEN-09"]
-    KS["Board kickoff scoping"] -.H.-> VEN10["FE-VEN-10/11/12"]
+    KS["FE-VEN-14 report + Board route-topology ruling"] -.H.-> VEN10["FE-VEN-10/11/12"]
   end
   BUY["FE-BUY-04..09"] ==H==> CLN01["FE-CLN-01 F2-Z"]
   SH["FE-SH approvals"] -.S.-> CLN03["FE-CLN-03"]
@@ -199,7 +199,7 @@ comma lists, `..` ranges):
 
 Checksum: SH 6 + PUB 24 + AUTH 8 + ACC 22 + BUY 27 + VND 28 + ADM 29 = **144**.
 Own-nothing milestones (by design): FE-PF-01..05 · FE-PUB-09 · FE-BUY-08 · FE-VEN-11/12 ·
-FE-SH-* · FE-DS-* · FE-CLN-*.
+FE-VEN-14 (documentation only) · FE-SH-* · FE-DS-* · FE-CLN-*.
 
 ## Change control
 
