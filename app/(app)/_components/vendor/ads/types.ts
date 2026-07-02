@@ -36,7 +36,7 @@ export interface AdListItemView {
   status?: AdStatus;
 }
 
-/** Full ad record (P-VND-13 create/edit form + P-VND-14 submission/status) — binds the frozen
+/** Full ad record (P-VND-13 create form + P-VND-14 submission/status) — binds the frozen
  *  `create_advertisement.v1` request fields plus status/outcome context. */
 export interface AdView {
   id: string;

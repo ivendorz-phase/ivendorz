@@ -9,6 +9,7 @@
 // surface-scoped, so this vendor page must not import it — mirrors the admin category-editor
 // precedent, RV-0029). All fields disabled in the presentation phase. RSC-friendly.
 import { FormField } from "@/frontend/components/form-field";
+import { Input } from "@/frontend/primitives/input";
 import { PresentationFormNote } from "../shared";
 import { AD_PLACEMENT_LABEL } from "./ad-status-chip";
 import type { AdPlacement } from "./types";
@@ -27,13 +28,7 @@ export function AdForm() {
         required
         description="The asset reference for your ad creative (image/video ref, uploaded separately)."
       >
-        <input
-          id="ad-creative-ref"
-          name="creative_ref"
-          type="text"
-          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-iv-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
-          disabled
-        />
+        <Input id="ad-creative-ref" name="creative_ref" type="text" disabled />
       </FormField>
 
       <FormField
@@ -59,24 +54,10 @@ export function AdForm() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField id="ad-schedule-start" label="Starts" description="Optional.">
-          <input
-            id="ad-schedule-start"
-            name="schedule_start"
-            type="date"
-            defaultValue=""
-            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-iv-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
-            disabled
-          />
+          <Input id="ad-schedule-start" name="schedule_start" type="date" disabled />
         </FormField>
         <FormField id="ad-schedule-end" label="Ends" description="Optional.">
-          <input
-            id="ad-schedule-end"
-            name="schedule_end"
-            type="date"
-            defaultValue=""
-            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-iv-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
-            disabled
-          />
+          <Input id="ad-schedule-end" name="schedule_end" type="date" disabled />
         </FormField>
       </div>
 
@@ -85,13 +66,7 @@ export function AdForm() {
         label="Advertised profile"
         description="Optional — leave blank to advertise your organization generally."
       >
-        <input
-          id="ad-vendor-profile"
-          name="vendor_profile_id"
-          type="text"
-          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-iv-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
-          disabled
-        />
+        <Input id="ad-vendor-profile" name="vendor_profile_id" type="text" disabled />
       </FormField>
 
       <p className="text-xs text-muted-foreground">
