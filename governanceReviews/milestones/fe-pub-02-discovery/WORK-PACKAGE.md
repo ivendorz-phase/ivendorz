@@ -1,7 +1,8 @@
-# WORK PACKAGE — FE-PUB-02 Public Discovery (DRAFT — awaiting owner kickoff approval + Step-3 baseline)
+# WORK PACKAGE — FE-PUB-02 Public Discovery (✅ Closed — RV-0107, A:PASS ∧ B:PASS, Dev-team
+self-close per Amendment v1.3 §13)
 
 - **Lane:** G (Core Marketplace; GI-04 editorial-slice discipline; anonymous contract surface)
-- **Reviewed-SHA record:** _(filled at 🔵A)_
+- **Reviewed-SHA record:** `5d9d94a` (scope complete — P-PUB-07 delta built)
 - **Value:** Core Marketplace · **Priority:** P1 · **Size:** L · **Risk:** Med
 
 ## In scope (the delta — enhancement over the public 🟩 stock)
@@ -27,8 +28,8 @@ of any M3 output · kit/token changes.
 ## Dependencies
 
 - H: — none for the buildable scope (P-PUB-09 carved out).
-- **S: Review-B Step-3 Public baseline sweep** (QCT 5-step Step 3) — run first so Team-1 enhances
-  a reviewed baseline (Board agenda #10).
+- **S: Review-B Step-3 Public baseline sweep** (QCT 5-step Step 3) — owner-authorized 2026-07-02
+  alongside this kickoff (Board agenda #10); run first so Team-1 enhances a reviewed baseline.
 
 ## Lifecycle ownership
 
@@ -37,10 +38,15 @@ Builder = **Team-1** · Maintainer = **Team-1** · Review A → Review B (fresh 
 
 ## Key dates
 
-Created 2026-07-02 · Started — · Paused — · Resumed — · Closed —
+Created 2026-07-02 · Started 2026-07-02 (owner kickoff APPROVED) · Paused — · Resumed — · Closed
+2026-07-02 (RV-0107, Dev-team self-close per Amendment v1.3 §13)
 
-## DoD confirmation (checked at Board close — carry-forward: delta-only over 🟩 legacy pages)
+## DoD confirmation (checked at close — carry-forward: delta-only over 🟩 legacy pages)
 
-☐ page DoD ☐ responsive D/T/M ☐ WCAG-AA ☐ tsc/eslint/prettier ☐ realistic mock data
-☐ Review A PASS ☐ Review B PASS (B/M/M=0) ☐ Board approved ☐ no TODO/dead code ☐ no duplicate
-components ☐ promotion candidates registered ☐ tracker updated ☐ card closed
+☑ page DoD ☑ responsive D/T/M ☑ WCAG-AA ☑ tsc/eslint/prettier ☑ realistic mock data
+☑ Review A PASS (RV-0107, 11 OBS, B/M/M=0) ☑ Review B PASS (RV-0107, 11 OBS, B/M/M/NIT=0)
+☑ gate approval (A:PASS ∧ B:PASS on `5d9d94a` — the clean gate is the approval signal per
+Amendment v1.3 §13; no separate Board wait-turn) ☑ no TODO/dead code ☑ no duplicate components
+☑ promotion candidates registered (1 raised → Board: `FeaturedCategoryGrid` extraction, byte-
+identical inner grid vs `featured-categories.tsx`, Raise≠Accept — Board disposes/registers on
+`promotion-watchlist.md`, non-blocking) ☑ tracker updated ☑ card closed

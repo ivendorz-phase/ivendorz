@@ -57,7 +57,7 @@ FE-PF-01 Design Tokens ✅ (ongoing ownership → FE-DS) · FE-PF-03 Platform Sh
 | ID · Title | Value | Pri | Sz | Rk | Depends-on | Owns | Status · Scope |
 |---|---|---|---|---|---|---|---|
 | FE-PUB-01 Landing | Core Marketplace | P1 | M | Low | S: Step-3 baseline | P-PUB-01 | READY(enh) — owner-named polish item on the pre-loop 🟩 landing |
-| FE-PUB-02 Discovery | Core Marketplace | P1 | L | Med | S: Step-3 baseline | P-PUB-07, P-PUB-09 | READY(enh) — featured categories/vendors/products, capability cards, search experience, industry sections over the 🟩 stock. P-PUB-09 ⛔ `ESC-7-API-CATNAV` (page-gate carve-out). **Out-of-scope: mega menu (→FE-PUB-09) · backend/wiring · AI · search-API changes** |
+| FE-PUB-02 Discovery | Core Marketplace | P1 | L | Med | S: Step-3 baseline | P-PUB-07, P-PUB-09 | ✅ Complete (RV-0107, A:PASS B:PASS, Dev-team self-close 2026-07-02 @ `5d9d94a`) — Categories index (P-PUB-07): featured categories, capability cards, search entry-point polish, featured vendors/products over the 🟩 stock, 22 OBS total, 0 B/M/M/NIT. P-PUB-09 stays ⛔ `ESC-7-API-CATNAV` (page-gate carve-out, not built). Promotion candidate raised: `FeaturedCategoryGrid` extraction |
 | FE-PUB-03 Vendor Profile | Vendor Growth | P1 | M | Med | S: Step-3 baseline | P-PUB-13..17 | READY(enh) — public microsite pages (🟩) |
 | FE-PUB-04 Category Page | Core Marketplace | P1 | S | Low | S: Step-3 baseline | P-PUB-08 | READY(enh) — 🟩 "partial, verify facets" |
 | FE-PUB-05 Product Detail | Core Marketplace | P1 | M | Med | H: `ESC-7-API-PRODDETAIL` | P-PUB-11 | ⛔ Gated — interim: modal from `search_catalog` |
@@ -74,7 +74,7 @@ FE-PF-01 Design Tokens ✅ (ongoing ownership → FE-DS) · FE-PF-03 Platform Sh
 | FE-BUY-02 RFQ Workspace | Procurement Moat | — | — | — | — | P-BUY-06/07/08, P-BUY-10..13 | ✅ Complete (BX-02, RV-0075; F1 freeze audit covers 🟩 stock) |
 | FE-BUY-03 Quotations | Procurement Moat | — | — | — | — | P-BUY-09 | ✅ Complete |
 | FE-BUY-04 Quotation Detail | Procurement Moat | P1 | M | Med | — | P-BUY-14, P-BUY-16 | ✅ Complete (RV-0102, board-approved 2026-07-02 @ `5a4550c`) — **the awaited BX-03**: quotation presentation + clarification thread |
-| FE-BUY-05 Supplier Comparison | Procurement Moat | P1 | M | High | — | P-BUY-15 | READY(enh) — R6: read-only, System-generated, **never recommends** |
+| FE-BUY-05 Supplier Comparison | Procurement Moat | P1 | M | High | — | P-BUY-15 | ✅ Complete (RV-0108, A:PASS B:PASS, Dev-team self-close 2026-07-02 @ `79b738a`) — R6: read-only, System-generated, **never recommends**; 6 OBS total, 0 B/M/M |
 | FE-BUY-06 Award | Procurement Moat | P1 | S | High | — | P-BUY-17, P-BUY-18 | READY(enh) — R6: no default winner, unranked |
 | FE-BUY-07 Engagement | Buyer Productivity | P1 | L | Med | — | P-BUY-19..25 | READY(enh) — post-award docs; money boundary DF-6 |
 | FE-BUY-08 Dashboard Widgets | Buyer Productivity | P2 | S | Low | — | — (touches P-BUY-01) | READY(enh) — counts server-provided, never client-computed (R7, RV-0070 pattern) |
