@@ -15,6 +15,7 @@ import type {
   EngagementState,
   PaymentStatus,
   TradeInvoiceStatus,
+  PrivateVendorLinkStatus,
 } from "./view-models";
 
 export interface StateDisplay {
@@ -106,4 +107,19 @@ const TRADE_INVOICE_STATUS_DISPLAY: Record<TradeInvoiceStatus, StateDisplay> = {
 
 export function tradeInvoiceStatusDisplay(status: TradeInvoiceStatus): StateDisplay {
   return TRADE_INVOICE_STATUS_DISPLAY[status];
+}
+
+/**
+ * Private-vendor LINK status → label + tone (Doc-4F §F4 / Doc-2 §10.5 `none → suggested → linked`). This
+ * is the private↔public profile link state ONLY — never the buyer's CRM approval status (which the list
+ * read does not project; blacklist stays undetectable, Inv #11). Neutral cues.
+ */
+const PRIVATE_VENDOR_LINK_STATUS_DISPLAY: Record<PrivateVendorLinkStatus, StateDisplay> = {
+  none: { label: "Not linked", tone: "neutral" },
+  suggested: { label: "Link suggested", tone: "info" },
+  linked: { label: "Linked", tone: "success" },
+};
+
+export function privateVendorLinkStatusDisplay(status: PrivateVendorLinkStatus): StateDisplay {
+  return PRIVATE_VENDOR_LINK_STATUS_DISPLAY[status];
 }

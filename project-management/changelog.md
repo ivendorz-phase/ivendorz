@@ -124,3 +124,18 @@
 2026-07-02 · P-ACC-04 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0036)
 2026-07-02 · P-BUY-25 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0038)
 2026-07-02 · P-ACC-04 · ✅ Approved → ✅ committed (pending hash) · Owner: Team-1
+2026-07-02 · P-ADM-12 · ✅ Approved → ✅ committed (e8ffed0) · Owner: Team-3
+2026-07-02 · P-ADM-13 · ⬜ Pending → 🟡 In Progress · Owner: Team-3
+2026-07-02 · P-ADM-13 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-3
+2026-07-02 · P-ACC-04 · ✅ committed (163f046) · Owner: Team-1
+2026-07-02 · P-ACC-05 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+2026-07-02 · P-ADM-13 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0039)
+2026-07-02 · P-ACC-05 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
+2026-07-02 · P-BUY-25 · ✅ committed (fd3263c) · Owner: Team-2
+2026-07-02 · P-BUY-26 · ⬜ Pending → 🟡 In Progress · Owner: Team-2
+2026-07-02 · P-BUY-26 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-2 (axe GREEN — 0 own-content violations)
+2026-07-02 · P-ADM-13 · ✅ Approved → ✅ committed (86dad71) · Owner: Team-3
+2026-07-02 · P-ADM-14 · ⬜ Pending → 🟡 In Progress · Owner: Team-3
+2026-07-02 · P-ADM-14 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-3
+2026-07-02 · P-BUY-26 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0040)
+2026-07-02 · P-ACC-05 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0041)

@@ -11,23 +11,23 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-ACC-05` Organization lifecycle (P2) — ⬜ Pending (P-ACC-04 ✅ Approved, RV-0036). soft-delete (Inv #8)
-- **Status:** ⬜ queued to build
+- **Current Page:** `P-ACC-05` Organization lifecycle (P2) — 🔵 Ready for Review (awaiting Team-4 QCT)
+- **Status:** 🔵 Ready for Review — soft-delete + restore (Inv #8), Owner-only typed confirm, `?state=deleted` dev-gated restore path; Doc-4C §C5; not committed
 - **Next Page:** `P-ACC-06` Members (P1, Ready)
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
 
-- **Current Page:** `P-BUY-26` CRM — vendor list (P2) — ⬜ Pending (P-BUY-25 ✅ Approved, RV-0038). **buyer-private** (Inv #11 — never leaks, blacklist undetectable)
-- **Status:** ⬜ queued to build
-- **Next Page:** `P-BUY-27` CRM — vendor detail (P2, Ready) — **never leaks**
+- **Current Page:** `P-BUY-26` CRM — vendor list (P2) — 🔵 Ready for Review (axe GREEN; 2-reviewer PASS; blacklist/approval NOT projected — undetectable)
+- **Status:** 🔵 awaiting Team-4 review
+- **Next Page:** `P-BUY-27` CRM — vendor detail (P2, Ready) — **never leaks** (approve/blacklist private)
 - **Updated:** 2026-07-02
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** `P-ADM-13` Verification task detail (P1) — ⬜ Pending (P-ADM-12 ✅ Approved, RV-0037). → M5 owns score (**firewall**)
-- **Status:** ⬜ queued to build
-- **Next Page:** `P-ADM-14` Import jobs (P2, Ready)
+- **Current Page:** `P-ADM-14` Import jobs (P2) — 🔵 Ready for Review (read-only import list, awaiting Team-4)
+- **Status:** 🔵 Ready for Review — frozen `import_jobs` states; "New import job" disabled (P-ADM-15 wizard); no stats/totals
+- **Next Page:** `P-ADM-15` Import job — new / detail (P2, Ready) — create-then-poll (async)
 - **Updated:** 2026-07-02
 
 ---

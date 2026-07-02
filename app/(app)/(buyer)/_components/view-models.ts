@@ -60,6 +60,17 @@ export type PaymentStatus = "recorded" | "confirmed";
  */
 export type TradeInvoiceStatus = "issued" | "partially_paid" | "paid" | "disputed" | "cancelled";
 
+/**
+ * Private-vendor link status — the frozen `private_vendor_records.link_status` column (Doc-4F §F4 /
+ * Doc-2 §10.5): `none → suggested → linked`. This is the private↔public profile LINK state (link-not-merge,
+ * ADR-003), buyer-private. NOT the buyer's CRM approval status (approved/conditional/blacklisted), which the
+ * list read does NOT project and which stays undetectable to the vendor (Inv #11).
+ */
+export type PrivateVendorLinkStatus = "none" | "suggested" | "linked";
+
+/** Private-vendor record lifecycle — `private_vendor_records.state` (Doc-2 §3.5): `active | archived`. */
+export type PrivateVendorState = "active" | "archived";
+
 /** A monetary value pair — `{ amount, currency }`, BDT default at the render site only (GI-08; Doc-2 §0.4). */
 export interface MoneyValue {
   amount: number;
