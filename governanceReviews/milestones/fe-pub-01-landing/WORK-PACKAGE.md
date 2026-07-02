@@ -1,7 +1,7 @@
 # WORK PACKAGE — FE-PUB-01 Landing (Started — scope complete, submitted to Review-A)
 
 - **Lane:** G (anonymous contract surface — the primary conversion entry point)
-- **Reviewed-SHA record:** _(filled after checkpoint commit)_
+- **Reviewed-SHA record:** `17f93a8` (scope complete — popular-search terms fixed)
 - **Value:** Core Marketplace · **Priority:** P1 · **Size:** S · **Risk:** Low
 
 ## Scoping note
