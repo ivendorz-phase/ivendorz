@@ -4,9 +4,14 @@
 // is NO client cross-column tally [MINOR-2]; each column is its own lazy cursor-paged read. A zero-row
 // column uses the SAME canonical empty token as every other (excluded ≡ not-matched ≡ zero). In the
 // presentation phase every column renders genuine-empty. Presentation-only; RSC-friendly.
+//
+// FE-VEN-07 delta (P-VND-21): each card now also renders `NextActionPill` (own CRM
+// `next_action_urgency`/`next_action_label`) — matches the List view's information density instead
+// of silently dropping the same underlying field. Not an aggregate, not a count (ND-8 unaffected).
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/frontend/primitives/card";
 import { LeadStageChip } from "./lead-stage-chip";
+import { NextActionPill } from "./next-action-pill";
 import type { LeadStage, LeadView } from "./types";
 
 const COLUMNS: LeadStage[] = ["received", "quoted", "negotiation", "won", "lost", "follow_up"];
@@ -40,9 +45,13 @@ export function LeadBoard({ leadsByStage, basePath = "/workspace" }: LeadBoardPr
                   <Link
                     key={lead.id}
                     href={`${basePath}/leads/${lead.id}`}
-                    className="block rounded-md border border-border p-2 text-sm text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                    className="block space-y-1 rounded-md border border-border p-2 text-sm text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                   >
-                    {lead.rfq_summary ?? lead.rfq_human_ref ?? "Lead"}
+                    <p>{lead.rfq_summary ?? lead.rfq_human_ref ?? "Lead"}</p>
+                    <NextActionPill
+                      urgency={lead.next_action_urgency}
+                      label={lead.next_action_label ?? lead.next_action_at}
+                    />
                   </Link>
                 ))
               ) : (
