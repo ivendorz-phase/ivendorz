@@ -176,11 +176,28 @@ export interface BuyerDashboardKpis {
 }
 
 /**
+ * One stage of the RFQ sourcing pipeline (P-BUY-01 procurement widget) — a CONTRACT-PROVIDED count per
+ * frozen Doc-4M RFQ state (a wired aggregate/faceted read at wiring, e.g. `list_rfqs` state facets). Like
+ * every dashboard figure it is a wired read, **never client-computed** (R7); the presentation renders the
+ * supplied stages in the supplied order (never re-ranked, GI-04) and computes nothing. Counts carry NO
+ * excluded/blacklist figure (Inv #11).
+ */
+export interface RfqPipelineStage {
+  /** Frozen Doc-4M RFQ lifecycle state (label + tone derived via `state-display.ts`). */
+  state: RfqState;
+  /** Contract-provided count of the buyer's RFQs currently in this state. */
+  count: number;
+}
+
+/**
  * The complete P-BUY-01 view-model. `null` (or all-empty) drives the first-run empty state (single
- * "Create RFQ" CTA, §9.1). Populated, it drives the KPI band + the three work queues + recent activity.
+ * "Create RFQ" CTA, §9.1). Populated, it drives the KPI band + the sourcing-pipeline widget + the three
+ * work queues + recent activity.
  */
 export interface BuyerDashboardViewModel {
   kpis: BuyerDashboardKpis;
+  /** RFQ sourcing-pipeline stages (aggregate counts per state). Optional/absent ⇒ the widget is omitted. */
+  rfqPipeline?: RfqPipelineStage[];
   rfqQueue: RfqQueueRow[];
   quotationQueue: QuotationQueueRow[];
   engagementQueue: EngagementQueueRow[];

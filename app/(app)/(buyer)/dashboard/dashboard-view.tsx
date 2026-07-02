@@ -20,6 +20,7 @@ import { StatusChip } from "@/frontend/components/status-chip";
 import { FileText, Plus } from "lucide-react";
 import { KpiStatCard } from "../_components/kpi-stat-card";
 import { WorkQueueCard, type QueueColumn } from "../_components/work-queue-card";
+import { SourcingPipelineCard } from "../_components/sourcing-pipeline-card";
 import { ActivityTimeline } from "../_components/activity-timeline";
 import { formatDate, Money, Ref } from "../_components/format";
 import {
@@ -175,7 +176,7 @@ export function BuyerDashboardView({ data }: { data: BuyerDashboardViewModel | n
     );
   }
 
-  const { kpis, rfqQueue, quotationQueue, engagementQueue, recentActivity } = data;
+  const { kpis, rfqPipeline, rfqQueue, quotationQueue, engagementQueue, recentActivity } = data;
   const winRatePct =
     typeof kpis.winRate === "number" ? `${Math.round(kpis.winRate * 100)}%` : undefined;
 
@@ -208,6 +209,12 @@ export function BuyerDashboardView({ data }: { data: BuyerDashboardViewModel | n
         />
         <KpiStatCard label="Win rate" value={winRatePct} />
       </div>
+
+      {/* Sourcing pipeline — RFQ lifecycle funnel (aggregate contract reads; observe-only, R6). Rendered
+          only when the wired read supplies stages; otherwise omitted (no fabricated funnel). */}
+      {rfqPipeline && rfqPipeline.length > 0 ? (
+        <SourcingPipelineCard stages={rfqPipeline} viewAllHref="/rfqs" />
+      ) : null}
 
       {/* Content grid — three "needs your action" queues + recent activity (per-widget streaming, §9.1). */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">

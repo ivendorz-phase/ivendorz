@@ -32,4 +32,46 @@
 | P-BUY-24 | Challan | P2 | Ready | ✅ Approved | RV-0031 PASS (Team-4). PO-parity (RV-0022) minus financial card; 6 `get_engagement_document` projected fields, doc_kind="challan" (frozen enum); READ-ONLY (`record_delivery`→DeliveryRecorded Trust input, no buyer write); no content_jsonb coined; versioned Inv#8; non-financial; notFound byte-identical; loading.tsx; ZERO shared-file edits. Doc-file card = promotion candidate at WCC. Model detail page |
 | P-BUY-25 | WCC | P2 | Ready | ✅ Approved | RV-0038 PASS (Team-4). WCC read-only versioned doc, 6 `get_engagement_document` fields, doc_kind=wcc (frozen enum), no content_jsonb coined; WorkCompletionIssued=Trust input; non-financial; notFound byte-identical; loading.tsx. **Shared `EngagementDocumentFileCard` extraction (rule of three) byte-equivalence GIT-VERIFIED by Team-4 — PO(RV-0022)/Challan(RV-0031) diffs = import prune + card swap only, exact copy strings preserved; both stay ✅.** axe green |
 | P-BUY-26 | CRM — vendor list | P2 | Ready | ✅ Approved | RV-0040 PASS (Team-4). NON-DISCLOSURE crux exact — `list_private_vendors.v1` projects ONLY {id,name,link_status,state} (Doc-4F §F4.9:466 verified); CRM approval status (approved/conditional/blacklisted) is a separate aggregate, NOT projected → NOT rendered → blacklist UNDETECTABLE (H.9/§7.5). link_status≠approval (called out); own-org only; genuine-empty; no free-text search (frozen link_status filter only); cursor pagination. Shared-state additions git-verified additive. Model non-disclosure listing |
-| P-BUY-27 | CRM — vendor detail | P2 | Ready | ✅ Approved | RV-0043 PASS (Team-4). Non-disclosure handled exactly — projected fields only (§F4.9:466), `details_jsonb`/`caveat_note` omitted (not coined); `current_status` (approved/conditional/blacklisted/none) shown ONLY when linked + ONLY to owning buyer, explicit "never vendor-facing, never a platform score" framing; own-org `notFound()` byte-identical (H.9). DISTINCT slugs gated separately (`can_manage_vendor_status` vs `can_manage_private_vendors`, Doc-2:623/624); writes parked; shared-state additions git-verified additive. Completes buyer-private CRM pair — model non-disclosure surface. **Team-2 buyer queue COMPLETE** |
+| P-BUY-27 | CRM — vendor detail | P2 | Ready | ✅ Approved | RV-0043 PASS (Team-4). Non-disclosure handled exactly — projected fields only (§F4.9:466), `details_jsonb`/`caveat_note` omitted (not coined); `current_status` (approved/conditional/blacklisted/none) shown ONLY when linked + ONLY to owning buyer, explicit "never vendor-facing, never a platform score" framing; own-org `notFound()` byte-identical (H.9). DISTINCT slugs gated separately (`can_manage_vendor_status` vs `can_manage_private_vendors`, Doc-2:623/624); writes parked; shared-state additions git-verified additive. Completes buyer-private CRM pair — model non-disclosure surface. **P-BUY-1..27 buyer page set COMPLETE** |
+
+---
+
+## Phase F1 — Buyer UX Refinement & Frontend Freeze (owner-directed 2026-07-02)
+
+**Goal:** finish + freeze the ENTIRE buyer frontend *before* backend wiring. Presentation-only — **no**
+backend/APIs/server-actions/DB/auth-wiring/mutations (owner-stated hard boundary). All frozen-corpus rules
+still bind (§7): render only fields the frozen `create_rfq`/`update_rfq`/`submit_rfq` (Doc-4E) etc. project —
+never coin; honor R6 (buyer never selects vendors), Inv#11 non-disclosure, GI-06 a11y. Contract-confirm each
+deliverable first; Flag-and-Halt any owner-named section that would coin a field or break an invariant.
+
+| ID | Deliverable | Priority | Status | Notes |
+|---|---|---|---|---|
+| F1-1 | **NEW RFQ Creation Experience** | P1 | ✅ Accepted as-is (owner 2026-07-02) | Grounding found the full 8-section flow ALREADY EXISTS as P-BUY-07 (`_components/rfq-create/*` + `rfqs/new/*`), fully contract-grounded (routing_mode not vendor-pick R6; Financial-Tier hint≠plan; WhatsApp non-disclosure). Owner reviewed + **chose "keep as-is → go to audits"** — no rebuild (honors F1-5 reuse rule). Existing single-page form + stepper indicator stands |
+| F1-2 | **Buyer UX Polish** — end-to-end review | P2 | ✅ Audited | findings in FREEZE REPORT: FZ-01 container double-wrap (MAJOR, shared shell), FZ-03 hand-rolled h1 weight (MAJOR), + clean elsewhere (breadcrumbs/loading/empty/error/buttons/a11y) |
+| F1-3 | **Buyer Forms Standardization** — audit | P2 | ✅ Audited | findings: FZ-04 RadioRow not consolidated (MAJOR), FZ-06 required-at-submit marking inconsistent (MAJOR), FZ-08 award legend required (MINOR), FZ-09 kit FormField role=alert (MINOR, cross-team), FZ-10 upload keyboard (MINOR) |
+| F1-4 | **Mobile QA** — axe @390/768/1280 × 20 routes | P2 | ✅ Audited | only real own-content finding = FZ-02 not-found `<h1>` (MAJOR, a11y); rest = hydration flakes + known shell menu-trigger FP. axe otherwise clean |
+| F1-5 | **Component Reuse Audit** | P2 | ✅ Audited | surface overwhelmingly clean (money/date/status/tables/lists/timelines all single-homed; no cross-surface leak). FZ-05 inline callout dup ~10× (MAJOR)→extract Callout; promotion candidates noted |
+| F1-6 | **Frontend Freeze Report** | P2 | ✅ DELIVERED (v1.0) | `BUYER_FRONTEND_FREEZE_REPORT_v1.0.md`. Verdict: NOT-yet-frozen — BLOCKER 0 · MAJOR 6 · MINOR 5. Buyer-scoped fixes (FZ-02/03/04/05/06/08/10/11) = Team-2; cross-team (FZ-01 shell container, FZ-09 kit FormField) = escalate |
+
+**OWNER SEQUENCING DECISION (2026-07-02):** **HOLD all freeze remediation** — do NOT apply FZ-01..FZ-11 yet.
+Entering **Phase F2 — one final Buyer UX refinement pass**: implement the owner-provided additional business
+information / cards / workflow improvements FIRST; then apply ALL freeze findings in a SINGLE remediation
+pass; then run tsc + eslint + prettier + axe + the 2-review process before requesting freeze approval. The
+Freeze Report is the parked known-issues ledger for that single batch.
+
+## Phase F2 — Buyer Experience Enhancement Sprint (owner-directed 2026-07-02)
+
+Owner goal: improve the Buyer module from a **business/procurement** perspective — identify missing buyer
+info, improve dashboards + information hierarchy, add enterprise procurement widgets where appropriate,
+improve RFQ/quotation presentation. **Presentation-only · reuse existing components · do NOT modify shared
+platform components or design tokens · no backend/API.** Governance still binds: contract-backed only (no
+coined fields, no client-computed figures — R7), R6/Inv#11/GI-* honored. **One page → Ready for Review →
+STOP for review before the next.**
+
+| ID | Deliverable | Priority | Status | Notes |
+|---|---|---|---|---|
+| BX-01 | **Dashboard enhancement** — populate the enterprise procurement dashboard (presentation fixture) + add **Sourcing Pipeline** widget (RFQ counts per frozen Doc-4M state; server-provided aggregate, never client-computed) + info hierarchy | P1 | ✅ Approved | RV-0070 PASS (Team-4). **No frozen-kit/token change** (git status src/frontend clean; composes kit Card+StatusChip). VM git-verified ADDITIVE (RfqPipelineStage + optional rfqPipeline?). Dashboard integration additive — first-run null path untouched, widget omitted when empty (no fabricated funnel). Frozen Doc-4M states via rfqStateDisplay (no coined); observe-only R6; counts server-provided never client-computed R7; GI-04 order; no excluded figure Inv#11. **OBS(wiring): per-state count = dashboard aggregate KPI over own bounded RFQs (like existing win-rate KPI), NOT a GI-03 paginated grand total; exact facet/count read (e.g. list_rfqs state facets) not pinned to a frozen contract → server-provided at wiring, coins no field.** axe 0 own-content |
+| BX-02+ | Further enhancements (RFQ/quotation presentation, other widgets) | P2 | ⬜ | per owner, page-by-page after each review |
+| F2-Z | Single freeze-remediation batch (all FZ-01..FZ-11) + full verify + 2-review → request freeze | P1 | ⬜ (after sprint) | runs AFTER the enhancement sprint; then freeze approval |
+
+**Still owner-gated (unchanged):** P-BUY-03/04 route topology · P-BUY-05 favorites scope+projection.
