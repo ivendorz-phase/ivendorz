@@ -190,14 +190,32 @@ export interface RfqPipelineStage {
 }
 
 /**
+ * One stage of the engagement pipeline (P-BUY-01 procurement widget, FE-BUY-08) — the identical shape
+ * and governance posture as `RfqPipelineStage`: a CONTRACT-PROVIDED count per frozen `EngagementState`
+ * (a wired aggregate/faceted read at wiring, e.g. `list_engagements` state facets). Never client-computed
+ * (R7) — in particular, never derived by counting `engagementQueue` rows, which is a separate, filtered
+ * "needs action" list, not the full-lifecycle facet set. Rendered in the supplied order (GI-04); observe
+ * only (R6). Counts carry NO excluded/blacklist figure (Inv #11).
+ */
+export interface EngagementPipelineStage {
+  /** Frozen contract-authority engagement state (label + tone derived via `state-display.ts`). */
+  state: EngagementState;
+  /** Contract-provided count of the buyer's engagements currently in this state. */
+  count: number;
+}
+
+/**
  * The complete P-BUY-01 view-model. `null` (or all-empty) drives the first-run empty state (single
- * "Create RFQ" CTA, §9.1). Populated, it drives the KPI band + the sourcing-pipeline widget + the three
- * work queues + recent activity.
+ * "Create RFQ" CTA, §9.1). Populated, it drives the KPI band + the sourcing-pipeline + engagement-pipeline
+ * widgets + the three work queues + recent activity.
  */
 export interface BuyerDashboardViewModel {
   kpis: BuyerDashboardKpis;
   /** RFQ sourcing-pipeline stages (aggregate counts per state). Optional/absent ⇒ the widget is omitted. */
   rfqPipeline?: RfqPipelineStage[];
+  /** Engagement-pipeline stages (aggregate counts per state, FE-BUY-08). Optional/absent ⇒ the widget is
+   *  omitted — no fabricated funnel. */
+  engagementPipeline?: EngagementPipelineStage[];
   rfqQueue: RfqQueueRow[];
   quotationQueue: QuotationQueueRow[];
   engagementQueue: EngagementQueueRow[];

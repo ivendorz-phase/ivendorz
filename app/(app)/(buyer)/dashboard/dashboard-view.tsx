@@ -3,8 +3,9 @@
 // (`page.tsx`) resolves the data via the Doc-7C wired data layer (GI-02) and passes it here; this file
 // renders presentation only.
 //
-// Anatomy (§9.1): page-header → KPI stat-card band → content grid (three work queues + recent activity)
-// → optional right-rail. First-run (`data === null`) renders the single "Create RFQ" CTA (§9.1).
+// Anatomy (§9.1): page-header → KPI stat-card band → sourcing + engagement pipeline widgets (FE-BUY-08
+// adds the second) → content grid (three work queues + recent activity) → optional right-rail. First-run
+// (`data === null`) renders the single "Create RFQ" CTA (§9.1).
 //
 // GOVERNANCE realized here:
 //  • R6 / Inv #12 — there is NO "recommended winner", ranked-to-winner, or auto-select widget anywhere.
@@ -21,6 +22,7 @@ import { FileText, Plus } from "lucide-react";
 import { KpiStatCard } from "../_components/kpi-stat-card";
 import { WorkQueueCard, type QueueColumn } from "../_components/work-queue-card";
 import { SourcingPipelineCard } from "../_components/sourcing-pipeline-card";
+import { EngagementPipelineCard } from "../_components/engagement-pipeline-card";
 import { ActivityTimeline } from "../_components/activity-timeline";
 import { formatDate, Money, Ref } from "../_components/format";
 import {
@@ -176,7 +178,15 @@ export function BuyerDashboardView({ data }: { data: BuyerDashboardViewModel | n
     );
   }
 
-  const { kpis, rfqPipeline, rfqQueue, quotationQueue, engagementQueue, recentActivity } = data;
+  const {
+    kpis,
+    rfqPipeline,
+    engagementPipeline,
+    rfqQueue,
+    quotationQueue,
+    engagementQueue,
+    recentActivity,
+  } = data;
   const winRatePct =
     typeof kpis.winRate === "number" ? `${Math.round(kpis.winRate * 100)}%` : undefined;
 
@@ -210,10 +220,19 @@ export function BuyerDashboardView({ data }: { data: BuyerDashboardViewModel | n
         <KpiStatCard label="Win rate" value={winRatePct} />
       </div>
 
-      {/* Sourcing pipeline — RFQ lifecycle funnel (aggregate contract reads; observe-only, R6). Rendered
-          only when the wired read supplies stages; otherwise omitted (no fabricated funnel). */}
-      {rfqPipeline && rfqPipeline.length > 0 ? (
-        <SourcingPipelineCard stages={rfqPipeline} viewAllHref="/rfqs" />
+      {/* Sourcing + engagement pipelines — pre- and post-award lifecycle funnels (aggregate contract
+          reads; observe-only, R6). Each renders only when its own wired read supplies stages; otherwise
+          omitted (no fabricated funnel) — the two are independent, not a single combined widget. */}
+      {(rfqPipeline && rfqPipeline.length > 0) ||
+      (engagementPipeline && engagementPipeline.length > 0) ? (
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          {rfqPipeline && rfqPipeline.length > 0 ? (
+            <SourcingPipelineCard stages={rfqPipeline} viewAllHref="/rfqs" />
+          ) : null}
+          {engagementPipeline && engagementPipeline.length > 0 ? (
+            <EngagementPipelineCard stages={engagementPipeline} viewAllHref="/engagements" />
+          ) : null}
+        </div>
       ) : null}
 
       {/* Content grid — three "needs your action" queues + recent activity (per-widget streaming, §9.1). */}

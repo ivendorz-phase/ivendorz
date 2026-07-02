@@ -7,10 +7,12 @@
 // integration. Passing `data={null}` still renders the spec's first-run "Create RFQ" state (§9.1).
 //
 // WIRING SEAM (later milestone): resolve the view-model SERVER-SIDE via the wired reads — dashboard KPI
-// reads · `list_rfqs` (+ state facets for the sourcing pipeline) · `list_quotations_for_rfq` ·
-// `list_engagements` · audit-activity read — streaming each widget behind its own Suspense boundary with a
-// scoped error-state (§9.1 / GI-05). The browser never calls a Doc-5 contract and never sets
-// `Iv-Active-Organization` (Inv #5 / Doc-7C SR3). Every figure is a wired read, never client-computed (R7).
+// reads · `list_rfqs` (+ state facets for the sourcing pipeline) · `list_engagements` (+ state facets for
+// the engagement pipeline, FE-BUY-08 — a separate aggregate from the "needing action" queue below, never
+// derived by counting it) · `list_quotations_for_rfq` · audit-activity read — streaming each widget behind
+// its own Suspense boundary with a scoped error-state (§9.1 / GI-05). The browser never calls a Doc-5
+// contract and never sets `Iv-Active-Organization` (Inv #5 / Doc-7C SR3). Every figure is a wired read,
+// never client-computed (R7).
 
 import { BuyerDashboardView } from "./dashboard-view";
 import type { BuyerDashboardViewModel } from "../_components/view-models";
@@ -36,6 +38,12 @@ const SEED: BuyerDashboardViewModel = {
     { state: "quotations_received", count: 5 },
     { state: "buyer_reviewing", count: 2 },
     { state: "closed_won", count: 8 },
+  ],
+  engagementPipeline: [
+    { state: "open", count: 2 },
+    { state: "in_delivery", count: 3 },
+    { state: "completed", count: 5 },
+    { state: "closed", count: 1 },
   ],
   rfqQueue: [
     {
