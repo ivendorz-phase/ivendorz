@@ -272,3 +272,21 @@
 2026-07-02 · P-ADM-23 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0073 — is_active on detail closes RV-0063/0065; activate_plan draft-only §HB-1.1a; additive seed)
 2026-07-02 · P-ACC-19 · ✅ Approved → ✅ committed · Owner: Team-1
 2026-07-02 · P-ACC-20 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+2026-07-02 · P-ADM-23 · ✅ Approved → ✅ committed (60ad560) · Owner: Team-3
+2026-07-02 · P-ADM-24 · ⬜ Pending → 🟡 In Progress · Owner: Team-3
+2026-07-02 · P-ADM-24 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-3
+2026-07-02 · BX-02 · ⬜ → 🟡 → 🔵 Ready for Review · Owner: Team-2 (Buyer Experience Sprint: RFQ detail Overview — surfaced work_nature capability chips [Inv#1], routing_mode breadth [observe-only R6], current_version_no + version-history cross-link [Inv#8]; summary lead paragraph; detail fixture; no kit/token change; axe 0 own-content ×3 tabs; 2-reviewer PASS/PASS, 1 MINOR label-dup fixed pre-review)
+2026-07-02 · P-ADM-24 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0074 — derive-not-invent entitlement catalog; Inv#10; additive seed)
+2026-07-02 · P-ACC-20 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
+2026-07-02 · BX-02 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0075 — Inv#1 capability chips; routing_mode observe-only; version cross-link; no kit change)
+2026-07-02 · P-ACC-20 · 🔵 Ready for Review → 🟥 Patch Required · Owner: Team-1 (RV-0076 — MAJOR human_ref hidden+false claim [list_platform_invoices projects human_ref INV-P-…]; MAJOR coined Date column not in projection)
+2026-07-02 · P-ADM-24 · ✅ Approved → ✅ committed (3675f6f) · Owner: Team-3
+2026-07-02 · P-ADM-25 · ⬜ Pending → 🟡 In Progress · Owner: Team-3
+2026-07-02 · P-ADM-25 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-3
+2026-07-02 · P-ACC-20 · 🟥 Patch Required → 🟠 Fixing · Owner: Team-1 (RV-0076)
+2026-07-02 · P-ACC-20 · 🟠 Fixing → 🔵 Ready for Review · Owner: Team-1 (RV-0076 patched)
+2026-07-02 · P-ADM-25 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0077 — R5 boundary exemplary; OBS admin org-list read binding for wiring)
+2026-07-02 · P-ACC-20 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0078 — re-review; both RV-0076 MAJORs resolved: human_ref rendered, Date→purpose)
+2026-07-02 · BX-02 · ✅ Approved → ✅ committed (9625340) · Owner: Team-2
+2026-07-02 · P-ACC-20 · ✅ Approved → ✅ committed · Owner: Team-1
+2026-07-02 · P-ACC-21 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
