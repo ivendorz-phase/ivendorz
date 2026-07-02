@@ -25,7 +25,9 @@ export interface MegaMenuCategoryProps {
   onNavigate?(node: CategoryNodeVM): void;
 }
 
-export function MegaMenuCategory({
+// Memoized (Phase 5 audit): a hover drill re-renders only the rows whose `active` flips —
+// sibling rows bail out (callbacks are kept referentially stable by the column).
+export const MegaMenuCategory = React.memo(function MegaMenuCategory({
   node,
   active,
   showDescription,
@@ -68,9 +70,10 @@ export function MegaMenuCategory({
   );
 
   // comingSoon: visible, muted, chip, non-navigable (UX doc §7) — a div, never a dead <a>.
+  // (No role — the column wraps every row in a real <li>.)
   if (node.comingSoon) {
     return (
-      <div role="listitem" data-menu-row data-disabled className={rowClass}>
+      <div data-menu-row data-disabled className={rowClass}>
         {body}
       </div>
     );
@@ -97,4 +100,4 @@ export function MegaMenuCategory({
       {body}
     </Link>
   );
-}
+});

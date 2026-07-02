@@ -34,6 +34,12 @@ Candidate → Approved (Board) → Extracted → Migrated → Old-removed → Cl
 | `PipelineCard` (generic over `SourcingPipelineCard`/`EngagementPipelineCard`) | 2 structurally-parallel lifecycle-funnel widgets (RFQ + engagement); rule-of-three not yet met | buyer dashboard (both cards) | Team-2 | RV-0070 (Sourcing) · RV-0113 B#1 (Engagement, promotion-candidate flagged) | — | S | Deferred (2 instances only — extract if a 3rd funnel widget appears) |
 | `RadioRow` consolidation | FZ-04 — hand-rolled radios across buyer/account forms | buyer + account forms | Kit owner | freeze report FZ-04 · RV-0036/0066 (OBS) | FE-DS-06 | S | Candidate |
 
+## Reuse Register — shipped shared packages (point here before building navigation UI)
+
+| Package | Home | Surfaces served | Provenance |
+|---|---|---|---|
+| **Navigation / Industrial Category Explorer** (FE-PUB-09) | `src/frontend/navigation/` — MegaMenu family · CategoryTree family · Taxonomy/MenuState providers · taxonomy-index · icon-registry · overlay v1 · `taxonomy.v1.json` (GENERATED — `scripts/generate-taxonomy-seed.mjs`, never hand-edit) | public header Explorer · mobile drawer · `/categories` inline + A–Z · category-landing sidebar tree · **future pickers** (buyer RFQ single-select, vendor onboarding multi-select, admin browser — `CategoryTree selectable` groundwork shipped, adoption in their own milestones) | MEGA_MENU package APPROVED 2026-07-03 (+ Approval Addenda); ONE renderer, many surfaces — never fork traversal, never hardcode categories |
+
 FE-DS watch items (kit-owner scope, Board-gated): kit `FormField role="alert"` (FZ-09) · undefined
 tokens `--iv-reading-max` / `--iv-form-max` (RV-0030/0087 OBS) · kit `Select` gap (RV-0029 OBS) ·
 kit `Switch` gap (RV-0034 flag) — all → **FE-DS-06/FE-DS-07** scoping.

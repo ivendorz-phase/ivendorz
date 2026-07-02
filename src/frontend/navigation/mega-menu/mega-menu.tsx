@@ -1,24 +1,21 @@
 "use client";
 
 // FE-PUB-09 MEGA_MENU — MegaMenu root (MEGA_MENU_COMPONENT_SPEC.md §Mega-menu tier).
-// Desktop (≥lg) Industrial Category Explorer: composes the vendored NavigationMenu primitive
-// (disclosure semantics, hover intent, ESC/outside-click close, focus return) around the
-// column drill surface + Approval-Addendum slots. Owns nothing but composition.
+// Desktop (≥lg) Industrial Category Explorer. WAI-ARIA **disclosure navigation** implemented
+// directly over NavigationMenuStateProvider (trigger button with aria-expanded/aria-controls;
+// panel is plain <nav> content) — NOT role="menu", and NOT Radix NavigationMenu: its internal
+// position:relative wrapper pins the viewport to the trigger width, which breaks the
+// full-width ribbon (found live in the Phase 5 walkthrough; the vendored primitive remains
+// available for simpler navs). The panel anchors to the nearest positioned ancestor — the
+// sticky site header — at z --iv-z-mega-menu (ARCH §9.3/§9.4).
 //
-// Touch hover suppression (R2-NITPICK-02): the vendored trigger's hover-open only fires for
-// fine pointers (Radix gates hover on pointer type); tap/click parity is native. Breakpoints
-// (ARCH §9.3): the right rail (featured/vendors) appears ≥xl (1280 — the 5-column tier); the
-// panel is capped at --iv-mega-menu-max and centered (>1600).
+// Open: hover intent (~80ms, FINE pointers only — R2-NITPICK-02) · click · Enter/Space/↓.
+// Close: ESC (focus returns to trigger) · outside click · pointer leaves trigger+panel union
+// (~250ms grace) · focus leaves the disclosure (TAB past end — no trap on desktop).
 
 import * as React from "react";
+import { ChevronDown } from "lucide-react";
 import { cn } from "../../lib/cn";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "../../primitives/navigation-menu";
 import { useTaxonomyOrNull } from "../providers/taxonomy-provider";
 import { NavigationMenuStateProvider, useMenuState } from "../providers/menu-state-provider";
 import { MenuInstanceProvider, useMenuInstance } from "./menu-context";
@@ -64,18 +61,7 @@ export interface MegaMenuProps extends Pick<
   children?: React.ReactNode;
 }
 
-function MegaMenuPanel({
-  popularSearches,
-  industryShortcuts,
-  vendors,
-  vendorsViewAllHref = "/vendors",
-  viewAllHref = "/categories",
-  recent,
-  frequent,
-  pinned,
-  onPinToggle,
-  children,
-}: Pick<
+type PanelProps = Pick<
   MegaMenuProps,
   | "popularSearches"
   | "industryShortcuts"
@@ -87,24 +73,25 @@ function MegaMenuPanel({
   | "pinned"
   | "onPinToggle"
   | "children"
->) {
+>;
+
+function MegaMenuPanel({
+  popularSearches,
+  industryShortcuts,
+  vendors,
+  vendorsViewAllHref = "/vendors",
+  viewAllHref = "/categories",
+  recent,
+  frequent,
+  pinned,
+  onPinToggle,
+  children,
+}: PanelProps) {
   const taxonomy = useTaxonomyOrNull();
   if (!taxonomy || taxonomy.roots.length === 0) return <MegaMenuEmptyState />;
 
   return (
-    // `/` anywhere in the panel focuses the search (SPEC addendum keyboard table).
-
-    <div
-      className="flex flex-col"
-      onKeyDown={(e) => {
-        if (e.key !== "/" || (e.target as HTMLElement).closest("[data-mega-menu-search]")) return;
-        const search = document.querySelector<HTMLInputElement>("[data-mega-menu-search]");
-        if (search) {
-          e.preventDefault();
-          search.focus();
-        }
-      }}
-    >
+    <div className="flex flex-col">
       <MegaMenuSearch />
       {children}
       <div className="flex min-w-0">
@@ -130,22 +117,141 @@ function MegaMenuPanel({
   );
 }
 
-function MegaMenuTriggerWithEvents({ label }: { label: string }) {
-  const { open, setOpen } = useMenuState();
+function MegaMenuDisclosure({
+  label,
+  className,
+  ...panelProps
+}: { label: string; className?: string } & PanelProps) {
+  const { open, setOpen, close, hoverIntentDelay, resetPath } = useMenuState();
   const { emit } = useMenuInstance();
-  const markOpen = () => {
-    if (!open) emit({ type: "menu_open" });
-    setOpen(true);
-  };
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const openTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const panelId = React.useId();
+
+  const markOpen = React.useCallback(() => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    if (!open) {
+      emit({ type: "menu_open" });
+      setOpen(true);
+    }
+  }, [open, setOpen, emit]);
+
+  const closeAll = React.useCallback(
+    (restoreFocus = false) => {
+      if (openTimer.current) clearTimeout(openTimer.current);
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+      close();
+      resetPath();
+      if (restoreFocus) triggerRef.current?.focus();
+    },
+    [close, resetPath],
+  );
+
+  // Outside click closes (UX §1 Close).
+  React.useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) closeAll();
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [open, closeAll]);
+
+  React.useEffect(() => {
+    return () => {
+      if (openTimer.current) clearTimeout(openTimer.current);
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+    };
+  }, []);
+
   return (
-    <NavigationMenuTrigger
-      onClick={markOpen}
+    <div
+      ref={rootRef}
+      className={cn("hidden lg:block", className)}
+      // Pointer leaves the trigger+panel union for ~250ms → close (UX §1); re-enter cancels.
       onPointerEnter={(e) => {
-        if (e.pointerType === "mouse") markOpen();
+        if (e.pointerType !== "mouse") return;
+        if (closeTimer.current) clearTimeout(closeTimer.current);
+      }}
+      onPointerLeave={(e) => {
+        if (e.pointerType !== "mouse" || !open) return;
+        if (closeTimer.current) clearTimeout(closeTimer.current);
+        closeTimer.current = setTimeout(() => closeAll(), hoverIntentDelay.out);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          e.stopPropagation();
+          closeAll(true);
+          return;
+        }
+        // `/` anywhere in the panel focuses the search (SPEC addendum keyboard table).
+        if (e.key === "/" && !(e.target as HTMLElement).closest("[data-mega-menu-search]")) {
+          const search =
+            rootRef.current?.querySelector<HTMLInputElement>("[data-mega-menu-search]");
+          if (search) {
+            e.preventDefault();
+            search.focus();
+          }
+        }
+      }}
+      // TAB past the end (focus leaves the disclosure) closes — no trap on desktop (UX §4).
+      onBlur={(e) => {
+        if (open && !rootRef.current?.contains(e.relatedTarget as Node)) closeAll();
       }}
     >
-      {label}
-    </NavigationMenuTrigger>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-expanded={open}
+        aria-controls={panelId}
+        className="group inline-flex h-9 items-center justify-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring aria-expanded:bg-accent/60"
+        onClick={() => (open ? closeAll() : markOpen())}
+        onPointerEnter={(e) => {
+          // Hover intent (~80ms) — FINE pointers only; touch is tap-to-open (R2-NITPICK-02).
+          if (e.pointerType !== "mouse") return;
+          if (openTimer.current) clearTimeout(openTimer.current);
+          openTimer.current = setTimeout(markOpen, hoverIntentDelay.in);
+        }}
+        onPointerLeave={() => {
+          if (openTimer.current) clearTimeout(openTimer.current);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            markOpen();
+            // Focus the first row of column 1 (UX §4 open behavior).
+            requestAnimationFrame(() => {
+              rootRef.current
+                ?.querySelector<HTMLElement>('[data-menu-column="0"] [data-menu-row]')
+                ?.focus();
+            });
+          }
+        }}
+      >
+        {label}
+        <ChevronDown
+          aria-hidden
+          className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-200 group-aria-expanded:rotate-180 motion-reduce:transition-none"
+        />
+      </button>
+
+      {open ? (
+        /* Full-width ribbon: anchored to the nearest positioned ancestor (the sticky header). */
+        <div
+          id={panelId}
+          className="absolute inset-x-0 top-full z-[var(--iv-z-mega-menu)] flex justify-center"
+        >
+          <nav
+            aria-label="All categories"
+            className="mt-1.5 w-full max-w-[var(--iv-mega-menu-max)] origin-top overflow-hidden rounded-b-lg border border-border bg-popover text-popover-foreground shadow-iv-lg animate-iv-fade-in motion-reduce:animate-none"
+          >
+            <MegaMenuPanel {...panelProps} />
+          </nav>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -169,21 +275,22 @@ export function MegaMenu({
       pathFor={taxonomy ? (node) => taxonomy.pathTo(node.id) : undefined}
     >
       <NavigationMenuStateProvider>
-        <NavigationMenu
-          delayDuration={80}
-          defaultValue={defaultOpen ? "explorer" : undefined}
-          className={cn("hidden lg:flex", className)}
-        >
-          <NavigationMenuList>
-            <NavigationMenuItem value="explorer">
-              <MegaMenuTriggerWithEvents label={label} />
-              <NavigationMenuContent>
-                <MegaMenuPanel {...panelProps} />
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenu>
+        <DefaultOpen enabled={defaultOpen} />
+        <MegaMenuDisclosure label={label} className={className} {...panelProps} />
       </NavigationMenuStateProvider>
     </MenuInstanceProvider>
   );
+}
+
+/** Applies the preload-ladder's click-to-open on mount (inside the state provider). */
+function DefaultOpen({ enabled }: { enabled: boolean }) {
+  const { setOpen } = useMenuState();
+  const applied = React.useRef(false);
+  React.useEffect(() => {
+    if (enabled && !applied.current) {
+      applied.current = true;
+      setOpen(true);
+    }
+  }, [enabled, setOpen]);
+  return null;
 }

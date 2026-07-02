@@ -13,12 +13,12 @@ const NavigationMenu = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Root>
 >(({ className, children, ...props }, ref) => (
+  // Deliberately NOT position:relative — the full-width ribbon viewport positions against the
+  // nearest positioned ancestor (the sticky site header), so the panel spans the header width
+  // instead of the trigger width (mega-menu ribbon, ARCH §6/§9.3).
   <NavigationMenuPrimitive.Root
     ref={ref}
-    className={cn(
-      "relative z-[var(--iv-z-mega-menu)] flex max-w-max flex-1 items-center justify-center",
-      className,
-    )}
+    className={cn("static flex max-w-max flex-1 items-center justify-center", className)}
     {...props}
   >
     {children}
@@ -82,7 +82,7 @@ const NavigationMenuViewport = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Viewport>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Viewport>
 >(({ className, ...props }, ref) => (
-  <div className="absolute left-0 top-full flex w-full justify-center">
+  <div className="absolute inset-x-0 top-full z-[var(--iv-z-mega-menu)] flex w-full justify-center">
     <NavigationMenuPrimitive.Viewport
       ref={ref}
       className={cn(

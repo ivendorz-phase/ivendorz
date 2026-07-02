@@ -101,8 +101,10 @@ export function SiteHeader() {
                 ))}
               </nav>
               <Separator className="my-4" />
-              {/* FE-PUB-09: "All Categories" — hybrid accordion/drill-in Explorer (UX doc §3). */}
-              <section aria-label="All categories" className="min-h-0">
+              {/* FE-PUB-09: "All Categories" — hybrid accordion/drill-in Explorer (UX doc §3).
+                  shrink-0: the sheet scrolls as a whole; a shrinkable section would paint its
+                  overflow underneath the CTA block below. */}
+              <section aria-label="All categories" className="shrink-0">
                 <h3 className="mb-1 px-1 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
                   All categories
                 </h3>

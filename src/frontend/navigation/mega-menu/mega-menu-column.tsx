@@ -42,17 +42,24 @@ export function MegaMenuColumn({ level, parentId, emptyHint, className }: MegaMe
     };
   }, []);
 
-  const scheduleActivate = (node: CategoryNodeVM) => {
-    if (node.id === activeId) return;
-    if (pending.current) clearTimeout(pending.current);
-    pending.current = setTimeout(() => {
-      setActiveAt(level, node.id);
-      if (node.children.length > 0) emit({ type: "node_drill" }, node);
-      // Route prefetch ONLY after sustained hover intent — never pointer fly-by
-      // (R2-NITPICK-04; row links themselves ship prefetch={false}).
-      router.prefetch(hrefFor(node));
-    }, hoverIntentDelay.in);
-  };
+  // Referentially stable so memoized rows bail out on unrelated re-renders (Phase 5 audit);
+  // reads the live activeId from a ref to avoid re-creating per hover.
+  const activeIdRef = React.useRef(activeId);
+  activeIdRef.current = activeId;
+  const scheduleActivate = React.useCallback(
+    (node: CategoryNodeVM) => {
+      if (node.id === activeIdRef.current) return;
+      if (pending.current) clearTimeout(pending.current);
+      pending.current = setTimeout(() => {
+        setActiveAt(level, node.id);
+        if (node.children.length > 0) emit({ type: "node_drill" }, node);
+        // Route prefetch ONLY after sustained hover intent — never pointer fly-by
+        // (R2-NITPICK-04; row links themselves ship prefetch={false}).
+        router.prefetch(hrefFor(node));
+      }, hoverIntentDelay.in);
+    },
+    [level, setActiveAt, emit, router, hrefFor, hoverIntentDelay.in],
+  );
 
   if (siblings.length === 0) {
     return (
@@ -90,23 +97,27 @@ export function MegaMenuColumn({ level, parentId, emptyHint, className }: MegaMe
       }}
     >
       {groups.map((group, gi) => (
-        <div key={group.label ?? `g${gi}`} role="list">
+        <React.Fragment key={group.label ?? `g${gi}`}>
           {group.label ? (
             <div className="px-2.5 pb-1 pt-2 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
               {group.label}
             </div>
           ) : null}
-          {group.nodes.map((node) => (
-            <MegaMenuCategory
-              key={node.id}
-              node={node}
-              active={node.id === activeId}
-              rootSlug={rootSlug ?? node.slug}
-              showIcon={level === 0}
-              onActivate={scheduleActivate}
-            />
-          ))}
-        </div>
+          {/* Real list semantics (axe aria-required-children): li wraps each row link. */}
+          <ul className="m-0 list-none p-0">
+            {group.nodes.map((node) => (
+              <li key={node.id}>
+                <MegaMenuCategory
+                  node={node}
+                  active={node.id === activeId}
+                  rootSlug={rootSlug ?? node.slug}
+                  showIcon={level === 0}
+                  onActivate={scheduleActivate}
+                />
+              </li>
+            ))}
+          </ul>
+        </React.Fragment>
       ))}
     </div>
   );
