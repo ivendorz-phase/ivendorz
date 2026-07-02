@@ -12,21 +12,20 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-1 — Public / Platform (FE-PUB · FE-PF)
 
-- **Current Milestone:** _(none — `FE-PUB-07` Search Result (audit) ✅ **Closed**, RV-0119, A:PASS
-  ∧ B:ISSUES-non-gating, audit-only zero code delta; Dev-team self-close per Amendment v1.3 §13.
-  FE-PUB-03/04/06 also ✅ Closed)_
-- **Current Page:** _(none — P-PUB-10/19/20 thoroughly audited: `/search` confirmed clean [no dead
-  link, no TODO, `?state=` harness confirmed NODE_ENV-gated], P-PUB-19 confirmed to have no
-  separate route [realized by the same `/search` surface], P-PUB-20 [public Compare] confirmed
-  zero drift since its RV-0098 approval. **Genuine finding carried forward, not fixed here**:
-  Review-B's hands-on pass found 4 of 5 curated "Popular search" terms on the landing page's
-  Command Center [`command-center.tsx`'s `DEFAULT_POPULAR_SEARCHES`] produce dead-end empty
-  results on `/search` — a content mismatch against the seed, MAJOR, but owned by the
-  not-yet-started `FE-PUB-01` [landing], not by this milestone's pages; ruled non-gating per §13,
-  carried forward as FE-PUB-01's lead scope item)_
-- **Pipeline stage:** idle — pulling `FE-PUB-01` next (pre-diagnosed fix in hand; WP card pending
-  kickoff)
-- **Next Milestone:** FE-PUB-01 (skip FE-PUB-05 ⛔)
+- **Current Milestone:** _(none — `FE-PUB-01` Landing ✅ **Closed**, RV-0121, A:PASS ∧ B:PASS
+  (0 B/M/M both lanes, 2 OBS total, no fix-and-reverify cycle), checkpoint `17f93a8`; Dev-team
+  self-close per Amendment v1.3 §13. Fourth consecutive Team-1 milestone this session to pass both
+  lanes clean on the first submission. Closes the loop opened by `FE-PUB-07`'s audit)_
+- **Current Page:** _(none — P-PUB-01's Command Center `DEFAULT_POPULAR_SEARCHES` fixed: 4 of 5
+  curated "Popular" search chips didn't substring-match any product in `discovery/seed.ts`
+  [content mismatch, not a route/contract defect, found during FE-PUB-07's audit]; replaced with 5
+  terms each independently verified to match a real product, preserving the original cross-category
+  spread. Content-only, single-file delta — no kit/route/filter-logic touched. A confirming sweep
+  found no other landing section carries the same bug class [all source from seed-derived
+  constants, not independent string literals])_
+- **Pipeline stage:** idle — **Team-1's FE-PUB queue exhausted this session** except gated items
+- **Next Milestone:** none pullable. FE-PUB-05 ⛔ `ESC-7-API-PRODDETAIL` · FE-PUB-09 ⛔
+  double-gated (taxonomy P1 + mega-menu package approval)
 
 ## Team-2 — Buyer (FE-BUY / FE-CLN)
 
@@ -75,7 +74,8 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 _(`FE-BUY-10` (Team-2) checkpointed 2026-07-03, awaiting Review-A — WP card
   `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`. Otherwise clear —
   `FE-PUB-03` (RV-0111), `FE-PUB-04` (RV-0116), `FE-PUB-06` (RV-0118), `FE-PUB-07` (RV-0119),
-  `FE-VEN-04` (RV-0110), `FE-VEN-09` (RV-0120), `FE-BUY-07` (RV-0112) all cleared A and closed.)_
+  `FE-PUB-01` (RV-0121), `FE-VEN-04` (RV-0110), `FE-VEN-09` (RV-0120), `FE-BUY-07` (RV-0112) all
+  cleared A and closed.)_
 
 ## Review Team 5 — Quality & Adversarial (B lane) — queue
 
@@ -103,9 +103,11 @@ _(B-lane clear — `FE-VEN-09` cleared, RV-0120 A:PASS ∧ B:PASS, 2 OBS, 0 find
   no filter-logic duplication, R6/GI-04 clean — pure navigation), FE-PUB-07 (RV-0119 Search Result
   audit, zero code delta on P-PUB-10/19/20; the adversarial pass's genuine MAJOR find [landing-page
   "Popular search" dead ends] correctly attributed outside scope to the not-yet-started FE-PUB-01,
-  carried forward not swept under the rug), FE-BUY-05 (RV-0108), FE-BUY-06 (RV-0109 Award).
-  _(RV-0114/RV-0115 review-log concurrence lines were swapped by a concurrent-writer race — Team-5
-  repaired both in place.)_
+  carried forward not swept under the rug), FE-PUB-01 (RV-0121 Landing, single-file content-only fix
+  to the FE-PUB-07-carried finding; all 5 new terms independently re-verified to match real seed
+  products, no other landing section carries the same bug class), FE-BUY-05 (RV-0108), FE-BUY-06
+  (RV-0109 Award). _(RV-0114/RV-0115 review-log concurrence lines were swapped by a concurrent-writer
+  race — Team-5 repaired both in place.)_
 - _Prior full-B (routed to Team-5): FE-PUB-02 (RV-0107). Earlier closed: FE-BUY-04 (RV-0102),
   FE-VEN-06/07/08/13 (RV-0103/0104/0105/0106)._
 

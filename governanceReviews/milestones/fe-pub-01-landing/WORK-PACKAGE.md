@@ -1,4 +1,5 @@
-# WORK PACKAGE — FE-PUB-01 Landing (Started — scope complete, submitted to Review-A)
+# WORK PACKAGE — FE-PUB-01 Landing (✅ Closed — RV-0121, A:PASS ∧ B:PASS, Dev-team self-close per
+Amendment v1.3 §13)
 
 - **Lane:** G (anonymous contract surface — the primary conversion entry point)
 - **Reviewed-SHA record:** `17f93a8` (scope complete — popular-search terms fixed)
@@ -55,10 +56,22 @@ A:PASS ∧ B:PASS gate the owning Dev team self-closes per `review-process.md` A
 
 ## Key dates
 
-Created 2026-07-03 · Started 2026-07-03 · Paused — · Resumed — · Closed —
+Created 2026-07-03 · Started 2026-07-03 · Paused — · Resumed — · Closed 2026-07-03
 
 ## DoD confirmation (checked at close)
 
-☐ page DoD ☐ responsive D/T/M ☐ WCAG-AA ☐ tsc/eslint/prettier ☐ all 5 terms verified to match a
-real result ☐ Review A PASS ☐ Review B PASS (B/M/M=0) ☐ gate approval ☐ no TODO/dead code ☐ no
-duplicate components ☐ tracker updated ☐ card closed
+☑ page DoD ☑ responsive D/T/M (390/768/1280, Playwright, Review-B) ☑ WCAG-AA (axe-core 0
+violations all 3 viewports) ☑ tsc/eslint/prettier ☑ all 5 terms verified to match a real result
+(both lanes, independently) ☑ Review A PASS (RV-0121, 0 findings) ☑ Review B PASS (RV-0121, 2 OBS,
+B/M/M=0) ☑ gate approval (A:PASS ∧ B:PASS on `17f93a8` — the clean gate is the approval signal per
+Amendment v1.3 §13) ☑ no TODO/dead code ☑ no duplicate components (content-only change, no
+component touched) ☑ tracker updated ☑ card closed
+
+## Close record
+
+**✅ Closed 2026-07-03.** Review-A: PASS (0 findings). Review-B: PASS (0 B/M/M, 2 OBS — a
+confirming sweep found no other landing section carries the same bug class; the other three all
+source from seed-derived constants, not independent string literals). No fix-and-reverify cycle —
+both lanes passed on the first submission. Dev-team self-close per Amendment v1.3 §13. Full
+record: `project-management/review-log.md` RV-0121. Milestone-close commit:
+`milestone(FE-PUB-01): close — RV-0121 A:PASS B:PASS`.

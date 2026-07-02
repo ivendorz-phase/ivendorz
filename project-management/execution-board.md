@@ -21,8 +21,10 @@ component) · ~~FE-PUB-07 Search Result~~ ✅ **Closed** (RV-0119, A:PASS ∧ B:
 audit-only zero code delta, Dev-team self-close 2026-07-03 — P-PUB-10/19/20 confirmed complete;
 a genuine MAJOR finding [landing "Popular search" dead ends] surfaced by the adversarial pass but
 correctly attributed to the separate, not-yet-started `FE-PUB-01`, carried forward not fixed here)
-· `FE-PUB-01` ← next (pre-diagnosed fix in hand) · ~~FE-PUB-05~~ ⛔ `ESC-7-API-PRODDETAIL` (skip
-while gated).
+· ~~FE-PUB-01 Landing~~ ✅ **Closed** (RV-0121, A:PASS ∧ B:PASS, 0 B/M/M both lanes, no
+fix-and-reverify cycle, Dev-team self-close 2026-07-03 @ `17f93a8` — fixed the FE-PUB-07-carried
+`command-center.tsx` popular-search mismatch, single-file content-only delta). **Team-1's FE-PUB
+queue exhausted this session** — only `FE-PUB-05`/`FE-PUB-09` ⛔ remain, both gated.
 
 **Team-2 (Buyer):**
 ~~FE-BUY-04..09~~ ✅ **All Closed** this session (RV-0102/0108/0109/0112/0113/0114 @ `5a4550c`/
