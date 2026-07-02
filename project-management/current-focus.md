@@ -11,9 +11,9 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-PUB-18` Trust & verification explainer (P2) — ⬜ next (P-PUB-06 ✅ Approved, RV-0090). segment pages 05/06 done
-- **Status:** ⬜ queued — verification surface: trust=binary Verified only, NO score/band ([ESC-7G-SCORE-DISPLAY], M5 owns), firewall Inv#6, verification KIND not band. Chrome follow-up open: SiteHeader "Pricing" nav → /pricing (RV-0087)
-- **Next Page:** P-PUB-18/21/22/24 + P-SH-01/02/06 (P2), then P-PUB-20/23 + P-SH-05 (P3); SKIP P-PUB-09/11 Waiting-API
+- **Current Page:** `P-PUB-21` Legal — Terms (P2) — ⬜ next (P-PUB-18 ✅ Approved, RV-0091 — **override RATIFIED by Team-4**: score-ring correctly dropped; binary Verified only)
+- **Status:** ⬜ queued — static Legal (Terms); no fabrication, no coined contract, single h1. Chrome follow-up open: SiteHeader "Pricing" nav → /pricing (RV-0087)
+- **Next Page:** P-PUB-21/22/24 + P-SH-01/02/06 (P2), then P-PUB-20/23 + P-SH-05 (P3); SKIP P-PUB-09/11 Waiting-API
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer

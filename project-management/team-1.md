@@ -25,7 +25,7 @@ the status layer only. Work highest-priority `Ready` first; skip `Dependency ≠
 | P-PUB-15 | Microsite — Projects | P1 | Ready | 🟩 Built | |
 | P-PUB-16 | Microsite — Capabilities | P1 | Ready | 🟩 Built | 4-flag matrix |
 | P-PUB-17 | Microsite — Contact | P1 | Ready | 🟩 Built | |
-| P-PUB-18 | Trust & verification explainer | P2 | Ready | ⬜ | verification surface |
+| P-PUB-18 | Trust & verification explainer | P2 | Ready | ✅ Approved | RV-0091 PASS (Team-4) — FIREWALL-CRITICAL; strongest firewall/non-disclosure demo in the public set. **OVERRIDE RATIFIED**: the spec's "score-ring (illustrative)" is overridden correctly (Raise≠Accept) — screen_specifications is a NON-authoritative Doc-7 companion; firewall Inv#6 + [ESC-7G-SCORE-DISPLAY] (Board-gated) + non-disclosure §7.5 OUTRANK it (§7). **Grep-verified: ZERO rendered score/band/tier/ring** (every token = negation). Sole public signal = BINARY VendorVerifiedBadge (git-verified no kit/badge change). Firewall stated without leaking internals ("factors independent, can't be gamed"); verification M5-displayed-not-self-set; binary-only (no pending/unverified); Buyer Vendor Status PRIVATE never surfaced (Inv#11, blacklist undetectable); no ranking/standing can't be bought (R6/moat). No fabrication; single h1; anonymous CTAs → /vendors + /how-it-works. Queue advanced |
 | P-PUB-19 | Industrial / advanced search | P2 | Ready | 🟩 Built | |
 | P-PUB-20 | Compare (public) | P3 | Ready | ⬜ | ungoverned; no matching |
 | P-PUB-21 | Legal — Terms | P2 | Ready | ⬜ | static |
