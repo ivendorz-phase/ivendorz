@@ -5,29 +5,29 @@
 > (`team-1.md` / `team-2.md` / `team-3.md`) remain the **source record**; this file is the
 > **pointer**. Keep it tiny. On any change, also update the owning team file + `changelog.md`.
 
-**Updated:** 2026-07-02 · **Sprint:** Review cycle 12 — P-BUY-22 (RV-0024) & P-ACC-01 (RV-0025) ✅ Approved; P-ADM-08 re-review 🟥 (RV-0026, action-map MAJOR)
+**Updated:** 2026-07-02 · **Sprint:** Review cycle 13 — P-ACC-02 (RV-0030), P-BUY-24 (RV-0031), P-ADM-10 (RV-0032) ✅ all Approved; all three teams advanced
 
 ---
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-ACC-02` User profile (P1) — ⬜ Pending (P-ACC-01 ✅ Approved, RV-0025)
+- **Current Page:** `P-ACC-03` Security & 2FA (P2) — ⬜ Pending (P-ACC-02 ✅ Approved, RV-0030)
 - **Status:** ⬜ queued to build
-- **Next Page:** `P-ACC-03` Security & 2FA (P2, Ready)
+- **Next Page:** `P-ACC-04` Organization profile (P1, Ready)
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
 
-- **Current Page:** `P-BUY-24` Challan (P2) — ⬜ Pending (P-BUY-23 ✅ Approved, RV-0028)
+- **Current Page:** `P-BUY-25` WCC (P2) — ⬜ Pending (P-BUY-24 ✅ Approved, RV-0031)
 - **Status:** ⬜ queued to build
-- **Next Page:** `P-BUY-25` WCC (P2, Ready)
+- **Next Page:** `P-BUY-26` CRM — vendor list (P2, Ready) — **buyer-private** (Inv #11)
 - **Updated:** 2026-07-02
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** `P-ADM-09` Category editor (P1) — ⬜ Pending (P-ADM-08 ✅ Approved, RV-0027)
+- **Current Page:** `P-ADM-11` Ad review detail (P2) — ⬜ Pending (P-ADM-10 ✅ Approved, RV-0032)
 - **Status:** ⬜ queued to build
-- **Next Page:** `P-ADM-10` Ad review queue (P2, Ready)
+- **Next Page:** `P-ADM-12` Verification queue (P1, Ready) — → M5 owns score (**firewall**)
 - **Updated:** 2026-07-02
 
 ---

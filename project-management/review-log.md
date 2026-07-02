@@ -276,3 +276,53 @@ edits implementation** (Raise ≠ Accept — CLAUDE.md §13). Each review gets a
      - *Recommendation:* `ACTIONS_BY_STATUS = { draft: ["Approve"], active: ["Retire"], retired: [] }`; render the retired actions cell as a neutral "—" (as P-BUY-22 does for non-actionable rows). Keep the affordances disabled (R5).
   2. [OBS] Everything else conforms — frozen enum/labels correct, AdminQueueTable reuse (5th consumer; shared table byte-unchanged), R5 disabled, firewall clean, `loading.tsx`, URL filter allowlist + `aria-current`, no fabricated total. A one-map fix from PASS.
 - Result: page → 🟥 Patch Required. NOT advanced; returned to Team-3 (fix the action map, then re-review).
+
+### RV-0027 · P-ADM-08 · Category management (re-review of RV-0026 patch) · Team-3
+- Date: 2026-07-02 · Reviewed: `app/(app)/admin/categories/page.tsx`
+- Verdict: **PASS**
+- Findings:
+  1. [RESOLVED MAJOR RV-0026#1] `ACTIONS_BY_STATUS = { draft: ["Approve"], active: ["Retire"], retired: [] }` — now exactly the two frozen linear edges (`draft→active` approve, `active→retired` retire; Doc-4D `target_status enum(active|retired)`); `retired` is terminal, no forward action. The actions cell renders a neutral `—` for the empty (terminal) case (`if (actions.length === 0) return "—"`) — same non-actionable pattern as P-BUY-22; affordances stay disabled (R5). No draft→retired / retired→active edge offered.
+  2. [OBS] RV-0023's three findings remain resolved (frozen enum `draft|active|retired`, `specialized` absent, `slug` not `code`); AdminQueueTable reuse (5th consumer, shared table byte-unchanged), firewall clean, `loading.tsx`, URL filter allowlist + `aria-current`, no fabricated total. Clean.
+- Result: page → ✅ Approved. Queue advanced (Team-3 → P-ADM-09).
+
+### RV-0028 · P-BUY-23 · Trade invoice review · Team-2
+- Date: 2026-07-02 · Reviewed: `app/(app)/(buyer)/engagements/[engagementId]/trade-invoice/{page,trade-invoice-view,loading,not-found}.tsx`, `_components/trade-invoice-view-models.ts` (+ additive `view-models.ts` `TradeInvoiceStatus`, `state-display.ts` `tradeInvoiceStatusDisplay`)
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] `trade_invoices` projection VERIFIED VERBATIM — Doc-2 line 782 / Doc-4F §F5.5 line 36/295: `human_ref (INV-…), amount, currency, status enum<issued|partially_paid|paid|disputed|cancelled>, due_date` — **≠ `billing.platform_invoices`**. VM carries exactly those fields; no line-items/breakdown coined. The M4↔M7 boundary (DF-6, no funds) is documented AND rendered (money-boundary note distinguishes trade vs platform invoice).
+  2. [OBS] NO coined "approved" status — the VM explicitly flags page_inventory's `approve_trade_invoice`/`get_invoice` as LABELS, not contract IDs; the real writes are `issue_trade_invoice`/`update_trade_invoice_status` (Doc-4F §F5.5) and the machine has no "approved" state. Buyer review transition = a `disputed` raise: `update_trade_invoice_status` `target_status=disputed`, slug **`can_record_payments`** (VERIFIED — §F5.5 Authorization Matrix "slug held (trade invoices / payment records)"), gated `DISPUTABLE={issued,partially_paid}` (non-terminal), disabled/parked. `→ disputed` emits **`DisputeRecorded`** (Trust input DF-4, server-side, line 316) — never a locally-computed score; `disputed` is a trade-invoice status, not an engagement state.
+  3. [OBS] Shared-state additions git-verified PURELY ADDITIVE (`TradeInvoiceStatus` in view-models.ts; `tradeInvoiceStatusDisplay` + import in state-display.ts — no existing export changed; values = the frozen union, honoring "no state without the frozen union"). `notFound()` byte-identical (Inv #11/H.9), no leaf-ref leak; `loading.tsx`; single h1 (PageHeader) → h2 CardTitles; reuse (no new primitive); cross-link to Payments (P-BUY-22). Note: exact legal source-states for `→ disputed` are server-enforced at wiring (the disabled affordance can't trigger an illegal edge). Model detail page.
+- Result: page → ✅ Approved. Queue advanced (Team-2 → P-BUY-24).
+
+### RV-0029 · P-ADM-09 · Category editor (create form) · Team-3
+- Date: 2026-07-02 · Reviewed: `app/(app)/admin/categories/new/page.tsx`
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] `create_category` request bound VERBATIM (Doc-4D CatalogProductSpec §create_category): `name : string : required`, `slug : string : required` (unique), `parent_id : uuid : optional` (self-FK, ≤4-level), `level : integer : required` (1–4). Form fields = exactly those four; nothing missing/coined. New category enters at `draft` (Doc-2 §3.3 `→ draft`; Response `status enum(=draft)`) — page states it's approved later from Category management via `set_category_status`, never here.
+  2. [OBS] R5 — Create rendered-but-DISABLED (`create_category` is M2/Marketplace-owned, DD-4 "category approval governance is Admin's; entity Marketplace-owned"; Admin decides, module applies) + `PresentationFormNote`. Firewall clean (no Trust/Perf/Tier). Boundary discipline EXEMPLARY — a native `<select>` styled to the kit Input, explicitly NOT importing the buyer surface's Select (surfaces stay decoupled); no new primitive. Parent select excludes `retired` nodes (safe subset; the frozen REFERENCE rule only requires parent existence — server-authoritative at wiring). PageHeader h1 → DashboardSection; FormField label/id association correct.
+  3. [OBS] Cross-workspace reuse of `DashboardSection`/`PresentationFormNote` (vendor/ atoms imported into admin) continues — reinforces the standing shared-atom promotion candidate; a kit `Select` primitive is a promotion-watchlist item if selects proliferate. Wiring note: authz slug `staff_can_manage_categories`, no active-org (§5.6). Non-gating.
+- Result: page → ✅ Approved. Queue advanced (Team-3 → P-ADM-10).
+
+### RV-0030 · P-ACC-02 · User profile · Team-1
+- Date: 2026-07-02 · Reviewed: `app/(app)/account/profile/{page,layout,user-profile-form}.tsx` (+ shared `account-nav-model.ts` one-line repoint)
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] Field discipline VERIFIED verbatim — edits exactly `update_user_profile.v1` writable fields (Doc-4C §C4 PassB:174–175: `display_name : optional : bounded`, `phone : optional : E.164`); the form's `PHONE_RE` is E.164. EMAIL is auth-managed (DC-4) → rendered READ-ONLY, never mutated ("never password/2FA-secret fields", line 117). Avatar change deferred `[ESC-7-API/upload]` (disabled). Presentation-only: save writes nothing, shows an honest interim; discard-confirm Dialog; save bar only when dirty; single h1 (PageHeader); firewall clean.
+  2. [OBS] Shared `account-nav-model.ts` change git-verified = a ONE-LINE href repoint (`Profile` `/account` → `/account/profile`, which now exists as this page); safe — no other consumer breaks, P-ACC-01's layout still resolves. (Forward-consistency nit: P-ACC-01's overview "Edit profile" still points to `/account`/P-ACC-14 — a product call, non-gating.) `--iv-form-max` token is undefined in the design system → team used `max-w-2xl` and flagged it to the token owner (honest; no coined token). Non-gating.
+- Result: page → ✅ Approved. Queue advanced (Team-1 → P-ACC-03).
+
+### RV-0031 · P-BUY-24 · Challan · Team-2
+- Date: 2026-07-02 · Reviewed: `app/(app)/(buyer)/engagements/[engagementId]/challan/{page,challan-view,loading,not-found}.tsx`, `_components/challan-view-models.ts`
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] PO-parity (RV-0022 pattern) minus the financial card — VM carries ONLY the 6 `get_engagement_document.v1` projected fields (Doc-4F §F5.8, verified at RV-0022), `doc_kind` pinned to the frozen `"challan"` enum value; challan BODY (`content_jsonb`, delivery line items/quantities) deliberately omitted — nothing coined. READ-ONLY for the buyer: deliveries are recorded by the delivering party via `record_delivery` (slug `can_create_documents`) → `DeliveryRecorded` (a frozen BC-OPS-2 Trust input, DF-4; server-side, no score computed). page_inventory's `get_challan` correctly flagged as a LABEL.
+  2. [OBS] Versioned/immutable (Inv #8); `notFound()` byte-identical, no leaf-ref leak (Inv #11/H.9); `loading.tsx`; ZERO shared-file edits; non-financial (no money surface). Structurally a versioned-engagement-document promotion candidate once WCC lands (noted). Model detail page.
+- Result: page → ✅ Approved. Queue advanced (Team-2 → P-BUY-25).
+
+### RV-0032 · P-ADM-10 · Ad review queue · Team-3
+- Date: 2026-07-02 · Reviewed: `app/(app)/admin/ads/{page,loading}.tsx`, `_components/admin/ad-review/ad-review-seed.ts`
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] `advertisements` fields VERIFIED verbatim (Doc-2:749 / Doc-4D PassB Advertising:21): `creative_ref` (the identifier — ads have NO human_ref, correctly stated), `placement enum{landing|bottom|search|vendor_profile}`, `schedule`, `status(§5.8)`, optional `vendor_profile_id` (→ advertiser display). Nothing coined. Status subset = the review-relevant `pending_review|scheduled|rejected` (frozen §5.8 machine, `review_advertisement`: `pending_review→scheduled` approve / `→rejected`). R5 — per-row Review DISABLED (decision is `review_advertisement`, Admin, on P-ADM-11 detail; queue invokes nothing).
+  2. [OBS] FIREWALL §B.11 EXACT (Doc-4D PassB Advertising:20): "ads are visibility/placement, never gate trust/eligibility/routing/matching" — no governance signal in the queue. 6th `AdminQueueTable` consumer (shared table byte-unchanged); `loading.tsx`; URL filter allowlist + `aria-current`; no fabricated total (GI-03). Wiring note: review slug carries `[ESC-MKT-SLUG-note]` (under-specified in corpus) — server-authoritative at wiring.
+- Result: page → ✅ Approved. Queue advanced (Team-3 → P-ADM-11).

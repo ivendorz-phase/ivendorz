@@ -62,7 +62,7 @@ the status layer only. Work highest-priority `Ready` first; skip `Dependency ≠
 | ID | Title | Priority | Dependency | Status | Notes |
 |---|---|---|---|---|---|
 | P-ACC-01 | Account overview | P1 | Ready | ✅ Approved | RV-0025 PASS (Team-4). Inv#2 (participation Buyer/Vendor ≠ org-role Owner, shown distinctly) + Inv#10 (numeric/enum entitlements, never plan-name) exemplary; firewall clean; Inv#5 (client org id never trusted). Shell `icons.ts` git-verified ADDITIVE (2 imports + 4 keys); scoped layout (doesn't wrap P-ACC-14); single h1. OBS: quick-links 404 until pages land (overview-first pattern) |
-| P-ACC-02 | User profile | P1 | Ready | ⬜ | |
+| P-ACC-02 | User profile | P1 | Ready | ✅ Approved | RV-0030 PASS (Team-4). Field discipline verified verbatim (Doc-4C §C4: `display_name`/`phone` E.164 only); email READ-ONLY (auth-managed DC-4); avatar deferred `[ESC-7-API/upload]`; honest interim save + discard Dialog; single h1; firewall clean. Nav-model repoint git-verified safe (one-line href). OBS: `--iv-form-max` undefined → `max-w-2xl` flagged to token owner |
 | P-ACC-03 | Security & 2FA | P2 | Ready | ⬜ | |
 | P-ACC-04 | Organization profile | P1 | Ready | ⬜ | |
 | P-ACC-05 | Organization lifecycle | P2 | Ready | ⬜ | soft-delete (Inv. #8) |
