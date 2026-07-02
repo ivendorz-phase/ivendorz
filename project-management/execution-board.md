@@ -17,8 +17,10 @@ FE-PUB-07 → FE-PUB-01 · ~~FE-PUB-05~~ ⛔ `ESC-7-API-PRODDETAIL` (skip while 
 **Team-2 (Buyer):**
 ~~FE-BUY-04..09~~ ✅ **All Closed** this session (RV-0102/0108/0109/0112/0113/0114 @ `5a4550c`/
 `79b738a`/`5654956`/`2d1b23e`/`d501345`/`adc84fa`; FE-BUY-07 after 1 fix-and-reverify cycle,
-FE-BUY-09 audit-only zero-delta) · `FE-CLN-01` (F2-Z batch) ← next, H-dependency now satisfied
-(WP card pending kickoff). FE-BUY-10 🅿 parked (only remaining owner-gated item).
+FE-BUY-09 audit-only zero-delta) · ~~FE-CLN-01~~ ✅ **Closed** (RV-0115 @ `636c192`, A:PASS ∧
+B:PASS, 0 B/M/M both lanes, no fix-and-reverify cycle; Dev-team self-close 2026-07-02) — SEVEN
+Team-2 milestones this session. **Team-2 queue exhausted** — only FE-BUY-10 🅿 parked remains
+(owner-gated).
 
 **Team-3 (Vendor):**
 ~~FE-VEN-05~~ ✅ **Closed** (RV-0101 @ `e2f8642`) · ~~FE-VEN-06~~ ✅ **Closed** (RV-0103 @

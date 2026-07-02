@@ -119,7 +119,7 @@ The kit is the frozen foundation — every FE-DS change is Board-gated.
 
 | ID · Title | Value | Bld | Pri | Sz | Rk | Depends-on | Status · Scope |
 |---|---|---|---|---|---|---|---|
-| FE-CLN-01 Buyer F2-Z freeze remediation | Buyer Productivity | T2 | P1 | M | Low | H: FE-BUY-04..09 | ⬜ — FZ-02/03/04/05/06/08/10/11 (+NITs), buyer-scoped per `BUYER_FRONTEND_FREEZE_REPORT_v1.0.md`; **excludes FZ-01 (→FE-CLN-02) + FZ-09 (→FE-DS-06)**; buyer freeze verdict recomputes after all three land |
+| FE-CLN-01 Buyer F2-Z freeze remediation | Buyer Productivity | T2 | P1 | M | Low | H: FE-BUY-04..09 | ✅ Complete (RV-0115, A:PASS B:PASS, 0 B/M/M both lanes, Dev-team self-close 2026-07-02 @ `636c192`) — FZ-02/03/04/05/06/08/10/11 all fixed (2 file-count corrections to the report itself, §13); **excludes FZ-01 (→FE-CLN-02) + FZ-09 (→FE-DS-06)**, both confirmed untouched; a pre-existing shell a11y bug found during this milestone's axe sweep escalated to `execution-board.md` agenda #11, not fixed here |
 | FE-CLN-02 Shell container sweep | Platform | Board-assign | P2 | M | Med | H: Board lead assignment | ⬜ — FZ-01 cross-team (all four surfaces likely double-wrap) |
 | FE-CLN-03 Dedupe & shared extraction | Platform | Board-assign | P2 | M | Med | S: FE-SH approvals | ⬜ — executes approved promotions |
 | FE-CLN-04 Dead code & naming | Platform | Board-assign | P3 | S | Low | — | ⬜ |

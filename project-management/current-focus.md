@@ -21,19 +21,21 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 - **Pipeline stage:** idle — pulling `FE-PUB-04` next (WP card pending kickoff)
 - **Next Milestone:** FE-PUB-04 → FE-PUB-06 → FE-PUB-07 → FE-PUB-01 (skip FE-PUB-05 ⛔)
 
-## Team-2 — Buyer (FE-BUY)
+## Team-2 — Buyer (FE-BUY / FE-CLN)
 
-- **Current Milestone:** _(none — `FE-BUY-09` CRM ✅ **Closed**, RV-0114, A:PASS ∧ B:PASS,
-  audit-only zero code delta, checkpoint `adc84fa`; Dev-team self-close per Amendment v1.3 §13.
-  FE-BUY-04..08 also ✅ Closed — SIX milestones this session, no kickoff-approval pause per owner
-  directive. **FE-BUY-01..09 buyer-owned page set now fully COMPLETE.**)_
-- **Current Page:** _(none — P-BUY-26/27 thoroughly re-audited: Inv#11 blacklist-undetectability
-  independently re-verified LIVE by both fresh-context lanes [list-row byte-identical for
-  blacklisted vs. approved records]; no safe enhancement found, zero code changed. Forward-looking
-  CRM↔Engagement cross-link candidate recorded for a future milestone — not built)_
-- **Pipeline stage:** idle — pulling `FE-CLN-01` next (F2-Z freeze remediation; H-dependency on
-  FE-BUY-04..09 now satisfied; WP card pending kickoff)
-- **Next Milestone:** FE-CLN-01 (F2-Z). FE-BUY-10 🅿 parked (only remaining owner-gated item)
+- **Current Milestone:** _(none — `FE-CLN-01` Buyer F2-Z Freeze Remediation ✅ **Closed**, RV-0115,
+  A:PASS ∧ B:PASS (0 B/M/M both lanes, 5 OBS total, no fix-and-reverify cycle), checkpoint
+  `636c192`; Dev-team self-close per Amendment v1.3 §13. FE-BUY-04..09 also ✅ Closed — SEVEN
+  milestones this session, no kickoff-approval pause per owner directive.)_
+- **Current Page:** _(none — 18 buyer view files remediated: FZ-02/03/04/05/06/08/10/11 from
+  `BUYER_FRONTEND_FREEZE_REPORT_v1.0.md` §6; FZ-01/FZ-09 confirmed untouched (cross-team). New
+  buyer Tier-2 `Callout` composition; two of the freeze report's own file-count claims corrected
+  after independent re-verification [§13]. A pre-existing, out-of-scope shell a11y bug
+  (`quick-create.tsx` QuickCreate button-name <640px) discovered during this milestone's own axe
+  sweep and escalated, not fixed unilaterally — `execution-board.md` agenda #11)_
+- **Pipeline stage:** idle — Team-2 queue exhausted except the owner-gated item below
+- **Next Milestone:** none pullable. FE-BUY-10 🅿 parked (P-BUY-03/04 route topology + P-BUY-05
+  favorites scope — owner decision needed)
 
 ## Team-3 — Vendor (FE-VEN)
 

@@ -2,7 +2,7 @@
 
 - **Lane:** G (touches most buyer surfaces; a11y/forms/reuse remediation, no governance/contract
   change per the freeze report's own scope statement)
-- **Reviewed-SHA record:** _(filled at 🔵A)_
+- **Reviewed-SHA record:** `636c192` (checkpoint commit, scope complete)
 - **Value:** Buyer Productivity · **Priority:** P1 · **Size:** M · **Risk:** Low
 
 ## In scope — the Team-2-fixable set from `BUYER_FRONTEND_FREEZE_REPORT_v1.0.md` §6
@@ -65,15 +65,22 @@ BLOCKER/REGRESSION/Flag-and-Halt/override).
 ## Key dates
 
 Created 2026-07-02 · Started 2026-07-02 (owner directive: proceed to kickoff without a pending
-approval pause) · Paused — · Resumed — · Closed —
+approval pause) · Paused — · Resumed — · Closed 2026-07-02
 
 ## DoD confirmation (checked at close — review-process.md §6)
 
 ☑ all 8 findings addressed ☑ FZ-01/FZ-09 confirmed untouched (git-verified: neither file appears in
 this milestone's diff) ☑ responsive D/T/M (axe sweep 390/768/1280 across all 15 touched routes) ☑
 WCAG-AA (axe clean, scoped past the pre-existing out-of-scope shell finding above) ☑
-tsc/eslint/prettier (all clean) ☐ Review A PASS ☐ Review B PASS (B/M/M=0) ☑ no TODO/dead code ☑ no
-duplicate components (`Callout`/`RadioRow` correctly extracted as buyer Tier-2 compositions, not
-re-duplicated) ☑ promotion candidates registered (n/a — no new promotion-watchlist entry needed;
-`Callout`/`RadioRow` follow the same extract-at-narrowest-scope precedent as prior milestones) ☐
-tracker updated ☐ card closed
+tsc/eslint/prettier (all clean) ☑ Review A PASS (RV-0115) ☑ Review B PASS (B/M/M=0, RV-0115) ☑ no
+TODO/dead code ☑ no duplicate components (`Callout`/`RadioRow` correctly extracted as buyer Tier-2
+compositions, not re-duplicated) ☑ promotion candidates registered (n/a — no new
+promotion-watchlist entry needed; `Callout`/`RadioRow` follow the same extract-at-narrowest-scope
+precedent as prior milestones) ☑ tracker updated ☑ card closed
+
+## Close record
+
+**✅ Closed 2026-07-02.** Review-A: PASS (0 B/M/M, 2 OBS). Review-B: PASS (0 B/M/M, 3 OBS). No
+fix-and-reverify cycle — both lanes passed on the first submission. Dev-team self-close per
+Amendment v1.3 §13. Full record: `project-management/review-log.md` RV-0115. Milestone-close
+commit: `milestone(FE-CLN-01): close — RV-0115 A:PASS B:PASS`.
