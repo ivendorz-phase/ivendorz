@@ -1,7 +1,12 @@
 # Team-3 Queue — Vendor / Verification / Admin
 
 **Owns:** `P-VND-*` (Doc-7G) · `P-ADM-*` (Doc-7H). Titles + bindings are the **source record** in
-[`page_inventory.md`](../page_inventory.md). Vendor surface is ~complete; the bulk of remaining work
+[`page_inventory.md`](../page_inventory.md).
+
+> **Milestone layer (FE-PM v1.0, 2026-07-02):** pages in this file are grouped into `FE-*`
+> milestones in [`fe-program-wbs.md`](fe-program-wbs.md); pull work from your milestone queue via
+> [`current-focus.md`](current-focus.md) / [`execution-board.md`](execution-board.md). This file
+> remains the **page-level source record**; milestone status is derived from these rows. Vendor surface is ~complete; the bulk of remaining work
 is **Admin (29 pages)**. Every Admin page **invokes** a wired Admin command; the **owning module owns
 the effect** (R5) — no page writes Trust/Performance/Tier scores or makes matching/award decisions.
 Verification = `P-VND-28` + `P-PUB-18` (Team-1) + `P-ADM-12/13`.

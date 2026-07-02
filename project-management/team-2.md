@@ -4,6 +4,11 @@
 [`page_inventory.md`](../page_inventory.md). Work highest-priority `Ready` first. CRM pages
 (`P-BUY-26/27`) are **buyer-private** (Invariant #11) — never leak, blacklist undetectable.
 
+> **Milestone layer (FE-PM v1.0, 2026-07-02):** pages in this file are grouped into `FE-*`
+> milestones in [`fe-program-wbs.md`](fe-program-wbs.md); pull work from your milestone queue via
+> [`current-focus.md`](current-focus.md) / [`execution-board.md`](execution-board.md). This file
+> remains the **page-level source record**; milestone status is derived from these rows.
+
 | ID | Title | Priority | Dependency | Status | Notes |
 |---|---|---|---|---|---|
 | P-BUY-01 | Buyer dashboard | P1 | Ready | 🟩 Built | refinement item (owner-named) |

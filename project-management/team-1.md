@@ -4,6 +4,11 @@
 Titles + bindings are the **source record** in [`page_inventory.md`](../page_inventory.md) — this is
 the status layer only. Work highest-priority `Ready` first; skip `Dependency ≠ Ready`.
 
+> **Milestone layer (FE-PM v1.0, 2026-07-02):** pages in this file are grouped into `FE-*`
+> milestones in [`fe-program-wbs.md`](fe-program-wbs.md); pull work from your milestone queue via
+> [`current-focus.md`](current-focus.md) / [`execution-board.md`](execution-board.md). This file
+> remains the **page-level source record**; milestone status is derived from these rows.
+
 ## Public — `P-PUB-*` (Doc-7D)
 
 | ID | Title | Priority | Dependency | Status | Notes |
