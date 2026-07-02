@@ -5,7 +5,7 @@
 // so this view always receives non-null data.
 //
 // REUSE: shell `Breadcrumbs` + `PageHeader`; shared `DescriptionList` + `Money`/`Ref`; kit `Card`/
-// `StatusChip`/`EmptyState`. No new primitive.
+// `StatusChip`. No new primitive.
 //
 // GOVERNANCE:
 //  • Renders ONLY frozen-projected fields (Doc-4F §F5.8). `award_value_snapshot`+`currency` → `Money`
@@ -14,18 +14,35 @@
 //  • MONEY BOUNDARY (DF-6 / R8): the value is a RECORDED figure only — the platform never holds/moves
 //    funds. A standing note states this; there is no pay/settle/escrow affordance anywhere.
 //  • `rfq_id` is NOT projected → the engagement→RFQ link is an interim, not a live link (`ESC-7G-ENG-01`).
-//  • The engagement document LIST is not a frozen read → the Documents section is GATED, never fabricated
-//    (`ESC-7G-ENG-03`).
+//  • The Documents section links to the FIXED, always-known document-kind routes (PO/Payments/Trade
+//    invoice/Challan/WCC — P-BUY-21..25, all already built) — plain navigation, never a fabricated
+//    existence indicator. This is NOT the blocked `ESC-7G-ENG-03` enumeration (which is "which documents
+//    exist for this engagement" — still correctly ungrounded, no contract): the hub asserts nothing about
+//    presence; each destination's own `notFound()` handles absence gracefully (byte-identical, Inv#11/H.9).
 
-import { Banknote, FileText, Info } from "lucide-react";
+import Link from "next/link";
+import { Banknote, ChevronRight, Info } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
-import { EmptyState } from "@/frontend/components/empty-state";
 import { StatusChip } from "@/frontend/components/status-chip";
 import { PageHeader, Breadcrumbs } from "../../../_components/shell";
 import { DescriptionList, type DescriptionItem } from "../../_components/description-list";
 import { Money, Ref } from "../../_components/format";
 import { engagementStateDisplay } from "../../_components/state-display";
 import type { EngagementDetailData } from "../../_components/engagement-detail-view-models";
+
+/** The engagement's document-kind routes — FIXED, always-known (P-BUY-21..25), never a dynamic
+ *  enumeration (`ESC-7G-ENG-03` stays ungrounded). Plain navigation only: no existence claim is made
+ *  here — an absent document collapses to the destination's own byte-identical not-found. */
+function documentLinks(engagementId: string) {
+  const base = `/engagements/${engagementId}`;
+  return [
+    { label: "Purchase order", href: `${base}/po` },
+    { label: "Payments", href: `${base}/payments` },
+    { label: "Trade invoice", href: `${base}/trade-invoice` },
+    { label: "Challan", href: `${base}/challan` },
+    { label: "Work completion certificate", href: `${base}/wcc` },
+  ];
+}
 
 /** The counterparty as the read discloses it: an opaque party ref only — no display name is projected
  *  (`ESC-7G-ENG-02` gap; the handle stays in-code, never in user-facing copy). */
@@ -93,19 +110,32 @@ export function EngagementDetailView({ data }: { data: EngagementDetailData }) {
           </p>
         </div>
 
-        {/* Documents (LOI/PO/challan/WCC): no engagement-document LIST read exists yet → gated, not faked
-            (`ESC-7G-ENG-03`; handle stays in-code, user copy is plain-language). */}
+        {/* Documents: plain navigation to the fixed document-kind routes (P-BUY-21..25) — never a
+            fabricated existence indicator (`ESC-7G-ENG-03` stays ungrounded, no list contract). A
+            document that doesn't exist for this engagement collapses to the destination's own
+            byte-identical not-found (Inv#11/H.9). */}
         <Card>
           <CardHeader className="p-4">
             <CardTitle className="text-sm font-semibold">Documents</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <EmptyState
-              icon={<FileText aria-hidden />}
-              title="Documents open in a later milestone"
-              description="The engagement document set (LOI, PO, challan, WCC) will appear here once available."
-              className="py-10"
-            />
+            <ul className="divide-y divide-border">
+              {documentLinks(data.id).map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="flex items-center justify-between gap-2 rounded-sm py-2.5 text-sm text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span>{item.label}</span>
+                    <ChevronRight aria-hidden className="size-4 shrink-0 text-muted-foreground" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Not every document type applies to every engagement — a link opens only what exists
+              for this one.
+            </p>
           </CardContent>
         </Card>
 

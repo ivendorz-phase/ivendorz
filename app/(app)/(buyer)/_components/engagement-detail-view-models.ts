@@ -17,7 +17,9 @@
 // NOT projected by this read (so NOT rendered as data — interim only, by pointer):
 //   • `rfq_id` → the engagement→RFQ link is `ESC-7G-ENG-01` ("[pending projection]").
 //   • an engagement document LIST → `ESC-7G-ENG-03` (only single-doc `get_engagement_document` exists;
-//     no `list_engagement_documents` for the BC-OPS-2 record set) → the Documents section is gated.
+//     no `list_engagement_documents` for the BC-OPS-2 record set) → a per-document EXISTENCE indicator
+//     stays ungrounded. The Documents card (FE-BUY-07) still links to the 5 fixed document-kind routes
+//     (P-BUY-21..25) as plain navigation, derived from `id` alone — no enumeration, no coined field.
 //
 // GOVERNANCE: party-scoped — a non-party caller collapses to NOT_FOUND (Doc-4F §F5.8 V4 / H.9), rendered
 // BYTE-IDENTICAL to genuine absence (Inv #11 / GI-12) via `notFound()`. `engagement_id` is OPAQUE (Inv #5).
