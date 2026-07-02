@@ -210,3 +210,27 @@
 2026-07-02 · P-BUY-10 · ✅ Approved → ✅ committed (788cd7a) · Owner: Team-2
 2026-07-02 · P-ACC-10 · ✅ Approved → ✅ committed · Owner: Team-1
 2026-07-02 · P-ACC-11 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+2026-07-02 · P-ADM-20 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0058)
+2026-07-02 · P-ACC-11 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
+2026-07-02 · P-ADM-20 · ✅ Approved → ✅ committed (18da24e) · Owner: Team-3
+2026-07-02 · P-ADM-21 · ⬜ Pending → 🟡 In Progress · Owner: Team-3
+2026-07-02 · P-ADM-21 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-3
+2026-07-02 · P-BUY-11 · ⬜ Pending → 🟡 In Progress · Owner: Team-2
+2026-07-02 · P-BUY-11 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-2 (RFQ version history sub-route; get_rfq_version §E4.8; read-only Inv#8; diff not color-only; axe 0 own-content; 2-reviewer PASS/CHANGES-REQ→1 MINOR+1 NIT fixed pre-review)
+2026-07-02 · P-ACC-11 · 🔵 Ready for Review → 🟥 Patch Required · Owner: Team-1 (RV-0059 — MAJOR projection over-render: org names/scope label not in delegation_grant DTO; MINOR §5.10 pending state missing)
+2026-07-02 · P-ADM-21 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0060)
+2026-07-02 · P-BUY-11 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0061)
+2026-07-02 · P-BUY-11 · ✅ Approved → ✅ committed (55965e7) · Owner: Team-2
+2026-07-02 · P-ACC-11 · 🟥 Patch Required → 🟠 Fixing · Owner: Team-1 (RV-0059)
+2026-07-02 · P-ACC-11 · 🟠 Fixing → 🔵 Ready for Review · Owner: Team-1 (RV-0059 patched)
+2026-07-02 · P-ADM-21 · ✅ Approved → ✅ committed (84d85bc) · Owner: Team-3
+2026-07-02 · P-ADM-22 · ⬜ Pending → 🟡 In Progress · Owner: Team-3
+2026-07-02 · P-ADM-22 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-3
+2026-07-02 · P-ACC-11 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0062 — re-review; RV-0059 MAJOR+MINOR both resolved)
+2026-07-02 · P-ADM-22 · 🔵 Ready for Review → 🟥 Patch Required · Owner: Team-3 (RV-0063 — MAJOR: list over-renders is_active, not in list_plans projection)
+2026-07-02 · P-ACC-11 · ✅ Approved → ✅ committed · Owner: Team-1
+2026-07-02 · P-ACC-13 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+2026-07-02 · P-BUY-13 · ⬜ Pending → 🟡 In Progress · Owner: Team-2
+2026-07-02 · P-BUY-13 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-2 (Routing log/invitations sub-route; §E6.7 get_routing_log+list_invitations; NO vendor field/column — frozen projection governs; deferral invisible Doc-3 §4.2; aggregate routing log, no pipeline_counts breakout; R6 no buyer affordance; axe 0 own-content; 2-reviewer PASS/PASS 0 gating)
+2026-07-02 · P-ADM-22 · 🟥 Patch Required → 🟠 Fixing · Owner: Team-3 (RV-0063)
+2026-07-02 · P-ADM-22 · 🟠 Fixing → 🔵 Ready for Review · Owner: Team-3 (RV-0063 patched — dropped is_active column, not in list_plans projection)

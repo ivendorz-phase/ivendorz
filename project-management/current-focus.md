@@ -11,24 +11,23 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-ACC-11` Delegation grants (P2) — 🟡 In Progress (P-ACC-10 ✅ committed)
-- **Status:** 🟡 building (presentation-only; T-LISTING `list_delegation_grants`, Doc-4C §C9)
-- **Next Page:** `P-ACC-12` Delegation grant editor (P2, Waiting Decision — `ESC-IDN-DELEG-EXPIRY`)
+- **Current Page:** `P-ACC-13` Workflow settings (P2) — 🟡 In Progress (P-ACC-11 ✅ committed). **P-ACC-12 SKIPPED (Waiting Decision `ESC-IDN-DELEG-EXPIRY`)**
+- **Status:** 🟡 building (presentation-only; frozen `update_workflow_settings`, Doc-4C §C11)
+- **Next Page:** _(confirm from team-1.md after P-ACC-13)_
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
 
-- **Current Page:** `P-BUY-11` RFQ version history (P2) — ⬜ Pending (P-BUY-10 ✅ Approved, RV-0056). versioned (Inv #8)
-- **Status:** ⬜ queued to build — then `P-BUY-13` Routing log
-- **Next Page:** `P-BUY-13` Routing log / invitations (P2) — no excluded vendor shown. **⚠️ P-BUY-03/04 + P-BUY-05 DEFERRED — OWNER decisions pending**
-- **Updated:** 2026-07-02
+- **Current Page:** `P-BUY-13` Routing log / invitations (P2) — 🔵 Ready for Review (awaiting Team-4 QCT). Sub-route `/rfqs/[rfqId]/routing`; §E6.7 get_routing_log+list_invitations; NO vendor field (frozen projection governs); deferral invisible; R6 no buyer affordance; axe 0 own-content; 2 reviewers PASS/PASS 0 gating. P-BUY-11 committed 55965e7
+- **Status:** 🔵 awaiting Team-4 review
+- **Next Page:** **NONE BUILDABLE — Team-2 queue exhausted.** Only ⬜ left are **P-BUY-03/04/05, all DEFERRED pending OWNER decisions** (03/04 route topology; 05 favorites scope+projection). After P-BUY-13 commits, Team-2 idles until owner rules on the deferred trio or names a refinement item
 - **Updated:** 2026-07-02
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** `P-ADM-20` Routing rule editor (P2) — 🔵 Ready for Review (stage-gated per-rule editor, awaiting Team-4)
-- **Status:** 🔵 Ready for Review — Save/Enable/assist_routing disabled (R5, stage-gated); params from core.system_configuration (no coined schema); notFound Inv #11
-- **Next Page:** `P-ADM-21` Matching results (internal) (P2, Ready) — internal-service leg only
+- **Current Page:** `P-ADM-22` Plan management (P2) — 🟥 Patch Required (RV-0063). MAJOR: list renders "Visibility"(is_active) column but `list_plans` output omits is_active (Doc-4I §HB-1.4:292 = {plan_id,name,billing_cycle,price,currency,status}); it's a get_plan/detail field. Fix → drop the column (may keep is_active as a list filter); surface it on P-ADM-23 editor
+- **Status:** 🟥 Patch Required — NOT advanced; Team-3 fixes P-ADM-22 then re-flips to 🔵
+- **Next Page:** `P-ADM-23` Plan editor (P2, Ready) — `activate_plan` admin-only
 - **Updated:** 2026-07-02
 
 ---
