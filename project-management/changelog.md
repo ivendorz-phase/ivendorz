@@ -320,3 +320,5 @@
 2026-07-02 · P-ACC-22 · ✅ Approved → ✅ committed · Owner: Team-1
 2026-07-02 · P-ACC · cluster COMPLETE (01-22; P-ACC-12 Waiting-Decision) · Owner: Team-1
 2026-07-02 · P-PUB-04 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+- 2026-07-02 · Team-1 · P-PUB-04 Pricing/Plans (public) BUILT → 🔵 Ready for Review. app/(public)/pricing/{page,pricing-plans}.tsx under the PUBLIC shell (SiteHeader/SiteFooter, not account AppShell). Marketing header (single h1) + 3 plan cards (Growth featured) + billing-cycle toggle + closing signup CTA. Field discipline: markets frozen list_plans projection; entitlements-by-VALUE not plan-name (Inv #10); NO plan gates matching/routing/award (Doc-3 §11.8 moat); anonymous, no auth reads, CTAs → /login (Doc-7D PR5). tsc/eslint/prettier green; D/T/M render 200. Screenshots in governanceReviews/milestones/team1-pub-04-pricing/.
+2026-07-02 · P-PUB-04 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0086 — anonymous public pricing; Inv#10 entitlements-by-value; moat rendered; no kit change; CTAs→/login)

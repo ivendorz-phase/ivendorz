@@ -11,9 +11,9 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-PUB-04` Pricing / Plans (public) (P1) — 🟡 In Progress (P-ACC-22 ✅ committed; P-ACC cluster COMPLETE)
-- **Status:** 🟡 building (presentation-only public marketing of plans; Inv #10 entitlements-by-value; app/(public)/ public shell)
-- **Next Page:** remaining P-PUB (02/03/05/06/18/20/21/22/23/24) + P-SH (01/02/05/06); SKIP P-PUB-09/11 Waiting-API
+- **Current Page:** _(next P-PUB/P-SH)_ — `P-PUB-04` ✅ Approved (RV-0086)
+- **Status:** ⬜ pick next Ready page — remaining P-PUB (02/03/05/06/18/20/21/22/23/24) + P-SH (01/02/05/06); SKIP P-PUB-09/11 Waiting-API. Public projection only (Doc-4D §B.3); trust=binary Verified; discovery≠matching; non-disclosure §7.5
+- **Next Page:** owner/team to pick from the Ready P-PUB/P-SH set
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer

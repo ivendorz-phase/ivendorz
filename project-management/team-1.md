@@ -11,7 +11,7 @@ the status layer only. Work highest-priority `Ready` first; skip `Dependency ≠
 | P-PUB-01 | Home / Landing | P1 | Ready | 🟩 Built | polish item (owner-named) |
 | P-PUB-02 | About | P2 | Ready | ⬜ | static |
 | P-PUB-03 | How it works | P2 | Ready | ⬜ | static |
-| P-PUB-04 | Pricing / Plans (public) | P1 | Ready | 🟡 In Progress | Building — public marketing of plans under app/(public)/ (PUBLIC shell, NOT account AppShell); entitlements-by-VALUE not plan-name (Inv #10); plan≠tier; no plan gates matching/award (Doc-3 §11.8); CTAs → signup (no auth reads); Doc-7D |
+| P-PUB-04 | Pricing / Plans (public) | P1 | Ready | ✅ Approved | RV-0086 PASS (Team-4). Anonymous public marketing page — `(public)` shell (SiteHeader/SiteFooter, NOT account AppShell); binds NO Doc-5 contract, no auth reads, CTAs → /login (Doc-7D PR5). No kit change (git src/frontend clean). **Inv #10** — features = entitlement VALUES not plan-name; "Most popular" badge/taglines = marketing copy only; plan≠tier. **Moat rendered** ("Plans never affect RFQ matching/routing/awards", Doc-3 §11.8). Markets frozen list_plans projection; currency-driven; single h1; Check/Minus not colour-only (GI-06); P-4 inks. OBS(wiring): monthly/annual toggle collapse (RV-0068 pattern, frozen plans=1 cycle/row); marketing-copy labels. Queue advanced |
 | P-PUB-05 | For Buyers (segment) | P2 | Ready | ⬜ | static |
 | P-PUB-06 | For Vendors (segment) | P2 | Ready | ⬜ | static |
 | P-PUB-07 | Categories index | P1 | Ready | 🟩 Built | facets |
