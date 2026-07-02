@@ -25,8 +25,8 @@
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** `P-ADM-08` Category management (P1) — 🟥 Patch Required (RV-0026): action-map MAJOR — set `{draft:[Approve], active:[Retire], retired:[]}` (retired terminal), then re-review
-- **Status:** 🟥 Patch Required — stays with Team-3 (RV-0023's 3 findings resolved; one-map fix remains; P-ADM-09 blocked)
+- **Current Page:** `P-ADM-08` Category management (P1) — 🔵 Ready for Review (RV-0026 patched; awaiting Team-4 re-review)
+- **Status:** 🔵 Ready for Review — action-map = frozen linear edges `{draft:[Approve], active:[Retire], retired:[]}`; terminal cell "—"
 - **Next Page:** `P-ADM-09` Category editor (P1, Ready)
 - **Updated:** 2026-07-02
 

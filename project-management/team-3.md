@@ -50,7 +50,7 @@ Verification = `P-VND-28` + `P-PUB-18` (Team-1) + `P-ADM-12/13`.
 | P-ADM-05 | Bans | P2 | Ready | ✅ Approved | RV-0016 PASS (Team-4). PLATFORM bans ≠ buyer-private blacklist (Inv #11, documented); firewall; R5; 3rd `AdminQueueTable` consumer (patched table = sans headers). NIT: loading.tsx |
 | P-ADM-06 | Ban detail / issue | P2 | Ready | ✅ Approved | RV-0018 PASS (Team-4). R5 (Lift/Re-issue/Extend disabled, emits `VendorBanned`); notFound Inv #11; platform-ban≠blacklist; extends P-ADM-05 seed. OBS: cross-workspace reuse (promotion candidate). NIT: loading.tsx |
 | P-ADM-07 | Vendor approval queue | P1 | Ready | ✅ Approved | RV-0020 PASS (Team-4). FIREWALL — profile-status≠trust/tier (M5 owns score); R5 (Approve/Reject disabled, `set_vendor_profile_status`→M2); claim lifecycle Inv #3; 4th `AdminQueueTable` consumer. NIT: loading.tsx |
-| P-ADM-08 | Category management | P1 | Ready | ⬜ | taxonomy admin-governed |
+| P-ADM-08 | Category management | P1 | Ready | 🔵 Ready for Review | RV-0026 patched (re-review). MAJOR fixed — `ACTIONS_BY_STATUS` now only the frozen linear edges: `{draft:[Approve], active:[Retire], retired:[]}` (retired terminal, Doc-4D §38/41); terminal cell renders "—". RV-0023's 3 findings remain resolved (draft/active/retired, no specialized, slug). tsc/eslint/prettier green |
 | P-ADM-09 | Category editor | P1 | Ready | ⬜ | |
 | P-ADM-10 | Ad review queue | P2 | Ready | ⬜ | |
 | P-ADM-11 | Ad review detail | P2 | Ready | ⬜ | |

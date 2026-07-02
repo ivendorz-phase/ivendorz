@@ -86,3 +86,5 @@
 2026-07-02 · P-BUY-22 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0024)
 2026-07-02 · P-ACC-01 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0025)
 2026-07-02 · P-ADM-08 · 🔵 Ready for Review → 🟥 Patch Required · Owner: Team-3 (RV-0026)
+2026-07-02 · P-ADM-08 · 🟥 Patch Required → 🟠 Fixing · Owner: Team-3 (RV-0026)
+2026-07-02 · P-ADM-08 · 🟠 Fixing → 🔵 Ready for Review · Owner: Team-3 (RV-0026 patched)

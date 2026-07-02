@@ -220,3 +220,59 @@ edits implementation** (Raise ≠ Accept — CLAUDE.md §13). Each review gets a
   2. [OBS] `can_approve_po` handled as a DISTINCT slug — confirmed a REAL Doc-2 §7 slug (Doc-2:626; Doc-4F §F5.4 AI-note "do not collapse the two slugs"); gated in PRESENTATION only (both branches: withheld ≠ collapsed), server enforces at wiring; approve affordance DISABLED (Wave-4 write parked). Money boundary (DF-6/R8) standing note — record only, no pay/settle/escrow anywhere. Versioned/immutable (Inv #8) — active revision shown, `revision_reason` on revise, superseded retained.
   3. [OBS] `notFound()` collapse byte-identical (Inv #11/GI-12/H.9): unknown/absent PO AND non-party engagement resolve identically; `not-found.tsx` breadcrumb shows only the `Engagements` ancestor — NO leaf engagement/document ref leaks. `ESC-7G-ENG-03` registered (esc_registry.md:63) and kept in-code only (never user copy). `loading.tsx` present (SK-DETAIL); single h1 (PageHeader) → h2 CardTitles; strong reuse (no new primitive); disabled affordances carry WHY hints; GI-02 data layer parked (Wave 4) — presentation-only honored. A model detail page, on par with P-BUY-20 (RV-0015).
 - Result: page → ✅ Approved. Queue advanced (Team-2 → P-BUY-22).
+
+### RV-0023 · P-ADM-08 · Category management · Team-3
+- Date: 2026-07-02 · Reviewed: `app/(app)/admin/categories/{page,loading}.tsx`, `_components/admin/categories/categories-seed.ts` · (shared `AdminQueueTable` verified UNCHANGED vs HEAD — `srHeader` pre-existing; no approved-component modification)
+- Verdict: **PATCH REQUIRED** (BLOCKER 1 · MAJOR 1 · MINOR 1)
+- Findings:
+  1. **[BLOCKER] Invented category status vocabulary contradicts the FROZEN state machine.**
+     - *Finding:* seed/page define `CategoryStatus = "active" | "hidden" | "archived"` with per-row actions Hide / Activate / Archive / Restore.
+     - *Evidence:* Doc-2 §3.3 (line 280) categories `draft → active → retired`; entity columns `name, slug, level(1–4), path` (Doc-2 line 737, "YES (retire)"). Doc-4D `marketplace.set_category_status.v1` = **"Category Status (Approve / Retire)"** — `draft→active` (approve, the DD-4 staff act) and `active→retired` (retire) (Doc-4D PassA §153/§155; PassB §36; Hard-Review §64). Corpus grep for a category `hidden`/`archived` state → **ZERO hits** ("hidden" only appears as "no hidden ownership"; "archive" is RFQ, not categories).
+     - *Reason:* `hidden` and `archived` are coined states with no frozen basis; `retired` is renamed to `archived`; **`draft` — the pre-approval state where category governance actually happens — is omitted entirely**; Hide/Activate/Restore are invented transitions. Violates Golden Rule 10 (Frozen Documents Are Authoritative) + frozen-enum-verbatim; misrepresents the real approve/retire governance workflow.
+     - *Recommendation:* Model the frozen enum verbatim — `draft | active | retired`; actions **Approve** (`draft→active`) and **Retire** (`active→retired`), rendered-but-disabled (R5). Seed a `draft` (pending-approval) exemplar. Remove Hide/Activate/Archive/Restore.
+  2. **[MAJOR] `specialized` rendered as a category attribute — it is an assignment-level flag.**
+     - *Finding:* `CategoryVM.specialized` renders a "Specialized" marker on category NODES.
+     - *Evidence:* `is_specialized` is a **`category_assignments`** column (vendor↔category) — Doc-2 §10.3 (line 738: `category_assignments | level, is_specialized, status(proposed/active/removed)`); Doc-4D `assign_category` Request `is_specialized : boolean` (PassB §46). The category entity has only `name, slug, level, path` (Doc-2 line 737) — no specialization flag.
+     - *Reason:* Attributes an assignment-scoped concept to the taxonomy entity — a coined field on the category read.
+     - *Recommendation:* Remove `specialized` from the taxonomy row; it belongs to a vendor's category assignment (e.g. P-VND-11), not the admin tree.
+  3. **[MINOR] `code` is not a frozen category field; the frozen ref is `slug`.**
+     - *Finding:* `CategoryVM.code` ("CAT-FAB", "CAT-VLV-CTL") drives a "Code" column.
+     - *Evidence:* the category entity carries `slug` (Doc-2 line 737; `marketplace_category_slug_conflict`; `update_category` edits name/slug), not a "code."
+     - *Reason:* coined display field; the taxonomy's human ref is `slug`.
+     - *Recommendation:* use the frozen `slug` (label "Slug") or drop the column.
+  4. [OBS] Structure otherwise sound — legitimate 5th `AdminQueueTable` consumer (uses the pre-existing `srHeader` for the actions column, good a11y; shared table byte-unchanged, git-verified); R5 disabled actions; firewall (no Trust/Perf/Tier); `loading.tsx` added (discharges the standing admin-queue NIT); URL status filter with allowlist + `aria-current`; depth-first indentation; no fabricated grand total. Once the status model + `specialized`/`code` are corrected the page is close. Wiring note: the frozen authz slug is `staff_can_manage_categories` (Doc-4D) — Admin/staff, no active-org.
+- Result: page → 🟥 Patch Required. NOT advanced; returned to Team-3 (P-ADM-08 stays with Team-3; P-ADM-09 remains blocked until re-review PASS).
+
+### RV-0024 · P-BUY-22 · Payments · Team-2
+- Date: 2026-07-02 · Reviewed: `app/(app)/(buyer)/engagements/[engagementId]/payments/{page,payments-view,loading,not-found}.tsx`, `_components/payment-view-models.ts` (+ additive `view-models.ts` `PaymentStatus`, `state-display.ts` `paymentStatusDisplay`)
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] `payment_records` projection VERIFIED VERBATIM against Doc-2 line 783 / Doc-4F §F5.6 line 37 — `amount, currency, paid_at, method_note, status enum<recorded|confirmed>` — records only, no funds custody. VM carries exactly those fields; nothing coined; state machine `recorded → confirmed` (Doc-2 line 328). No `list_payment_records` read is frozen (ENG-03-class gap) — the list is a presentation stand-in, flagged in-code, no coined list contract.
+  2. [OBS] Distinct slugs VERIFIED — Doc-4F §F5.6 line 373/400: `can_record_payments` (record) / `can_approve_payment` (confirm), *"distinct from"*, never collapsed. Record affordance gates on the former (de-duplicated: header XOR empty-state, never twice); per-row Confirm gates on the latter AND only on `recorded` rows (machine edge). MONEY BOUNDARY (DF-6/R8) standing note — records only, no pay/settle/escrow; writes PARKED (Wave 4). `notFound()` byte-identical (Inv #11/GI-12/H.9), no leaf-ref leak; `loading.tsx`.
+  3. [OBS] Shared-file touches ALL git-verified safe: `PaymentStatus` (view-models.ts) + `paymentStatusDisplay` (state-display.ts) are PURELY ADDITIVE (no existing export changed; values match the frozen union, honoring the file's "no state without the frozen union" rule). `stickyFirstColumn` is a PRE-EXISTING `DataListTable` prop (file unchanged vs HEAD) — used for WCAG 2.1.1 keyboard-focusable scroll region; no approved-component modification. Model detail page, on par with P-BUY-20/21.
+- Result: page → ✅ Approved. Queue advanced (Team-2 → P-BUY-23).
+
+### RV-0025 · P-ACC-01 · Account overview · Team-1
+- Date: 2026-07-02 · Reviewed: `app/(app)/account/overview/{page,layout,account-overview-view}.tsx`, `account-nav-model.ts` (+ additive `_components/shell/icons.ts`)
+- Verdict: **PASS**
+- Findings:
+  1. [OBS] Invariant #2 rendered correctly — Platform Participation (Buyer/Vendor badges) and Org Role (StatusChip "Owner") shown DISTINCTLY with explanatory copy ("separate from participation"), never conflated; frozen role set (Owner) + frozen participation set (`buyer|vendor|hybrid|staff`, shell/types.ts:12). Invariant #10 exemplary — entitlements are numeric (seats 8/25, credits 320/500) + enum StatusChip "Active", NEVER a plan-name; nav-model comment reinforces server-side entitlement gating via wired contracts ("hiding a link is convenience only; the server re-validates"). Firewall clean (no Trust/Perf/Tier); Users-act/Orgs-own (Inv #5 — client org id never trusted, server-resolved at wiring).
+  2. [OBS] Shell `icons.ts` change git-verified PURELY ADDITIVE (2 lucide imports + 4 NAV_ICONS keys `account/members/roles/delegation`; existing keys untouched) — other nav consumers unaffected; all account-nav icon keys resolve. AppShell/PageHeader own the single h1 → h2 sections; kit reuse (no new primitive). `account-nav-model` grounded in page_inventory §12 nav; layout scoped to `/account/overview` only (does not wrap sibling P-ACC-14).
+  3. [OBS] Forward links (Organization/Members/Roles/Delegation/Billing/Workflow) 404 until those P-ACC pages land — the accepted "overview-first / dashboard-first sub-routes" pattern (as P-ADM-01), honestly documented in both the view and the nav-model. Non-gating.
+- Result: page → ✅ Approved. Queue advanced (Team-1 → P-ACC-02).
+
+### RV-0026 · P-ADM-08 · Category management (re-review of RV-0023 patch) · Team-3
+- Date: 2026-07-02 · Reviewed: `app/(app)/admin/categories/page.tsx`, `_components/admin/categories/categories-seed.ts`
+- Verdict: **PATCH REQUIRED** (MAJOR 1) — RV-0023's 3 findings all RESOLVED; 1 new MAJOR surfaced by the corrected vocabulary
+- Prior findings — resolved:
+  - [RESOLVED BLOCKER RV-0023#1] status enum now FROZEN `draft | active | retired` (Doc-2 §3.3 line 280); META + FILTERS include `draft`; seed carries draft/active/retired exemplars.
+  - [RESOLVED MAJOR RV-0023#2] `specialized` removed (it is a `category_assignments` flag, Doc-2 §10.3 — not a category attribute).
+  - [RESOLVED MINOR RV-0023#3] `code` → `slug` (frozen `categories.slug`, Doc-2 line 737); slug column `font-mono` is td-only so the "Slug" header stays sans (RV-0013 split holds).
+- New finding:
+  1. **[MAJOR] `ACTIONS_BY_STATUS` offers transitions outside the frozen state machine.**
+     - *Finding:* `draft: ["Approve","Retire"]`, `active: ["Retire"]`, `retired: ["Approve"]`.
+     - *Evidence:* Doc-4D `marketplace.set_category_status.v1` — Request `target_status : enum(active|retired)`, STATE validation `draft → active → retired`; **retired is "terminal-for-discovery"** (Doc-4D PassB §38/§39/§41; Hard-Review §64 enumerates exactly two edges: `draft→active` approve, `active→retired` retire). No `draft→retired` and no `retired→active` (reactivate) edge exists; `target_status` cannot be `draft`.
+     - *Reason:* "Retire" on a `draft` (draft→retired) and "Approve" on a `retired` (retired→active) are edges the frozen machine forbids — the command would return `STATE`. The page misrepresents the governance transitions available per state (and contradicts its own seed comment "retired is terminal-for-discovery"). Central governance affordance of the page → conformance-degrading (MAJOR), though contained (disabled/presentation, coins no data).
+     - *Recommendation:* `ACTIONS_BY_STATUS = { draft: ["Approve"], active: ["Retire"], retired: [] }`; render the retired actions cell as a neutral "—" (as P-BUY-22 does for non-actionable rows). Keep the affordances disabled (R5).
+  2. [OBS] Everything else conforms — frozen enum/labels correct, AdminQueueTable reuse (5th consumer; shared table byte-unchanged), R5 disabled, firewall clean, `loading.tsx`, URL filter allowlist + `aria-current`, no fabricated total. A one-map fix from PASS.
+- Result: page → 🟥 Patch Required. NOT advanced; returned to Team-3 (fix the action map, then re-review).

@@ -3,6 +3,7 @@ import {
   Briefcase,
   Building2,
   CheckSquare,
+  CircleUserRound,
   ClipboardList,
   CreditCard,
   FileText,
@@ -10,6 +11,7 @@ import {
   Globe,
   Handshake,
   Inbox,
+  KeyRound,
   LayoutDashboard,
   Megaphone,
   Package,
@@ -57,6 +59,11 @@ export const NAV_ICONS = {
   deals: Handshake,
   trust: ShieldCheck,
   org: Users,
+  // Account & Identity (Doc-7E).
+  account: CircleUserRound,
+  members: Users,
+  roles: ShieldCheck,
+  delegation: KeyRound,
 } as const satisfies Record<string, LucideIcon>;
 
 export type NavIconKey = keyof typeof NAV_ICONS;
