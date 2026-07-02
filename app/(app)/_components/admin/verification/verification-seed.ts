@@ -116,3 +116,87 @@ export const VERIFICATION_TASKS: VerificationTaskVM[] = [
     status: "decided",
   },
 ];
+
+// Frozen `verification_decisions.decision` verbs (Doc-2:796) — the P-ADM-13 decision set.
+export type VerificationDecision = "approve" | "reject" | "confirm" | "downgrade" | "request_info";
+
+export const VERIFICATION_DECISION_LABEL: Record<VerificationDecision, string> = {
+  approve: "Approve",
+  reject: "Reject",
+  confirm: "Confirm",
+  downgrade: "Downgrade",
+  request_info: "Request info",
+};
+
+/** Extended detail for one verification task (P-ADM-13) — frozen `verification_records` context. */
+export interface VerificationDetailVM extends VerificationTaskVM {
+  /** `verification_records.requested_by` — who requested the verification (display name). */
+  requestedBy: string;
+  /** `verification_records.expires_at` — display only. */
+  expiresAt: string;
+  /** `verification_records.evidence_document_refs[]` — document IDs (opaque refs), display only. */
+  evidence: string[];
+  /** Recorded decision (present only for a `decided` task) — from `verification_decisions`. */
+  decision?: VerificationDecision;
+  decisionReason?: string;
+  decidedBy?: string;
+}
+
+// Detail context keyed by task id (P-ADM-13). NO score/tier band here (firewall, Inv #6) — only the
+// verification record's own refs; a decision block is present only where the task is `decided`.
+const VERIFICATION_DETAILS: Record<string, Omit<VerificationDetailVM, keyof VerificationTaskVM>> = {
+  "vt-00071": {
+    requestedBy: "System (profile submission)",
+    expiresAt: "31 Jul 2026",
+    evidence: ["doc_trade_license_8841", "doc_bin_certificate_2207"],
+  },
+  "vt-00070": {
+    requestedBy: "A. Rahman",
+    expiresAt: "2 Aug 2026",
+    evidence: ["doc_factory_photos_5573", "doc_fire_license_1190", "doc_machinery_list_3320"],
+  },
+  "vt-00069": {
+    requestedBy: "System (org onboarding)",
+    expiresAt: "5 Aug 2026",
+    evidence: ["doc_incorporation_6612"],
+  },
+  "vt-00068": {
+    requestedBy: "S. Akter",
+    expiresAt: "6 Aug 2026",
+    evidence: ["doc_audited_accounts_4408", "doc_bank_solvency_7751"],
+  },
+  "vt-00067": {
+    requestedBy: "System (capacity claim)",
+    expiresAt: "8 Aug 2026",
+    evidence: ["doc_capacity_statement_9903"],
+  },
+  "vt-00066": {
+    requestedBy: "A. Rahman",
+    expiresAt: "1 Jul 2026",
+    evidence: ["doc_contact_letter_2261"],
+    decision: "approve",
+    decisionReason: "Registered contact confirmed against the trade license.",
+    decidedBy: "A. Rahman",
+  },
+  "vt-00065": {
+    requestedBy: "S. Akter",
+    expiresAt: "30 Jun 2026",
+    evidence: ["doc_audited_accounts_1180"],
+    decision: "downgrade",
+    decisionReason: "Submitted accounts support a lower band than declared.",
+    decidedBy: "S. Akter",
+  },
+};
+
+/** Lookup one task's summary row (P-ADM-13 header). */
+export function getVerificationTask(id: string): VerificationTaskVM | undefined {
+  return VERIFICATION_TASKS.find((t) => t.id === id);
+}
+
+/** Lookup one task's full detail. Returns undefined for an unknown id (Invariant #11). */
+export function getVerificationDetail(id: string): VerificationDetailVM | undefined {
+  const summary = getVerificationTask(id);
+  const extra = VERIFICATION_DETAILS[id];
+  if (!summary || !extra) return undefined;
+  return { ...summary, ...extra };
+}
