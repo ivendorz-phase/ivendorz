@@ -1,7 +1,8 @@
 # WORK PACKAGE — FE-BUY-04 Quotation Detail
 
 - **Lane:** G (Procurement Moat; contract-bound renders; R6 adjacency)
-- **Reviewed-SHA record:** _(filled at 🔵A)_
+- **Reviewed-SHA record:** `5a4550c` (scope complete — both in-scope pages checkpointed: P-BUY-14
+  `d5c09fe`, P-BUY-16 `5a4550c`)
 - **Value:** Procurement Moat · **Priority:** P1 · **Size:** M · **Risk:** Med
 
 ## In scope (the delta — enhancement, BX-01/BX-02 model)
