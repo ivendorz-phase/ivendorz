@@ -80,9 +80,15 @@ verified [6 Account components imported unmodified, thin `OrganizationTabs` over
 `WorkspaceTabs`, zero fork; no duplicate copies], route grounding honest [both action links to real
 `/account/*` routes; New grant `disabled` — `/account/delegation/new` genuinely absent], static gates
 green, render D/T/M all 200 + axe 0, tab click-through confirmed Invite/New-role hrefs + New-grant
-`BUTTON[disabled,no-href]` inert). Team-3 → FE-VEN-12 (also unblocked). _(Out-of-scope note: FE-PUB-09 vendored
-`popover`/`accordion`/`navigation-menu` into `src/frontend/primitives` — verify as a legit
-demand-driven kit extension under the mega-menu package at FE-PUB-09's review.)_
+`BUTTON[disabled,no-href]` inert). `FE-VEN-12 Settings` — composes `UserProfileForm`/P-ACC-02,
+`SecuritySettings`/P-ACC-03, `NotificationPreferences`/P-ACC-15 via new `SettingsTabs`, same
+composition-not-fork pattern; `WorkflowSettings`/P-ACC-13 explicitly EXCLUDED per the Board's §6.1
+ruling (buyer-shaped RFQ-approval content, carried forward not fabricated); no leave-chrome
+trade-off this time (none of the 3 reused components links out). **🔵A Review-A submitted**
+(checkpoint `8b208ab`) — last of the ruled FE-VEN-10 → 11 → 12 sequence; Team-3 STOPS, holds for the
+gate. _(Out-of-scope note: FE-PUB-09 vendored `popover`/`accordion`/`navigation-menu` into
+`src/frontend/primitives` — verify as a legit demand-driven kit extension under the mega-menu
+package at FE-PUB-09's review.)_
 
 **Review Team 5 standing backlog (B lane):** Step-3 Public baseline sweep (QCT 5-step Step 3) at a
 stable post-cutover SHA — **owner-authorized 2026-07-02 (agenda #10)**; runs **before FE-PUB-02
