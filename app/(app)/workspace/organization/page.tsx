@@ -5,10 +5,11 @@
 // the three drill-down action links below are vendor-authored.
 //
 // Known, disclosed trade-off (not a defect, same class as FE-VEN-10's): "Invite member"/"New
-// role"/"New grant" link to the existing `/account/members/invite`, `/account/roles/new`, and
-// `/account/delegation/new` routes — those creation flows live on separate Account routes, not
-// reusable components, so composing them here means the actions leave vendor chrome for that one
-// destination (real, already-reviewed data) rather than staying inside `/workspace/*`.
+// role" link to the existing `/account/members/invite` and `/account/roles/new` routes — those
+// creation flows live on separate Account routes, not reusable components, so composing them here
+// means the actions leave vendor chrome for that one destination (real, already-reviewed data)
+// rather than staying inside `/workspace/*`. "New grant" is disabled, not linked — see the inline
+// comment on the Delegation tab below for why.
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus, UserPlus } from "lucide-react";
