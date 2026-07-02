@@ -3,6 +3,17 @@
 **Status:** DRAFT v1.0 — design companion (NON-authoritative). **Documentation only — implementation
 starts only after this package is approved.**
 **Date:** 2026-07-02 · **Parent:** `MEGA_MENU_ARCHITECTURE.md`.
+**APPROVED — owner Board session 2026-07-03** (with Taxonomy Content v1.0 P1). **Implementation
+authorized: FE-PUB-09, phases 0–5 in one run** (WP card
+`governanceReviews/milestones/fe-pub-09-mega-menu/WORK-PACKAGE.md`). Owner-delta phase amendments:
+Phase 1 additionally lands the Category Landing Contract rebind/enrichment, the header Post RFQ
+CTA (header-scope, not a menu component), `MegaMenuFeatured` (pulled forward from Phase 4) and the
+addendum slots (`MegaMenuPopular`/`MegaMenuVendors`/`MegaMenuQuickActions`/`MegaMenuIndustryStrip`/
+`MegaMenuTrail`), `/categories` Browse A–Z, the global empty-state panel, breakpoint table, z-index
+ladder, and touch hover suppression; Phase 3 adds `<mark>` highlighting, the `/` shortcut, and the
+typed `MenuAnalyticsEvent` envelope (+ `quick_action_clicked`); Phase 4 adds the reserved authed
+slots (render-nothing defaults) and the preload/prefetch ladder; Phase 5 validates the ARCHITECTURE
+§9.6 performance budget table row-by-row.
 
 Standing constraints for every phase: presentation-only (no wiring, no coined contracts) ·
 taxonomy consumed verbatim from Taxonomy Content v1.0 (seed generated from

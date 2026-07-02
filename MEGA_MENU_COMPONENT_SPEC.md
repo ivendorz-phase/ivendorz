@@ -2,6 +2,10 @@
 
 **Status:** DRAFT v1.0 — design companion (NON-authoritative). **Documentation only.**
 **Date:** 2026-07-02 · **Parent:** `MEGA_MENU_ARCHITECTURE.md` · types in `MEGA_MENU_DATA_MODEL.md`.
+**APPROVED — owner Board session 2026-07-03**; owner deltas → **Approval Addendum** at end of file
+(new slot components, keyboard table, caps). v1.0 body unchanged; one default amended by the
+addendum: `MegaMenuCategory.hrefFor` default is now `/marketplace/category/[slug]` (Category
+Landing Contract, ARCHITECTURE §9.1).
 
 Conventions: all components are presentation-only, styled exclusively via `--iv-*` semantic tokens,
 `forwardRef` + `className` pass-through (kit idiom), no data fetching, no domain logic. `children`
@@ -186,3 +190,79 @@ callbacks; analytics fire through optional `onNavigate`/`onOpen` hooks (never au
 <CategoryTree mode="accordion" selectable="multi"
   value={assignedIds} onChange={proposeAssignments /* app enforces ≤10/≤5 + proposed lifecycle */} />
 ```
+
+---
+
+## Approval Addendum (v1.1, 2026-07-03 — additive; owner Board findings)
+
+All addendum components follow the base conventions (presentation-only, `--iv-*` tokens,
+`forwardRef`/`className`, data via props, **render nothing when their data is absent** — GI-03
+no-fabrication). Max-item caps (R2-NITPICK-05): popular searches ≤ 8 · industry chips ≤ 6 ·
+vendor rows ≤ 5 · featured tiles ≤ 4 · search results ≤ 12; overflow truncates editorially, these
+strips never scroll.
+
+### `MegaMenuPopular` (owner delta)
+- **Purpose:** "Popular Searches" chip strip (panel footer region + mobile drawer root pane) —
+  industrial users search by item, not category. Chips navigate to `/search?q={term}`.
+- **Props:** `terms?: PopularSearchTerm[]` (app-supplied; the public instance reuses the curated,
+  seed-verified `POPULAR_SEARCHES` from the discovery seed — RV-0121 provenance) · `max?` (≤8) ·
+  `className`. **Events:** `onTermSelect?(term)`.
+
+### `MegaMenuVendors` (MAJOR-02 — Invariant #1 binding, ARCHITECTURE §9.2)
+- **Purpose:** "Top Vendors for {category}" rows for the active branch + "View all suppliers →"
+  link. Vendor typing = frozen capability-matrix chips ONLY (Supply/Service/Fabricate/Consult);
+  trade-role labels are rejected coins.
+- **Props:** `vendors?: MenuVendorVM[]` (app-supplied, ≤5) · `viewAllHref: string` ·
+  `title?: string` · `className`. **Events:** `onVendorNavigate?(vendor)`.
+
+### `MegaMenuQuickActions` (MINOR-03, trimmed)
+- **Purpose:** Panel footer action row: Post RFQ (→ `/login` on public) · Browse Vendors
+  (→ `/vendors`) · Compare Vendors (→ `/compare`). Links only to existing surfaces.
+- **Props:** `actions?: QuickAction[]` (label + href + icon key; defaults to the three above on the
+  public instance) · `className`. **Events:** `onActionClick?(action)` (feeds
+  `quick_action_clicked`).
+
+### `MegaMenuIndustryStrip` (MINOR-04)
+- **Purpose:** Overlay-curated industry entry chips (e.g. Pharmaceutical / Food / Chemical /
+  Textile) — buyers who start from industry. Data from the overlay (`industryShortcuts`), links
+  only to existing surfaces; never hardcoded, never a dead route.
+- **Props:** `shortcuts?: IndustryShortcut[]` · `max?` (≤6) · `className`.
+
+### `MegaMenuTrail` (MINOR-07 breadcrumb preview)
+- **Purpose:** Desktop status row rendering the ancestor trail of the active/hovered node
+  (*Mechanical › Pumps › Centrifugal*) before any click — same trail renderer as search results.
+- **Props:** `className`. Reads `activePath` from `useMenuState`.
+
+### `MegaMenuRecent` (MINOR-01 · R2-MINOR-01 — reserved, data-gated)
+- **Purpose:** Reserved authenticated slots: **Recently Viewed** and **Frequently Used Categories**
+  (repeat-buy procurement behavior). Render only when the app supplies items — the kit never reads
+  localStorage or fabricates history. Wiring deferred to an authed milestone.
+- **Props:** `recent?: CategoryNodeVM[]` · `frequent?: CategoryNodeVM[]` · `pinned?:
+  CategoryNodeVM[]` + `onPinToggle?` (MINOR-02 — favorites are M2-owned; enforcement app-side) ·
+  `className`.
+
+### Expanded `MegaMenuFeatured` tile types (MAJOR-03 — lands Phase 1)
+The right-most rail hosts overlay-curated tiles: Featured Category (`CategoryCard`) · Popular
+Products (contract/seed-provided) · Industry Highlight · Buying-Guide link (only when a real
+`/resources` target exists). Each tile type collapses when its data is absent.
+
+### Consolidated keyboard shortcuts (R3-NITPICK-01 — one table, every consumer surface)
+
+| Key | Action |
+|---|---|
+| `/` | Focus `MegaMenuSearch` (panel open) |
+| `Esc` | Close panel (in search: first `Esc` clears the query) |
+| `←` / `→` | Column navigation (previous parent / enter children) |
+| `↓` / `↑` | Next / previous row (wraps within column) |
+| `Home` / `End` | First / last row in column |
+| `Enter` / `Space` / `↓` on trigger | Open panel |
+| `Enter` on row | Navigate (or **select** in picker surfaces) |
+| `a–z` | Typeahead within column |
+| `Tab` / `Shift+Tab` | search → columns (active path) → featured → footer; Tab past end closes |
+
+### Search result highlighting (R2-NITPICK-03)
+`MegaMenuSearch` results wrap the matched substring in an accessible `<mark>` (token-styled).
+
+### Touch hover suppression (R2-NITPICK-02)
+Hover-open paths activate only under `@media (hover: hover) and (pointer: fine)`; coarse/hybrid
+pointers are tap/click-to-open only.

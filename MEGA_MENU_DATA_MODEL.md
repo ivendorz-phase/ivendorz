@@ -2,6 +2,7 @@
 
 **Status:** DRAFT v1.0 — design companion (NON-authoritative). **Documentation only.**
 **Date:** 2026-07-02 · **Parent:** `MEGA_MENU_ARCHITECTURE.md`.
+**APPROVED — owner Board session 2026-07-03**; owner deltas → **§6 Approval Addendum** below.
 **Golden rule applied throughout:** Content ≠ Presentation. The frozen category entity is content;
 everything the menu needs beyond it is a **presentation overlay** owned by the frontend — so the menu
 ships with **zero corpus changes**.
@@ -123,3 +124,55 @@ per-root chunking without component changes — recorded here so the decision is
 | Attribute-driven flyout facets (`ESC-CLASS-ATTR`) | Board | New leaf-panel slot; not designed here |
 | Per-market overlays (multi-country) | Expansion | Overlay file per market; same tree |
 | Localization (Bangla labels) | Product decision | `name` stays canonical; overlay gains `displayName` per locale — flagged as the one field that would need naming-governance sign-off before use |
+
+---
+
+## 6. Approval Addendum (v1.1, 2026-07-03 — additive; owner Board findings)
+
+New app-supplied types for the addendum slot components (`MEGA_MENU_COMPONENT_SPEC.md` Approval
+Addendum). None of these are overlay-per-node fields; they are **instance data passed as props** by
+the app layer — absence renders nothing (GI-03 discipline throughout):
+
+```ts
+/** Popular Searches strip (owner delta). Public instance reuses the curated discovery-seed terms
+ *  (RV-0121-verified); the kit never invents terms. */
+export type PopularSearchTerm = string;
+
+/** MegaMenuVendors row (MAJOR-02). Points at the existing public VendorCardVM projection —
+ *  no new vendor fields coined. Capability = frozen 4-flag matrix (Invariant #1). */
+export interface MenuVendorVM {
+  slug: string;
+  name: string;
+  verified?: boolean;                       // absence = render nothing (never a "pending" state)
+  capability?: Partial<CapabilityFlags>;    // Supply/Service/Fabricate/Consult chips ONLY
+}
+
+/** Quick-action row (MINOR-03). Links only to existing surfaces. */
+export interface QuickAction { label: string; href: string; icon?: CategoryIconKey; }
+
+/** Industry entry chips (MINOR-04) — overlay-authored panel data (menu-level, not per-node). */
+export interface IndustryShortcut { label: string; href: string; }   // href must be an existing route
+
+/** Typed analytics envelope (R3-NITPICK-02) — one shape for every event/callback. */
+export interface MenuAnalyticsPayload {
+  source: "header" | "categories-page" | "sidebar" | "mobile-drawer" | "picker";
+  rootCategory?: string;      // active root slug
+  nodeSlug?: string;
+  path?: string[];            // ancestor slugs, root-first
+  device: "desktop" | "tablet" | "mobile";
+  authenticated: boolean;     // app-supplied; public anon instances pass false
+}
+export type MenuAnalyticsEvent =
+  | { type: "menu_open" } & MenuAnalyticsPayload
+  | { type: "node_drill" } & MenuAnalyticsPayload
+  | { type: "node_navigate" } & MenuAnalyticsPayload
+  | { type: "menu_search_used"; query: string; resultCount: number } & MenuAnalyticsPayload
+  | { type: "menu_search_zero"; query: string } & MenuAnalyticsPayload
+  | { type: "quick_action_clicked"; action: string } & MenuAnalyticsPayload;
+```
+
+Overlay gains one menu-level (not per-node) authored block: `industryShortcuts?: IndustryShortcut[]`
+(≤6 rendered). Reserved authed slots (`MegaMenuRecent`: recently viewed · frequently used · pinned)
+take `CategoryNodeVM[]` via props only — no storage, no fabrication, wiring deferred. The
+`hrefFor` default across components is `/marketplace/category/[slug]` per the Category Landing
+Contract (ARCHITECTURE §9.1).

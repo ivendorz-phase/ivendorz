@@ -2,6 +2,9 @@
 
 **Status:** DRAFT v1.0 — design companion (NON-authoritative; supplements Doc-7 program; on conflict
 the frozen corpus wins). **Documentation only — no implementation until approved.**
+**APPROVED — owner Board session 2026-07-03** (with Taxonomy Content v1.0 P1; FE-PUB-09 build
+authorized, phases 0–5). Owner deltas adjudicated 3 rounds → **§9 Approval Addendum** below; the
+v1.0 body above is unchanged (additive-only discipline).
 **Date:** 2026-07-02 · **Companions:** `MEGA_MENU_COMPONENT_SPEC.md` · `MEGA_MENU_DATA_MODEL.md` ·
 `MEGA_MENU_UX_FLOW.md` · `MEGA_MENU_IMPLEMENTATION_PLAN.md` · realizes `information_architecture.md`
 §5.3 + `ux_patterns.md` §3.2 (**Industrial Category Explorer**) · consumes **Taxonomy Content v1.0**
@@ -178,3 +181,70 @@ never implement product search (`MegaMenuSearch` filters already-loaded taxonomy
 `search_catalog` remains the search engine) · never invent counts/badges (overlay- or
 contract-provided only) · never encode Trust/Tier/Performance signals in navigation · never gate or
 rank anything (matching is M3's; menus are links).
+
+---
+
+## 9. Approval Addendum (v1.1, 2026-07-03 — additive; owner Board findings folded at approval)
+
+### 9.1 Category Landing Contract (MAJOR-01)
+
+Navigation must not end at the menu. **Every menu row navigates to the existing FE-PUB-04 landing
+route `/marketplace/category/[slug]`** (P-PUB-08) — this supersedes the spec's earlier
+`/categories/[slug]` default `hrefFor`; the component default is updated, surfaces may still
+override. The landing page is rebound from the interim 15-category seed to the taxonomy-v1 index
+(all 794 active slugs resolve; unknown slug 404s byte-identically, Invariant #11) and enriched
+additively: hero = name + full ancestor breadcrumb (`pathTo`) + overlay `description`; a **Related
+Categories** rail (siblings + children — derived from the taxonomy, never fabricated); vendor/
+product counts and Featured Suppliers stay contract-gated (GI-03, `[ESC-7-API-CATNAV]`) with the
+existing in-page interim disclosure.
+
+### 9.2 Vendor discovery in the panel (MAJOR-02 — Invariant #1 binding)
+
+A `MegaMenuVendors` slot may render "Top Vendors for {category}" rows (≤5) + a "View all
+suppliers →" link to `/vendors`, **only when the app supplies vendor data** (interim: the curated
+discovery seed, same source as FE-PUB-04). **Binding:** vendor typing renders only the frozen
+4-flag capability matrix (Supply / Service / Fabricate / Consult — Invariant #1, the existing
+`VENDOR_FACETS` idiom). Trade-role labels ("Manufacturer", "Importer", "Distributor",
+"Contractor") were raised and **REJECTED as coined vendor classifications**; re-raisable only as a
+corpus/taxonomy amendment, never in this package.
+
+### 9.3 Desktop layout breakpoints (R2-MINOR-03)
+
+| Viewport | Layout |
+|---|---|
+| < 1024px | Mobile drawer (`MegaMenuMobile`) |
+| 1024–1280px | Popover panel, up to 4 drill columns |
+| 1280–1600px | Popover panel, up to 5 columns (4 drill + featured/vendors rail) |
+| > 1600px | Panel capped at the 1440px max-width token, centered under the trigger row |
+
+### 9.4 z-index ladder (R2-NITPICK-01)
+
+Named `--iv-z-*` tokens, explicitly ordered: `--iv-z-dropdown` < `--iv-z-mega-menu` <
+`--iv-z-dialog` (dialog/sheet) < `--iv-z-tooltip` < `--iv-z-toast`. The mega menu panel sits
+**below** modal layers — it never overlays an open dialog or sheet.
+
+### 9.5 Preload & prefetch ladder (R2-MINOR-04 · R2-NITPICK-04)
+
+Taxonomy data ships with the page (server-resolved) — the ladder applies to code and routes:
+first sustained hover intent (~150–200 ms) → preload the `next/dynamic` panel chunk + build/memoize
+the taxonomy index → subsequent opens are instant (< 100 ms budget). Route prefetch of the hovered
+category landing fires only after the same sustained intent — never on pointer fly-by.
+
+### 9.6 Performance budget table (R3-NITPICK-03)
+
+Package-level engineering budgets (consolidates the numbers this package already states; coins no
+platform budget — Doc-8 owns those):
+
+| Metric | Target |
+|---|---|
+| Initial panel open (post code-load) | < 100 ms |
+| Search response (filter render) | < 50 ms |
+| Drill navigation | < 16 ms/frame |
+| Panel bundle chunk | ≤ 25 KB gz (excl. icons) |
+| Hover-intent preload/prefetch trigger | 150–200 ms |
+
+### 9.7 Reserved-disabled AI slots (future, M9-gated)
+
+"Recommended For You" / "Based on RFQs" / "Trending" / "Seasonal Demand" are recorded as reserved
+panel slots, **disabled and unbuilt** until recommendation services exist; any activation is
+M9-governed ("AI suggests; modules decide") and requires its own gate. No code ships for them.

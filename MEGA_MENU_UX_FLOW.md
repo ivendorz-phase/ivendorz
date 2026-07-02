@@ -3,6 +3,7 @@
 **Status:** DRAFT v1.0 — design companion (NON-authoritative). **Documentation only.**
 **Date:** 2026-07-02 · **Parent:** `MEGA_MENU_ARCHITECTURE.md` · realizes `ux_patterns.md` §3.2
 (Industrial Category Explorer: dense, professional, no consumer gimmicks — DP §1.3).
+**APPROVED — owner Board session 2026-07-03**; owner deltas → **§9 Approval Addendum** below.
 
 ---
 
@@ -115,3 +116,37 @@ Mobile drawer: standard Sheet focus trap; back button is first in tab order afte
 | Buyer RFQ picker | `selectable="single"`; drill identical; Enter/tap **selects** instead of navigating; selected trail echoed in the RFQ form (gate-A2 target); "change" reopens |
 | Vendor onboarding selector | `selectable="multi"`; checkboxes at app-decided grain; cap feedback (≤10/≤5) rendered from app-provided state — the tree only displays it |
 | Admin browser | `mode="tree"` + status chips (draft/active/retired) via `renderNode` — the one surface that may see non-active nodes (admin-provided data) |
+
+---
+
+## 9. Approval Addendum (v1.1, 2026-07-03 — additive; owner Board findings)
+
+- **Global empty-state contract (R2-MINOR-02).** Per-slot collapse (§7) covers missing slot data;
+  this covers the whole tree failing to resolve. At build time the seed drift-check makes a
+  missing/corrupted seed a **build failure** (nothing ships). At runtime (future adapter era), if
+  the taxonomy is unavailable the trigger still renders and opens a **degraded panel**:
+  "Industrial categories temporarily unavailable." + three always-working links — Browse
+  Categories (`/categories`) · Search Products (`/search`) · Post RFQ. Never a blank panel; never
+  a fabricated tree.
+- **Breadcrumb preview (MINOR-07).** Desktop panel shows the active/hovered node's ancestor trail
+  (*Mechanical › Pumps › Centrifugal*) in a status row (`MegaMenuTrail`) before any click — same
+  trail renderer as search results (§5.2).
+- **Panel strips (owner deltas).** Footer region hosts, in order and each collapsing when empty:
+  `MegaMenuTrail` · `MegaMenuPopular` (Popular Searches chips → `/search?q=…`, ≤8) ·
+  `MegaMenuIndustryStrip` (industry entry chips, ≤6, overlay-authored, existing routes only) ·
+  `MegaMenuQuickActions` (Post RFQ · Browse Vendors · Compare Vendors). The right rail hosts
+  `MegaMenuFeatured` (expanded tiles) and `MegaMenuVendors` (≤5 rows + "View all suppliers →").
+  Mobile drawer root pane repeats Popular Searches + quick actions.
+- **Touch hover suppression (R2-NITPICK-02).** All hover-open/hover-drill paths are gated behind
+  `@media (hover: hover) and (pointer: fine)` — coarse/hybrid pointers (touchscreen laptops) are
+  tap-only; no accidental opens.
+- **`/` shortcut (R3-NITPICK-01).** With the panel open, `/` focuses `MegaMenuSearch`; the full
+  consolidated shortcut table lives in the component spec's Approval Addendum.
+- **Search match highlighting (R2-NITPICK-03).** Result rows highlight the matched substring with
+  an accessible, token-styled `<mark>`.
+- **Preload/prefetch ladder (R2-MINOR-04 · R2-NITPICK-04).** First sustained hover intent
+  (~150–200 ms) preloads the panel chunk + builds the index; route prefetch uses the same intent
+  timer — never pointer fly-by. Details: ARCHITECTURE §9.5.
+- **Reserved authed slots (MINOR-01/02 · R2-MINOR-01).** Recently Viewed · Frequently Used
+  Categories · ⭐ pinned categories render **only when the app supplies data** (kit stores
+  nothing); absent on the public anonymous instance until an authed milestone wires them.
