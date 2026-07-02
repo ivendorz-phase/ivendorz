@@ -128,7 +128,7 @@ export function MegaMenuColumns({ className }: { className?: string }) {
     const column = target.closest<HTMLElement>("[data-menu-column]");
     if (!column) return;
     const rows = Array.from(
-      column.querySelectorAll<HTMLElement>("[data-menu-row]:not([aria-disabled])"),
+      column.querySelectorAll<HTMLElement>("[data-menu-row]:not([data-disabled])"),
     );
     const idx = rows.indexOf(target.closest<HTMLElement>("[data-menu-row]") as HTMLElement);
 
@@ -155,7 +155,7 @@ export function MegaMenuColumns({ className }: { className?: string }) {
         e.preventDefault();
         const level = Number(column.dataset.menuColumn);
         const next = container.querySelector<HTMLElement>(`[data-menu-column="${level + 1}"]`);
-        next?.querySelector<HTMLElement>("[data-menu-row]:not([aria-disabled])")?.focus();
+        next?.querySelector<HTMLElement>("[data-menu-row]:not([data-disabled])")?.focus();
         break;
       }
       case "ArrowLeft": {

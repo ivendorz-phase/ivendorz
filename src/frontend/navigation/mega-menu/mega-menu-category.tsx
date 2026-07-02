@@ -70,7 +70,7 @@ export function MegaMenuCategory({
   // comingSoon: visible, muted, chip, non-navigable (UX doc §7) — a div, never a dead <a>.
   if (node.comingSoon) {
     return (
-      <div role="listitem" data-menu-row aria-disabled className={rowClass}>
+      <div role="listitem" data-menu-row data-disabled className={rowClass}>
         {body}
       </div>
     );

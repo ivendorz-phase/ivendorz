@@ -7,6 +7,9 @@ import { ProductCard } from "@/frontend/components/product-card";
 import { ResultsGrid } from "@/frontend/components/results-grid";
 import { PaginationControl } from "@/frontend/components/pagination-control";
 import { cn } from "@/frontend/lib/cn";
+import taxonomySeed from "@/frontend/navigation/model/taxonomy.v1.json";
+import { CategoryCard, OVERLAY_V1, buildTaxonomyIndex, categoryHref } from "@/frontend/navigation";
+import type { CategoryNodeData, CategoryNodeVM } from "@/frontend/navigation";
 import {
   VENDORS,
   PRODUCTS,
@@ -15,17 +18,36 @@ import {
 } from "../../../_components/discovery/seed";
 import { productDetailHref } from "../../../_components/product-detail";
 
-// P-PUB-08 Category page (Doc-7D Public surface · FE-PUB-04). PRESENTATION & COMPOSITION ONLY: anonymous,
-// read-only, binds NO Doc-5 contract. Drill-down from a category tile (/categories, /marketplace) into the
-// vendors and products carrying that category — an exact-match read over the same curated discovery seed
-// used by /search and /vendors, standing in for a `search_catalog` category-facet read under the
-// registered interim [ESC-7-API-CATNAV] (disclosed in-page, honest not-yet-wired note). Reuses the M2.1 kit
-// (VendorCard/ProductCard/FilterSidebar/ResultsGrid/PaginationControl) — no new card type, no new
-// primitive, no kit/token change. An unknown slug 404s byte-identically (Invariant #11).
-const ALL_CATEGORIES = CATEGORY_GROUPS.flatMap((group) => group.categories);
+// P-PUB-08 Category page (Doc-7D Public surface · FE-PUB-04; FE-PUB-09 **Category Landing
+// Contract** — MEGA_MENU_ARCHITECTURE §9.1). PRESENTATION & COMPOSITION ONLY: anonymous,
+// read-only, binds NO Doc-5 contract.
+//
+// FE-PUB-09 rebind: `findCategory` now resolves against **Taxonomy Content v1.0** (794 active
+// slugs from the build-time seed — every mega-menu row lands here) UNION the legacy curated
+// 15-slug interim set (CATEGORY_GROUPS — keeps every previously-shipped link alive; additive,
+// no regression on closed surfaces). Unknown slug 404s byte-identically (Invariant #11).
+// Enrichment (additive): full ancestor breadcrumb (taxonomy `pathTo`), overlay description,
+// and a Related Categories rail (siblings + children — DERIVED from the taxonomy, never
+// fabricated). Vendor/product results remain the same exact-match read over the curated
+// discovery seed standing in for `search_catalog` under the registered interim
+// [ESC-7-API-CATNAV] (disclosed in-page); taxonomy nodes the seed doesn't cover render the
+// honest empty grid — counts/featured-suppliers stay contract-gated (GI-03, never fabricated).
+const TAXONOMY = buildTaxonomyIndex(taxonomySeed.nodes as CategoryNodeData[], OVERLAY_V1);
+const LEGACY_CATEGORIES = CATEGORY_GROUPS.flatMap((group) => group.categories);
 
-function findCategory(slug: string) {
-  return ALL_CATEGORIES.find((c) => c.slug === slug);
+interface ResolvedCategory {
+  slug: string;
+  name: string;
+  /** Present only for taxonomy-resolved slugs. */
+  node?: CategoryNodeVM;
+}
+
+function findCategory(slug: string): ResolvedCategory | undefined {
+  const node = TAXONOMY.bySlug.get(slug);
+  if (node && !node.hidden) return { slug: node.slug, name: node.name, node };
+  const legacy = LEGACY_CATEGORIES.find((c) => c.slug === slug);
+  if (legacy) return { slug: legacy.slug, name: legacy.name };
+  return undefined;
 }
 
 type SearchParams = { tab?: string };
@@ -44,8 +66,11 @@ export async function generateMetadata({
   const category = findCategory(slug);
   if (!category) return { title: "Category · iVendorz" };
   return {
-    title: `${category.name} · iVendorz`,
-    description: `Browse ${category.name} suppliers and products on iVendorz.`,
+    // Overlay SEO fields are reserved for future landing pages; used here when authored.
+    title: category.node?.seoTitle ?? `${category.name} · iVendorz`,
+    description:
+      category.node?.seoDescription ??
+      `Browse ${category.name} suppliers and products on iVendorz.`,
   };
 }
 
@@ -63,12 +88,23 @@ export default async function CategoryPage({
   const sp = await searchParams;
   const activeTab = TABS.some((t) => t.key === sp.tab) ? (sp.tab as string) : "vendors";
 
-  // INTERIM stand-in for a `search_catalog` category-facet read: an exact-match filter over the curated
-  // seed (not a substring search — the category is already selected). Replaced wholesale when wired.
+  // INTERIM stand-in for a `search_catalog` category-facet read: an exact-match filter over the
+  // curated seed (not a substring search — the category is already selected). Replaced wholesale
+  // when wired. Taxonomy nodes without seed coverage honestly show the empty grid.
   const vendors = VENDORS.filter((v) => v.category === category.name);
   const products = PRODUCTS.filter((p) => p.category === category.name);
 
   const tabHref = (tab: string) => `/marketplace/category/${slug}?tab=${tab}`;
+
+  // Ancestor breadcrumb + Related Categories (taxonomy-resolved slugs only — all DERIVED).
+  const trail = category.node ? TAXONOMY.pathTo(category.node.id) : [];
+  const parent =
+    category.node?.parentId != null ? TAXONOMY.byId.get(category.node.parentId) : undefined;
+  const siblings = category.node
+    ? (parent?.children ?? TAXONOMY.roots).filter((n) => n.id !== category.node!.id)
+    : [];
+  const related = [...(category.node?.children ?? []), ...siblings].slice(0, 8);
+  const rootSlug = trail[0]?.slug;
 
   return (
     <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-8 sm:px-6">
@@ -81,12 +117,23 @@ export default async function CategoryPage({
           <Link href="/categories" className="rounded-sm hover:text-foreground hover:underline">
             Categories
           </Link>
+          {trail.slice(0, -1).map((ancestor) => (
+            <span key={ancestor.id}>
+              {" / "}
+              <Link
+                href={categoryHref(ancestor)}
+                className="rounded-sm hover:text-foreground hover:underline"
+              >
+                {ancestor.name}
+              </Link>
+            </span>
+          ))}
         </p>
         <h1 className="mt-1 text-3xl font-bold tracking-tight text-iv-ink-heading sm:text-4xl">
           {category.name}
         </h1>
         <p className="mt-2 max-w-2xl text-iv-ink-secondary">
-          Verified suppliers and products in {category.name}.
+          {category.node?.description ?? `Verified suppliers and products in ${category.name}.`}
         </p>
         <p className="mt-2 text-xs text-muted-foreground">
           Live catalog search is coming soon — showing example listings for this category.
@@ -146,6 +193,28 @@ export default async function CategoryPage({
               ))}
             </ResultsGrid>
           )}
+
+          {/* Related Categories rail (ARCH §9.1) — children first, then siblings; DERIVED from
+              the taxonomy, collapses entirely for legacy-only slugs. */}
+          {related.length > 0 ? (
+            <section aria-label="Related categories" className="mt-8">
+              <h2 className="mb-3 text-lg font-semibold tracking-tight text-iv-ink-heading">
+                Related categories
+              </h2>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                {related.map((node) => (
+                  <CategoryCard
+                    key={node.id}
+                    node={node}
+                    href={categoryHref(node)}
+                    rootSlug={rootSlug ?? node.slug}
+                    size="sm"
+                    showDescription={false}
+                  />
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
       </div>
     </div>
