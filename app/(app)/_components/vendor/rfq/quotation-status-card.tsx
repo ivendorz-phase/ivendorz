@@ -4,6 +4,12 @@
 // withdrawn`, pre-award, terminal) are surfaced as pre-award-only actions — disabled in the
 // presentation phase. Own standing only: NO rank, NO competitor existence (ND-2/ND-3). Renders a
 // genuine-empty "no quotation yet" with a CTA when none exists. Presentation-only; RSC-friendly.
+//
+// FE-VEN-06 delta (P-VND-20 — withdraw = zero penalty): Withdraw now reads as the more consequential
+// action (destructive-toned label on the existing outline variant, mirroring the FE-VEN-05 P-VND-16
+// decline treatment, RV-0101) and states its consequence explicitly — withdrawing this quotation
+// carries no penalty and does not affect standing on other RFQs — via `aria-describedby`, instead of
+// leaving the milestone-defining "zero penalty" fact unstated near the action itself.
 import Link from "next/link";
 import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
@@ -75,7 +81,14 @@ export function QuotationStatusCard({
               <Button type="button" variant="outline" size="sm" disabled>
                 Revise
               </Button>
-              <Button type="button" variant="outline" size="sm" disabled>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                aria-describedby="quotation-withdraw-note"
+                disabled
+              >
                 Withdraw
               </Button>
             </div>
@@ -83,6 +96,12 @@ export function QuotationStatusCard({
           <p className="text-xs text-muted-foreground">
             Revisions create a new version — earlier versions are kept and never deleted.
           </p>
+          {preAward ? (
+            <p id="quotation-withdraw-note" className="text-xs text-muted-foreground">
+              Withdrawing is permanent for this quotation. It carries no score penalty and does not
+              affect your standing on other RFQs.
+            </p>
+          ) : null}
         </CardContent>
       </Card>
 
