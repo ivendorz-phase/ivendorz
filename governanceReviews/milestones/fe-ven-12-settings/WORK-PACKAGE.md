@@ -3,7 +3,9 @@
 - **Lane:** G (composes cross-team-owned Account surfaces; Golden Rule 7 sensitivity, same class as
   `FE-VEN-10`/`FE-VEN-11`)
 - **Reviewed-SHA record:** `8b208ab` — RV-0125 Review-A: PASS (0 BLOCKER/MAJOR/MINOR, 9 OBS all
-  confirmatory); submitted to Review-B 2026-07-03
+  confirmatory) · Review-B: PASS (Team-5 mode-A pre-close, B/M/M=0; a second independently-spawned
+  Review-B agent reached the same technical verdict but raised a process-integrity BLOCKER about
+  the live entry which was adjudicated NOT VALID — see RV-0125 for full reasoning) — **Closed**
 - **Value:** Platform · **Priority:** P3 · **Size:** S · **Risk:** Med
 
 ## In scope
@@ -77,10 +79,18 @@ start the work"; last of the ruled FE-VEN-10 → 11 → 12 sequence) · Scope co
 
 ## DoD confirmation (checked at close)
 
-☐ page DoD (1 page, 3 composed tabs) ☐ responsive D/T/M ☐ WCAG-AA ☐ tsc/eslint/prettier ☐ realistic
-mock data — N/A by design (each reused component ships its own existing presentation seed) ☐ Review
-A PASS ☐ Review B PASS (B/M/M = 0) ☐ self-closed on clean gate (or Board, if BLOCKER/REGRESSION) ☐
-no TODO/dead code ☐ no duplicate components (zero components duplicated — every tab is a direct,
-unmodified import) ☐ no fork of any Account page (Flag-and-Halt condition) ☐ `P-ACC-13` Workflow
-Settings genuinely excluded, not fabricated as a vendor variant ☐ promotion candidates reviewed ☐
-tracker updated ☐ card closed
+☑ page DoD (1 page, 3 composed tabs) ☑ responsive D/T/M (axe 0 violations, live-rendered) ☑ WCAG-AA
+☑ tsc/eslint/prettier green ☑ realistic mock data — N/A by design (each reused component ships its
+own existing presentation seed) ☑ Review A PASS (RV-0125, 0 B/M/M, 9 OBS) ☑ Review B PASS (B/M/M =
+0, Team-5 mode-A pre-close, corroborated by a second independent Review-B agent — its
+process-integrity BLOCKER re: the live entry adjudicated NOT VALID, see RV-0125) ☑ self-closed on
+clean gate (Amendment v1.3 §13) ☑ no TODO/dead code ☑ no duplicate components (zero components
+duplicated — every tab is a direct, unmodified import) ☑ no fork of any Account page (fork check
+independently re-run twice, zero forks) ☑ `P-ACC-13` Workflow Settings genuinely excluded (verified
+against the actual `FE-VEN-14` report text and live render `hasWorkflowTab:false`, not fabricated
+as a vendor variant) ☑ promotion candidates reviewed — none (composition-only milestone) ☑ tracker
+updated ☑ card closed
+
+**Milestone-sequence note:** this closes the ruled FE-VEN-10 (Billing) → FE-VEN-11 (Organization) →
+FE-VEN-12 (Settings) execution order in full — all three approved, composition-not-fork validated
+end-to-end three times over.

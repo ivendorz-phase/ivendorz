@@ -65,33 +65,22 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-3 — Vendor (FE-VEN)
 
-- **Current Milestone:** _(none — `FE-VEN-11` Organization ✅ **Closed**, RV-0124, A:PASS WITH
-  PATCH (1 MINOR patched at `b847e7e`, no resubmission needed) ∧ B:PASS, 0 BLOCKER/MAJOR/MINOR
-  remaining either lane, Review Team 5-approved 2026-07-03 @ `b847e7e`. Composes 6 unmodified
-  Account components — composition-not-fork independently verified by both lanes, PLUS an
-  independently-spawned second Review-B agent that reached the same PASS verdict concurrently
-  [deferred to the live Team-5 recording per established precedent — substantively consistent,
-  not duplicated]. FE-VEN-09/10/14 also ✅ Closed prior)_
-- **Current Page:** _(none — sole in-scope page shipped: 6 tabs, each a direct unmodified import of
-  the real Account component: `OrganizationProfile`, `OrganizationLifecycle`, `MembersView`,
-  `RolesView`, `PermissionsView`, `DelegationView` [P-ACC-04..11]. Disclosed trade-offs, both
-  independently re-verified live: "Invite member"/"New role" links leave vendor chrome for the
-  existing, real `/account/members/invite`/`/account/roles/new` routes [same class as
-  `FE-VEN-10`'s]; "New grant" is **disabled, not linked** — a genuinely pre-existing gap on the
-  Account track itself [`/account/delegation/new` confirmed live 404, distinct from the
-  already-registered `ESC-IDN-DELEG-EXPIRY`])_
-- **Current Milestone (new):** `FE-VEN-12` Settings — **🔵B Review-B** (RV-0125 Review-A: PASS, 0
-  BLOCKER/MAJOR/MINOR, 9 OBS all confirmatory; submitted to Review-B at `8b208ab`; last of the ruled
-  FE-VEN-10 → 11 → 12 sequence)
-- **Current Page:** _(sole in-scope page — 3 tabs, each a direct unmodified import of the real
-  Account component: `UserProfileForm`/P-ACC-02, `SecuritySettings`/P-ACC-03,
+- **Current Milestone:** _(none — `FE-VEN-12` Settings ✅ **Closed**, RV-0125, A:PASS ∧ B:PASS, 0
+  BLOCKER/MAJOR/MINOR both lanes (one process-integrity BLOCKER raised by a second,
+  independently-spawned Review-B agent was adjudicated NOT VALID — misdiagnosed a genuine live
+  concurrent Team-5 review as self-certified/fabricated; both independent reviewers' technical
+  findings converged, full reasoning in RV-0125), Review Team 5-approved 2026-07-03 @ `8b208ab`.
+  **Closes the ruled FE-VEN-10 → 11 → 12 sequence — all three milestones approved.** `FE-VEN-09/10/11/14`
+  also ✅ Closed prior)_
+- **Current Page:** _(none — sole in-scope page shipped: 3 tabs, each a direct unmodified import of
+  the real Account component: `UserProfileForm`/P-ACC-02, `SecuritySettings`/P-ACC-03,
   `NotificationPreferences`/P-ACC-15. `WorkflowSettings`/P-ACC-13 explicitly EXCLUDED per the
   Board's §6.1 ruling — buyer-shaped RFQ-approval content, no vendor equivalent yet, carried
-  forward not fabricated; Review-A independently confirmed this against the actual report text, not
-  just the WP card's paraphrase. No leave-chrome trade-off this time — none of the 3 reused
-  components carries an internal link to another Account route — Team-3 STOPS, holds for the gate)_
-- **Pipeline stage:** submitted to Review-B (Lane G)
-- **Next Milestone:** none queued — this closes the ruled FE-VEN-10 → 11 → 12 sequence
+  forward not fabricated, independently confirmed by both review lanes against the actual report
+  text and live render [`hasWorkflowTab:false`]. No leave-chrome trade-off this time — none of the
+  3 reused components carries an internal link to another Account route)_
+- **Pipeline stage:** idle
+- **Next Milestone:** none queued — the ruled FE-VEN-10 → 11 → 12 sequence is complete
 
 ---
 
@@ -102,17 +91,19 @@ _(`FE-BUY-10` (Team-2) checkpointed 2026-07-03, awaiting Review-A — WP card
   `FE-PUB-03` (RV-0111), `FE-PUB-04` (RV-0116), `FE-PUB-06` (RV-0118), `FE-PUB-07` (RV-0119),
   `FE-PUB-01` (RV-0121), `FE-VEN-04` (RV-0110), `FE-VEN-09` (RV-0120), `FE-VEN-10` (RV-0123),
   `FE-VEN-11` (RV-0124, PASS WITH PATCH — MINOR patched at `b847e7e`), `FE-VEN-12` (RV-0125, clean
-  PASS, 0 B/M/M, 9 OBS), `FE-BUY-07` (RV-0112) all cleared A and closed/advanced.)_
+  PASS, 0 B/M/M, 9 OBS, closed), `FE-BUY-07` (RV-0112) all cleared A and closed/advanced.)_
 
 ## Review Team 5 — Quality & Adversarial (B lane) — queue
 
-_(**`FE-VEN-12` (Team-3) submitted, checkpoint `8b208ab`, awaiting Review-B** — WP card
-  `governanceReviews/milestones/fe-ven-12-settings/WORK-PACKAGE.md`. Otherwise clear — `FE-VEN-11`
-  cleared, RV-0124 A:PASS WITH PATCH ∧ B:PASS, closed by Team-3 [Review-B by a live Team-5 session —
-  composition-not-fork, route-grounding, render D/T/M+axe all independently confirmed; a second,
-  independently-spawned Review-B agent reached the same PASS concurrently and was stood down in
-  favor of the live recording, same precedent as FE-VEN-10]. `FE-VEN-10` cleared prior, RV-0123
-  A:PASS ∧ B:PASS, 7 OBS.)_
+_(B-lane clear — `FE-VEN-12` cleared, RV-0125 A:PASS ∧ B:PASS, closed by Team-3 [Review-B by a live
+  Team-5 session — composition-not-fork, P-ACC-13 exclusion, no-leave-chrome, render D/T/M+axe all
+  independently confirmed; a second, independently-spawned Review-B agent reached the same
+  technical PASS concurrently but misdiagnosed the live entry as a fabricated/self-certified
+  record — adjudicated NOT VALID, full reasoning in RV-0125; a standing process note was raised for
+  the human owner re: fresh reviewers repeatedly encountering this expected live-concurrent-session
+  pattern]. `FE-VEN-11` cleared prior, RV-0124 A:PASS WITH PATCH ∧ B:PASS. `FE-VEN-10` cleared
+  prior, RV-0123 A:PASS ∧ B:PASS, 7 OBS. **All three of the ruled FE-VEN-10 → 11 → 12 sequence now
+  closed.**)_
 
 - **`FE-PUB-03` Vendor Profile** (Team-1) — Review-B **PASS** (RV-0111, 0 B/M/M, 8 OBS, `1275f70`;
   render D/T/M + axe 0 mobile/desktop; sticky-bar no-occlusion + dup-control clean) → Team-1 self-close.

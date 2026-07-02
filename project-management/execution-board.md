@@ -87,8 +87,15 @@ ruling (buyer-shaped RFQ-approval content, carried forward not fabricated); no l
 trade-off this time (none of the 3 reused components links out). **Review-A: PASS** (RV-0125 — 0
 BLOCKER/MAJOR/MINOR, 9 OBS all confirmatory; fork check clean, P-ACC-13 exclusion independently
 verified against the actual report text, no-leave-chrome claim confirmed, scope/kit/nav clean).
-**🔵B Review-B submitted** at checkpoint `8b208ab` — last of the ruled FE-VEN-10 → 11 → 12 sequence;
-Team-3 STOPS, holds for the gate. _(Out-of-scope note: FE-PUB-09 vendored
+**✅ APPROVED** (RV-0125 @ `8b208ab`, A:PASS ∧ B:PASS, 0 BLOCKER/MAJOR/MINOR both lanes; **Review
+Team 5 marked approved 2026-07-03** per Amendment v1.3 §13 — owning Team-3 to commit
+[checkpoints/trackers; close uncommitted]; composition-not-fork verified [3 Account components
+imported unmodified, thin `SettingsTabs` over shared `WorkspaceTabs`, zero fork, no duplicate copies],
+**P-ACC-13 exclusion independently confirmed in source AND live render [exactly 3 tabs
+Profile/Security/Notifications, no Workflow tab, no RFQ-approval text — carried forward not
+fabricated]**, no leave-chrome trade-off, scope byte-stable across the FE-PUB-09 Phase-4 HEAD advance,
+static gates green, render D/T/M all 200 + axe 0). **Last of the ruled FE-VEN-10 → 11 → 12 sequence —
+all three approved; no further FE-VEN pull queued.** _(Out-of-scope note: FE-PUB-09 vendored
 `popover`/`accordion`/`navigation-menu` into
 `src/frontend/primitives` — verify as a legit demand-driven kit extension under the mega-menu
 package at FE-PUB-09's review.)_
