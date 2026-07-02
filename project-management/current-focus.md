@@ -11,9 +11,9 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** _(next P-PUB/P-SH)_ — `P-PUB-04` ✅ Approved (RV-0086)
-- **Status:** ⬜ pick next Ready page — remaining P-PUB (02/03/05/06/18/20/21/22/23/24) + P-SH (01/02/05/06); SKIP P-PUB-09/11 Waiting-API. Public projection only (Doc-4D §B.3); trust=binary Verified; discovery≠matching; non-disclosure §7.5
-- **Next Page:** owner/team to pick from the Ready P-PUB/P-SH set
+- **Current Page:** `P-PUB-03` How it works (P2) — ⬜ next (P-PUB-02 ✅ Approved, RV-0087). static
+- **Status:** ⬜ queued — static marketing; copy grounded in product def (no fabrication); anonymous, no Doc-5 contract. Chrome follow-up open: SiteHeader "Pricing" nav → /pricing (surfaced RV-0087)
+- **Next Page:** P-PUB-03/05/06/18/21/22/24 + P-SH-01/02/06 (P2), then P-PUB-20/23 + P-SH-05 (P3); SKIP P-PUB-09/11 Waiting-API
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
