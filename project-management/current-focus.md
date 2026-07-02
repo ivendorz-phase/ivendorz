@@ -23,15 +23,17 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-2 — Buyer (FE-BUY)
 
-- **Current Milestone:** _(none — `FE-BUY-08` Dashboard Widgets ✅ **Closed**, RV-0113, A:PASS ∧
-  B:PASS, 0 BLOCKER/MAJOR/MINOR, 12 OBS, checkpoint `d501345`; Dev-team self-close per Amendment
-  v1.3 §13. FE-BUY-04/05/06/07 also ✅ Closed — FIVE milestones this session, no kickoff-approval
-  pause per owner directive)_
-- **Current Page:** _(none — Engagement pipeline widget shipped alongside BX-01's Sourcing
-  pipeline on P-BUY-01, following the identical `RV-0070` governance pattern; a `PipelineCard`
-  promotion candidate registered [watch for a 3rd funnel widget])_
-- **Pipeline stage:** idle — pulling `FE-BUY-09` CRM next (WP card pending kickoff)
-- **Next Milestone:** FE-BUY-09 → FE-CLN-01 (F2-Z). FE-BUY-10 🅿 parked
+- **Current Milestone:** _(none — `FE-BUY-09` CRM ✅ **Closed**, RV-0114, A:PASS ∧ B:PASS,
+  audit-only zero code delta, checkpoint `adc84fa`; Dev-team self-close per Amendment v1.3 §13.
+  FE-BUY-04..08 also ✅ Closed — SIX milestones this session, no kickoff-approval pause per owner
+  directive. **FE-BUY-01..09 buyer-owned page set now fully COMPLETE.**)_
+- **Current Page:** _(none — P-BUY-26/27 thoroughly re-audited: Inv#11 blacklist-undetectability
+  independently re-verified LIVE by both fresh-context lanes [list-row byte-identical for
+  blacklisted vs. approved records]; no safe enhancement found, zero code changed. Forward-looking
+  CRM↔Engagement cross-link candidate recorded for a future milestone — not built)_
+- **Pipeline stage:** idle — pulling `FE-CLN-01` next (F2-Z freeze remediation; H-dependency on
+  FE-BUY-04..09 now satisfied; WP card pending kickoff)
+- **Next Milestone:** FE-CLN-01 (F2-Z). FE-BUY-10 🅿 parked (only remaining owner-gated item)
 
 ## Team-3 — Vendor (FE-VEN)
 
@@ -62,7 +64,10 @@ _(B-lane clear — nothing at 🔵B awaiting Review-B.)_
 - **Post-verified (owner "Team-5 post-verifies each" ruling — mode-B, self-B'd + closed by the
   parallel session, Team-5 independently concurred read-only, no defect):** FE-VEN-04 (RV-0110, same
   textarea MINOR reached independently + `4b4dc5c` fix faithful), FE-BUY-07 (RV-0112, MAJOR caption
-  grep-confirmed gone, rationale in comments-only), FE-BUY-05 (RV-0108), FE-BUY-06 (RV-0109 Award).
+  grep-confirmed gone, rationale in comments-only), FE-BUY-08 (RV-0113, no coined enum, R7 counts
+  wired-not-derived, clone = rule-of-three OBS not MINOR), FE-BUY-09 (RV-0114 CRM, zero-diff audit;
+  Inv#11 blacklist-undetectable + Inv#6 firewall re-confirmed by grep — status only in CRM detail,
+  every other surface's "blacklist" mention is a non-disclosure comment), FE-BUY-05 (RV-0108), FE-BUY-06 (RV-0109 Award).
 - _Prior full-B (routed to Team-5): FE-PUB-02 (RV-0107). Earlier closed: FE-BUY-04 (RV-0102),
   FE-VEN-06/07/08/13 (RV-0103/0104/0105/0106)._
 
