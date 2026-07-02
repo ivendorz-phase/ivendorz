@@ -11,9 +11,9 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-ACC-08` Roles (P2) — 🟡 In Progress (P-ACC-07 ✅ committed)
-- **Status:** 🟡 building (presentation-only; T-LISTING; frozen `list_roles`, Doc-4C §C7)
-- **Next Page:** `P-ACC-09` Role editor (P2, Ready)
+- **Current Page:** `P-ACC-09` Role editor (P2) — 🟡 In Progress (P-ACC-08 ✅ committed)
+- **Status:** 🟡 building (presentation-only; role create/edit + permission grid; Doc-4C §C7)
+- **Next Page:** `P-ACC-10` Permissions reference (P2, Ready) — permissions by reference (Inv #10)
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
@@ -25,9 +25,9 @@
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** `P-ADM-17` Campaign detail (P3) — 🔵 Ready for Review (campaign + contacts, awaiting Team-4)
-- **Status:** 🔵 Ready for Review — Run/Complete disabled (R5); contacts (jsonb stage illustrative); moat acquisition-only; notFound Inv #11
-- **Next Page:** `P-ADM-18` Outreach contacts (P3, Ready)
+- **Current Page:** `P-ADM-18` Outreach contacts (P3) — 🔵 Ready for Review (cross-campaign contacts, awaiting Team-4)
+- **Status:** 🔵 Ready for Review — flattened `outreach_contacts`; "Add contact" disabled (R5); moat acquisition-only; completes outreach trio
+- **Next Page:** `P-ADM-19` Routing rules (P2, Ready) — stage-gated
 - **Updated:** 2026-07-02
 
 ---

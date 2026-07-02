@@ -173,3 +173,14 @@
 2026-07-02 · P-ACC-08 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
 2026-07-02 · [PLAT-P7] · Team-4 platform re-verify PASS (kit diff = sanctioned scope; OFF-chip 5.12:1 AA); PLAT-P7 CLOSED · Owner: Team-4
 2026-07-02 · P-BUY-02 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0048)
+2026-07-02 · P-ACC-08 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
+2026-07-02 · P-ADM-17 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0049)
+2026-07-02 · P-ACC-08 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0050)
+2026-07-02 · P-ADM-17 · ✅ Approved → ✅ committed (5b93e9b) · Owner: Team-3
+2026-07-02 · P-ADM-18 · ⬜ Pending → 🟡 In Progress · Owner: Team-3
+2026-07-02 · P-ADM-18 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-3
+2026-07-02 · P-ACC-08 · ✅ Approved → ✅ committed · Owner: Team-1
+2026-07-02 · P-ACC-09 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+2026-07-02 · P-BUY-02 · ✅ committed (91d46f9) · Owner: Team-2 (+ PLAT-P7 kit fix)
+2026-07-02 · P-BUY-12 · ⬜ Pending → 🟡 In Progress · Owner: Team-2 (pivot: P-BUY-03/04 route-ambiguous+P2 deferred; P-BUY-12 is P1, /approvals clear)
+2026-07-02 · P-BUY-12 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-2 (axe GREEN — 0 own-content violations)
