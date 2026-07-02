@@ -11,16 +11,16 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-ACC-16` Plans / catalog (P1) — 🟡 In Progress (P-ACC-15 ✅ committed). P-ACC-12 blocked (Waiting Decision)
-- **Status:** 🟡 building (presentation-only; plans catalog cards, `list_plans`/`get_plan`; Inv #10 entitlements-by-value)
-- **Next Page:** _(confirm from team-1.md after P-ACC-16)_
+- **Current Page:** `P-ACC-17` Subscription (P1) — 🟡 In Progress (P-ACC-16 ✅ committed). entitlements not plan-name (Inv #10)
+- **Status:** 🟡 building (presentation-only; subscription detail + events, BC-BILL-2; cancel=auto_renew off A-06)
+- **Next Page:** _(confirm from team-1.md after P-ACC-17)_
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
 
-- **Current Page:** `F1-2..F1-5` Buyer frontend audit sweep — 🟡 In Progress. **F1-1 ACCEPTED AS-IS** (owner chose keep existing RFQ creation → go to audits; no rebuild). Running 3 static-audit lenses (UX/a11y consistency, forms standardization, component reuse) + mobile axe sweep @390/768/1280 across all 21 buyer routes; findings synthesize into **F1-6 Frontend Freeze Report**
-- **Status:** 🟡 audit sweep underway (presentation-only; no backend). Fixes for any gating findings applied under normal one-change→verify→review discipline
-- **Next Page:** F1-6 Frontend Freeze Report (synthesis). **Still owner-gated:** P-BUY-03/04 route topology + P-BUY-05 favorites scope/projection
+- **Current Page:** `F2-0` Final Buyer UX Refinement — ⏸ **AWAITING OWNER SPEC** (additional business info / cards / workflow improvements). F1 audits DONE; **F1-6 Freeze Report v1.0 DELIVERED** (`BUYER_FRONTEND_FREEZE_REPORT_v1.0.md`; MAJOR 6 · MINOR 5).
+- **Status:** ⏸ HOLD all freeze remediation (owner sequencing) — build owner's UX refinements FIRST, THEN one batch of all FZ-01..FZ-11 + full verify + 2-review → request freeze. Idle until owner provides the refinement content.
+- **Next Page:** F2-0 (owner content) → F2-Z single freeze batch. **Still owner-gated:** P-BUY-03/04 route topology + P-BUY-05 favorites scope/projection
 - **Updated:** 2026-07-02
 
 ## Team-3 — Vendor / Verification / Admin

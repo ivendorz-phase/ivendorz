@@ -247,3 +247,9 @@
 2026-07-02 · P-ACC-15 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0067 — Identity-owned prefs boundary corpus-verified vs Doc-4H)
 2026-07-02 · P-ACC-15 · ✅ Approved → ✅ committed · Owner: Team-1
 2026-07-02 · P-ACC-16 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+2026-07-02 · F1-2..F1-6 · audit sweep complete + FREEZE REPORT v1.0 delivered (BUYER_FRONTEND_FREEZE_REPORT_v1.0.md) — BLOCKER 0 · MAJOR 6 · MINOR 5; buyer-scoped fixes = Team-2, cross-team FZ-01(shell container)/FZ-09(kit FormField) = escalate · Owner: Team-2
+2026-07-02 · P-ACC-16 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
+2026-07-02 · P-ACC-16 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0068 — Inv#10 exemplary; OBS monthly/annual grouping for wiring)
+2026-07-02 · P-ACC-16 · ✅ Approved → ✅ committed · Owner: Team-1
+2026-07-02 · P-ACC-17 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+2026-07-02 · F2 · owner sequencing: HOLD all freeze remediation (FZ-01..FZ-11); enter Phase F2 final Buyer UX refinement — build owner-provided business info/cards/workflow FIRST, then single freeze batch + verify + 2-review → freeze. F2-0 AWAITING OWNER SPEC · Owner: Team-2
