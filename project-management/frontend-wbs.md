@@ -3,20 +3,22 @@
 **Status:** Active v1.0 · **Date:** 2026-07-01 · Non-authoritative. See [`README.md`](README.md) for
 the loop and ownership rules; [`page_inventory.md`](../page_inventory.md) for the page list.
 
-## Summary metrics
+## Summary metrics (refreshed 2026-07-02 — verified against team files)
 
 | Metric | Count |
 |---|---:|
 | **Total pages** (page_inventory) | 144 |
 | **🟩 Built** (pre-existing, under Team-4 QCT) | 44 |
-| **⬜ Pending** (actionable) | 100 |
-| — of which **Ready** | 95 |
+| **✅ Approved** | 75 |
+| **🔵 Ready for Review** | 1 (P-PUB-05) |
+| **⬜ Pending** | 24 |
+| — of which **Ready** | 16 |
 | — of which **Blocked** (Waiting API/Decision) | 5 |
-| **🔵 Ready for Review** | 0 |
-| **✅ Approved** | 0 |
+| — of which **owner-gated** (P-BUY-03/04/05) | 3 |
 
-Per-surface (Built / Pending):
-Public 11/13 · Shell 2/4 · Auth 1/7 · Account 1/21 · Buyer 8/19 · Vendor 21/7 · **Admin 0/29**.
+Per-surface breakdown + cluster milestones: [`product-status.md`](product-status.md) §2.
+Complete clusters: **Auth** (02–08) · **Account** (01–22, −12 gated) · **Buyer** (01–27, −3 gated) ·
+**Admin** (01–29).
 
 ## Rules
 
