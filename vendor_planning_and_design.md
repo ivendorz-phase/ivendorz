@@ -279,7 +279,7 @@ Owner: **M2 Marketplace** (M5 reads, M7 entitlement reads, M1 for ownership tran
 
 ### 4.1 Screen inventory
 **Content:** S1 Profile Overview `(app)/company` · S2 Identity & Geography · S3 **Capabilities & Capacity** (the four-flag matrix) · S4 Financial Tier (declared vs verified + append-only history) · S5 Categories (propose → Admin approves) · S6 Products list · S7 Product editor · S8 Verification · S9 Ownership & Org.
-**Presentation:** S10 Microsite Builder · S11 Branding · S12 SEO · S13 Custom Domain (entitlement-gated lifecycle pending/verified/active/released) · S14 Preview & Publish.
+**Presentation:** S10 Microsite Builder · S11 Branding · S12 SEO · S13 Custom Domain (entitlement-gated lifecycle pending/verified/active/released; **external domains only** — the universal Platform-issued Vendor Subdomain is not managed here, ADR-024) · S14 Preview & Publish.
 
 ### 4.2 Wireframe — S3 Capabilities & Capacity (the crown-jewel for Invariant 1)
 ```
@@ -317,7 +317,7 @@ Changing the preset opens a **confirm dialog** to re-seed defaults (never silent
 
 ### 4.4 Key flows
 - **Onboarding spine:** claim (`seeded→invited→claimed→verified`, Invariant 3) → edit content (S2→S3→S4→S5 propose→S6/S7 products) → submit verification (S8) → Trust decides (out-of-wire; notified via Doc-7C center) → verified markers appear (S3/S4); categories approved by Admin in parallel (S5: `proposed→active|removed`).
-- **Microsite (presentation-isolated):** edit sections/branding/SEO → draft (server-persisted per Save, idempotent) → Preview & Publish → publish/unpublish. Copy reinforces: content/profile remain intact and matchable when the microsite is unpublished.
+- **Microsite (presentation-isolated):** edit sections/branding/SEO → draft (server-persisted per Save, idempotent) → Preview & Publish → publish/unpublish. Copy reinforces: content/profile remain intact and matchable when the microsite is unpublished. Public canonical host per **ADR-024** / `ESC-MKT-CANONICAL-URL` (ruled 2026-07-03): CHR — Doc-2 v1.0.5 D2-04.3, by pointer; `seo.canonical` advisory.
 
 ### 4.5 Contract-binding corrections (MAJOR/MINOR — adjudicated against frozen Doc-4D/Doc-4G)
 The draft's contract grounding had real defects; the following are **implemented**:
@@ -336,7 +336,7 @@ The draft's contract grounding had real defects; the following are **implemented
 | S4 Financial Tier | `marketplace.get_declared_financial_tier.v1`†, `marketplace.get_financial_tier_history.v1`†; verified read via profile/`trust.get_verified_tier.v1` | `marketplace.set_declared_financial_tier.v1`† | `check_permission` | 6,8,10 | declared A–E; verified band/none; history paging | declared edit: profile-write slug | verified band only; no raw 0–100; no fraud/risk |
 | S7 Product editor | `marketplace.get_product.v1` (`updated_at` carriage) | `create_product.v1`, `update_product.v1`, `set_product_status.v1`, `add_spec_document.v1`/`supersede_spec_document.v1`, `link/unlink_product_spec.v1` | publish entitlement resolution; `check_permission` | 8,9,10 | draft↔published↔unpublished; spec current/superseded; conflict | publish entitlement-gated; edit: `can_manage_products` | error no enrichment; product **images are M2 content** (DP5) |
 | S8 Verification | read via profile/public projection | submit via vendor-scoped path (`[ESC-7G-04]`) | Trust decision (Admin/System) | 3,6,7,8 | none/pending/verified/rejected | submit: profile-write slug | rejection copy contract-only; no fraud/risk; read failure → no enrichment |
-| S13 Custom domain | `marketplace.get_vendor_profile.v1` (domain field) | `marketplace.create/confirm/activate/release_custom_domain.v1`†, `set_microsite_domain.v1`† | entitlement resolution | 9,10 | pending/verified/active/released | **entitlement: custom_domain (boolean)**; Director+ | — |
+| S13 Custom domain | `marketplace.get_vendor_profile.v1` (domain field) | `marketplace.create/confirm/activate/release_custom_domain.v1`†, `set_microsite_domain.v1`† | entitlement resolution | 9,10 | pending/verified/active/released | **entitlement: custom_domain (boolean)**; Director+ | external domains only; `*.ivendorz.com` rejected (Doc-4D v1.0.2); while `active` the domain is the canonical host, reverting on release (CHR — ADR-024) |
 
 † Slug pending per-slug confirmation against Doc-5D PassB — see `[ESC-7G-SLUG-MKT]` (§4.5/§10).
 
@@ -656,6 +656,8 @@ Vendor FE realization is **Wave-3-gated**; this is planning ahead of that gate a
 > Records the outcome of **Track 2** — corpus verification of every machine-verifiable escalation in §10.1 — and **supersedes the OPEN statuses in §10.1** for the items below, **and the per-area workflow's premature "MAJOR = 0 / all clear" tally**. Each item was adjudicated against the frozen corpus on disk (Doc-2/3, Doc-4/5/7 series). Raise ≠ Accept: §10.1 remains the raise-record; this is the disposition record. The three architecture/authority BLOCKERs (§10.1: `[ESC-7G-SCORE-DISPLAY]`, `[ESC-7B-TRUSTSCORE]`, `[ESC-7G-A7]`) were **excluded** from Track 2 — human Board only.
 
 **Outcome — 18/18 dispositioned:** CONFIRMED_BOUND = 14 (+ `ESC-7G-05` Org-Role leg) · CARRY_FORWARD = 2 · GENUINELY_MISSING = 2 (→ 2× `[ESC-7-API]`). MAJOR conformance defects = **0**; no new NEEDS_HUMAN.
+
+**2026-07-03 (post-log ruling, pointer only):** `ESC-MKT-CANONICAL-URL` **ruled** (owner Board — see `esc_registry.md` + `governanceReviews/BOARD-PACKET-CANONICAL-VENDOR-SUBDOMAIN_v1.0.md`; decision **ADR-024**): every approved vendor gets a universal **Platform-issued Vendor Subdomain**; canonical host = CHR (Doc-2 v1.0.5); S13's custom-domain lifecycle is unchanged and remains **external domains only**. New open handle: `ESC-MKT-SUBDOMAIN-MIGRATE` (no migration wire contract). No S13 screen change.
 
 | ID | Sev | Verdict | Binding / routing (by pointer; bind exact versioned slug at build) |
 |---|---|---|---|
