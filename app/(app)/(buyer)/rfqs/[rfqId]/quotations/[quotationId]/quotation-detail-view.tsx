@@ -4,12 +4,16 @@
 // the wired `rfq.get_quotation.v1` (Doc-4E §E7.5, GI-02) — PARKED until the M3 backend lands (Wave 4).
 //
 // REUSE: the canonical platform-shell `PageHeader` + `Breadcrumbs`; the shared buyer `DescriptionList`,
-// `DataListTable` (price lines), `ActivityTimeline` (version history), and `Money`/`Ref`/`formatDate`/
-// `formatInstant`; the kit `Card`/`StatusChip`/`EmptyState`/`FileLink`. NO new shared component is coined.
+// `DataListTable` (price lines), `ActivityTimeline` (version history), `KpiStatCard` (headline commercial
+// facts, BX-03/FE-BUY-04 — the P-BUY-01 dashboard pattern), and `Money`/`Ref`/`formatDate`/`formatInstant`;
+// the kit `Card`/`StatusChip`/`EmptyState`/`FileLink`. NO new shared component is coined.
 //
 // GOVERNANCE (load-bearing):
-//  • READ-ONLY — there is NO Compare / Select-winner / Award / Reject / Shortlist / Clarify affordance
-//    here. Those are later, audit-gated milestones (R6 / Inv #12); this surface decides and mutates nothing.
+//  • READ-ONLY — there is NO Compare / Select-winner / Award / Reject / Shortlist / Clarify COMPOSER
+//    here (no message/mutation affordance is added or invented). Those are later, audit-gated milestones
+//    (R6 / Inv #12); this surface decides and mutates nothing. The header's "Ask a clarification" action
+//    (BX-03/FE-BUY-04) is pure NAVIGATION to the existing read-only P-BUY-16 Clarifications host — it
+//    sends nothing and mounts no composer; the thread itself stays the Board-ruled M6 placeholder.
 //  • VISIBILITY-GATED — `get_quotation` collapses an out-of-`quotation_visibility` id to NOT_FOUND
 //    server-side (§7.5). `data === null` renders a byte-identical not-found (no copy/layout/timing tell;
 //    Inv #11 / GI-12). The not-found breadcrumb shows only the `RFQs` ancestor — never a leaf ref.
@@ -20,7 +24,7 @@
 //    §8.3/§9.5); a vendor never learns it "lost". Versions are immutable (Inv #8) — the timeline is history.
 
 import Link from "next/link";
-import { FileText, Lock, Paperclip } from "lucide-react";
+import { FileText, Lock, MessageSquare, Paperclip } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
 import { EmptyState } from "@/frontend/components/empty-state";
@@ -30,6 +34,7 @@ import { PageHeader, Breadcrumbs } from "../../../../../_components/shell";
 import { ActivityTimeline } from "../../../../_components/activity-timeline";
 import { DataListTable, type DataColumn } from "../../../../_components/data-list-table";
 import { DescriptionList, type DescriptionItem } from "../../../../_components/description-list";
+import { KpiStatCard } from "../../../../_components/kpi-stat-card";
 import { Money, Ref, formatDate, formatInstant } from "../../../../_components/format";
 import { quotationStateDisplay } from "../../../../_components/state-display";
 import { SealedMarker } from "../../../../_components/sealed-marker";
@@ -97,6 +102,7 @@ function PricingCard({ pricing, sealed }: { pricing?: QuotationPricing | null; s
               rows={pricing.lines}
               getRowKey={(l) => l.id ?? l.label}
               emptyState={null}
+              stickyFirstColumn
             />
             {pricing.total ? (
               <div className="flex items-center justify-between border-t border-border px-4 py-3">
@@ -235,33 +241,35 @@ function AttachmentList({ attachments }: { attachments?: QuotationAttachment[] }
   );
 }
 
-/** The right-rail quotation summary — the "header"/"status ribbon" facts: vendor · status · version ·
- *  headline amount (sealed-aware) · validity · received. Reuses the shared `DescriptionList`. */
-function SummaryCard({ data }: { data: QuotationDetailData }) {
-  const status = quotationStateDisplay(data.state);
-  const items: DescriptionItem[] = [
-    { label: "Vendor", value: data.vendorName },
-    { label: "Status", value: <StatusChip label={status.label} tone={status.tone} /> },
-    ...(typeof data.versionNo === "number"
-      ? [{ label: "Version", value: data.versionNo } satisfies DescriptionItem]
-      : []),
-    {
-      label: "Quoted amount",
-      value:
-        data.sealedUntilClose && !data.amount ? <SealedMarker /> : <Money value={data.amount} />,
-    },
-    { label: "Valid until", value: data.validUntil ? formatDate(data.validUntil) : "—" },
-    { label: "Received", value: data.submittedAt ? formatInstant(data.submittedAt) : "—" },
-  ];
+/**
+ * Headline commercial facts as a scannable KPI band (reuses the dashboard `KpiStatCard`, Doc-7F §9.1
+ * pattern) — the enterprise-procurement figures a buyer scans for first: quoted amount (sealed-aware,
+ * §10.1), validity window, and receipt time. Vendor/status/version already sit in the `PageHeader`
+ * (no duplication). Every figure is the contract read the caller supplies — never client-computed
+ * (R7 firewall / GI-12); an absent figure renders the card's own neutral "—", never a fabricated value.
+ */
+function QuotationStatBand({ data }: { data: QuotationDetailData }) {
   return (
-    <Card>
-      <CardHeader className="p-4">
-        <CardTitle className="text-sm font-semibold">Quotation summary</CardTitle>
-      </CardHeader>
-      <CardContent className="p-4 pt-0">
-        <DescriptionList items={items} />
-      </CardContent>
-    </Card>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <KpiStatCard
+        label="Quoted amount"
+        value={
+          data.sealedUntilClose && !data.amount ? (
+            <SealedMarker />
+          ) : data.amount ? (
+            <Money value={data.amount} />
+          ) : undefined
+        }
+      />
+      <KpiStatCard
+        label="Valid until"
+        value={data.validUntil ? formatDate(data.validUntil) : undefined}
+      />
+      <KpiStatCard
+        label="Received"
+        value={data.submittedAt ? formatInstant(data.submittedAt) : undefined}
+      />
+    </div>
   );
 }
 
@@ -314,8 +322,17 @@ export function QuotationDetailView({ data }: { data: QuotationDetailData | null
             ) : null}
           </>
         }
+        actions={
+          <Button asChild variant="secondary" size="sm">
+            <Link href={`/rfqs/${data.rfqId}/clarifications`} className="gap-1.5">
+              <MessageSquare aria-hidden className="size-4" />
+              Ask a clarification
+            </Link>
+          </Button>
+        }
       />
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <QuotationStatBand data={data} />
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="flex flex-col gap-4 lg:col-span-2">
           <PricingCard pricing={data.pricing} sealed={data.sealedUntilClose} />
           <DeliveryCard rows={data.delivery} sealed={data.sealedUntilClose} />
@@ -324,10 +341,9 @@ export function QuotationDetailView({ data }: { data: QuotationDetailData | null
           <AttachmentList attachments={data.attachments} />
         </div>
         <div className="flex flex-col gap-4">
-          <SummaryCard data={data} />
           <ActivityTimeline
             entries={data.history ?? []}
-            title="Timeline"
+            title="Version history"
             emptyLabel="No version history yet"
           />
         </div>
