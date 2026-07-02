@@ -27,8 +27,16 @@ satisfied.
   renders identically to genuine absence; no discriminating prop. Buyer-private CRM never leaks.
 - **Received-only denominators**: counts use received/own-org sets — never routed/eligible/total or
   cross-tenant aggregates. **Cursor pagination** on every list; no grand totals.
-- **Trust displayed, never computed** — **band-only**; never render a raw 0–100 score
-  (`ESC-7G-SCORE-DISPLAY` / `ESC-7B-TRUSTSCORE`).
+- **Trust displayed, never computed** — Trust Score (band + numeric 0–100 + verification badges +
+  "Last updated" + high-level contributing factors) may render on any public-facing surface, per
+  the Board ruling 2026-07-03 resolving `ESC-7G-SCORE-DISPLAY`/`ESC-7B-TRUSTSCORE`
+  (`governanceReviews/BOARD-PACKET-VENDOR-FE-BLOCKERS_v1.0.md`). **Never** render internal
+  weightings/formula, matching score, fraud-risk score, vendor ranking score, confidence
+  coefficients, hidden penalties, or competitor-relative percentile — those are never wire fields.
+  **Performance Score is NOT covered by this ruling** — stays band-only until a separate ruling.
+  Every displayed Trust Score must be explainable (positive factors + "needs improvement" guidance)
+  without exposing the underlying formula; exact formula/weights stay `ESC-TRUST-POLICY` (open,
+  backend-implementation-time).
 - **Capability = 4-flag matrix** (`can_supply/service/fabricate/consult`); **participation ≠ org-role**.
 - **Server is final authority** — UI gates are UX only; entitlements read as boolean/numeric/enum,
   never plan-/role-name strings.

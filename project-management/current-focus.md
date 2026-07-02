@@ -27,8 +27,11 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-2 — Buyer (FE-BUY / FE-CLN)
 
-- **Current Milestone:** `FE-BUY-10` Discovery & Favorites — 🔵A, checkpoint done, awaiting
-  Review-A. Owner resolved both Board agenda #3 gating decisions live 2026-07-03: P-BUY-03/04
+- **Current Milestone:** `FE-BUY-10` Discovery & Favorites — ✅ **APPROVED** (RV-0117, A:PASS ∧
+  B:PASS, 0 BLOCKER/MAJOR/MINOR both lanes, checkpoint `6306de4`; **Review Team 5 marked approved in
+  `execution-board.md` 2026-07-03** — owning Team-2 to commit [checkpoints/trackers; close record
+  uncommitted] + start next. First buyer-track milestone ROUTED to Team-5 for a full mode-A
+  pre-close Review-B). Owner resolved both Board agenda #3 gating decisions live 2026-07-03: P-BUY-03/04
   route topology → **reuse existing surfaces** (no new in-app directory/profile route); P-BUY-05
   favorites → **scope confirmed product/category, build stays held** on the display-projection
   gap. WP card: `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`.
@@ -44,7 +47,7 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   surviving clean dev server confirms `/discover` 200 with all 8 cards linking `/vendors/[slug]`,
   and `/vendors/padma-valve-fittings` 200 rendering the matching "Padma Valve & Fittings Ltd."
   profile — card identity and microsite identity now match end-to-end.
-- **Pipeline stage:** 🔵A — awaiting Review-A (fresh context)
+- **Pipeline stage:** ✅ APPROVED (A:PASS ∧ B:PASS, RV-0117) — Team-2 to commit + start next
 - **Next Milestone:** none queued after FE-BUY-10 closes — Team-2's FE-BUY/FE-CLN queue is
   otherwise exhausted this session.
 
@@ -58,8 +61,12 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   `workspace/company/spec-library`, `SpecLibraryList`/`SpecEntryDialog` against the frozen
   `create/update_spec_library_entry.v1` pair; FE-VEN-04 Catalog now fully closed — 07/08/11
   legacy, 09 this milestone, 10 stays ⛔)_
-- **Pipeline stage:** idle
-- **Next Milestone:** FE-VEN-09 ⛔ · FE-VEN-10/11/12 at Board kickoff scoping
+- **Pipeline stage:** idle — `FE-VEN-09` Trust Center **UNGATED 2026-07-03** (Board ruled
+  `ESC-7G-SCORE-DISPLAY`/`ESC-7B-TRUSTSCORE`: Trust Score band+numeric+badges+factors permitted on
+  any public-facing surface, no corpus patch; Performance Score NOT covered, stays band-only). WP
+  card not yet authored — owner kickoff pending.
+- **Next Milestone:** FE-VEN-09 (P-VND-28, now buildable) · FE-VEN-10/11/12 still at Board kickoff
+  scoping (unaffected)
 
 ---
 
@@ -76,6 +83,10 @@ _(B-lane clear — nothing at 🔵B awaiting Review-B.)_
 
 - **`FE-PUB-03` Vendor Profile** (Team-1) — Review-B **PASS** (RV-0111, 0 B/M/M, 8 OBS, `1275f70`;
   render D/T/M + axe 0 mobile/desktop; sticky-bar no-occlusion + dup-control clean) → Team-1 self-close.
+- **`FE-BUY-10` Discovery & Favorites** (Team-2) — full mode-A Review-B **PASS → APPROVED** (RV-0117,
+  0 B/M/M, 7 OBS, `6306de4`; tsc/eslint/prettier + render D/T/M + axe 0 violations; **8 hrefs → `/vendors/[slug]`,
+  0 dead forward-refs, 8/8 slug parity vs public seed**; firewall/Inv#11/favorites-held/no-public-import
+  all clean). **First buyer-track milestone routed to Team-5** (not self-B'd). Marked approved in execution-board.md.
 - **Post-verified (owner "Team-5 post-verifies each" ruling — mode-B, self-B'd + closed by the
   parallel session, Team-5 independently concurred read-only, no defect):** FE-VEN-04 (RV-0110, same
   textarea MINOR reached independently + `4b4dc5c` fix faithful), FE-BUY-07 (RV-0112, MAJOR caption

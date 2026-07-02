@@ -2,8 +2,9 @@
 Status:     Freeze Candidate (v0.9-rc)
 Coverage:   Complete - all EA Hard Review findings (B1-4, M5-10, MIN11-15) + the missing-intermediate-layer observation.
 Freeze:     WITHHELD (CLAUDE.md section 13 gate not met: BLOCKER=0/MAJOR=0/MINOR=0 not yet reached).
-Reason:     Pending Board (human) ratification of three platform/authority BLOCKERs:
-            [ESC-7G-SCORE-DISPLAY], [ESC-7B-TRUSTSCORE], [ESC-7G-A7].
+Reason:     Pending Board (human) ratification of the remaining platform/authority BLOCKER:
+            [ESC-7G-A7]. [ESC-7G-SCORE-DISPLAY] and [ESC-7B-TRUSTSCORE] RESOLVED 2026-07-03
+            (see governanceReviews/BOARD-PACKET-VENDOR-FE-BLOCKERS_v1.0.md).
 Authority:  NON-AUTHORITATIVE design companion - realizes the UX of FROZEN Doc-7G.
             Coins no mechanism/contract/ownership/invariant. On any conflict the frozen
             generatedDocs/ corpus wins (CLAUDE.md section 7). NOT part of the frozen corpus -
@@ -74,7 +75,7 @@ Derived from the 12 invariants and the byte-equivalence attestation; listed in p
 | **DP1** | **Byte-equivalence is an architectural property of the data sources, not a feature flag.** A blacklisted vendor and a never-matched vendor render byte-identically — same DOM, same counts, same empty states, same skeleton timings, same not-found. The cleanest guarantee is structural: exclusion never reaches the vendor leg on the wire, so the UI cannot leak what it never receives. | Invariant 11; Doc-7G **GR11 / CHK-7-040** |
 | **DP2** | **Non-disclosure by construction.** Error/not-found components carry no discriminating prop; the UI cannot branch on "forbidden vs absent." Protected/private resources resolve to **not-found**, never `error-state(AUTHORIZATION)`. | Doc-7A error/not-found rules; Doc-7B non-disclosure primitives |
 | **DP3** | **The contract decides state; the kit decides presentation.** `status-chip` invents no label — the surface derives a localized label + tone from the **Doc-4M** state token. Every state chip's underlying token must be a Doc-4M value. | Doc-7B; Doc-4M |
-| **DP4** | **Four firewalled signals, bands only, read-only, never composite.** No overall/combined score, no raw 0–100 unless the frozen read explicitly discloses a display value (see §3 / `[ESC-7G-SCORE-DISPLAY]`), no "Edit Trust Score" affordance can ever exist. | Invariant 6; Doc-7G; Doc-4G/Doc-5G |
+| **DP4** | **Four firewalled signals, read-only, never composite, never cross-mutating.** `[ESC-7G-SCORE-DISPLAY]` **RESOLVED 2026-07-03**: Trust Score (band + numeric 0–100 + verification badges + "Last updated" + high-level contributing factors) MAY render on any public-facing surface (not self-view-only); internal weightings/formula/matching/fraud-risk/ranking/confidence/percentile are NEVER wire fields, never rendered anywhere. Performance Score stays band-only (not covered by this ruling). No "Edit Trust Score" affordance can ever exist (System-actor-only computation, unchanged). | Invariant 6; Doc-7G; Doc-4G/Doc-5G; Board ruling 2026-07-03 |
 | **DP5** | **Content ≠ Presentation, structurally.** Matching-relevant content (capability/capacity/tier/category/products) and presentation (microsite/branding/SEO/domain/ads) live in **different nav groups, different routes, different forms** — never two tabs of one form. Note: product **images** are M2 *content* (per Doc-4D `create_product.images: list<ref>`), not microsite presentation. | Invariant 9 |
 | **DP6** | **Financial Tier ≠ Subscription Plan.** Tier (capability size A–E; declared vs verified) and Plan (commercial) are physically separated sections; gates use **entitlements** (boolean/numeric), never plan-name checks. | Invariants 6, 10 |
 | **DP7** | **Capability is a four-flag matrix, never a label.** `can_supply` / `can_service` / `can_fabricate` / `can_consult` are four independent toggles; the vendor-type preset only *seeds* them; matching uses the flags. | Invariant 1 |
@@ -235,12 +236,12 @@ A **read-only command center** assembled entirely from positive facts. The dashb
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 3.3 Frozen score-display states — RESOLVED via Flag-and-Halt (was a BLOCKER)
-The dashboard draft rendered Trust/Performance as a single band ("High"/"Strong") and silently dropped any numeric — resolving a frozen tension locally. The conformance review is **valid**: **Doc-5G §5.3** (verified, `Doc-5G_Content_v1.0_Pass2.md:67–68`) states `get_trust_score`/`get_performance_score` (**Public-Badge** disclosure scope) return **"band + display score"**, the score is **null/suppressed while `freeze_state=frozen`** (Doc-2 §3.6), and a **sub-threshold performance score reports `Not Rated` (`rated=false`), never `0`**. This conflicts with the brief's Invariant-6 phrasing ("bands only, NEVER raw 0–100"). I **Flag-and-Halt**:
+### 3.3 Frozen score-display states — RESOLVED (Board ruling 2026-07-03)
+The dashboard draft rendered Trust/Performance as a single band ("High"/"Strong") and silently dropped any numeric — resolving a frozen tension locally. The conformance review was **valid**: **Doc-5G §5.3** (verified, `Doc-5G_Content_v1.0_Pass2.md:67–68`) states `get_trust_score`/`get_performance_score` (**Public-Badge** disclosure scope) return **"band + display score"**, the score is **null/suppressed while `freeze_state=frozen`** (Doc-2 §3.6), and a **sub-threshold performance score reports `Not Rated` (`rated=false`), never `0`**.
 
-- **`[ESC-7G-SCORE-DISPLAY]` (BLOCKER, §10):** Doc-5G §5.3 "band + display score" vs Invariant-6 "bands only" — the presiding authority must rule whether the vendor dashboard may render the frozen `display score` or band-only. **Do not resolve locally.** Until ruled, the dashboard renders **band-only** and never passes `score` to `trust-badge` (see DP4 + §3.5).
-- **Doc-5G actor / disclosure-scope note (MINOR, accepted):** Doc-5G §5.3 classifies `get_trust_score`/`get_performance_score` as **Public-Badge** (band/status, "no internal basis", `Doc-5G_Content_v1.0_Pass2.md:43`). A vendor viewing its **own** standing reads the **Public-Badge projection of its own profile** — i.e. the dashboard binds the same Public-Badge read scoped to the active org's own vendor profile; there is **no separate vendor-own internal-basis read** (history/inputs/version chain remain Staff-Internal per §5.3). If product intent later requires a vendor-actor read exposing more than the Public-Badge projection of the vendor's own profile, that must be raised as a new `[ESC-…]`, not assumed (cite Doc-5G §5.3 disclosure scope).
-- **Independently of the display-score ruling (frozen-mandated states the screen must handle, not deferrable):**
+- **`[ESC-7G-SCORE-DISPLAY]` — RESOLVED 2026-07-03:** the Board ruled Trust Score display is permitted broader than this companion's original own-profile framing — **any public-facing surface** may render band + numeric score + verification badges + "Last updated" + high-level contributing factors, not just the vendor's own dashboard. Invariant 6 is confirmed **display-silent** (a cross-mutation firewall, not a display mandate) — no corpus patch required. **Never display anywhere:** internal weightings/formula, matching score, fraud-risk score, vendor ranking score, confidence coefficients, hidden penalties, competitor-relative percentile. **Performance Score is NOT covered by this ruling** — it stays band-only pending a separate ruling (Board table: "vendor-only, or optionally public"). Full record: `governanceReviews/BOARD-PACKET-VENDOR-FE-BLOCKERS_v1.0.md`.
+- **Doc-5G actor / disclosure-scope note (MINOR, accepted, unchanged):** Doc-5G §5.3 classifies `get_trust_score`/`get_performance_score` as **Public-Badge** (band/status, "no internal basis", `Doc-5G_Content_v1.0_Pass2.md:43`) — history/inputs/version chain remain Staff-Internal per §5.3, unaffected by the display ruling above.
+- **Frozen-mandated states the screen must handle (unchanged, non-deferrable):**
   - **Frozen-suppressed tile state** — when `freeze_state=frozen`, render the band/score as *suppressed/unavailable*, never fabricated.
   - **`Not Rated` Performance state** — explicit, distinct from any zero/empty (Performance tile shows "Not Rated", never "0" / "—-as-zero").
 
@@ -248,7 +249,7 @@ The dashboard draft rendered Trust/Performance as a single band ("High"/"Strong"
 When `claim_state ∈ {seeded, invited, claimed}` (not yet `verified`), the dashboard re-prioritizes to a claim journey (`seeded → invited → claimed → verified`, surfaced honestly per Invariant 3) plus an **own-data readiness panel** (DP13): "Your profile is 82% complete — add product categories, verify capability flags." Pipeline/quota render in genuine-empty form, **byte-identical** to an active vendor with zero activity (DP1). Crucially, readiness copy is keyed **only** on the vendor's own claim/verification lifecycle and own fields — **never** on matching ("do X to get matched" is forbidden, ND-4).
 
 ### 3.5 Component composition (kit by name)
-- Bands strip: `card` + `embedded/trust-badge` (**without the `score` prop** — see §3.3) + `status-chip` + domain tokens `--iv-trust-*`, `--iv-tier-*`.
+- Bands strip: `card` + `embedded/trust-badge` (**Trust: `score` prop now permitted, per the §3.3 ruling — Performance: still WITHOUT `score`, band-only**) + `status-chip` + domain tokens `--iv-trust-*`, `--iv-tier-*`.
 - Quota / completeness meters: see kit additions `[ESC-7B-METER]`; claim stepper `[ESC-7B-STEPPER]`; recurring count tile `[ESC-7B-STAT-TILE]`.
 - Activity: `card` + `pagination-control` (cursor) + `empty-state`. AI panel: `card` + `badge("AI Suggestion")` + `button` (advisory only). Loading `skeleton`; error `error-state`; profile-absent `not-found`.
 - **Embedded-component homes (Doc-7G §11.1 / CHK-7-005):** the own trust badge and billing/quota indicator are two of the four §11.1-mandated embedded components and live here on the Dashboard (the other two — AI advisory panel and M6 clarification thread — are homed in §6.6).
@@ -325,7 +326,7 @@ The draft's contract grounding had real defects; the following are **implemented
 - **Trust/Performance band reads exist (withdraw false escalation):** `trust.get_trust_score.v1` and `trust.get_performance_score.v1` are frozen (Public-Badge); S1 binds them directly as the **own-profile Public-Badge projection** (band only; score per §3.3). The draft's `[ESC-7G-01]` "band reads not confirmed" is **withdrawn**.
 - **Per-slug grounding caveat (MINOR, accepted).** Several specific marketplace slugs cited in §4.3/§4.6 tables — `marketplace.get_declared_financial_tier.v1`, `marketplace.set_declared_financial_tier.v1`, `marketplace.get_financial_tier_history.v1`, `marketplace.get/upsert_vendor_capacity_profile.v1`, and the custom-domain lifecycle `marketplace.create/confirm/activate/release_custom_domain.v1` / `set_microsite_domain.v1` — are **plausible but not yet per-slug confirmed against Doc-5D PassB**. Per the reference-never-restate rule, these are bound provisionally; each must be **confirmed against Doc-5D PassB by exact versioned slug before build, or down-graded to an `[ESC-…]`** if absent. Tracked at **`[ESC-7G-SLUG-MKT]` (MINOR, §10)**. (Catalog/spec/category slugs in §5.5 are separately confirmed frozen — see §5.3.)
 - **Catalog/spec/category slugs are frozen and versioned** (see §5.5) — bind by exact versioned slug, not bare names.
-- **trust-badge `score` (Invariant-6 footgun):** explicit composition rule — the vendor workspace passes **only band/tier props** to `trust-badge`, **never `score`** (verified live in `src/frontend/embedded/trust-badge.tsx:18,55–59`, where `score?` renders `· {score}`). Tracked at the kit level as `[ESC-7B-TRUSTSCORE]`, cross-referenced to `[ESC-7G-SCORE-DISPLAY]`.
+- **trust-badge `score` — RESOLVED 2026-07-03 (`[ESC-7B-TRUSTSCORE]`, Option 3):** the vendor workspace MAY now pass `score` to `trust-badge` for **Trust** (any public-facing surface, per `[ESC-7G-SCORE-DISPLAY]`'s ruling); **Performance** still passes band/tier props only, never `score` (Performance is not covered by the ruling). No kit change — the prop ships as-is (`src/frontend/embedded/trust-badge.tsx:18,55–59`). Lint/test discipline retained, re-scoped to forbid `score` only in genuinely internal/governance-only contexts (staff tooling, matching/ranking/fraud surfaces).
 
 ### 4.6 Per-screen conformance (representative)
 | Screen | Read contracts (by pointer) | Write contracts (mutations) | Out-of-wire | Invariants | States | Gates | Non-disclosure |
@@ -570,7 +571,7 @@ The hardest constraint, consolidated. Binds to **Doc-7G GR11 / §10 / CHK-7-040 
 ### 9.2 Proposed additive kit components (each an `[ESC-7B-…]`; none duplicate a primitive)
 | ID | Sev | Component | Why |
 |---|---|---|---|
-| `[ESC-7B-TRUSTSCORE]` | BLOCKER | guard/remove `trust-badge.score` for governance contexts | `score?:number` renders `· {score}` — a live Invariant-6 footgun; cross-ref `[ESC-7G-SCORE-DISPLAY]` |
+| `[ESC-7B-TRUSTSCORE]` | ✅ RESOLVED 2026-07-03 | `score` sanctioned wherever Trust display is authorized (Option 3); lint re-scoped to governance-only contexts | `score?:number` renders `· {score}` — now sanctioned for Trust per the `[ESC-7G-SCORE-DISPLAY]` ruling; Performance stays band-only |
 | `[ESC-7B-EMPTY-LOCK]` | MAJOR | non-overridable copy for `empty-state`/`not-found` in vendor workspace | byte-equivalence currently rests on surface discipline |
 | `[ESC-7B-I18N-HEADLINE]` | MAJOR | i18n-keyed `error-state` headlines | English literals block Bn parity |
 | `[ESC-7B-SELECT]` | MAJOR | `select`/combobox form primitive (or `category-picker`) | `dropdown-menu` is a menu, not a value-bound select |
@@ -598,8 +599,8 @@ The hardest constraint, consolidated. Binds to **Doc-7G GR11 / §10 / CHK-7-040 
 | ID | Sev | Summary | Disposition needed |
 |---|---|---|---|
 | **[ESC-7G-A7]** | BLOCKER | Hybrid "mount both" (Doc-7A R6 / Doc-7C SR3) vs the draft's re-routing toggle; **also** the design-introduced `(vendor)` nested segment name (not frozen in Doc-7C). Re-routing toggle **not shipped**; co-mounted-grouped adopted. | Board: ratify how "mount both" is realized as IA and whether `(vendor)` is the segment name; Trust must not fold into an editable group. |
-| **[ESC-7G-SCORE-DISPLAY]** | BLOCKER | Doc-5G §5.3 "band + display score" vs Invariant-6 "bands only". | Presiding authority: rule band-only vs frozen `display_score` on the vendor dashboard. Until ruled: band-only, no `score` prop. |
-| **[ESC-7B-TRUSTSCORE]** | BLOCKER | `trust-badge.score` renders raw 0–100 (live footgun). | Doc-7B owner: deprecate/guard `score` for governance contexts; contingent on the above ruling. |
+| **[ESC-7G-SCORE-DISPLAY]** | ✅ RESOLVED 2026-07-03 | Doc-5G §5.3 "band + display score" vs Invariant-6 "bands only" — ruled: Invariant 6 is display-silent. | Board ruling: Trust Score (band + numeric + badges + factors) permitted on any public-facing surface; no corpus patch. Performance stays band-only. |
+| **[ESC-7B-TRUSTSCORE]** | ✅ RESOLVED 2026-07-03 | `trust-badge.score` renders raw 0–100 — now sanctioned for Trust. | Option 3 ratified: prop ships as-is; lint re-scoped to governance-only contexts. |
 | **[ESC-7G-A2]** | MAJOR | Org-Role→action gradations are an M1/Doc-4C concern; UI must consume server permission slugs, not a hard-coded table. | Doc-4C enumerate; UI binds to server flags. |
 | **[ESC-7G-PIPE-CONTRACT]** | MAJOR | Dashboard count-by-stage needs a wired received-only count read; cursor lists yield no client total. | Confirm a frozen count read or render non-numeric; raise `[ESC-7-API]` if absent. |
 | **[ESC-7G-FEED]** | MAJOR | Recent-activity needs an own-org positive-facts events read. | Confirm wired contract; guarantee no "not-invited" event enters the feed. |
@@ -639,7 +640,7 @@ The hardest constraint, consolidated. Binds to **Doc-7G GR11 / §10 / CHK-7-040 
 
 Vendor FE realization is **Wave-3-gated**; this is planning ahead of that gate and must not be built out of roadmap sequence. When the gate opens, a dependency-ordered sequence:
 
-1. **Resolve the three BLOCKERs first** (`[ESC-7G-A7]`, `[ESC-7G-SCORE-DISPLAY]`, `[ESC-7B-TRUSTSCORE]`) and the MAJOR contract escalations that gate screens (`[ESC-7G-PIPE-CONTRACT]`, `[ESC-7G-Q-01]`, `[ESC-7G-04]`, `[ESC-7G-A2]`, `[ESC-7G-ENT-01]`), plus per-slug confirmation of `[ESC-7G-SLUG-MKT]`. No vendor screen ships against an unconfirmed contract.
+1. **Resolve the remaining BLOCKER** (`[ESC-7G-A7]` — `[ESC-7G-SCORE-DISPLAY]`/`[ESC-7B-TRUSTSCORE]` RESOLVED 2026-07-03) and the MAJOR contract escalations that gate screens (`[ESC-7G-PIPE-CONTRACT]`, `[ESC-7G-Q-01]`, `[ESC-7G-04]`, `[ESC-7G-A2]`, `[ESC-7G-ENT-01]`), plus per-slug confirmation of `[ESC-7G-SLUG-MKT]`. No vendor screen ships against an unconfirmed contract.
 2. **Cross-cutting substrate (§7) + the byte-equivalence enforcement (§8 / `[ESC-7B-EMPTY-LOCK]`)** — these are prerequisites for every surface; land the conformance test that proves absent ≡ excluded (the CHK-7-040 evidence) and the notification byte-equivalence guard (BE-7).
 3. **Kit additions (§9.2)** in dependency order: form primitives (`select`, `textarea`, `switch`), state primitives (`stat-tile`, `meter`, `version-list`, `window-chip`, `tier-chip`/`perf-band`), then nav helpers (`breadcrumb`, `segmented`, `search`).
 4. **IA + shell integration (§2)** once Hybrid composition is ratified.
@@ -682,7 +683,7 @@ Vendor FE realization is **Wave-3-gated**; this is planning ahead of that gate a
 - **`[ESC-7-API]` #2 — caller-facing M1 participation read** (from `ESC-7G-05`). Owner: M1 Identity. Additive wire read exposing the active org's derived Platform Participation (Buyer/Vendor/Hybrid) from `has_buyer_profile`/`has_vendor_profile` — currently only on out-of-wire `identity.get_organization.v1`.
 
 ### 12.2 Corrected post-Track-2 gate tally (authoritative; supersedes §10 and the workflow report)
-- **BLOCKER = 3** — `[ESC-7G-SCORE-DISPLAY]`, `[ESC-7B-TRUSTSCORE]`, `[ESC-7G-A7]` (human Architecture Board; §8).
+- **BLOCKER = 1** — `[ESC-7G-A7]` (human Architecture Board; §8) — still open. `[ESC-7G-SCORE-DISPLAY]` and `[ESC-7B-TRUSTSCORE]` **RESOLVED 2026-07-03** (Board ruling — see `governanceReviews/BOARD-PACKET-VENDOR-FE-BLOCKERS_v1.0.md`); freeze remains WITHHELD pending `[ESC-7G-A7]` alone.
 - **MAJOR conformance defects = 0** — all five adjudicated; where a contract is absent the design degrades gracefully (non-numeric links).
 - **Open contract gaps → API Governance Board = 2** — the two `[ESC-7-API]` items above (one MAJOR-origin, one MINOR-origin).
 - **Carried on existing channels = 2** — `[ESC-BILL-SLUG]`, `[ESC-MKT-AUDIT]`.

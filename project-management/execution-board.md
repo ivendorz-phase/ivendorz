@@ -25,9 +25,12 @@ component) · `FE-PUB-07` ← next (WP card pending kickoff) → FE-PUB-01 ·
 `79b738a`/`5654956`/`2d1b23e`/`d501345`/`adc84fa`; FE-BUY-07 after 1 fix-and-reverify cycle,
 FE-BUY-09 audit-only zero-delta) · ~~FE-CLN-01~~ ✅ **Closed** (RV-0115 @ `636c192`, A:PASS ∧
 B:PASS, 0 B/M/M both lanes, no fix-and-reverify cycle; Dev-team self-close 2026-07-02) — SEVEN
-Team-2 milestones this session. `FE-BUY-10 Discovery & Favorites` ← current (🔵A — owner resolved
-both gating decisions 2026-07-03: reuse existing surfaces for P-BUY-03/04, hold P-BUY-05 build;
-checkpoint done, awaiting Review-A; WP card
+Team-2 milestones this session. `FE-BUY-10 Discovery & Favorites` — **✅ APPROVED** (RV-0117 @
+`6306de4`, A:PASS ∧ B:PASS, 0 BLOCKER/MAJOR/MINOR both lanes; **Review Team 5 marked approved
+2026-07-03** per Amendment v1.3 §13-refined — owning Team-2 to commit [checkpoints/trackers; close
+record uncommitted] + start next; owner resolved both gating decisions 2026-07-03: reuse existing
+surfaces for P-BUY-03/04, hold P-BUY-05 build; P-BUY-04 link-out repointed to the public microsite,
+8/8 buyer slugs resolve, favorites correctly held; WP card
 `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`).
 
 **Team-3 (Vendor):**
@@ -36,7 +39,9 @@ checkpoint done, awaiting Review-A; WP card
 (RV-0105, board-approved 2026-07-02 @ `ec8306b`) · ~~FE-VEN-13~~ ✅ **Closed** (RV-0106,
 board-approved 2026-07-02 @ `34395b2`, after one fix-and-reverify cycle) · ~~FE-VEN-04 remainder~~
 ✅ **Closed** (RV-0110, Dev-team self-close 2026-07-02 @ `4b4dc5c`, after one fix-and-reverify
-cycle) · Team-3 **idle** — FE-VEN-10/11/12 at Board kickoff scoping. FE-VEN-09 ⛔.
+cycle) · Team-3 **idle** — `FE-VEN-09` Trust Center **UNGATED 2026-07-03** (Board ruled
+`ESC-7G-SCORE-DISPLAY`/`ESC-7B-TRUSTSCORE`, agenda #2; WP card pending kickoff) → FE-VEN-10/11/12
+still at Board kickoff scoping (unaffected by this ruling).
 
 **Review Team 5 standing backlog (B lane):** Step-3 Public baseline sweep (QCT 5-step Step 3) at a
 stable post-cutover SHA — **owner-authorized 2026-07-02 (agenda #10)**; runs **before FE-PUB-02
@@ -48,7 +53,6 @@ starts**; findings feed the FE-PUB packages.
 |---|---|---|
 | FE-PUB-05 (P-PUB-11) | `ESC-7-API-PRODDETAIL` | product modal from `search_catalog` |
 | FE-PUB-09 mega menu | taxonomy P1 approval + `MEGA_MENU_*` package approval (S: `ESC-7-API-CATNAV`) | simple nav (FE-PF-05) |
-| FE-VEN-09 (P-VND-28) | `ESC-7G-SCORE-DISPLAY` + `ESC-7B-TRUSTSCORE` | band-only, page unbuilt |
 | FE-PF-02 brand | official SVGs under `public/brand/` | placeholder-complete kit `BrandLogo` |
 | Page-gates inside milestones | P-PUB-09 `ESC-7-API-CATNAV` · P-VND-10 `ESC-7-API/upload` · P-ACC-12 `ESC-IDN-DELEG-EXPIRY` | carve-out rule (WBS) |
 
@@ -62,8 +66,17 @@ starts**; findings feed the FE-PUB packages.
 ## Board standing agenda
 
 1. **Official brand SVGs** — supply unmodified assets (`public/brand/README.md` policy); closes FE-PF-02.
-2. **Vendor FE BLOCKER packet** — SCORE-DISPLAY · TRUSTSCORE · A7; packets ready
-   (`governanceReviews/BOARD-PACKET-VENDOR-FE-BLOCKERS`, `DECISION-MATRIX-VENDOR-FE`); unblocks FE-VEN-09 + vendor companion freeze.
+2. ~~**Vendor FE BLOCKER packet**~~ — **SCORE-DISPLAY · TRUSTSCORE RULED by owner 2026-07-03**
+   (`governanceReviews/BOARD-PACKET-VENDOR-FE-BLOCKERS_v1.0.md`): Trust Score display permitted on
+   **any public-facing surface** (broader than the packet's own recommended self-view-only option),
+   consistent with the frozen Doc-4G/Doc-5G public/no-slug read; no corpus patch required; Trust
+   Score composition = 4 categorical pillars (Identity & Verification / Operational Reliability /
+   Reputation / Platform Compliance), exact formula/weights stay `ESC-TRUST-POLICY` (open,
+   backend-time). Performance Score NOT covered — stays band-only. **Unblocks `FE-VEN-09`.**
+   **A7 still open** — sole remaining BLOCKER on the vendor companion freeze gate (`vendor_planning_and_design.md` §12.2, now BLOCKER=1). **Cross-team enhancement opportunity (not auto-applied):** Team-1's already-closed public microsite (`FE-PUB-03`, M2.5, Verified=binary-only) and Team-2's
+   buyer-facing vendor cards were built band/badge-only under the prior posture — closed milestones
+   are not reopened; this is recorded as a fresh, ownable enhancement for those tracks whenever
+   picked up, not an automatic edit.
 3. ~~**FE-BUY-10 decisions**~~ — **RESOLVED by owner 2026-07-03** (route topology P-BUY-03/04 →
    reuse existing surfaces; favorites scope P-BUY-05 → confirmed product/category, build held on
    the projection gap). Milestone checkpointed, awaiting Review-A.
