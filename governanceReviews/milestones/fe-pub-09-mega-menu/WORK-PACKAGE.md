@@ -2,7 +2,40 @@
 
 - Lane: G (full Dev → Review-A [Team-4] → Review-B [Team-5] → close; L size, new kit package +
   header/nav surface + category-landing rebind — architecture-sensitive)
-- Reviewed-SHA record: _(filled at checkpoint)_
+- Reviewed-SHA record: **`7e95dce`** (phase checkpoints: 1957857 P0 · 53c8649+971aa76 P1 ·
+  aee81c2 P2 · 22d501c P3 · ad62cfe P4 · 7e95dce P5; docs/gates 6da2e1d. NOTE for reviewers:
+  parallel sessions share this working tree — 53c8649/22d501c carry a few unrelated
+  FE-BUY-10/FE-VEN-11 tracker/screenshot files swept by concurrent commits; the FE-PUB-09 delta
+  is the navigation package + explorer/header/categories/landing files listed here.)
+
+## Build adaptations & disclosures (for Review-A — deviations from the letter of the package)
+
+1. **MegaMenu disclosure is direct, not Radix NavigationMenu** — Radix NM injects an internal
+   `position:relative` wrapper that pins the panel to trigger width and its `defaultValue`
+   doesn't hold open on mount (both found live in the Phase 5 Playwright walkthrough). The spec's
+   behavior contract (WAI-ARIA disclosure-nav, hover-intent, ESC/outside-click/focus rules) is
+   implemented directly over `NavigationMenuStateProvider`; the vendored `navigation-menu`
+   primitive stays in the kit for simpler navs. Behavior-faithful; composition detail differs.
+2. **Sidebar-tree home** — the spec's "marketplace sidebar" instance mounts on the CATEGORY
+   LANDING aside (`/marketplace/category/[slug]`): the shipped marketplace hub (P-PUB-10, closed)
+   has no sidebar region by design; the landing drill surface is where route-aware
+   `aria-current` is meaningful.
+3. **Seed size** — `taxonomy.v1.json` measures 169.7KB raw / **35.6KB gz** (doc §4 estimated
+   ~60KB/15KB; deterministic UUID ids dominate). Static, cached, ships once; the ≤25KB-gz budget
+   row is the panel CODE chunk (excl. data/icons) — formal bundle audit deferred to the next
+   stable `next build` (dev-only servers this session; a build would clobber the shared
+   turbopack cache under parallel sessions). Disclosed, not silently passed.
+4. **Legacy slug union** — the landing resolves taxonomy-v1 slugs UNION the 15 legacy interim
+   slugs so links on closed surfaces stay alive (additive; unknown slugs still render the
+   not-found UI byte-identically — note: this dev environment returns HTTP 200 with the 404 UI
+   for ALL notFound() routes incl. the pre-existing `/vendors/[slug]`, environment-wide, not a
+   regression).
+5. **Synonym starter set** — 8 entries authored from Appendix C design notes (genset/GI pipe/
+   PFI etc., unit-tested); `menu_search_zero` is the documented growth loop.
+6. **Interactive verification** — 28/28 Playwright checks (desktop keyboard map, hover drill,
+   `/` focus, synonym search, zero-result handoff, strips, ESC; mobile ≤4-tap m-03 walkthrough,
+   breadcrumb Back; /categories inline + A–Z; L4 landing journey) + axe 0 critical/serious on
+   panel-open, drawer-open, and landing.
 
 ## Board ruling (this milestone's unlock — recorded 2026-07-03)
 

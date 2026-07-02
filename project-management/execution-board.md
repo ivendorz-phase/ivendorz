@@ -24,13 +24,18 @@ correctly attributed to the separate, not-yet-started `FE-PUB-01`, carried forwa
 · ~~FE-PUB-01 Landing~~ ✅ **Closed** (RV-0121, A:PASS ∧ B:PASS, 0 B/M/M both lanes, no
 fix-and-reverify cycle, Dev-team self-close 2026-07-03 @ `17f93a8` — fixed the FE-PUB-07-carried
 `command-center.tsx` popular-search mismatch, single-file content-only delta). `FE-PUB-09 Mega
-Menu & Taxonomy Nav` — **🔍 ACTIVE 2026-07-03**: double gate CLEARED by owner Board session
-2026-07-03 (Taxonomy Content v1.0 P1 approval + `MEGA_MENU_*` package approval, with 3 rounds of
-owner findings adjudicated into the build plan — Category Landing Contract, `MegaMenuVendors`
-[capability-matrix-bound per Invariant #1; trade-role labels rejected], expanded Featured column,
-Popular Searches strip, Post RFQ header CTA, reserved authed slots, empty-state contract,
-breakpoint/z-index/analytics/perf-budget contracts; full phases 0–5 authorized; WP card
-`governanceReviews/milestones/fe-pub-09-mega-menu/WORK-PACKAGE.md`). `FE-PUB-10 Canonical Vendor
+Menu & Taxonomy Nav` — **🔵A Review-A 2026-07-03** @ checkpoint `7e95dce`: double gate CLEARED by
+owner Board same session (Taxonomy Content v1.0 P1 + `MEGA_MENU_*` package, 3 rounds of owner
+findings adjudicated — Category Landing Contract, `MegaMenuVendors` [capability-matrix-bound per
+Invariant #1; trade-role labels rejected], Featured column, Popular Searches, Post RFQ header CTA,
+reserved authed slots, empty-state/breakpoint/z-index/analytics/perf contracts) and **phases 0–5
+BUILT in one run**: `src/frontend/navigation/` package + 3 vendored primitives + Appendix-C seed
+generator (794 nodes drift-checked) + header Explorer w/ preload ladder + mobile drawer + inline
+/categories + Browse A–Z + landing rebind (794 ∪ legacy slugs) + sidebar tree + quick search.
+13/13 unit tests · 28/28 Playwright interactive checks · axe 0 crit/serious ×3 surfaces ·
+coverage 144/144. WP card (Reviewed-SHA + 6 build disclosures)
+`governanceReviews/milestones/fe-pub-09-mega-menu/WORK-PACKAGE.md` → **Review Team 4 queue**;
+Team-1 stopped at the gate. `FE-PUB-10 Canonical Vendor
 Subdomain` — **⬜ Registered 2026-07-03** (Board-minted, ADR-024 realization @ `c1187a8`; owns no
 pages; WP card at kickoff) — **Team-1's next pull after FE-PUB-09 closes**. Only `FE-PUB-05` ⛔
 remains gated.

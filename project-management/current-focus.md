@@ -23,14 +23,19 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   spread. Content-only, single-file delta — no kit/route/filter-logic touched. A confirming sweep
   found no other landing section carries the same bug class [all source from seed-derived
   constants, not independent string literals])_
-- **Pipeline stage:** 🔍 building — `FE-PUB-09` Mega Menu & Taxonomy Nav **ACTIVE 2026-07-03**:
-  owner Board session cleared BOTH gates (Taxonomy Content v1.0 P1 + `MEGA_MENU_*` package
-  approval) and adjudicated 3 rounds of findings into the build plan (Category Landing Contract →
-  `/marketplace/category/[slug]`; `MegaMenuVendors` capability-matrix-bound per Invariant #1 —
-  trade-role labels REJECTED; expanded Featured column; Popular Searches strip; Post RFQ header
-  CTA; reserved authed slots; empty-state/breakpoint/z-index/analytics/perf-budget contracts).
-  Phases 0–5 authorized. WP card:
-  `governanceReviews/milestones/fe-pub-09-mega-menu/WORK-PACKAGE.md`
+- **Pipeline stage:** 🔵A **Review-A** — `FE-PUB-09` Mega Menu & Taxonomy Nav **BUILT, phases
+  0–5 complete** @ checkpoint `7e95dce` (2026-07-03; gates cleared same session by owner Board —
+  Taxonomy P1 + `MEGA_MENU_*` package, 3 rounds of findings adjudicated). Delivered:
+  `src/frontend/navigation/` package (mega-menu + category-tree tiers, providers, taxonomy
+  index/overlay/icon-registry, `TaxonomySource` seam), 3 vendored primitives, Appendix-C seed
+  generator (794 nodes, drift-check green), header Explorer with preload ladder + prominent
+  Post RFQ CTA, mobile drawer hybrid drill, `/categories` inline explorer + Browse A–Z,
+  Category Landing Contract rebind (794 slugs ∪ legacy; breadcrumb + related rail + sidebar
+  tree), quick category search with synonyms. Verified: 13/13 unit tests · 28/28 Playwright
+  interactive checks (incl. m-03 ≤4-tap mobile walkthrough) · axe 0 critical/serious on panel/
+  drawer/landing · WBS coverage 144/144. WP card (Reviewed-SHA + 6 build
+  adaptations/disclosures): `governanceReviews/milestones/fe-pub-09-mega-menu/WORK-PACKAGE.md`.
+  **Awaiting Review Team 4 (A lane) in a fresh context** — Team-1 stopped at the gate.
 - **Next Milestone:** `FE-PUB-10` Canonical Vendor Subdomain — **⬜ Registered 2026-07-03**
   (Board-minted, ADR-024 realization @ `c1187a8`; owns no pages; WP card at kickoff; acceptance:
   pixel output of all existing pages identical — only URL generation, routing, metadata,
