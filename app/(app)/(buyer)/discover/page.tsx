@@ -17,54 +17,77 @@ export const metadata = {
 
 // Realistic industrial-procurement MOCK — the public projection mapped to the shared VendorCard VM
 // (capability = 4-flag matrix; trust = binary `verified` only, no score). In contract order (not re-ranked).
+//
+// Vendor identities are kept IDENTICAL to the public discovery seed
+// (`app/(public)/_components/discovery/seed.ts` `VENDORS`) rather than a second, divergent fictional
+// catalog: cards here link out to the public microsite (`/vendors/[slug]`, FE-BUY-10 2026-07-03 —
+// owner-ruled reuse, no in-app P-BUY-04 route), and both surfaces already declare they bind the SAME
+// M2 public reads (`list_vendor_directory` / `search_catalog`) once Wave-4 wires them — so aligned mock
+// content previews the real behavior instead of inventing a second catalog that would 404 on click.
 const MOCK_VENDORS: VendorCardVM[] = [
   {
-    slug: "meghna-industrial-supplies",
-    name: "Meghna Industrial Supplies Ltd.",
-    category: "Structural steel & MS plate",
-    location: "Gazipur, Dhaka",
+    slug: "padma-valve-fittings",
+    name: "Padma Valve & Fittings Ltd.",
+    category: "Valves & Fittings",
+    location: "Dhaka · Tejgaon I/A",
     verified: true,
-    capability: { can_supply: true, can_fabricate: true, can_service: false, can_consult: false },
+    capability: { can_supply: true, can_service: true, can_fabricate: true, can_consult: false },
   },
   {
-    slug: "bengal-steel-fabrication",
-    name: "Bengal Steel & Fabrication",
-    category: "Fabrication & structures",
-    location: "Chattogram",
+    slug: "bengal-steel-industries",
+    name: "Bengal Steel Industries",
+    category: "Steel & Metals",
+    location: "Chattogram · Kalurghat",
     verified: true,
-    capability: { can_supply: true, can_fabricate: true, can_service: true, can_consult: false },
+    capability: { can_supply: true, can_service: false, can_fabricate: true, can_consult: false },
   },
   {
-    slug: "padma-engineering-works",
-    name: "Padma Engineering Works",
-    category: "Plant maintenance & services",
-    location: "Narayanganj, Dhaka",
-    verified: false,
-    capability: { can_supply: false, can_service: true, can_fabricate: true, can_consult: true },
-  },
-  {
-    slug: "delta-traders-import",
-    name: "Delta Traders & Import",
-    category: "Bearings & power transmission",
-    location: "Motijheel, Dhaka",
-    verified: true,
-    capability: { can_supply: true, can_service: false, can_fabricate: false, can_consult: false },
-  },
-  {
-    slug: "rupsha-controls",
-    name: "Rupsha Controls & Automation",
-    category: "Instrumentation & controls",
-    location: "Khulna",
-    verified: false,
+    slug: "jamuna-electrical-drives",
+    name: "Jamuna Electrical & Drives",
+    category: "Electrical & Drives",
+    location: "Dhaka · Tongi",
+    // Intentionally unverified — renders as absence (no "Verified" badge), not a fabricated state.
     capability: { can_supply: true, can_service: true, can_fabricate: false, can_consult: true },
   },
   {
-    slug: "titas-engineering-consultants",
-    name: "Titas Engineering Consultants",
-    category: "EPC advisory & inspection",
-    location: "Uttara, Dhaka",
+    slug: "meghna-pumps-motors",
+    name: "Meghna Pumps & Motors",
+    category: "Pumps & Motors",
+    location: "Narayanganj · Fatullah",
     verified: true,
-    capability: { can_supply: false, can_service: false, can_fabricate: false, can_consult: true },
+    capability: { can_supply: true, can_service: true, can_fabricate: false, can_consult: false },
+  },
+  {
+    slug: "surma-safety-solutions",
+    name: "Surma Safety Solutions",
+    category: "Safety & PPE",
+    location: "Sylhet · Khadimnagar",
+    verified: true,
+    capability: { can_supply: true, can_service: false, can_fabricate: false, can_consult: true },
+  },
+  {
+    slug: "karnaphuli-chemicals",
+    name: "Karnaphuli Chemicals Ltd.",
+    category: "Chemicals",
+    location: "Chattogram · Sitakunda",
+    verified: true,
+    capability: { can_supply: true, can_service: false, can_fabricate: false, can_consult: true },
+  },
+  {
+    slug: "titas-fabrication-works",
+    name: "Titas Fabrication Works",
+    category: "Fabrication & Machining",
+    location: "Gazipur · Tongi",
+    verified: true,
+    capability: { can_supply: false, can_service: true, can_fabricate: true, can_consult: false },
+  },
+  {
+    slug: "shitalakshya-engineering",
+    name: "Shitalakshya Engineering",
+    category: "Bearings & Power Transmission",
+    location: "Narayanganj · Siddhirganj",
+    verified: true,
+    capability: { can_supply: true, can_service: true, can_fabricate: false, can_consult: true },
   },
 ];
 

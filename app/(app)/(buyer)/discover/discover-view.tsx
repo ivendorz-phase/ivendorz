@@ -54,8 +54,10 @@ export function DiscoverView({ data }: { data: DiscoverData | null }) {
             <ul role="list" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((v) => (
                 <li key={v.slug}>
-                  {/* Forward ref to the in-app vendor profile (P-BUY-04); opaque slug route. */}
-                  <VendorCard vendor={v} href={`/discover/${v.slug}`} />
+                  {/* Link-out to the public vendor microsite (P-PUB-13, /vendors/[slug]) — owner-ruled
+                      reuse (FE-BUY-10, 2026-07-03): no separate in-app profile route for P-BUY-04.
+                      Opaque slug (Inv #5). */}
+                  <VendorCard vendor={v} href={`/vendors/${v.slug}`} />
                 </li>
               ))}
             </ul>
