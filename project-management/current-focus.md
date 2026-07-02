@@ -11,9 +11,9 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-PUB-24` Contact / Support (P2) — ⬜ next (P-PUB-22 ✅ RV-0093). Static contact page — NO fabricated phone/email/address (placeholder tokens only); may state TRUE product facts; no unauthenticated write wiring
-- **Status:** Legal pair P-PUB-21/22 ✅ Approved (RV-0092/0093 — honest placeholder scaffolds, byte-identical reuse confirmed). Awaiting P-PUB-22 commit + Team-1 to start P-PUB-24. Chrome follow-up open: SiteHeader "Pricing" nav → /pricing (RV-0087)
-- **Next Page:** P-PUB-24 + P-SH-01/02/06 (P2), then P-PUB-20/23 + P-SH-05 (P3); SKIP P-PUB-09/11 Waiting-API
+- **Current Page:** `P-SH-01` Global search results (P2) — ⬜ next (P-PUB-24 ✅ RV-0094). Doc-7C shell; **MUST NOT re-rank M3** (no matching/scoring/ranking, R6/R7); contract-projected results only, no grand totals (GI-03), non-disclosure-safe (absent ≡ excluded)
+- **Status:** P-PUB-24 Contact ✅ Approved (RV-0094 — honest no-op form, no fabricated details). P-PUB public set + Legal pair complete. Awaiting P-PUB-24 commit + Team-1 to start P-SH-01. Chrome follow-up open: SiteHeader "Pricing" nav → /pricing (RV-0087)
+- **Next Page:** P-SH-01/02/06 (P2), then P-PUB-20/23 + P-SH-05 (P3); SKIP P-PUB-09/11 Waiting-API
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
