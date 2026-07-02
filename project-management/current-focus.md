@@ -11,24 +11,24 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-ACC-10` Permissions reference (P2) — 🟡 In Progress (P-ACC-09 ✅ committed). permissions by reference (Inv #10)
-- **Status:** 🟡 building (presentation-only; read-only `list_permissions` catalog, Doc-4C §C7)
-- **Next Page:** `P-ACC-11` Delegation grants (P2, Ready)
+- **Current Page:** `P-ACC-11` Delegation grants (P2) — 🟡 In Progress (P-ACC-10 ✅ committed)
+- **Status:** 🟡 building (presentation-only; T-LISTING `list_delegation_grants`, Doc-4C §C9)
+- **Next Page:** `P-ACC-12` Delegation grant editor (P2, Waiting Decision — `ESC-IDN-DELEG-EXPIRY`)
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
 
-- **Current Page:** `P-BUY-10` RFQ detail — activity (P2) — ⬜ Pending (P-BUY-12 ✅ Approved+committed). Next buildable (sub-view of /rfqs/[id])
-- **Status:** ⬜ queued to build. **P-BUY-05 DEFERRED (FLAG): catalog_favorites=product|category not vendors + IDs-only projection — owner decision needed**
-- **Next Page:** `P-BUY-11` RFQ version history (P2), then `P-BUY-13` Routing log. **⚠️ P-BUY-03/04 + P-BUY-05 all DEFERRED — need OWNER decisions** (03/04 route topology; 05 favorites scope+projection)
+- **Current Page:** `P-BUY-11` RFQ version history (P2) — ⬜ Pending (P-BUY-10 ✅ Approved, RV-0056). versioned (Inv #8)
+- **Status:** ⬜ queued to build — then `P-BUY-13` Routing log
+- **Next Page:** `P-BUY-13` Routing log / invitations (P2) — no excluded vendor shown. **⚠️ P-BUY-03/04 + P-BUY-05 DEFERRED — OWNER decisions pending**
 - **Updated:** 2026-07-02
 - **Updated:** 2026-07-02
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** `P-ADM-19` Routing rules (P2) — 🔵 Ready for Review (stage-gated control-plane list, awaiting Team-4)
-- **Status:** 🔵 Ready for Review — stage-gate notice; Manage/New disabled (R5, M3-owned); illustrative rules grounded in Doc-3; no coined schema/score
-- **Next Page:** `P-ADM-20` Routing rule editor (P2, Ready)
+- **Current Page:** `P-ADM-20` Routing rule editor (P2) — 🔵 Ready for Review (stage-gated per-rule editor, awaiting Team-4)
+- **Status:** 🔵 Ready for Review — Save/Enable/assist_routing disabled (R5, stage-gated); params from core.system_configuration (no coined schema); notFound Inv #11
+- **Next Page:** `P-ADM-21` Matching results (internal) (P2, Ready) — internal-service leg only
 - **Updated:** 2026-07-02
 
 ---

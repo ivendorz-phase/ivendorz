@@ -198,3 +198,15 @@
 2026-07-02 · P-ADM-19 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-3
 2026-07-02 · P-ACC-09 · ✅ Approved → ✅ committed · Owner: Team-1
 2026-07-02 · P-ACC-10 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+2026-07-02 · P-BUY-10 · ⬜ Pending → 🟡 In Progress · Owner: Team-2
+2026-07-02 · P-BUY-10 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-2 (Activity tab realized in RFQ detail; axe GREEN — 0 own-content)
+2026-07-02 · P-ADM-19 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0055)
+2026-07-02 · P-ACC-10 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
+2026-07-02 · P-ADM-19 · ✅ Approved → ✅ committed (a127993) · Owner: Team-3
+2026-07-02 · P-ADM-20 · ⬜ Pending → 🟡 In Progress · Owner: Team-3
+2026-07-02 · P-ADM-20 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-3
+2026-07-02 · P-BUY-10 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0056)
+2026-07-02 · P-ACC-10 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0057)
+2026-07-02 · P-BUY-10 · ✅ Approved → ✅ committed (788cd7a) · Owner: Team-2
+2026-07-02 · P-ACC-10 · ✅ Approved → ✅ committed · Owner: Team-1
+2026-07-02 · P-ACC-11 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
