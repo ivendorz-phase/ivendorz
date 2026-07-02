@@ -83,6 +83,25 @@ export type PrivateVendorSource = "manual" | "email_list" | "excel";
  */
 export type BuyerVendorStatus = "approved" | "conditional" | "blacklisted" | "none";
 
+/**
+ * RFQ routing mode — the frozen `rfqs.routing_mode` enum (Doc-2 §10.4:757): how widely the RFQ is routed.
+ * A presentation label only; it is NOT a governance signal and NEVER gates fairness/selection (Doc-3
+ * §11.8/§12.1). Rendered on the routing log (P-BUY-13) as observed context, never chosen by the buyer here.
+ */
+export type RoutingMode =
+  "approved_only" | "approved_conditional" | "approved_open" | "open_market";
+
+/**
+ * RFQ invitation lifecycle — the frozen Doc-4M / Doc-2 §3 `rfq_invitations` machine (verbatim):
+ * `draft → selected → deferred → delivered → accepted | declined | expired`. The BUYER-facing read
+ * (`list_invitations`, §E6.7) discloses only delivered-onward rows — **deferral is invisible to the buyer**
+ * (Doc-3 §4.2): pre-delivery states (`draft`/`selected`/`deferred`) are never returned to the buyer, and a
+ * deferred/gate-excluded vendor is indistinguishable from non-match (Inv #11; §7.5). The full union is
+ * modelled for type fidelity; the labels are neutral + NON-PENALIZING (a decline is never a vendor judgement).
+ */
+export type InvitationState =
+  "draft" | "selected" | "deferred" | "delivered" | "accepted" | "declined" | "expired";
+
 /** A monetary value pair — `{ amount, currency }`, BDT default at the render site only (GI-08; Doc-2 §0.4). */
 export interface MoneyValue {
   amount: number;

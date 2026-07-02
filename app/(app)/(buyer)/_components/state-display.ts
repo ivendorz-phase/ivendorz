@@ -17,6 +17,7 @@ import type {
   TradeInvoiceStatus,
   PrivateVendorLinkStatus,
   BuyerVendorStatus,
+  InvitationState,
 } from "./view-models";
 
 export interface StateDisplay {
@@ -140,4 +141,24 @@ const BUYER_VENDOR_STATUS_DISPLAY: Record<BuyerVendorStatus, StateDisplay> = {
 
 export function buyerVendorStatusDisplay(status: BuyerVendorStatus): StateDisplay {
   return BUYER_VENDOR_STATUS_DISPLAY[status];
+}
+
+/**
+ * RFQ invitation state → label + tone (Doc-4M / Doc-2 §3). NON-PENALIZING neutral cues: `declined`/`expired`
+ * are neutral (never a "bad vendor" signal — the buyer never judges a vendor here, R6). The buyer-facing read
+ * only ever surfaces delivered-onward rows (deferral invisible, Doc-3 §4.2); pre-delivery states are mapped
+ * for type completeness but are never returned to the buyer. This mapping discloses no exclusion (Inv #11).
+ */
+const INVITATION_STATE_DISPLAY: Record<InvitationState, StateDisplay> = {
+  draft: { label: "Draft", tone: "neutral" },
+  selected: { label: "Selected", tone: "info" },
+  deferred: { label: "Deferred", tone: "neutral" },
+  delivered: { label: "Delivered", tone: "info" },
+  accepted: { label: "Accepted", tone: "success" },
+  declined: { label: "Declined", tone: "neutral" },
+  expired: { label: "Expired", tone: "neutral" },
+};
+
+export function invitationStateDisplay(state: InvitationState): StateDisplay {
+  return INVITATION_STATE_DISPLAY[state];
 }
