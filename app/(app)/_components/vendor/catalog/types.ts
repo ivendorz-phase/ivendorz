@@ -49,3 +49,16 @@ export interface PublishAllowanceView {
   used?: number;
   limit?: number;
 }
+
+/** marketplace.spec_library_entries (Doc-2 §10.3 row 741): `name, summary` + optional category FK.
+ *  A reusable spec entry, distinct from the per-product `spec_documents` files (P-VND-10) — linked
+ *  to products N:N via `product_spec_links` (`link_product_spec`/`unlink_product_spec`, P-VND-08). */
+export interface SpecLibraryEntryView {
+  id: string;
+  name?: string;
+  summary?: string;
+  /** Optional FK → categories (Admin-governed taxonomy). */
+  category_id?: string;
+  /** Concurrency token + display (get_spec_library_entry.v1 updated_at). */
+  updated_at?: string;
+}

@@ -14,6 +14,8 @@ export {
   PublishAllowanceIndicator,
   type PublishAllowanceIndicatorProps,
 } from "./publish-allowance";
+export { SpecLibraryList, type SpecLibraryListProps } from "./spec-library-list";
+export { SpecEntryDialog, type SpecEntryDialogProps } from "./spec-entry-dialog";
 
 export type {
   ProductStatus,
@@ -22,4 +24,5 @@ export type {
   ProductView,
   SpecDocumentView,
   PublishAllowanceView,
+  SpecLibraryEntryView,
 } from "./types";

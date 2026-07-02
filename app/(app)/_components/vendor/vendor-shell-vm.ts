@@ -24,6 +24,7 @@ export const VENDOR_NAV: NavSection[] = [
     items: [
       { label: "Company Profile", href: `${BASE}/company`, icon: "company" },
       { label: "Products", href: `${BASE}/company/products`, icon: "catalog" },
+      { label: "Spec Library", href: `${BASE}/company/spec-library`, icon: "specLibrary" },
       { label: "Categories", href: `${BASE}/company/categories`, icon: "categories" },
     ],
   },
