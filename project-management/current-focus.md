@@ -11,9 +11,9 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-PUB-23` Resources / Blog (P3) — ⬜ next (P-PUB-20 ✅ RV-0098). Optional SEO — **NO fabricated posts/authors/dates/metrics**; honest empty/placeholder if no CMS; static, binds no data
-- **Status:** P-PUB-20 Compare ✅ Approved (RV-0098 — R6/R7 exemplary, binary Verified, no kit change). Only 2 P3s left buildable (P-PUB-23, P-SH-05). Awaiting P-PUB-20 commit + Team-1 to start P-PUB-23. **Owner ratify:** global-search + full-page-notifications mount (corpus-silent). Chrome follow-up: SiteHeader "Pricing" nav → /pricing (RV-0087)
-- **Next Page:** P-PUB-23 + P-SH-05 (P3); SKIP P-PUB-09/11 Waiting-API
+- **Current Page:** `P-SH-05` Maintenance / unavailable (P3) — ⬜ next (P-PUB-23 ✅ RV-0099). **LAST Team-1 buildable page.** Static state page like 404/403: generic copy, NO data, NO fabricated ETA/timestamp/incident-id; no kit change; single h1
+- **Status:** P-PUB-23 Resources ✅ Approved (RV-0099 — honest SEO stub, no fabrication). After P-SH-05, Team-1 buildable queue EXHAUSTED (rest 🟩 Built / Waiting-API / Waiting-Decision) → loop idles. Awaiting P-PUB-23 commit + Team-1 to start P-SH-05. **Owner ratify:** global-search + full-page-notifications mount (corpus-silent). Chrome follow-up: SiteHeader "Pricing" nav → /pricing (RV-0087)
+- **Next Page:** P-SH-05 (P3, last buildable); SKIP P-PUB-09/11 Waiting-API
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
