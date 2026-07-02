@@ -29,7 +29,22 @@ import { ActivityTimeline } from "../../_components/activity-timeline";
 import { DescriptionList, type DescriptionItem } from "../../_components/description-list";
 import { formatDate, Money, Ref } from "../../_components/format";
 import { rfqStateDisplay } from "../../_components/state-display";
+import { ROUTING_MODE_LABEL } from "../../_components/routing-view-models";
+import { WORK_NATURE_LABEL } from "../../_components/rfq-create/rfq-options";
 import type { RfqDetailData, RfqLifecycleAction } from "../../_components/rfq-view-models";
+import type { WorkNature } from "../../_components/rfq-create/rfq-form-models";
+
+/** The requested work-nature set rendered as neutral capability chips (Inv #1: the matrix, not a label). */
+function WorkNatureChips({ items }: { items: WorkNature[] }) {
+  if (items.length === 0) return <span className="text-muted-foreground">—</span>;
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {items.map((w) => (
+        <StatusChip key={w} label={WORK_NATURE_LABEL[w]} tone="neutral" />
+      ))}
+    </div>
+  );
+}
 
 /** Map a lifecycle action's presentation emphasis to a kit Button variant. */
 function actionVariant(a: RfqLifecycleAction): "primary" | "outline" | "secondary" {
@@ -58,12 +73,39 @@ function LifecycleActions({ actions }: { actions: RfqLifecycleAction[] }) {
 
 /** Overview tab — RFQ meta (left) + read-only lifecycle timeline (right). This IS P-BUY-08. */
 function OverviewTab({ data }: { data: RfqDetailData }) {
+  // Facts are all frozen `get_rfq` content, surfaced by intent; each row is included only when the read
+  // supplies it (no fabricated value). `work_nature`/`routing_mode`/`current_version_no` add procurement
+  // context (BX-02) — capability matrix (Inv #1), routing breadth (observe-only, R6), and the versioned
+  // revision (Inv #8, cross-linking P-BUY-11).
   const items: DescriptionItem[] = [
-    ...(data.summary ? [{ label: "Summary", value: data.summary }] : []),
+    ...(data.workNature && data.workNature.length > 0
+      ? [{ label: "Request type", value: <WorkNatureChips items={data.workNature} /> }]
+      : []),
     { label: "Category", value: data.category ?? "—" },
+    ...(data.routingMode
+      ? [{ label: "Routing", value: ROUTING_MODE_LABEL[data.routingMode] }]
+      : []),
     { label: "Budget", value: <Money value={data.value} /> },
     { label: "Delivery location", value: data.deliveryLocation ?? "—" },
     { label: "Needed by", value: data.neededBy ? formatDate(data.neededBy) : "—" },
+    ...(typeof data.currentVersionNo === "number"
+      ? [
+          {
+            label: "Version",
+            value: (
+              <span className="flex flex-wrap items-center gap-2">
+                <span>v{data.currentVersionNo}</span>
+                <Link
+                  href={`/rfqs/${data.id}/versions`}
+                  className="rounded-sm text-xs text-iv-brand-600 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  Version history
+                </Link>
+              </span>
+            ),
+          },
+        ]
+      : []),
     { label: "Created", value: formatDate(data.createdAt) },
     { label: "Last updated", value: formatDate(data.updatedAt) },
   ];
@@ -74,6 +116,8 @@ function OverviewTab({ data }: { data: RfqDetailData }) {
           <CardTitle className="text-sm font-semibold">Request details</CardTitle>
         </CardHeader>
         <CardContent className="p-4 pt-0">
+          {/* Summary as a lead paragraph (better hierarchy than a definition row for longer scope text). */}
+          {data.summary ? <p className="mb-3 text-sm text-foreground">{data.summary}</p> : null}
           <DescriptionList items={items} />
         </CardContent>
       </Card>

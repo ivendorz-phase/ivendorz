@@ -22,6 +22,12 @@ export const WORK_NATURE_OPTIONS: Option<WorkNature>[] = [
   { value: "consult", label: "Consult", hint: "Advisory / consulting" },
 ];
 
+/** `work_nature` value → presentation label, derived from `WORK_NATURE_OPTIONS` (single source; no drift).
+ *  Reused by any surface that renders the capability set as labels (e.g. the RFQ detail Overview chips). */
+export const WORK_NATURE_LABEL: Record<WorkNature, string> = Object.fromEntries(
+  WORK_NATURE_OPTIONS.map((o) => [o.value, o.label]),
+) as Record<WorkNature, string>;
+
 /** `routing_mode` — buyer sets the breadth; the governed engine still matches/routes (R6). */
 export const ROUTING_MODE_OPTIONS: Option<RoutingMode>[] = [
   {

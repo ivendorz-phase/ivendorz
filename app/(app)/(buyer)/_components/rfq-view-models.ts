@@ -8,7 +8,14 @@
 //
 // SCOPE: presentation only — no fetch, no mutation, no business logic (Content ≠ Presentation, Inv #9).
 
-import type { RfqState, QuotationState, MoneyValue, ActivityEntry } from "./view-models";
+import type {
+  RfqState,
+  QuotationState,
+  MoneyValue,
+  ActivityEntry,
+  RoutingMode,
+} from "./view-models";
+import type { WorkNature } from "./rfq-create/rfq-form-models";
 
 /** One RFQ row in the P-BUY-06 list. `humanRef` is a display label; routes carry the opaque `id`. */
 export interface RfqListItem {
@@ -68,6 +75,18 @@ export interface RfqDetailData {
   /** RFQ scope/spec summary the contract carries (display only). */
   summary?: string;
   category?: string;
+  /**
+   * Requested work nature — the frozen capability SET (Inv #1: a matrix of
+   * {supply,service,fabricate,consult}, NEVER a single label). Maps by intent to `get_rfq` `work_nature[]`.
+   */
+  workNature?: WorkNature[];
+  /**
+   * Routing breadth — the frozen `rfqs.routing_mode` (Doc-2 §10.4). Observe-only context (the buyer set the
+   * breadth at authoring; the engine decides who is invited — R6). NOT a governance signal.
+   */
+  routingMode?: RoutingMode;
+  /** Current immutable revision number (frozen `current_version_no`; Inv #8). Cross-links to P-BUY-11. */
+  currentVersionNo?: number;
   /** Delivery location label (display only). */
   deliveryLocation?: string;
   /** ISO-8601 "needed by" date, formatted at the render site. */
