@@ -4,5 +4,6 @@
 // (Doc-2 §5.8/§10.746-749, Doc-4D PassB Part D) — zero contract invention. Firewall: ads never
 // carry a governance signal (Doc-4D §B.11/§18.3).
 export { AdList, type AdListProps } from "./ad-list";
+export { AdForm } from "./ad-form";
 export { AdStatusChip, AD_PLACEMENT_LABEL } from "./ad-status-chip";
 export type { AdStatus, AdPlacement, AdScheduleView, AdListItemView, AdView } from "./types";
