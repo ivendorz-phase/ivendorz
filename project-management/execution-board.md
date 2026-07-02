@@ -65,13 +65,16 @@ both lanes; **Review Team 5 marked approved 2026-07-03** per Amendment v1.3 §13
 commit [checkpoints/trackers; close uncommitted] + start next; composition-not-fork verified [5
 Account components imported unmodified, thin `BillingTabs` over shared `WorkspaceTabs`, zero fork],
 money-boundary clean, render D/T/M + axe 0, disclosed hard-coded-link trade-off honest). `FE-VEN-11
-Organization` — **🔵A Review-A submitted** (checkpoint `1a5d009`; composes `OrganizationProfile` /
-`OrganizationLifecycle` / `MembersView` / `RolesView` / `PermissionsView` / `DelegationView`
-[P-ACC-04..11] via new `OrganizationTabs`, same composition-not-fork pattern as `FE-VEN-10`;
-disclosed trade-offs: Invite-member/New-role links leave vendor chrome, "New grant" disabled — a
-genuinely pre-existing dead link discovered on the Account track itself
-[`/account/delegation/new` doesn't exist], distinct from `ESC-IDN-DELEG-EXPIRY`). Team-3 STOPS,
-holds for the gate → then FE-VEN-12 (also unblocked). _(Out-of-scope note: FE-PUB-09 vendored
+Organization` — composes `OrganizationProfile` / `OrganizationLifecycle` / `MembersView` /
+`RolesView` / `PermissionsView` / `DelegationView` [P-ACC-04..11] via new `OrganizationTabs`, same
+composition-not-fork pattern as `FE-VEN-10`. **Review-A: PASS WITH PATCH** (RV-0124 — 1 MINOR
+comment-drift in `workspace/organization/page.tsx`'s file header, patched in place at `b847e7e`
+with no resubmission to A per Review-A's own call [pure comment fix, zero scope/contract change];
+1 OBS; fork check clean on all 6 reused components, both disclosed trade-offs [Invite-member/New-role
+leave vendor chrome; "New grant" disabled — a genuinely pre-existing dead link on the Account track
+itself, `/account/delegation/new` doesn't exist, distinct from `ESC-IDN-DELEG-EXPIRY`] independently
+re-verified true). **🔵B Review-B submitted** at checkpoint `b847e7e`. Team-3 STOPS, holds for the
+gate → then FE-VEN-12 (also unblocked). _(Out-of-scope note: FE-PUB-09 vendored
 `popover`/`accordion`/`navigation-menu` into `src/frontend/primitives` — verify as a legit
 demand-driven kit extension under the mega-menu package at FE-PUB-09's review.)_
 

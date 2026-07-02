@@ -2,7 +2,8 @@
 
 - **Lane:** G (composes cross-team-owned Account surfaces; Golden Rule 7 sensitivity, same class as
   `FE-VEN-10`)
-- **Reviewed-SHA record:** `1a5d009` — scope complete, submitted to Review-A 2026-07-03
+- **Reviewed-SHA record:** `1a5d009` (Review-A pass) → `b847e7e` (post-patch, submitted to
+  Review-B) — RV-0124 Review-A: PASS WITH PATCH (1 MINOR patched in place, 1 OBS)
 - **Value:** Platform · **Priority:** P3 · **Size:** S · **Risk:** Med
 
 ## In scope

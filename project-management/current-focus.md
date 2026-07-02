@@ -68,9 +68,10 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 - **Current Milestone:** _(none — `FE-VEN-10` Billing ✅ **Closed**, RV-0123, A:PASS ∧ B:PASS, 0
   BLOCKER/MAJOR/MINOR both lanes, Review Team 5-approved 2026-07-03 @ `4e57bfc`. Composes 5
   unmodified Account components — composition-not-fork independently verified by both lanes. FE-VEN-09/14 also ✅ Closed prior)_
-- **Current Milestone (new):** `FE-VEN-11` Organization — **🔵A Review-A** (checkpoint `1a5d009`;
-  scope complete — sole in-scope page `workspace/organization` composed, second of the ruled
-  FE-VEN-10 → 11 → 12 sequence)
+- **Current Milestone (new):** `FE-VEN-11` Organization — **🔵B Review-B** (RV-0124 Review-A: PASS
+  WITH PATCH, 1 MINOR comment-drift patched in place at `b847e7e` [no resubmission to A per
+  Review-A's own recommendation — pure comment fix, zero scope/contract change], 1 OBS; submitted
+  to Review-B; second of the ruled FE-VEN-10 → 11 → 12 sequence)
 - **Current Page:** _(sole in-scope page — 6 tabs, each a direct unmodified import of the real
   Account component: `OrganizationProfile`, `OrganizationLifecycle`, `MembersView`, `RolesView`,
   `PermissionsView`, `DelegationView` [P-ACC-04..11]. Disclosed trade-offs: "Invite member"/"New
@@ -87,18 +88,18 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 ## Review Team 4 — Architecture & Governance (A lane) — queue
 
 _(`FE-BUY-10` (Team-2) checkpointed 2026-07-03, awaiting Review-A — WP card
-  `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`. **`FE-VEN-11`
-  (Team-3) checkpointed `1a5d009`, awaiting Review-A** — WP card
-  `governanceReviews/milestones/fe-ven-11-organization/WORK-PACKAGE.md`. Otherwise clear —
+  `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`. Otherwise clear —
   `FE-PUB-03` (RV-0111), `FE-PUB-04` (RV-0116), `FE-PUB-06` (RV-0118), `FE-PUB-07` (RV-0119),
   `FE-PUB-01` (RV-0121), `FE-VEN-04` (RV-0110), `FE-VEN-09` (RV-0120), `FE-VEN-10` (RV-0123),
-  `FE-BUY-07` (RV-0112) all cleared A and closed.)_
+  `FE-VEN-11` (RV-0124, PASS WITH PATCH — MINOR patched at `b847e7e`), `FE-BUY-07` (RV-0112) all
+  cleared A and closed/advanced.)_
 
 ## Review Team 5 — Quality & Adversarial (B lane) — queue
 
-_(B-lane clear — `FE-VEN-10` cleared, RV-0123 A:PASS ∧ B:PASS, 7 OBS, closed by Team-3 [Review-B
-  by a live Team-5 session — composition-not-fork, money-boundary, render D/T/M+axe all
-  independently confirmed].)_
+_(**`FE-VEN-11` (Team-3) submitted, checkpoint `b847e7e`, awaiting Review-B** — WP card
+  `governanceReviews/milestones/fe-ven-11-organization/WORK-PACKAGE.md`. Otherwise clear —
+  `FE-VEN-10` cleared, RV-0123 A:PASS ∧ B:PASS, 7 OBS, closed by Team-3 [Review-B by a live Team-5
+  session — composition-not-fork, money-boundary, render D/T/M+axe all independently confirmed].)_
 
 - **`FE-PUB-03` Vendor Profile** (Team-1) — Review-B **PASS** (RV-0111, 0 B/M/M, 8 OBS, `1275f70`;
   render D/T/M + axe 0 mobile/desktop; sticky-bar no-occlusion + dup-control clean) → Team-1 self-close.
