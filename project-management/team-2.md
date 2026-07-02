@@ -8,8 +8,8 @@
 |---|---|---|---|---|---|
 | P-BUY-01 | Buyer dashboard | P1 | Ready | 🟩 Built | refinement item (owner-named) |
 | P-BUY-02 | Discover vendors | P1 | Ready | ✅ Approved | RV-0048 PASS (Team-4). Public projection only (Doc-4D §B.3); **trust=binary Verified only ([ESC-7G-SCORE-DISPLAY], no score/band, M5 owns); capability=4-flag matrix (Inv#1); discovery≠matching (DD-2, contract order, never re-ranked); non-disclosure clean (blacklist byte-identical §7.5); cursor.** Search box contract-legit (`search_catalog.query`). **`[PLAT-P7]` frozen-kit fix Team-4-verified (OFF-chip 5.12:1 AA; diff = sanctioned scope only; all VendorCard consumers benefit, P-PUB-12/16 stay ✅); PLAT-P7 CLOSED.** |
-| P-BUY-03 | Vendor directory (in-app) | P2 | Ready | ⬜ | |
-| P-BUY-04 | Vendor profile (in-app) | P2 | Ready | ⬜ | trust read-only |
+| P-BUY-03 | Vendor directory (in-app) | P2 | Ready | ⬜ | **DEFERRED — route topology decision needed** (no buyer-nav entry; /discover already = P-BUY-02; is directory a /discover mode, /vendors, or a tab?). Owner to decide before build |
+| P-BUY-04 | Vendor profile (in-app) | P2 | Ready | ⬜ | trust read-only. **DEFERRED — same route question** (in-app profile route vs public /vendors/[slug] microsite); owner to decide |
 | P-BUY-05 | Favorites | P2 | Ready | ⬜ | saved vendors |
 | P-BUY-06 | RFQ list | P1 | Ready | 🟩 Built | cursor pagination |
 | P-BUY-07 | RFQ create wizard | P1 | Ready | 🟩 Built | resumable draft |
@@ -17,7 +17,7 @@
 | P-BUY-09 | RFQ detail — quotations | P1 | Ready | 🟩 Built | visibility-gated |
 | P-BUY-10 | RFQ detail — activity | P2 | Ready | ⬜ | deferral invisible |
 | P-BUY-11 | RFQ version history | P2 | Ready | ⬜ | versioned (Inv. #8) |
-| P-BUY-12 | Internal approval | P1 | Ready | ⬜ | no auto-approve |
+| P-BUY-12 | Internal approval | P1 | Ready | ✅ Approved | RV-0052 PASS (Team-4). **NO AUTO-APPROVE rendered (Doc-3 §1.2 FIXED)**; `approve_rfq`→submitted / `reject_internal_rfq`→draft + mandatory reason (§E4.4), parked/disabled, gated `can_approve_rfq`; approval-chain = Identity-owned (consumed, not coined); own-org queue (`list_rfqs` state=pending_internal_approval); genuine-empty; cursor/contract-order; currency-driven Money; opaque ids→/rfqs; stickyFirstColumn pre-existing. Model management page |
 | P-BUY-13 | Routing log / invitations | P2 | Ready | ⬜ | no excluded vendor shown |
 | P-BUY-14 | Quotation detail | P1 | Ready | 🟩 Built | |
 | P-BUY-15 | Comparison statement | P1 | Ready | 🟩 Built | read-only, System-gen, **never recommends** (R6) |

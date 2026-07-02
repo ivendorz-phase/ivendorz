@@ -11,22 +11,23 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-ACC-09` Role editor (P2) — 🟡 In Progress (P-ACC-08 ✅ committed)
-- **Status:** 🟡 building (presentation-only; role create/edit + permission grid; Doc-4C §C7)
+- **Current Page:** `P-ACC-09` Role editor (P2) — 🔵 Ready for Review (awaiting Team-4 QCT)
+- **Status:** 🔵 Ready for Review — create+edit role editor; permissions by slug (Inv #10); system read-only; delete-confirm; unknown→404; Doc-4C §C7; not committed
 - **Next Page:** `P-ACC-10` Permissions reference (P2, Ready) — permissions by reference (Inv #10)
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
 
-- **Current Page:** `P-BUY-03` Vendor directory (in-app) (P2) — ⬜ Pending (P-BUY-02 ✅ Approved, RV-0048). Also VendorCard (now AA-clean via PLAT-P7)
-- **Status:** ⬜ queued to build. **PLAT-P7 CLOSED** (kit fix Team-4-verified; commits with P-BUY-02)
-- **Next Page:** `P-BUY-04` Vendor profile (in-app) (P2, Ready) — trust read-only
+- **Current Page:** `P-BUY-05` Favorites (P2) — ⬜ Pending (P-BUY-12 ✅ Approved, RV-0052). /favorites nav-bound
+- **Status:** ⬜ queued to build — then P-BUY-10/11/13 (RFQ sub-views)
+- **Next Page:** `P-BUY-10` RFQ detail — activity (P2, Ready). **⚠️ P-BUY-03/04 DEFERRED — need OWNER route-topology decision** (in-app vendor directory/profile: /discover mode vs /vendors vs tab)
+- **Updated:** 2026-07-02
 - **Updated:** 2026-07-02
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** `P-ADM-18` Outreach contacts (P3) — 🔵 Ready for Review (cross-campaign contacts, awaiting Team-4)
-- **Status:** 🔵 Ready for Review — flattened `outreach_contacts`; "Add contact" disabled (R5); moat acquisition-only; completes outreach trio
+- **Current Page:** `P-ADM-18` Outreach contacts (P3) — 🟥 Patch Required (RV-0051): cross-campaign contacts list has no frozen read (`list_outreach_contacts` doesn't exist) — flag the read-gap+ESC (as ENG-03) OR rescope to P-ADM-17 detail, then re-review
+- **Status:** 🟥 Patch Required — stays with Team-3 (one-flag/rescope fix; rest fine; P-ADM-19 blocked)
 - **Next Page:** `P-ADM-19` Routing rules (P2, Ready) — stage-gated
 - **Updated:** 2026-07-02
 

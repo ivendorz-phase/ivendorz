@@ -184,3 +184,6 @@
 2026-07-02 · P-BUY-02 · ✅ committed (91d46f9) · Owner: Team-2 (+ PLAT-P7 kit fix)
 2026-07-02 · P-BUY-12 · ⬜ Pending → 🟡 In Progress · Owner: Team-2 (pivot: P-BUY-03/04 route-ambiguous+P2 deferred; P-BUY-12 is P1, /approvals clear)
 2026-07-02 · P-BUY-12 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-2 (axe GREEN — 0 own-content violations)
+2026-07-02 · P-ADM-18 · 🔵 Ready for Review → 🟥 Patch Required · Owner: Team-3 (RV-0051)
+2026-07-02 · P-BUY-12 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0052)
+2026-07-02 · P-ACC-09 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
