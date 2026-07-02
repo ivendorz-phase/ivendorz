@@ -113,3 +113,14 @@
 2026-07-02 · P-ACC-03 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0034)
 2026-07-02 · P-ADM-11 · 🟥 Patch Required → 🟠 Fixing · Owner: Team-3 (RV-0033)
 2026-07-02 · P-ADM-11 · 🟠 Fixing → 🔵 Ready for Review · Owner: Team-3 (RV-0033 patched)
+2026-07-02 · P-ADM-11 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0035)
+2026-07-02 · P-ADM-12 · ⬜ Pending → 🟡 In Progress · Owner: Team-3
+2026-07-02 · P-ADM-12 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-3
+2026-07-02 · P-ACC-03 · ✅ Approved → ✅ committed (cf978e9) · Owner: Team-1
+2026-07-02 · P-ACC-04 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+2026-07-02 · P-BUY-25 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-2 (axe GREEN — 0 own-content violations)
+2026-07-02 · P-ACC-04 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
+2026-07-02 · P-ADM-12 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0037)
+2026-07-02 · P-ACC-04 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0036)
+2026-07-02 · P-BUY-25 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0038)
+2026-07-02 · P-ACC-04 · ✅ Approved → ✅ committed (pending hash) · Owner: Team-1

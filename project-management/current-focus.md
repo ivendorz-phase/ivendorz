@@ -5,29 +5,29 @@
 > (`team-1.md` / `team-2.md` / `team-3.md`) remain the **source record**; this file is the
 > **pointer**. Keep it tiny. On any change, also update the owning team file + `changelog.md`.
 
-**Updated:** 2026-07-02 · **Sprint:** Review cycle 14 (manual check; **2-min auto-loop STOPPED by owner**) — P-ACC-03 ✅ (RV-0034); P-ADM-11 🟥 (RV-0033, invoiceRef coined-ref MINOR). P-BUY-25 axe-pending
+**Updated:** 2026-07-02 · **Sprint:** Review cycle 15 (manual check) — P-ACC-04 (RV-0036), P-ADM-12 (RV-0037), P-BUY-25 (RV-0038 + extraction byte-equiv verified) ✅ all Approved; all three advanced. P-ACC-03 committed (cf978e9). Auto-loop STOPPED.
 
 ---
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-ACC-04` Organization profile (P1) — ⬜ Pending (P-ACC-03 ✅ Approved, RV-0034)
+- **Current Page:** `P-ACC-05` Organization lifecycle (P2) — ⬜ Pending (P-ACC-04 ✅ Approved, RV-0036). soft-delete (Inv #8)
 - **Status:** ⬜ queued to build
-- **Next Page:** `P-ACC-05` Organization lifecycle (P2, Ready) — soft-delete (Inv #8)
+- **Next Page:** `P-ACC-06` Members (P1, Ready)
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
 
-- **Current Page:** `P-BUY-25` WCC (P2) — 🟡 In Progress (built + reviewed PASS; **axe run outstanding** — env/tooling blocked; not yet Ready)
-- **Status:** 🟡 axe-pending (loop stopped by owner; resume to run axe → 🔵)
-- **Next Page:** `P-BUY-26` CRM — vendor list (P2, Ready) — **buyer-private** (Inv #11)
+- **Current Page:** `P-BUY-26` CRM — vendor list (P2) — ⬜ Pending (P-BUY-25 ✅ Approved, RV-0038). **buyer-private** (Inv #11 — never leaks, blacklist undetectable)
+- **Status:** ⬜ queued to build
+- **Next Page:** `P-BUY-27` CRM — vendor detail (P2, Ready) — **never leaks**
 - **Updated:** 2026-07-02
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** `P-ADM-11` Ad review detail (P2) — 🔵 Ready for Review (RV-0033 patched; awaiting Team-4 re-review)
-- **Status:** 🔵 Ready for Review — shows opaque `platform_invoice_id` (bare UUID, DD-5), no coined INV- ref
-- **Next Page:** `P-ADM-12` Verification queue (P1, Ready) — → M5 owns score (**firewall**)
+- **Current Page:** `P-ADM-13` Verification task detail (P1) — ⬜ Pending (P-ADM-12 ✅ Approved, RV-0037). → M5 owns score (**firewall**)
+- **Status:** ⬜ queued to build
+- **Next Page:** `P-ADM-14` Import jobs (P2, Ready)
 - **Updated:** 2026-07-02
 
 ---
