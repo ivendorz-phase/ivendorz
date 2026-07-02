@@ -35,8 +35,8 @@ Verification = `P-VND-28` + `P-PUB-18` (Team-1) + `P-ADM-12/13`.
 | P-VND-18 | Quotation create/edit | P1 | Ready | 🟩 Built | versioned |
 | P-VND-19 | Quotation version history | P2 | Ready | 🟩 Built | **FE-VEN-06 enhancement CLOSED** (RV-0103, `91925fc`): supersedes_version_no disclosure |
 | P-VND-20 | Quotation actions | P2 | Ready | 🟩 Built | withdraw = zero penalty. **FE-VEN-06 enhancement CLOSED** (RV-0103, `4ae0ec1`): explicit no-penalty copy + `aria-describedby`. S7 request_late_extension recorded as an unbuilt, out-of-scope gap (WP card) |
-| P-VND-21 | Leads pipeline | P1 | Ready | 🟩 Built | system-created leads |
-| P-VND-22 | Lead detail | P1 | Ready | 🟩 Built | |
+| P-VND-21 | Leads pipeline | P1 | Ready | 🟩 Built | system-created leads. **FE-VEN-07 enhancement CLOSED** (RV-0104, `4636bf2`): next-action pill on Board cards |
+| P-VND-22 | Lead detail | P1 | Ready | 🟩 Built | **FE-VEN-07 enhancement CLOSED** (RV-0104, `b1810fe`): lead created_at provenance |
 | P-VND-23 | Engagements (vendor) | P1 | Ready | 🟩 Built | |
 | P-VND-24 | Engagement detail (vendor) | P1 | Ready | 🟩 Built | |
 | P-VND-25 | Delivery challan | P2 | Ready | 🟩 Built | upload path → `ESC-7-API/upload` |

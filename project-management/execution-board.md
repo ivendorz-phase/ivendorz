@@ -17,10 +17,11 @@ delta; awaiting Review-A, Team-2 holds) · FE-BUY-05 → FE-BUY-06 → FE-BUY-07
 FE-BUY-09 → FE-CLN-01 (F2-Z batch). FE-BUY-10 🅿 parked.
 
 **Team-3 (Vendor):**
-~~FE-VEN-05 RFQ Workspace~~ ✅ **Closed** (RV-0101 @ `e2f8642`) · ~~FE-VEN-06 Quotation Builder~~
-✅ **Closed** (RV-0103, board-approved 2026-07-02 @ `4ae0ec1`) · `FE-VEN-07 Leads` ← current
-(🟡 In Progress — owner kickoff APPROVED "approve close, continue") → FE-VEN-08 → FE-VEN-13
-(Ads) → FE-VEN-04 remainder (P-VND-09) · FE-VEN-10/11/12 at Board kickoff scoping. FE-VEN-09 ⛔.
+~~FE-VEN-05~~ ✅ **Closed** (RV-0101 @ `e2f8642`) · ~~FE-VEN-06~~ ✅ **Closed** (RV-0103 @
+`4ae0ec1`) · ~~FE-VEN-07~~ ✅ **Closed** (RV-0104, board-approved 2026-07-02 @ `b1810fe`) ·
+`FE-VEN-08 Engagements` ← current (🟡 In Progress — owner kickoff APPROVED "approve close,
+continue") → FE-VEN-13 (Ads) → FE-VEN-04 remainder (P-VND-09) · FE-VEN-10/11/12 at Board kickoff
+scoping. FE-VEN-09 ⛔.
 
 **Review Team 5 standing backlog (B lane):** Step-3 Public baseline sweep (QCT 5-step Step 3) at a
 stable post-cutover SHA — **owner-authorized 2026-07-02 (agenda #10)**; runs **before FE-PUB-02

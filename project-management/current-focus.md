@@ -33,13 +33,13 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-3 — Vendor (FE-VEN)
 
-- **Current Milestone:** `FE-VEN-07` Leads — **🟡 In Progress** (owner kickoff APPROVED
-  2026-07-02 — "approve close, continue to FE-VEN-07", WP card Started, Lane G). Prior:
-  `FE-VEN-06` ✅ Closed (RV-0103, board-approved 2026-07-02, checkpoint `4ae0ec1`).
+- **Current Milestone:** `FE-VEN-08` Engagements — **🟡 In Progress** (owner kickoff APPROVED
+  2026-07-02 — "approve close, continue to FE-VEN-08", WP card Started, Lane G). Prior:
+  `FE-VEN-07` ✅ Closed (RV-0104, board-approved 2026-07-02, checkpoint `b1810fe`).
 - **Current Page:** building
 - **Pipeline stage:** building (Lane G; checkpoint commits per page — commit before next page)
-- **Next Milestone:** FE-VEN-08 → FE-VEN-13 → FE-VEN-04 remainder (P-VND-09). FE-VEN-09 ⛔ ·
-  FE-VEN-10/11/12 at Board kickoff scoping
+- **Next Milestone:** FE-VEN-13 → FE-VEN-04 remainder (P-VND-09). FE-VEN-09 ⛔ · FE-VEN-10/11/12
+  at Board kickoff scoping
 
 ---
 
@@ -50,9 +50,10 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Review Team 5 — Quality & Adversarial (B lane) — queue
 
-_(empty — `FE-BUY-04` cleared Review-B (RV-0102 PASS, 9 OBS) → 🟣 Board, awaiting owner close.
-  `FE-VEN-06` Review-B was recorded by the vendor-track session (RV-0103 → 🟣 Board); NOT
-  re-reviewed here — lane-division flagged to owner.)_
+_(`FE-VEN-07` cleared Review-B (RV-0104 PASS, 9 OBS) → 🟣 Board, awaiting owner close.
+  `FE-BUY-04` cleared Review-B (RV-0102 PASS, 9 OBS) → 🟣 Board, awaiting owner close.
+  `FE-VEN-06` Review-B was recorded by the vendor-track session (RV-0103 → 🟣 Board, now ✅
+  Closed); NOT re-reviewed here — lane-division flagged to owner, unresolved as of this update.)_
 
 - **Standing backlog:** Step-3 Public Shared Promotion baseline sweep — ✅ **DONE / PASS
   2026-07-02** (SHA `6007ea1`; 0 B/M/M; report
@@ -62,7 +63,7 @@ _(empty — `FE-BUY-04` cleared Review-B (RV-0102 PASS, 9 OBS) → 🟣 Board, a
 
 ## Architecture Board — queue
 
-- **Kickoff approvals:** FE-VEN-07 — **APPROVED 2026-07-02** ("approve close, continue").
+- **Kickoff approvals:** FE-VEN-08 — **APPROVED 2026-07-02** ("approve close, continue").
 - **Milestone-close approval pending (owner):** `FE-BUY-04` — gate satisfied (A:PASS ∧ B:PASS,
   B/M/M=0, RV-0102); awaiting owner close decision
 - **Standing agenda:** [`execution-board.md`](execution-board.md) §Board standing agenda (10 items)
