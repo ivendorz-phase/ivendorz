@@ -241,3 +241,9 @@
 2026-07-02 · P-ACC-13 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0066 — no-auto-approve exemplary; contract verbatim)
 2026-07-02 · P-ACC-13 · ✅ Approved → ✅ committed · Owner: Team-1
 2026-07-02 · P-ACC-15 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+2026-07-02 · Phase-F1 · queued Buyer UX Refinement & Frontend Freeze (F1-1 NEW RFQ Creation, F1-2 UX Polish, F1-3 Forms, F1-4 Mobile QA, F1-5 Reuse Audit, F1-6 Freeze Report) · Owner: Team-2 (owner-directed)
+2026-07-02 · F1-1 · ⬜ Pending → 🟡 In Progress (grounding: RFQ creation already exists as P-BUY-07, all 8 sections + contract-grounded; awaiting owner direction stepped-wizard vs redesign vs keep) · Owner: Team-2
+2026-07-02 · P-ACC-15 · 🟡 In Progress → 🔵 Ready for Review · Owner: Team-1
+2026-07-02 · P-ACC-15 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0067 — Identity-owned prefs boundary corpus-verified vs Doc-4H)
+2026-07-02 · P-ACC-15 · ✅ Approved → ✅ committed · Owner: Team-1
+2026-07-02 · P-ACC-16 · ⬜ Pending → 🟡 In Progress · Owner: Team-1

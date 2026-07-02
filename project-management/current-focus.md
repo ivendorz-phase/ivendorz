@@ -11,16 +11,16 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-ACC-15` Notification preferences (P2) — 🟡 In Progress (P-ACC-13 ✅ committed). P-ACC-12 blocked (Waiting Decision)
-- **Status:** 🟡 building (presentation-only; M6 channel/type prefs grid, Doc-5H; consume channels, never coin)
-- **Next Page:** _(confirm from team-1.md after P-ACC-15)_
+- **Current Page:** `P-ACC-16` Plans / catalog (P1) — 🟡 In Progress (P-ACC-15 ✅ committed). P-ACC-12 blocked (Waiting Decision)
+- **Status:** 🟡 building (presentation-only; plans catalog cards, `list_plans`/`get_plan`; Inv #10 entitlements-by-value)
+- **Next Page:** _(confirm from team-1.md after P-ACC-16)_
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
 
-- **Current Page:** _(none)_ — `P-BUY-13` ✅ Approved (RV-0064) + **committed 71e107c**. **Team-2 buyer queue COMPLETE.**
-- **Status:** ✅ all buildable buyer pages approved. Only ⬜ left are **P-BUY-03/04/05, all DEFERRED pending OWNER decisions** (03/04 route topology; 05 favorites scope+projection). Team-2 idles until owner rules on the deferred trio or names a refinement item
-- **Next Page:** ⚠️ **OWNER DECISION NEEDED** — P-BUY-03/04 route topology + P-BUY-05 favorites scope/projection gap
+- **Current Page:** `F1-2..F1-5` Buyer frontend audit sweep — 🟡 In Progress. **F1-1 ACCEPTED AS-IS** (owner chose keep existing RFQ creation → go to audits; no rebuild). Running 3 static-audit lenses (UX/a11y consistency, forms standardization, component reuse) + mobile axe sweep @390/768/1280 across all 21 buyer routes; findings synthesize into **F1-6 Frontend Freeze Report**
+- **Status:** 🟡 audit sweep underway (presentation-only; no backend). Fixes for any gating findings applied under normal one-change→verify→review discipline
+- **Next Page:** F1-6 Frontend Freeze Report (synthesis). **Still owner-gated:** P-BUY-03/04 route topology + P-BUY-05 favorites scope/projection
 - **Updated:** 2026-07-02
 
 ## Team-3 — Vendor / Verification / Admin
