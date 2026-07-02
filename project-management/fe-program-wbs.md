@@ -97,7 +97,7 @@ FE-PF-01 Design Tokens ✅ (ongoing ownership → FE-DS) · FE-PF-03 Platform Sh
 | FE-VEN-10 Billing | Platform | P2 | S | Med | H: Board kickoff scoping | P-VND-27 | READY(build, kickoff-scoped) — vendor-context view **reusing P-ACC-16..21**; Builder = T3 for the adaptation, reused surfaces stay T1-maintained; **composition only — forking an account page = Flag-and-Halt** |
 | FE-VEN-11 Organization | Platform | P3 | S | Med | H: Board kickoff scoping | — (reuses P-ACC-04..11) | READY(kickoff-scoped) — same rule as FE-VEN-10 |
 | FE-VEN-12 Settings | Platform | P3 | S | Med | H: Board kickoff scoping | — (reuses P-ACC-02/03/13/15) | READY(kickoff-scoped) — same rule as FE-VEN-10 |
-| FE-VEN-13 Ads | Vendor Growth | P2 | M | Low | — | P-VND-12..14 | READY(build) — P-VND-12 placeholder exists; admin reviews via P-ADM-10/11 (M8 owns the effect, R5) |
+| FE-VEN-13 Ads | Vendor Growth | P2 | M | Low | — | P-VND-12..14 | ✅ Complete (RV-0106, A:PASS B:PASS-after-fix, board-approved 2026-07-02 @ `34395b2`) — fresh 3-page build; P-VND-13 create-only (no `update_advertisement` contract exists); admin reviews via P-ADM-10/11 (M8 owns the effect, R5) |
 
 ## Track 4 — FE-SH Shared Components (owns 0 pages — Board-gated promotions)
 

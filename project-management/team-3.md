@@ -26,9 +26,9 @@ Verification = `P-VND-28` + `P-PUB-18` (Team-1) + `P-ADM-12/13`.
 | P-VND-09 | Spec library | P2 | Ready | ⬜ | wired write (not upload) |
 | P-VND-10 | Spec documents | P2 | Waiting API | ⬜ | `ESC-7-API/upload` |
 | P-VND-11 | Category assignment | P1 | Ready | 🟩 Built | admin-governed categories |
-| P-VND-12 | Ads | P2 | Ready | ⬜ | placeholder page exists |
-| P-VND-13 | Ad create/edit | P2 | Ready | ⬜ | |
-| P-VND-14 | Ad submission / status | P2 | Ready | ⬜ | admin reviews |
+| P-VND-12 | Ads | P2 | Ready | 🟩 Built | **FE-VEN-13 BUILT+CLOSED** (RV-0106, `c1f54ef`): replaces the placeholder with a real list |
+| P-VND-13 | Ad create/edit | P2 | Ready | 🟩 Built | **FE-VEN-13 BUILT+CLOSED** (RV-0106, `1a0ea1d`→fixed `34395b2`): create-only — no `update_advertisement` contract exists |
+| P-VND-14 | Ad submission / status | P2 | Ready | 🟩 Built | admin reviews. **FE-VEN-13 BUILT+CLOSED** (RV-0106, `c0689ce`): vendor-scoped actions only (Submit/Pause/Resume) |
 | P-VND-15 | Invitations inbox | P1 | Ready | 🟩 Built | received-only. **FE-VEN-05 enhancement CLOSED** (RV-0101, `c509934`): needs-response-first + urgency-aware ordering |
 | P-VND-16 | Invitation detail | P1 | Ready | 🟩 Built | decline = no penalty. **FE-VEN-05 enhancement CLOSED** (RV-0101, `e2f8642`): clearer decline affordance, `aria-describedby` |
 | P-VND-17 | Quotations | P1 | Ready | 🟩 Built | visibility-gated. **FE-VEN-06 enhancement CLOSED** (RV-0103, `af1d9db`): own quotation-state chip on the inbox row |

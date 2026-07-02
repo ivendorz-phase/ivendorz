@@ -33,18 +33,14 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-3 — Vendor (FE-VEN)
 
-- **Current Milestone:** `FE-VEN-13` Ads — **🔍 Discovery** (owner kickoff APPROVED 2026-07-02 —
-  "approve close, continue to FE-VEN-13", WP card being authored, Lane G). Prior: `FE-VEN-08` ✅
-  Closed (RV-0105, board-approved 2026-07-02, checkpoint `ec8306b`). **Different class of work**:
-  READY(**build**) not READY(enh) — `P-VND-12/13/14` are genuinely unbuilt (today: a bare
-  `WorkspaceSectionPlaceholder` stub at `workspace/microsite/ads`), so this is a fresh 3-page build
-  against the frozen `advertisements` contract (Doc-2 §5.8 / Doc-4D), not a small delta over 🟩
-  stock.
-- **Current Page:** _(scoping — reading the frozen ad contract + the already-shipped admin
-  counterpart P-ADM-10/11 before drafting the WP card)_
-- **Pipeline stage:** Discovery (grounding + WP-card authoring)
-- **Next Milestone:** FE-VEN-04 remainder (P-VND-09). FE-VEN-09 ⛔ · FE-VEN-10/11/12 at Board
-  kickoff scoping
+- **Current Milestone:** _(none — `FE-VEN-13` Ads ✅ **Closed**, board-approved 2026-07-02,
+  RV-0106, gate met after one fix-and-reverify cycle, checkpoint `34395b2`)_
+- **Current Page:** _(none)_
+- **Pipeline stage:** **idle — by explicit owner instruction.** FE-VEN-13 closed; the next queue
+  item (FE-VEN-04 remainder, P-VND-09) was NOT kicked off this cycle ("approve close, stop
+  there"). Team-3 has now shipped and closed FIVE milestones this session (FE-VEN-05/06/07/08/13).
+- **Next Milestone:** FE-VEN-04 remainder (P-VND-09, WP card not yet authored — owner kickoff
+  required) · FE-VEN-09 ⛔ · FE-VEN-10/11/12 at Board kickoff scoping
 
 ---
 
@@ -55,7 +51,9 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Review Team 5 — Quality & Adversarial (B lane) — queue
 
-_(`FE-VEN-08` cleared Review-B (RV-0105 PASS, 11 OBS + 1 NIT) → 🟣 Board, awaiting owner close.
+_(`FE-VEN-13` cleared Review-B re-verification (RV-0106, checkpoint `34395b2`) → 🟣 Board,
+  awaiting owner close.
+  `FE-VEN-08` cleared Review-B (RV-0105 PASS, 11 OBS + 1 NIT) → 🟣 Board, awaiting owner close.
   `FE-VEN-07` cleared Review-B (RV-0104 PASS, 9 OBS) → 🟣 Board, awaiting owner close.
   `FE-BUY-04` cleared Review-B (RV-0102 PASS, 9 OBS) → 🟣 Board, awaiting owner close.
   `FE-VEN-06` Review-B was recorded by the vendor-track session (RV-0103 → 🟣 Board, now ✅
@@ -69,7 +67,8 @@ _(`FE-VEN-08` cleared Review-B (RV-0105 PASS, 11 OBS + 1 NIT) → 🟣 Board, aw
 
 ## Architecture Board — queue
 
-- **Kickoff approvals:** FE-VEN-13 — **APPROVED 2026-07-02** ("approve close, continue").
 - **Milestone-close approval pending (owner):** `FE-BUY-04` — gate satisfied (A:PASS ∧ B:PASS,
   B/M/M=0, RV-0102); awaiting owner close decision
+- **Kickoff pending (owner, when resumed):** FE-VEN-04 remainder (P-VND-09, spec library) —
+  Team-3's next queue item, not yet authored/kicked off
 - **Standing agenda:** [`execution-board.md`](execution-board.md) §Board standing agenda (10 items)
