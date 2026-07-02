@@ -23,6 +23,9 @@ import {
 import { Separator } from "@/frontend/primitives/separator";
 import { Explorer } from "./explorer/explorer";
 
+// Mobile drawer categories (FE-PUB-09 Phase 2) — lazy chunk, loads on first sheet open only.
+const ExplorerMobile = React.lazy(() => import("./explorer/explorer-mobile"));
+
 const NAV_LINKS = [
   { href: "/marketplace", label: "Marketplace" }, // P-PUB-10 (M2.2)
   { href: "/vendors", label: "Vendors" }, // P-PUB-12 (M2.2)
@@ -84,7 +87,7 @@ export function SiteHeader() {
                 <Menu />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72">
+            <SheetContent side="right" className="flex w-80 flex-col overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
@@ -97,6 +100,20 @@ export function SiteHeader() {
                   </SheetClose>
                 ))}
               </nav>
+              <Separator className="my-4" />
+              {/* FE-PUB-09: "All Categories" — hybrid accordion/drill-in Explorer (UX doc §3). */}
+              <section aria-label="All categories" className="min-h-0">
+                <h3 className="mb-1 px-1 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  All categories
+                </h3>
+                <React.Suspense
+                  fallback={
+                    <p className="px-1 py-2 text-sm text-muted-foreground">Loading categories…</p>
+                  }
+                >
+                  <ExplorerMobile onNavigate={() => setOpen(false)} />
+                </React.Suspense>
+              </section>
               <Separator className="my-4" />
               <div className="flex flex-col gap-2">
                 <SheetClose asChild>

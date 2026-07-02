@@ -20,6 +20,10 @@ export {
 export { CategoryIcon } from "./category-tree/category-icon";
 export { CategoryBadge } from "./category-tree/category-badge";
 export { CategoryCard } from "./category-tree/category-card";
+export { CategoryTree } from "./category-tree/category-tree";
+export { CategoryNodeItem } from "./category-tree/category-node";
+export { MegaMenuMobile } from "./mega-menu/mega-menu-mobile";
+export { MegaMenuBreadcrumb } from "./mega-menu/mega-menu-breadcrumb";
 export { MegaMenu } from "./mega-menu/mega-menu";
 export { MegaMenuColumns, MegaMenuColumn } from "./mega-menu/mega-menu-column";
 export { MegaMenuCategory } from "./mega-menu/mega-menu-category";

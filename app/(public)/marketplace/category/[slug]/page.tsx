@@ -17,6 +17,7 @@ import {
   VENDOR_FACETS,
 } from "../../../_components/discovery/seed";
 import { productDetailHref } from "../../../_components/product-detail";
+import { CategorySidebarTree } from "./category-sidebar-tree";
 
 // P-PUB-08 Category page (Doc-7D Public surface · FE-PUB-04; FE-PUB-09 **Category Landing
 // Contract** — MEGA_MENU_ARCHITECTURE §9.1). PRESENTATION & COMPOSITION ONLY: anonymous,
@@ -144,6 +145,8 @@ export default async function CategoryPage({
         <aside className="lg:w-64 lg:shrink-0">
           <div className="rounded-lg border border-border bg-card p-4 lg:sticky lg:top-20">
             <FilterSidebar facets={VENDOR_FACETS} label="Filter category results" />
+            {/* FE-PUB-09 Phase 2: route-aware category tree (taxonomy-resolved slugs only). */}
+            {category.node ? <CategorySidebarTree slug={category.node.slug} /> : null}
           </div>
         </aside>
 

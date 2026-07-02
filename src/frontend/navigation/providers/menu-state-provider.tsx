@@ -20,6 +20,8 @@ export interface MenuState {
   drillIn(id: string): void;
   /** Mobile back: pop the stack. */
   drillBack(): void;
+  /** Jump to an absolute drill path (root-first ancestor ids — reveal/deep-drill flows). */
+  openPath(path: string[]): void;
   resetPath(): void;
   query: string;
   setQuery(query: string): void;
@@ -82,6 +84,7 @@ export function NavigationMenuStateProvider({
       setActiveAt: (level, id) => setPath([...activePath.slice(0, level), id]),
       drillIn: (id) => setPath([...activePath, id]),
       drillBack: () => setPath(activePath.slice(0, -1)),
+      openPath: (path) => setPath(path),
       resetPath: () => setPath([]),
       query,
       setQuery,
