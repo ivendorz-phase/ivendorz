@@ -11,9 +11,9 @@
 
 ## Team-1 — Public / Shared / Identity
 
-- **Current Page:** `P-ACC-22` Rewards / referrals (P3) — 🟡 In Progress (P-ACC-21 ✅ committed). LAST P-ACC page
-- **Status:** 🟡 building (presentation-only; get_reward_balance + list_referrals §HB-6.3; opaque referred-org ref + state; numeric points Inv#10)
-- **Next Page:** _(P-ACC section complete after P-ACC-22 — confirm remaining Public/Shell pages)_
+- **Current Page:** `P-PUB-04` Pricing / Plans (public) (P1) — 🟡 In Progress (P-ACC-22 ✅ committed; P-ACC cluster COMPLETE)
+- **Status:** 🟡 building (presentation-only public marketing of plans; Inv #10 entitlements-by-value; app/(public)/ public shell)
+- **Next Page:** remaining P-PUB (02/03/05/06/18/20/21/22/23/24) + P-SH (01/02/05/06); SKIP P-PUB-09/11 Waiting-API
 - **Updated:** 2026-07-02
 
 ## Team-2 — Buyer
@@ -25,9 +25,9 @@
 
 ## Team-3 — Vendor / Verification / Admin
 
-- **Current Page:** `P-ADM-28` Link triage (P3) — ⬜ Pending (P-ADM-27 ✅ Approved, RV-0082). **NON-DISCLOSURE CRITICAL: link-suggestion content NEVER vendor-visible (Doc-4J:132/186/194), staff-only**
-- **Status:** ⬜ queued to build — BC-ADM-3 link_suggestions root (suggested→confirmed/dismissed); `confirm/dismiss_link_suggestion` [ESC-ADM-SLUG]; confirm→Operations service (A-03, DR-ADM-OPS); LinkMatchBasis never vendor-visible; R5 disabled
-- **Next Page:** _(confirm from team-3.md after P-ADM-28)_
+- **Current Page:** _(none)_ — `P-ADM-29` ✅ Approved (RV-0084). **Team-3 Admin console P-ADM-01..29 COMPLETE** (+ Vendor workspace); only ⬜ left = P-VND-09/10/12/13/14/27 (Waiting-API / placeholders) + P-VND-28 (Waiting-Decision `ESC-7G-SCORE-DISPLAY`)
+- **Status:** ✅ Admin console COMPLETE. Team-3 idles pending commit of P-ADM-29 + owner decisions on the Waiting-API/Decision vendor items
+- **Next Page:** _(owner-gated / Waiting-API — no buildable Ready page)_
 - **Updated:** 2026-07-02
 
 ---
