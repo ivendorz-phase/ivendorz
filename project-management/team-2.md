@@ -7,7 +7,7 @@
 | ID | Title | Priority | Dependency | Status | Notes |
 |---|---|---|---|---|---|
 | P-BUY-01 | Buyer dashboard | P1 | Ready | 🟩 Built | refinement item (owner-named) |
-| P-BUY-02 | Discover vendors | P1 | Ready | ⬜ | |
+| P-BUY-02 | Discover vendors | P1 | Ready | ✅ Approved | RV-0048 PASS (Team-4). Public projection only (Doc-4D §B.3); **trust=binary Verified only ([ESC-7G-SCORE-DISPLAY], no score/band, M5 owns); capability=4-flag matrix (Inv#1); discovery≠matching (DD-2, contract order, never re-ranked); non-disclosure clean (blacklist byte-identical §7.5); cursor.** Search box contract-legit (`search_catalog.query`). **`[PLAT-P7]` frozen-kit fix Team-4-verified (OFF-chip 5.12:1 AA; diff = sanctioned scope only; all VendorCard consumers benefit, P-PUB-12/16 stay ✅); PLAT-P7 CLOSED.** |
 | P-BUY-03 | Vendor directory (in-app) | P2 | Ready | ⬜ | |
 | P-BUY-04 | Vendor profile (in-app) | P2 | Ready | ⬜ | trust read-only |
 | P-BUY-05 | Favorites | P2 | Ready | ⬜ | saved vendors |

@@ -171,3 +171,5 @@
 2026-07-02 · P-BUY-02 · 🟡 axe-BLOCKED → 🔵 Ready for Review · Owner: Team-2 (axe GREEN 0 own-content after PLAT-P7 fix)
 2026-07-02 · P-ACC-07 · ✅ Approved → ✅ committed · Owner: Team-1
 2026-07-02 · P-ACC-08 · ⬜ Pending → 🟡 In Progress · Owner: Team-1
+2026-07-02 · [PLAT-P7] · Team-4 platform re-verify PASS (kit diff = sanctioned scope; OFF-chip 5.12:1 AA); PLAT-P7 CLOSED · Owner: Team-4
+2026-07-02 · P-BUY-02 · 🔵 Ready for Review → ✅ Approved · Owner: Team-4 (RV-0048)

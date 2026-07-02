@@ -18,9 +18,9 @@
 
 ## Team-2 — Buyer
 
-- **Current Page:** `P-BUY-02` Discover vendors (P1) — 🔵 Ready for Review (axe GREEN after owner-authorized **PLAT-P7 kit fix**; 2-reviewer PASS; trust=binary Verified, capability=4-flag matrix, non-disclosure clean)
-- **Status:** 🔵 awaiting Team-4 review. **PLAT-P7 kit fix applied to `capability-matrix.tsx` (OFF-chip contrast → AA) — benefits ALL VendorCard consumers (Vendor/Public/Buyer); commits with P-BUY-02**
-- **Next Page:** `P-BUY-03` Vendor directory (P2, Ready) — also VendorCard (now AA-clean via PLAT-P7)
+- **Current Page:** `P-BUY-03` Vendor directory (in-app) (P2) — ⬜ Pending (P-BUY-02 ✅ Approved, RV-0048). Also VendorCard (now AA-clean via PLAT-P7)
+- **Status:** ⬜ queued to build. **PLAT-P7 CLOSED** (kit fix Team-4-verified; commits with P-BUY-02)
+- **Next Page:** `P-BUY-04` Vendor profile (in-app) (P2, Ready) — trust read-only
 - **Updated:** 2026-07-02
 
 ## Team-3 — Vendor / Verification / Admin

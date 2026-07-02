@@ -95,7 +95,10 @@ export function CapabilityMatrix({
                   "inline-flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-2xs font-medium leading-none",
                   on
                     ? "border-border text-foreground"
-                    : "border-dashed border-border text-muted-foreground opacity-70",
+                    : // OFF stays de-emphasized via the dashed border + muted ink; NO `opacity-70` — it
+                      // dropped muted-foreground to 2.84:1 (fails AA at text-2xs). Base muted ink is AA-safe.
+                      // (PLAT-P7 fix, owner-authorized — same class as the P-4 badge-contrast remediation.)
+                      "border-dashed border-border text-muted-foreground",
                 )}
               >
                 <span
