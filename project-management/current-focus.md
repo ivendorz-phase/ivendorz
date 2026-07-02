@@ -19,10 +19,12 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-2 — Buyer (FE-BUY)
 
-- **Current Milestone:** `FE-BUY-04` Quotation Detail (= the awaited BX-03) — 🟡 In Progress
-  (**owner kickoff APPROVED 2026-07-02**, WP card Started)
-- **Current Page:** P-BUY-14 (first of the two-page delta; then P-BUY-16)
-- **Pipeline stage:** building (Lane G; checkpoint commits per page)
+- **Current Milestone:** `FE-BUY-04` Quotation Detail (= the awaited BX-03) — **🔵A Review-A**
+  (**owner kickoff APPROVED 2026-07-02**, WP card Started; scope complete at checkpoint `5a4550c`)
+- **Current Page:** _(both in-scope pages built — P-BUY-14 `d5c09fe` information-hierarchy +
+  presentation fixture; P-BUY-16 `5a4550c` quotation-context cross-link — submitted to Review-A;
+  Team-2 STOPS, does not pull FE-BUY-05)_
+- **Pipeline stage:** submitted to Review-A (Lane G)
 - **Next Milestone:** FE-BUY-05 → 06 → 07 → 08 → 09 → FE-CLN-01 (F2-Z). FE-BUY-10 🅿 parked
 
 ## Team-3 — Vendor (FE-VEN)
@@ -41,8 +43,7 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Review Team 4 — Architecture & Governance (A lane) — queue
 
-_(empty — FE-VEN-05 cleared A with a PASS, RV-0101; first milestone to clear Review-A under the
-new model)_
+- **`FE-BUY-04` Quotation Detail** (Team-2) — at checkpoint `5a4550c`; P-BUY-14/16 delta, Lane G.
 
 ## Review Team 5 — Quality & Adversarial (B lane) — queue
 

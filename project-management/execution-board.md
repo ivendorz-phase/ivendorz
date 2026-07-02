@@ -12,8 +12,9 @@ Roadmap: [`fe-program-wbs.md`](fe-program-wbs.md) · pointer: [`current-focus.md
 *Soft-ordered after the Review-B Step-3 Public baseline sweep — enhance a reviewed baseline.*
 
 **Team-2 (Buyer):**
-`FE-BUY-04 Quotation Detail` ← current (the awaited BX-03) · FE-BUY-05 → FE-BUY-06 → FE-BUY-07 →
-FE-BUY-08 → FE-BUY-09 → FE-CLN-01 (F2-Z batch). FE-BUY-10 🅿 parked.
+`FE-BUY-04 Quotation Detail` ← current (🔵A Review-A @ `5a4550c` — scope complete, P-BUY-14/16
+delta; awaiting Review-A, Team-2 holds) · FE-BUY-05 → FE-BUY-06 → FE-BUY-07 → FE-BUY-08 →
+FE-BUY-09 → FE-CLN-01 (F2-Z batch). FE-BUY-10 🅿 parked.
 
 **Team-3 (Vendor):**
 ~~FE-VEN-05 RFQ Workspace~~ ✅ **Closed** (RV-0101, board-approved 2026-07-02 @ `e2f8642`) ·
