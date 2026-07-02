@@ -67,18 +67,26 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   `FE-VEN-12` [buyer-only RFQ-approval content, carried forward]; P-ACC-19 Lead Credits reclassified
   `Shared` in `page_inventory.md` [labeling gap, corrected]. FE-VEN-09 Trust Center also ✅ Closed
   prior, RV-0120)_
-- **Current Page:** _(none — pulling `FE-VEN-10` Billing next per the ruled execution order
-  [10 → 11 → 12])_
-- **Pipeline stage:** idle — kicking off `FE-VEN-10` next
-- **Next Milestone:** FE-VEN-10 Billing (P-ACC-16..21 composed reuse) → FE-VEN-11 Organization →
-  FE-VEN-12 Settings
+- **Current Milestone (new):** `FE-VEN-10` Billing — **🔵A Review-A** (checkpoint `4e57bfc`; scope
+  complete — sole in-scope page `workspace/billing` composed)
+- **Current Page:** _(sole in-scope page — composes 5 tabs, each a direct unmodified import of the
+  real Account component: `PlansCatalog`, `SubscriptionView`, `UsageDashboard`, `LeadCreditsView`,
+  `PlatformInvoicesView` [P-ACC-16..20]. Disclosed trade-off: `PlansCatalog`'s "Select plan" and
+  `PlatformInvoicesView`'s per-row "Open" links are hard-coded inside those unmodified components to
+  `/account/subscription`/`/account/invoices/[id]` — leaving vendor chrome for that one destination
+  is an accepted consequence of composition-only reuse, not a defect — submitted to Review-A;
+  Team-3 STOPS, does not pull FE-VEN-11 before gate)_
+- **Pipeline stage:** submitted to Review-A (Lane G)
+- **Next Milestone:** FE-VEN-11 Organization → FE-VEN-12 Settings
 
 ---
 
 ## Review Team 4 — Architecture & Governance (A lane) — queue
 
 _(`FE-BUY-10` (Team-2) checkpointed 2026-07-03, awaiting Review-A — WP card
-  `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`. Otherwise clear —
+  `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`.
+  `FE-VEN-10` (Team-3) checkpointed `4e57bfc` — WP card
+  `governanceReviews/milestones/fe-ven-10-billing/WORK-PACKAGE.md`. Otherwise clear —
   `FE-PUB-03` (RV-0111), `FE-PUB-04` (RV-0116), `FE-PUB-06` (RV-0118), `FE-PUB-07` (RV-0119),
   `FE-PUB-01` (RV-0121), `FE-VEN-04` (RV-0110), `FE-VEN-09` (RV-0120), `FE-BUY-07` (RV-0112) all
   cleared A and closed.)_

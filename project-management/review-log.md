@@ -1552,3 +1552,12 @@ edits implementation** (Raise ≠ Accept — CLAUDE.md §13). Each review gets a
 - Owner findings adjudicated (§13 Validate-Findings, 3 rounds, all dispositions recorded in the FE-PUB-09 WP card): MAJOR-01 Category Landing Contract ACCEPTED (menu rows → existing `/marketplace/category/[slug]`, rebound to taxonomy index); MAJOR-02 vendor-discovery slot ACCEPTED **with Invariant-#1 binding — proposed "Manufacturer/Importer/Distributor/Contractor" trade-role labels REJECTED as coined vendor classifications; the frozen 4-flag capability matrix (Supply/Service/Fabricate/Consult) is the only vendor typing**; MAJOR-03 Featured column ACCEPTED (pulled to Phase 1); MINOR-01..07 + R2-MINOR-01..04 + 13 nitpicks ACCEPTED (two authed slots reserved data-gated; "Request Quote" quick action trimmed as duplicate of Post RFQ); R3 keyboard-table/analytics-envelope/perf-budget-table ACCEPTED (perf table = package-level consolidation, coins no Doc-8 platform budget); future AI slots DOCUMENTED-NOT-BUILT (M9-gated).
 - Soft gate `ESC-7-API-CATNAV` unchanged (open) — interim build-time seed; `TaxonomySource` adapter seam must prove zero-component-change swap at Phase 5.
 - Result: FE-PUB-09 ⛔ → 🟡 In Progress (Team-1), phases 0–5 authorized in one run. Review pipeline unchanged: Dev → A (Team-4) → B (Team-5) → close gate B/M/M=0.
+
+### RV-0123 · FE-VEN-10 · Billing (P-ACC-16..21 composed reuse) · Team-3
+- Date: 2026-07-03 · Pages in scope: `workspace/billing/page.tsx` (sole in-scope page, 5 composed tabs) · Reviewed SHA: `4e57bfc` (stable-target; Lane G — Board-ruled Option B, `FE-VEN-14` report §9)
+- Scope: composes the existing, unmodified Account components (`PlansCatalog`/`SubscriptionView`/`UsageDashboard`/`LeadCreditsView`/`PlatformInvoicesView`, P-ACC-16..20) into a new vendor-mounted `BillingTabs` (thin adapter over the shared `WorkspaceTabs`, mirrors `CompanyProfileTabs`). Composition only — zero components forked/duplicated. Disclosed trade-off: `PlansCatalog`/`PlatformInvoicesView`'s internal hard-coded links to `/account/subscription`/`/account/invoices/[id]` are not overridden (would require forking); P-ACC-21's own dynamic route is not duplicated under `/workspace/*` since nothing would link to it without that fork.
+- Review-A (Architecture & Governance): _pending_
+- Review-B (Quality & Adversarial): _pending_
+- Disposition (author/authority): —
+- Board: —
+- Result: milestone → **🔵A Review-A** (submitted). Team-3 holds.

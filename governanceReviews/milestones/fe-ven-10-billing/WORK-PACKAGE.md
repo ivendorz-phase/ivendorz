@@ -2,7 +2,7 @@
 
 - **Lane:** G (composes cross-team-owned Account surfaces; Golden Rule 7 sensitivity per the
   `FE-VEN-14` report's own §8 — each of FE-VEN-10/11/12 stays Lane G despite being composition-only)
-- **Reviewed-SHA record:** _(filled at 🔵A)_
+- **Reviewed-SHA record:** `4e57bfc` (scope complete — sole in-scope page composed)
 - **Value:** Platform · **Priority:** P2 · **Size:** S · **Risk:** Med
 
 ## In scope

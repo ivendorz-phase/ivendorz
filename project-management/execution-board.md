@@ -58,7 +58,8 @@ Vendor↔Account Composition~~ ✅ **Closed — report-deliverable only** (RV-01
 findings, Dev-team self-close 2026-07-03 @ `71dce2f`) · **Board RULED 2026-07-03** (report §9):
 Option B composed vendor-mounted page; P-ACC-13 Workflow Settings scoped OUT of `FE-VEN-12`
 (buyer-only content, carried forward); P-ACC-19 reclassified `Shared` in `page_inventory.md`.
-`FE-VEN-10 Billing` ← next (WP card pending kickoff) → FE-VEN-11 → FE-VEN-12.
+`FE-VEN-10 Billing` ← current (🔵A Review-A @ `4e57bfc` — 5-tab composition of P-ACC-16..20, scope
+complete; awaiting Review-A, Team-3 holds) → FE-VEN-11 → FE-VEN-12.
 
 **Review Team 5 standing backlog (B lane):** Step-3 Public baseline sweep (QCT 5-step Step 3) at a
 stable post-cutover SHA — **owner-authorized 2026-07-02 (agenda #10)**; runs **before FE-PUB-02
