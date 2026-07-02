@@ -1,7 +1,7 @@
 # WORK PACKAGE — FE-PUB-06 Vendor Directory (Started — scope complete, submitted to Review-A)
 
 - **Lane:** G (anonymous contract surface)
-- **Reviewed-SHA record:** _(filled after checkpoint commit)_
+- **Reviewed-SHA record:** `4812157` (scope complete — SearchBar entry point added)
 - **Value:** Vendor Growth · **Priority:** P1 · **Size:** S · **Risk:** Low
 
 ## Scoping note
