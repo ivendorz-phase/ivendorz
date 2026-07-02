@@ -55,17 +55,18 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-3 — Vendor (FE-VEN)
 
-- **Current Milestone:** _(none — `FE-VEN-09` Trust Center ✅ **Closed**, RV-0120, A:PASS ∧ B:PASS,
-  0 BLOCKER/MAJOR/MINOR both lanes, 2 OBS total, no fix-and-reverify cycle — both lanes clean on
-  first submission, checkpoint `32fe6fb`; Dev-team self-close per Amendment v1.3 §13. First
-  milestone built same-session as, and directly against, a Board ruling this session itself
-  formalized — both review lanes explicitly checked for self-serving interpretation, found none)_
-- **Current Page:** _(none — P-VND-28 `32fe6fb` Trust & Performance dashboard shipped: new
-  `workspace/trust/page.tsx` replacing the placeholder; Trust Score card [band+numeric ring, per
-  the ruling], Performance card [band-only, numeric never public — frozen contract restriction],
-  Verified Tier card [reuses existing `TierChip`, no duplication])_
-- **Pipeline stage:** idle
-- **Next Milestone:** FE-VEN-10/11/12 still at Board kickoff scoping (unaffected)
+- **Current Milestone:** _(none — `FE-VEN-14` Vendor↔Account Composition ✅ **Closed**, RV-0122,
+  Lane-L PASS 0 findings, Dev-team self-close 2026-07-03 @ `71dce2f`. **Report-deliverable close
+  only** — the milestone "produce a report" is done and reviewed clean, but this does NOT itself
+  unblock FE-VEN-10/11/12. FE-VEN-09 Trust Center also ✅ Closed prior, RV-0120)_
+- **Current Page:** _(none — no page owned; documentation deliverable only. Report:
+  `governanceReviews/FE-VEN-14-VENDOR-ACCOUNT-COMPOSITION-REPORT_v1.0.md`. Recommends a
+  route-topology decision [pure link-out vs. composed vendor-mounted page] and routes 2 real
+  findings to the Board [P-ACC-13 Workflow Settings is buyer-only RFQ-approval language; P-ACC-19
+  Lead Credits classified "Buyer" despite being vendor-facing] rather than resolving either
+  locally — none of that is decided yet)_
+- **Pipeline stage:** idle — awaiting the owner's ruling on the report (Board agenda #7)
+- **Next Milestone:** FE-VEN-10/11/12 (P-ACC composition builds), gated on that ruling
 
 ---
 

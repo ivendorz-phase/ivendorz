@@ -98,7 +98,7 @@ FE-PF-01 Design Tokens ✅ (ongoing ownership → FE-DS) · FE-PF-03 Platform Sh
 | FE-VEN-11 Organization | Platform | P3 | S | Med | H: FE-VEN-14 report + Board route-topology ruling | — (reuses P-ACC-04..11) | READY(kickoff-scoped) — same rule as FE-VEN-10 |
 | FE-VEN-12 Settings | Platform | P3 | S | Med | H: FE-VEN-14 report + Board route-topology ruling | — (reuses P-ACC-02/03/13/15) | READY(kickoff-scoped) — same rule as FE-VEN-10; P-ACC-13 leg contingent on FE-VEN-14 §6.1 |
 | FE-VEN-13 Ads | Vendor Growth | P2 | M | Low | — | P-VND-12..14 | ✅ Complete (RV-0106, A:PASS B:PASS-after-fix, board-approved 2026-07-02 @ `34395b2`) — fresh 3-page build; P-VND-13 create-only (no `update_advertisement` contract exists); admin reviews via P-ADM-10/11 (M8 owns the effect, R5) |
-| FE-VEN-14 Vendor↔Account Composition | Platform | P2 | S | Low | — | — (documentation only, owns no page) | 🟡 In Progress — reuse/composition report for FE-VEN-10/11/12, `governanceReviews/FE-VEN-14-VENDOR-ACCOUNT-COMPOSITION-REPORT_v1.0.md`; Lane L; unblocks 10/11/12 once the Board rules its route-topology recommendation + 2 routed findings |
+| FE-VEN-14 Vendor↔Account Composition | Platform | P2 | S | Low | — | — (documentation only, owns no page) | ✅ Complete (RV-0122, Lane-L PASS 0 findings, Dev-team self-close 2026-07-03 @ `71dce2f`) — reuse/composition report delivered, `governanceReviews/FE-VEN-14-VENDOR-ACCOUNT-COMPOSITION-REPORT_v1.0.md`; **report-deliverable close only** — does NOT itself unblock FE-VEN-10/11/12, which stay gated on the Board's ruling on the report's route-topology recommendation + 2 routed findings (P-ACC-13, P-ACC-19) |
 
 ## Track 4 — FE-SH Shared Components (owns 0 pages — Board-gated promotions)
 

@@ -2,8 +2,7 @@
 
 - **Lane:** L (Light — documentation/composition-planning only, no UI/backend/component change;
   ONE fresh-context review covering both A and B checklists → Board, per review-process.md §2)
-- **Reviewed-SHA record:** _(filled at review — this milestone produces a document, not code; the
-  "SHA" is the commit that adds the report)_
+- **Reviewed-SHA record:** `71dce2f` (RV-0122 — Lane-L combined review PASS, 0 findings)
 - **Value:** Platform · **Priority:** P2 · **Size:** S · **Risk:** Low (no code touched)
 
 ## In scope (owner-specified)
@@ -57,12 +56,17 @@ to decide something, not just confirm code quality).
 ## Key dates
 
 Created 2026-07-03 · Started 2026-07-03 (owner-specified milestone, delivered directly in chat) ·
-Scope complete —
+Scope complete 2026-07-03 (checkpoint `71dce2f`) · **Closed 2026-07-03** (RV-0122, report-deliverable
+close only — see note below)
 
 ## DoD confirmation (checked at close)
 
-☐ report produced covering all 6 owner-specified scope items ☐ inventory verified against
-`page_inventory.md`/`account-nav-model.ts` + direct file reads (8 of 17 components read in depth) ☐
-fork verification performed (repo-wide grep, zero matches) ☐ no code touched (`git status` shows
-only the report + WP-card + tracker files) ☐ combined Lane-L review PASS (B/M/M = 0) ☐ Board
-decision recorded on route topology + the two routed findings ☐ tracker updated ☐ card closed
+☑ report produced covering all 6 owner-specified scope items ☑ inventory verified against
+`page_inventory.md`/`account-nav-model.ts` + direct file reads (8 of 17 components read in depth,
+independently spot-checked by the reviewer) ☑ fork verification performed (repo-wide grep, zero
+matches, independently re-run by the reviewer) ☑ no code touched (`git show --stat` confirmed
+exactly 3 files: report + WP card + WBS tracker) ☑ combined Lane-L review PASS (RV-0122, 0 findings)
+☐ Board decision on route topology + the two routed findings — **NOT part of this milestone's
+close**; this DoD line stays unchecked until the owner rules, tracked separately (§7/§9 of the
+report; `execution-board.md` Board agenda #7) ☑ tracker updated ☑ card closed (deliverable only —
+FE-VEN-10/11/12 remain gated pending the still-open Board ruling above)

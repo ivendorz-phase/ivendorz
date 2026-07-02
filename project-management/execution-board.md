@@ -46,8 +46,10 @@ surfaces for P-BUY-03/04, hold P-BUY-05 build; P-BUY-04 link-out repointed to th
 board-approved 2026-07-02 @ `34395b2`, after one fix-and-reverify cycle) · ~~FE-VEN-04 remainder~~
 ✅ **Closed** (RV-0110, Dev-team self-close 2026-07-02 @ `4b4dc5c`, after one fix-and-reverify
 cycle) · ~~FE-VEN-09 Trust Center~~ ✅ **Closed** (RV-0120, Dev-team self-close 2026-07-03 @
-`32fe6fb`, no fix-and-reverify cycle — both lanes clean on first submission) · Team-3 **idle** —
-FE-VEN-10/11/12 still at Board kickoff scoping (unaffected by this ruling).
+`32fe6fb`, no fix-and-reverify cycle — both lanes clean on first submission) · ~~FE-VEN-14
+Vendor↔Account Composition~~ ✅ **Closed — report-deliverable only** (RV-0122, Lane-L PASS 0
+findings, Dev-team self-close 2026-07-03 @ `71dce2f`) · Team-3 **idle** — FE-VEN-10/11/12 gated on
+the owner's ruling on the report (route topology + 2 routed findings, Board agenda #7).
 
 **Review Team 5 standing backlog (B lane):** Step-3 Public baseline sweep (QCT 5-step Step 3) at a
 stable post-cutover SHA — **owner-authorized 2026-07-02 (agenda #10)**; runs **before FE-PUB-02
@@ -66,7 +68,7 @@ starts**; findings feed the FE-PUB packages.
 
 | Item | Decision needed |
 |---|---|
-| FE-VEN-10/11/12 | Board kickoff scoping (vendor-context reuse of P-ACC surfaces; T3 builds adaptation, T1 keeps maintaining reused pages) |
+| FE-VEN-10/11/12 | Board ruling on `FE-VEN-14`'s reuse/composition report (route topology: pure link-out vs. composed vendor-mounted page; + 2 routed findings, P-ACC-13/19) |
 | M2.5 vendor public microsite | continuation past the delivered foundation |
 
 ## Board standing agenda
@@ -89,7 +91,10 @@ starts**; findings feed the FE-PUB packages.
 4. **P-ACC-12** — `ESC-IDN-DELEG-EXPIRY` (delegation reinstate path).
 5. **M2.5 microsite continuation.**
 6. **Taxonomy P1 + mega-menu package approval** — unblocks FE-PUB-09.
-7. **FE-VEN-10/11/12 kickoff scoping.**
+7. **FE-VEN-10/11/12 kickoff scoping** — `FE-VEN-14`'s reuse/composition report is ready
+   (`governanceReviews/FE-VEN-14-VENDOR-ACCOUNT-COMPOSITION-REPORT_v1.0.md`): rule on route
+   topology (§7 of the report) + the 2 routed findings (P-ACC-13 Workflow Settings buyer-only
+   language; P-ACC-19 Lead Credits "Buyer" classification).
 8. **Shell-mount ratification** — global search `/account/search` + notification center
    `/notifications` (raised at loop terminus, non-blocking; pages ✅).
 9. **SiteHeader "Pricing" nav → `/pricing`** chrome wiring (RV-0087 follow-up).
