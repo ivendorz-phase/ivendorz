@@ -1,92 +1,138 @@
-// Vendor Dashboard — read-only command center (companion §3; realizes Doc-7G GR1/GR12 surface).
+// Vendor Dashboard — VX-01 redesign (2026-07-03, owner-directed, verbatim mockup). Replaces the
+// prior read-only command center with the owner's reference: a header card (org chip / search /
+// notification / message / profile icon links), a 4-tile KPI stat band, a Recent Activity feed, and
+// a Global Trust Score panel.
 //
-// Presentation-only composition with NEUTRAL placeholders for every Board-/contract-blocked element:
-//   • Standing  → governance signals are NOT rendered ([ESC-7G-SCORE-DISPLAY] / [ESC-7B-TRUSTSCORE]).
-//   • Pipeline  → navigational links only, NO counts/ratios (GR11 denominator law / [ESC-7G-PIPE-CONTRACT]).
-//   • Plan/quota, profile health → neutral text until the wired reads exist ([ESC-7G-ENT-01]).
-//   • AI advisory (Doc-5K, non-recommending) → render-only-if-wired, so OMITTED here.
-// Action-needed / activity use the canonical kit EmptyState (own-data only; byte-equivalent).
-// No business logic, no backend, no invented contract fields.
+// PRESENTATION-FIXTURE SEED (this milestone): the KPI figures and activity rows below are an
+// explicitly-labelled presentation fixture — no read is wired yet for RFQ/quote/PO/message counts
+// or an activity-event stream. This mirrors the buyer dashboard's own disclosed SEED posture
+// ((buyer)/dashboard/page.tsx) exactly: a static, disclosed fixture object, never a client-computed
+// count over partial data (which would violate R7 — client-computed counts are non-disclosure-safe).
+// The "Live" chip on each KPI tile is presentation-only labelling that the TILE itself is fully
+// built/interactive — it is NOT a claim that the figure streams from a live backend read.
+//
+// GOVERNANCE — three conflicts flagged and adjudicated by the owner before this build (full record
+// in the WP card / review-log VX-01 entry):
+//  1. "Mushok Challan" nav entry — instruments the still-open `ESC-OPS-DOC-MUSHOK` gap; its own page
+//     discloses this plainly (`workspace/documents/mushok-challan/page.tsx`), no VAT document kind
+//     is fabricated anywhere.
+//  2. Global Trust Score panel — reuses the REAL trust score (permitted per the Board's 2026-07-03
+//     display ruling); the Gold/Platinum tier is a NEW, dashboard-only label distinct from the real
+//     `FinancialTier`/Trust-Center band vocabulary; no scoring formula/point-delta is exposed;
+//     "Increase Score" navigates to the real Company Profile page and does NOT mutate the score
+//     itself — see `global-trust-score-card.tsx`'s own header comment for the full disclosure.
+//  3. Sidebar re-grouping — every already-shipped page from the prior IA is folded into the new
+//     grouping, not dropped (see `vendor-shell-vm.ts`'s own header comment).
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Button } from "@/frontend/primitives/button";
-import { EmptyState } from "@/frontend/components/empty-state";
-import { DashboardSection } from "../../_components/vendor/dashboard/dashboard-section";
-import { GovernanceStandingPlaceholder } from "../../_components/vendor/dashboard/governance-standing-placeholder";
-import { PipelineLinks } from "../../_components/vendor/dashboard/pipeline-links";
+import { Inbox, MessageSquare, ShoppingCart, FileCheck } from "lucide-react";
+import { DashboardHeaderCard } from "../../_components/vendor/dashboard/dashboard-header-card";
+import { VendorKpiStatCard } from "../../_components/vendor/dashboard/vendor-kpi-stat-card";
+import {
+  RecentActivityFeed,
+  type RecentActivityItem,
+} from "../../_components/vendor/dashboard/recent-activity-feed";
+import { GlobalTrustScoreCard } from "../../_components/vendor/dashboard/global-trust-score-card";
+import { VENDOR_IDENTITY_SEED } from "../../_components/vendor/identity-seed";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
-// Temporary mount prefix (see app/(app)/workspace/layout.tsx — dropped post-A7).
-const BASE = "/workspace";
+// Presentation-fixture SEED (see header comment) — field-aligned to a plausible, internally
+// consistent snapshot; not sourced from any wired read.
+const KPI_SEED = {
+  totalRfqs: 156,
+  activeQuotes: 42,
+  newPurchaseOrders: 12,
+  messages: 8,
+};
+
+const ACTIVITY_SEED: RecentActivityItem[] = [
+  {
+    id: "act-1",
+    title: "New RFQ matching your profile",
+    description: 'A buyer is looking for "Industrial Valves" in your region.',
+    timeLabel: "1h ago",
+  },
+  {
+    id: "act-2",
+    title: "New RFQ matching your profile",
+    description: 'A buyer is looking for "Industrial Valves" in your region.',
+    timeLabel: "1h ago",
+  },
+  {
+    id: "act-3",
+    title: "New RFQ matching your profile",
+    description: 'A buyer is looking for "Industrial Valves" in your region.',
+    timeLabel: "1h ago",
+  },
+  {
+    id: "act-4",
+    title: "New RFQ matching your profile",
+    description: 'A buyer is looking for "Industrial Valves" in your region.',
+    timeLabel: "1h ago",
+  },
+];
+
+const TRUST_SEED = {
+  score: 88,
+  tier: "gold" as const,
+  progressToNextTier: 0.72,
+};
 
 export default function VendorDashboardPage() {
   return (
     <div className="space-y-6">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">An overview of your vendor workspace.</p>
+        <p className="text-sm text-muted-foreground">
+          Your digital showcase and business portal overview.
+        </p>
       </header>
 
+      <DashboardHeaderCard
+        userName={VENDOR_IDENTITY_SEED.userName}
+        orgName={VENDOR_IDENTITY_SEED.orgName}
+      />
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <VendorKpiStatCard
+          label="Total RFQs"
+          value={KPI_SEED.totalRfqs}
+          live
+          icon={<Inbox aria-hidden />}
+          tone="brand"
+        />
+        <VendorKpiStatCard
+          label="Active Quotes"
+          value={KPI_SEED.activeQuotes}
+          live
+          icon={<FileCheck aria-hidden />}
+          tone="info"
+        />
+        <VendorKpiStatCard
+          label="New POs"
+          value={KPI_SEED.newPurchaseOrders}
+          live
+          icon={<ShoppingCart aria-hidden />}
+          tone="success"
+        />
+        <VendorKpiStatCard
+          label="Messages"
+          value={KPI_SEED.messages}
+          live
+          icon={<MessageSquare aria-hidden />}
+          tone="warning"
+        />
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-3">
-        <DashboardSection title="Action needed" className="lg:col-span-2">
-          <EmptyState
-            title="Nothing needs your attention right now"
-            description="Items that need a response — invitations, clarifications and document actions — appear here."
-          />
-        </DashboardSection>
-
-        <DashboardSection
-          title="Standing & verification"
-          action={
-            <Button asChild variant="ghost" size="sm">
-              <Link href={`${BASE}/trust`}>View</Link>
-            </Button>
-          }
-        >
-          <GovernanceStandingPlaceholder />
-        </DashboardSection>
-
-        <DashboardSection title="Quotation pipeline">
-          <PipelineLinks
-            items={[
-              { label: "Invitation inbox", href: `${BASE}/rfqs` },
-              { label: "Active quotations", href: `${BASE}/rfqs` },
-              { label: "Leads & pipeline", href: `${BASE}/leads` },
-              { label: "Engagements", href: `${BASE}/engagements` },
-            ]}
-          />
-        </DashboardSection>
-
-        <DashboardSection
-          title="Plan & quota"
-          action={
-            <Button asChild variant="ghost" size="sm">
-              <Link href={`${BASE}/billing`}>Manage</Link>
-            </Button>
-          }
-        >
-          <p className="text-sm text-muted-foreground">
-            Your plan entitlements and usage appear here once billing is connected.
-          </p>
-        </DashboardSection>
-
-        <DashboardSection
-          title="Profile health"
-          action={
-            <Button asChild variant="ghost" size="sm">
-              <Link href={`${BASE}/company`}>Open profile</Link>
-            </Button>
-          }
-        >
-          <p className="text-sm text-muted-foreground">
-            Profile completeness and readiness checks for your own data appear here.
-          </p>
-        </DashboardSection>
-
-        <DashboardSection title="Recent activity">
-          <EmptyState title="No recent activity yet" />
-        </DashboardSection>
+        <div className="lg:col-span-2">
+          <RecentActivityFeed items={ACTIVITY_SEED} />
+        </div>
+        <GlobalTrustScoreCard
+          score={TRUST_SEED.score}
+          tier={TRUST_SEED.tier}
+          progressToNextTier={TRUST_SEED.progressToNextTier}
+        />
       </div>
     </div>
   );

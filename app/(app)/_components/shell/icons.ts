@@ -26,6 +26,7 @@ import {
   ShieldCheck,
   Star,
   Store,
+  Trophy,
   UserPlus,
   Users,
   type LucideIcon,
@@ -78,6 +79,10 @@ export const NAV_ICONS = {
   notifications: Bell,
   messages: MessageSquare,
   reports: BarChart3,
+  // Vendor dashboard redesign (VX-01) — Digital Showcase / Business Docs sub-groups + tier badge.
+  showcase: Globe,
+  inquiries: MessageSquare,
+  award: Trophy,
 } as const satisfies Record<string, LucideIcon>;
 
 export type NavIconKey = keyof typeof NAV_ICONS;
