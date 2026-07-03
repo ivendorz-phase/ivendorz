@@ -179,7 +179,11 @@ description 70 lines earlier. **Fixed at checkpoint `f701d23`**, after an exhaus
 all 3 vendor-documents files for every mention of all four frozen enum families. **Re-entering at
 Review-A round 4** at `f701d23` per Amendment v1.3 §13. **Standing note**: 5 confirmed instances of
 the same root failure class across 4 fix-and-reverify cycles — each small, genuine, disclosed; the
-pipeline is working as designed —
+pipeline is working as designed. **Review-A round 4: REVISION** — a SIXTH instance, new shape: §3's
+trailing sentence was an invented, ungrounded "quotation history" claim contradicting the file's own
+disclosure. **Fixed at checkpoint `067c5c0`** by deletion, after a full sentence-by-sentence
+grounding read of the whole file. **Re-entering at Review-A round 5** at `067c5c0` — 6 confirmed
+instances across 5 cycles —
 Team-3 STOPS, holds for the gate → then `FE-DOC-03 Templates & Generated Documents` (S-dep on the
 FE-SH-01 ruling, kit-primitive-rows fallback documented in the packet). _(Out-of-scope note:
 FE-PUB-09 vendored `popover`/`accordion`/`navigation-menu` into `src/frontend/primitives` — verify

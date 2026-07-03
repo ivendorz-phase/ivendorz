@@ -121,27 +121,30 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   text and live render [`hasWorkflowTab:false`]. No leave-chrome trade-off this time — none of the
   3 reused components carries an internal link to another Account route)_
 - **Current Milestone (new):** `FE-DOC-02` Vendor Documents Hub — **🔵A Review-A (re-entry, round
-  4)** at checkpoint `f701d23`. Review-A round 3 verdict: **REVISION** — a FIFTH instance: a
-  structured field-by-field audit of all four frozen enums found line 372's per-row copy omitted
-  `wcc`, contradicting §2's own description 70 lines earlier. Fixed at `f701d23`; ran my own
-  exhaustive enum-family grep across all 3 vendor-documents files before resubmitting. **Standing
-  note**: 5 confirmed instances of the same root failure class (buyer-shaped/enumeration
-  assumptions carried onto the vendor track unchecked) across 4 fix-and-reverify cycles — each
-  individually small and genuinely caught, cumulatively worth the owner's awareness; the review
-  pipeline is working exactly as designed (no false positives), not something to unilaterally
-  short-circuit.
+  5)** at checkpoint `067c5c0`. Review-A round 4 verdict: **REVISION** — a SIXTH instance, a NEW
+  failure shape: §3's trailing sentence ("Quotation history is System-generated and never
+  recommends a price.") was an invented, ungrounded substitute claim — no such concept exists
+  anywhere in the codebase, and it contradicted this file's own disclosure that a vendor has
+  exactly one quotation per RFQ. Fixed at `067c5c0` by deletion (no real equivalent to disclose).
+  Given the new failure shape (fabrication, not omission), did a full front-to-back
+  sentence-by-sentence grounding check of the whole file rather than another string-diff — no
+  further invented claims found. **6 confirmed instances across 5 fix-and-reverify cycles** — the
+  review pipeline continues to catch something real each round (no false positives), but this is an
+  unusually long cycle worth the owner's awareness.
 - **Current Page:** _(sole in-scope page — LifecycleStrip/SearchBar/ViewChips/RecentlyOpenedStrip/
   FilterSidebar + 4 sections, reusing the shared documents home + vendor's own
-  `EngagementStatusChip`/`TradeInvoiceStatusChip`/`MoneyBoundaryBanner`. FIVE route/copy-topology
+  `EngagementStatusChip`/`TradeInvoiceStatusChip`/`MoneyBoundaryBanner`. SIX route/copy-topology
   defects caught and fixed across this milestone's build+review cycle, all disclosed plainly, none
   absorbed: (1) self-caught pre-submission [5 fabricated per-kind engagement routes], (2)
   Review-B-caught round 1 [1 fabricated quotation-detail route], (3) Review-B-caught round 2 [1
   contradictory buyer-copy description + 1 stale comment], (4) Review-A-caught round 2 [LOI/
   Recorded/Confirmed silently missing from enumeration text + facets], (5) Review-A-caught round 3
-  [WCC silently missing from a second enumeration string]. Axe 0 violations attributable to this
-  milestone [1 pre-existing shared-shell `button-name` hit at mobile, same defect already disclosed
-  at `FE-DOC-01`'s own review, Board standing agenda #11] — Team-3 STOPS, holds for the gate)_
-- **Pipeline stage:** submitted to Review-A, re-entry round 4 (Lane G)
+  [WCC silently missing from a second enumeration string], (6) Review-A-caught round 4 [1 invented,
+  ungrounded "quotation history" claim, self-contradicting the file's own disclosure]. Axe 0
+  violations attributable to this milestone [1 pre-existing shared-shell `button-name` hit at
+  mobile, same defect already disclosed at `FE-DOC-01`'s own review, Board standing agenda #11] —
+  Team-3 STOPS, holds for the gate)_
+- **Pipeline stage:** submitted to Review-A, re-entry round 5 (Lane G)
 - **Next Milestone:** `FE-DOC-03 Templates & Generated Documents` (Track 7, WBS v1.2 — S-dep on the
   FE-SH-01 promotion ruling, Board agenda #13, fallback documented — groundwork submitted as
   `FE-SH-01/05/07/08 Shared Kit Promotion`, 🔵A 2026-07-03, WP card
@@ -158,12 +161,11 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   Amendment v1.3 §13, any Review-A REVISION/Review-B ISSUES always re-enters at A — this is that
   re-entry after round 2's Review-A (re-entry) found a FOURTH instance: LOI/Recorded/Confirmed
   silently missing from §2's description + both `FACETS` lists, contradicting the correct per-row
-  disclosure in the same component; fixed. Lens hotspots (in addition to the standard fork/scope
-  checks): given the milestone's now-4-instance track record of the same buyer→vendor copy-paste
-  failure class (5 fake routes pre-submission, 1 fake quotation route round 1, 1 contradictory
-  description + 1 stale comment round 2, LOI/Recorded/Confirmed omission round 2-re-entry), do a
-  maximally adversarial exhaustive string/enum comparison against the buyer hub one more time before
-  clearing this gate.
+  disclosure in the same component; fixed. **Now at round 5** (checkpoint `067c5c0`) after a 6th
+  instance (round 4: an invented "quotation history" claim, a new fabrication-not-omission failure
+  shape) — fixed by deletion. Lens hotspots: given the milestone's 6-instance track record, check
+  BOTH failure shapes this time — enum/route omissions AND invented/ungrounded claims — via a
+  genuine sentence-by-sentence grounding read of the whole file, not another mechanical diff.
 - **`FE-DOC-01` Buyer Documents Hub** (Team-2) — 🔵A submitted 2026-07-03 @ `3293009`; WP card
   `governanceReviews/milestones/fe-doc-01-buyer-documents-hub/WORK-PACKAGE.md` (carries the R1–R3
   owner-findings adjudication annex; lens hotspots: LifecycleStrip navigation-not-state, no coined

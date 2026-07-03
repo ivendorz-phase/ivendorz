@@ -61,6 +61,14 @@
   Review-A (round 4) on `f701d23`. **Standing note**: 5 confirmed instances of the same root failure
   class across 4 fix-and-reverify cycles — each small and genuinely caught, cumulatively a signal
   worth the human owner's awareness (pipeline working as designed, not a false-positive pattern).
+  **RV-0131 Review-A round 4 at `f701d23`: REVISION — a SIXTH instance, new failure shape.** §3's
+  trailing sentence ("Quotation history is System-generated and never recommends a price.") was an
+  invented, ungrounded substitute claim — no such concept exists anywhere in the codebase, and it
+  contradicts this file's own disclosure that a vendor has exactly ONE quotation per RFQ. 1 MAJOR,
+  fixed at `067c5c0` by deleting the sentence (no real equivalent to disclose). Did a full
+  front-to-back sentence-by-sentence grounding check of the whole file before this resubmission — no
+  further invented claims found. Re-entering at Review-A (round 5) on `067c5c0`. **6 confirmed
+  instances across 5 fix-and-reverify cycles.**
 - **Value:** Vendor Growth · **Priority:** P1 · **Size:** M · **Risk:** Med
 
 ## In scope
