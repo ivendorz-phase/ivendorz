@@ -27,6 +27,15 @@ import type { ProductCardVM } from "@/frontend/components/product-card";
 import type { CategoryVM } from "@/frontend/components/category-tile";
 import type { CapabilityFlags } from "@/frontend/components/capability-matrix";
 import type { FilterFacetGroup } from "@/frontend/components/filter-sidebar";
+// FE-PUB-05: the real, already-frozen-mirrored 794-node taxonomy tree (FE-PUB-09), reused for the
+// Doc-5D breadcrumb deterministic pick rule — imported from the CONCRETE model files, never the
+// `@/frontend/navigation` barrel (RV-0126's lesson: the barrel also re-exports every heavy
+// `MegaMenu*` component; this seed module is imported by many routes and must never risk pulling
+// that chunk into an always-eager path).
+import { buildTaxonomyIndex } from "@/frontend/navigation/model/taxonomy-index";
+import { OVERLAY_V1 } from "@/frontend/navigation/model/overlay.v1";
+import type { CategoryNodeData, CategoryNodeVM } from "@/frontend/navigation/model/types";
+import taxonomySeed from "@/frontend/navigation/model/taxonomy.v1.json";
 
 // ── Vendors (vendor directory seed). One is intentionally unverified → demonstrates that an absent
 //    "Verified" badge is ABSENCE, never a fabricated "pending" state. ────────────────────────────────
@@ -100,10 +109,12 @@ export const VENDORS: VendorCardVM[] = [
 /** Curated "featured" subset for showcases — editorial selection, never a computed score sort (GI-04). */
 export const FEATURED_VENDORS: VendorCardVM[] = VENDORS.slice(0, 4);
 
-// ── Products (catalog seed). Items without a price render "On request" — never a fabricated number. ──
+// ── Products (catalog seed). Items without a price render "On request" — never a fabricated number.
+//    `id` is UUID-shaped (FE-PUB-05, ADR-025 Decision 2 — opaque IDs; the id-anchored canonical URL
+//    law requires a real resolution key, not the old slug-shaped placeholder). ─────────────────────
 export const PRODUCTS: ProductCardVM[] = [
   {
-    id: "p-gate-valve-dn100",
+    id: "a1b2c3d4-1111-4a11-8a11-000000000001",
     name: "Cast Steel Gate Valve DN100 PN16",
     vendorName: "Padma Valve & Fittings Ltd.",
     vendorSlug: "padma-valve-fittings",
@@ -112,7 +123,7 @@ export const PRODUCTS: ProductCardVM[] = [
     price: { amount: 14500, currency: "BDT" },
   },
   {
-    id: "p-ms-plate-10mm",
+    id: "a1b2c3d4-2222-4a22-8a22-000000000002",
     name: "MS Plate 10mm (ASTM A36)",
     vendorName: "Bengal Steel Industries",
     vendorSlug: "bengal-steel-industries",
@@ -120,7 +131,7 @@ export const PRODUCTS: ProductCardVM[] = [
     spec: "10mm · 1500×6000 · hot-rolled",
   },
   {
-    id: "p-vfd-22kw",
+    id: "a1b2c3d4-3333-4a33-8a33-000000000003",
     name: "VFD Drive 22kW 3-Phase",
     vendorName: "Jamuna Electrical & Drives",
     vendorSlug: "jamuna-electrical-drives",
@@ -129,7 +140,7 @@ export const PRODUCTS: ProductCardVM[] = [
     price: { amount: 78000, currency: "BDT" },
   },
   {
-    id: "p-centrifugal-pump-15hp",
+    id: "a1b2c3d4-4444-4a44-8a44-000000000004",
     name: "End-Suction Centrifugal Pump 15HP",
     vendorName: "Meghna Pumps & Motors",
     vendorSlug: "meghna-pumps-motors",
@@ -138,7 +149,7 @@ export const PRODUCTS: ProductCardVM[] = [
     price: { amount: 96000, currency: "BDT" },
   },
   {
-    id: "p-safety-helmet",
+    id: "a1b2c3d4-5555-4a55-8a55-000000000005",
     name: "Industrial Safety Helmet (HDPE)",
     vendorName: "Surma Safety Solutions",
     vendorSlug: "surma-safety-solutions",
@@ -147,7 +158,7 @@ export const PRODUCTS: ProductCardVM[] = [
     price: { amount: 450, currency: "BDT" },
   },
   {
-    id: "p-butterfly-valve-dn150",
+    id: "a1b2c3d4-6666-4a66-8a66-000000000006",
     name: "Wafer Butterfly Valve DN150",
     vendorName: "Padma Valve & Fittings Ltd.",
     vendorSlug: "padma-valve-fittings",
@@ -156,7 +167,7 @@ export const PRODUCTS: ProductCardVM[] = [
     price: { amount: 8200, currency: "BDT" },
   },
   {
-    id: "p-deep-groove-bearing",
+    id: "a1b2c3d4-7777-4a77-8a77-000000000007",
     name: "Deep-Groove Ball Bearing 6309",
     vendorName: "Shitalakshya Engineering",
     vendorSlug: "shitalakshya-engineering",
@@ -165,7 +176,7 @@ export const PRODUCTS: ProductCardVM[] = [
     price: { amount: 1250, currency: "BDT" },
   },
   {
-    id: "p-industrial-lubricant",
+    id: "a1b2c3d4-8888-4a88-8a88-000000000008",
     name: "Industrial Gear Oil ISO VG 220",
     vendorName: "Karnaphuli Chemicals Ltd.",
     vendorSlug: "karnaphuli-chemicals",
@@ -354,4 +365,183 @@ export function getPublicVendorProfile(slug: string): PublicVendorProfileVM | un
 /** Vendor-scoped PUBLISHED catalog — the public projection boundary (the seed carries only public products). */
 export function getPublicVendorProducts(slug: string): ProductCardVM[] {
   return PRODUCTS.filter((p) => p.vendorSlug === slug);
+}
+
+// ── Public product detail (P-PUB-11 · FE-PUB-05, ADR-025 + Doc-4D v1.0.3 / Doc-5D v1.0.1). The
+//    composed Product Detail Projection: product core + a breadcrumb resolved by the frozen
+//    deterministic pick rule + related published products from the same vendor. NORMATIVE
+//    EXCLUSIONS carried from the folded contract: NO trust/performance values on this record itself
+//    (a page composes TrustBadge BESIDE it, never inside), NO price/currency, NO counts, NO
+//    buyer-private/entitlement facts. `vendor_slug` is resolved here for server-side href
+//    construction only — never rendered as bare text (ADR-024/ADR-025 builder-only discipline). ──
+
+const TAXONOMY = buildTaxonomyIndex(taxonomySeed.nodes as CategoryNodeData[], OVERLAY_V1);
+
+interface CategoryAssignmentSeed {
+  /** A real node id from the frozen-mirrored 794-node taxonomy tree — never a coined category. */
+  categoryId: string;
+  isSpecialized: boolean;
+  level: "primary" | "secondary";
+}
+
+/** Vendor-scoped category assignments (Doc-2 `category_assignments` shape — vendor-scoped, not a
+ *  direct product→category reference; per the frozen rule, breadcrumbs derive from the OWNING
+ *  VENDOR's assignments, applied uniformly across that vendor's products). Two vendors are
+ *  deliberately given a multi-assignment pair so the deterministic pick rule genuinely exercises
+ *  both tiebreak branches on real data (Padma: depth tiebreak; Karnaphuli: is_specialized tiebreak
+ *  at equal depth) rather than only the single-path degenerate case. */
+const VENDOR_CATEGORY_ASSIGNMENTS: Record<string, CategoryAssignmentSeed[]> = {
+  "padma-valve-fittings": [
+    { categoryId: "06064ac3-3704-50bd-96de-a6d73994d492", isSpecialized: false, level: "primary" }, // valves-piping (L2)
+    { categoryId: "bdeff457-635e-540a-a809-4ff6782868ae", isSpecialized: true, level: "secondary" }, // butterfly-valves (L4) — deepest wins
+  ],
+  "bengal-steel-industries": [
+    { categoryId: "82a60d22-5bb9-5c6d-978d-8c4a9173962b", isSpecialized: true, level: "primary" }, // ms-sections (L4)
+  ],
+  "jamuna-electrical-drives": [
+    { categoryId: "f5b32a01-9cf5-5fc6-89e4-b0a771c994f5", isSpecialized: true, level: "primary" }, // variable-frequency-drives (L3)
+  ],
+  "meghna-pumps-motors": [
+    { categoryId: "05055342-c074-50bc-9d53-5e9c00da586e", isSpecialized: true, level: "primary" }, // centrifugal-pumps (L4)
+  ],
+  "surma-safety-solutions": [
+    { categoryId: "3fec6a5c-285e-50fb-a0a7-43f396233193", isSpecialized: false, level: "primary" }, // ppe (L2 — deepest available in the tree)
+  ],
+  "karnaphuli-chemicals": [
+    {
+      categoryId: "6f7ca38c-6208-5b96-a0b4-40ef3f4da831",
+      isSpecialized: false,
+      level: "secondary",
+    }, // basic-chemicals (L3)
+    { categoryId: "6e5d612a-27e3-5c1e-aa99-7fff611457b4", isSpecialized: true, level: "primary" }, // lubricants-oils (L3) — equal depth, is_specialized wins
+  ],
+  "shitalakshya-engineering": [
+    { categoryId: "16d20ada-484b-5a8a-8fe5-0d8730b94b99", isSpecialized: true, level: "primary" }, // ball-bearings (L4)
+  ],
+};
+
+export interface CategoryPathSegment {
+  categoryId: string;
+  slug: string;
+  name: string;
+}
+
+/**
+ * Doc-5D_PublicProductDetail_Patch_v1.0.1 Part 2 — the breadcrumb deterministic pick rule, run for
+ * real over the vendor's active category assignments: (1) deepest path wins, (2) `is_specialized`
+ * beats not, (3) `level = primary` beats `secondary`, (4) lowest category-UUID as the final,
+ * always-total tiebreak. Order-independent — the same assignment set always yields the same
+ * `primary_category_path` (and the same `category_paths[]` order), regardless of input order.
+ */
+function pickPrimaryCategoryPath(assignments: CategoryAssignmentSeed[]): {
+  primary: CategoryPathSegment[];
+  all: CategoryPathSegment[][];
+} {
+  const toSegments = (chain: CategoryNodeVM[]): CategoryPathSegment[] =>
+    chain.map((n) => ({ categoryId: n.id, slug: n.slug, name: n.name }));
+
+  const resolved = assignments
+    .map((a) => ({ assignment: a, chain: TAXONOMY.pathTo(a.categoryId) }))
+    // Defensive only — every seeded assignment above resolves; an unresolvable id is dropped, not
+    // fabricated a home (mirrors the taxonomy index's own orphan-drop discipline).
+    .filter((p) => p.chain.length > 0);
+
+  const sorted = [...resolved].sort((a, b) => {
+    if (b.chain.length !== a.chain.length) return b.chain.length - a.chain.length;
+    if (a.assignment.isSpecialized !== b.assignment.isSpecialized) {
+      return a.assignment.isSpecialized ? -1 : 1;
+    }
+    if (a.assignment.level !== b.assignment.level) {
+      return a.assignment.level === "primary" ? -1 : 1;
+    }
+    return a.assignment.categoryId < b.assignment.categoryId ? -1 : 1;
+  });
+
+  return {
+    primary: sorted.length > 0 ? toSegments(sorted[0].chain) : [],
+    all: sorted.map((p) => toSegments(p.chain)),
+  };
+}
+
+/** Editorial product descriptions (curated presentation seed — prose over the existing `spec`
+ *  field; coins no new technical fact). Absence = no description section rendered (GI-03). */
+const PRODUCT_DETAIL_EXTRAS: Record<string, { description: string }> = {
+  "a1b2c3d4-1111-4a11-8a11-000000000001": {
+    description:
+      "Cast steel gate valve rated PN16, flanged ends, suitable for isolation duty in water, steam, and general industrial piping systems.",
+  },
+  "a1b2c3d4-2222-4a22-8a22-000000000002": {
+    description:
+      "Hot-rolled mild steel plate to ASTM A36, 1500×6000mm sheet size, for structural fabrication and general engineering use.",
+  },
+  "a1b2c3d4-3333-4a33-8a33-000000000003": {
+    description:
+      "Three-phase variable frequency drive rated 22kW, 380–415V supply, IP20 enclosure, for motor speed control in industrial process and utility applications.",
+  },
+  "a1b2c3d4-4444-4a44-8a44-000000000004": {
+    description:
+      "End-suction centrifugal pump with cast-iron casing, 15HP duty, rated for approximately 50m head — suited to water transfer and general process circulation.",
+  },
+  "a1b2c3d4-5555-4a55-8a55-000000000005": {
+    description:
+      "Industrial safety helmet with HDPE shell and ratchet headband adjustment, certified to EN 397 for impact and penetration protection.",
+  },
+  "a1b2c3d4-6666-4a66-8a66-000000000006": {
+    description:
+      "Wafer-style butterfly valve, DN150, EPDM seat, lever-operated — for on/off and throttling duty in general industrial piping.",
+  },
+  "a1b2c3d4-7777-4a77-8a77-000000000007": {
+    description:
+      "Sealed deep-groove ball bearing, size 6309-2RS (45×100×25mm), for general-purpose rotating machinery.",
+  },
+  "a1b2c3d4-8888-4a88-8a88-000000000008": {
+    description:
+      "Mineral-based industrial gear oil, ISO VG 220 viscosity grade, supplied in 20-litre containers — for enclosed gear and bearing lubrication.",
+  },
+};
+
+export interface PublicProductDetailVM {
+  id: string;
+  name: string;
+  /** Absence = no description section rendered (GI-03) — never a fabricated blurb. */
+  description?: string;
+  vendorName: string;
+  vendorSlug: string;
+  /** Binary verification signal only (M5 public projection) — absence = no badge, never "pending". */
+  vendorVerified?: boolean;
+  spec?: string;
+  /** Selected by the deterministic pick rule above — empty iff the vendor has no resolvable assignment. */
+  primaryCategoryPath: CategoryPathSegment[];
+  /** Every resolved path, primary first, remaining ordered by the same comparison rule. */
+  categoryPaths: CategoryPathSegment[][];
+  /** Other PUBLISHED products from the same vendor (excludes this product itself). */
+  related: ProductCardVM[];
+}
+
+/** Look up the public Product Detail Projection for a product id — `undefined` → the page renders a
+ *  byte-equivalent 404 (R9; unknown id and an orphaned vendor reference collapse identically). */
+export function getPublicProductDetail(id: string): PublicProductDetailVM | undefined {
+  const product = PRODUCTS.find((p) => p.id === id);
+  if (!product) return undefined;
+  const vendor = VENDORS.find((v) => v.slug === product.vendorSlug);
+  if (!vendor) return undefined;
+
+  const assignments = VENDOR_CATEGORY_ASSIGNMENTS[product.vendorSlug] ?? [];
+  const { primary, all } = pickPrimaryCategoryPath(assignments);
+  const related = PRODUCTS.filter(
+    (p) => p.vendorSlug === product.vendorSlug && p.id !== product.id,
+  );
+
+  return {
+    id: product.id,
+    name: product.name,
+    description: PRODUCT_DETAIL_EXTRAS[product.id]?.description,
+    vendorName: product.vendorName,
+    vendorSlug: product.vendorSlug,
+    vendorVerified: vendor.verified,
+    spec: product.spec,
+    primaryCategoryPath: primary,
+    categoryPaths: all,
+    related,
+  };
 }

@@ -1,10 +1,10 @@
 // ProductShowcase (M2.6) — the supplier's PUBLISHED catalog as a presentation showcase: a category
 // summary + the anonymous quotation intent + a (disabled) catalog download, above the product grid.
-// Products come from the vendor-scoped public read (the seed); each card opens the in-search product
-// detail ([ESC-7-API-PRODDETAIL] — there is no standalone anonymous product page). The "Download catalog"
-// action is DISABLED (no fabricated file). Anonymous intents route to `(auth)`, never a mutation here.
-// Presentation-only. Reuses the shared kit + the public product-detail href ONLY; imports nothing from
-// the Vendor workspace. RSC-friendly.
+// Products come from the vendor-scoped public read (the seed); each card opens the real standalone
+// product detail page (FE-PUB-05, `ESC-7-API-PRODDETAIL` resolved 2026-07-03, RV-0130). The
+// "Download catalog" action is DISABLED (no fabricated file). Anonymous intents route to `(auth)`,
+// never a mutation here. Presentation-only. Reuses the shared kit + the canonical product URL
+// builder ONLY; imports nothing from the Vendor workspace. RSC-friendly.
 import Link from "next/link";
 import { Download, PackageOpen } from "lucide-react";
 import { Badge } from "@/frontend/primitives/badge";
@@ -12,7 +12,7 @@ import { Button } from "@/frontend/primitives/button";
 import { ProductCard, type ProductCardVM } from "@/frontend/components/product-card";
 import { ResultsGrid } from "@/frontend/components/results-grid";
 import { EmptyState } from "@/frontend/components/empty-state";
-import { productDetailHref } from "../product-detail";
+import { productHref } from "../product-url";
 
 export interface ProductShowcaseProps {
   products: ProductCardVM[];
@@ -63,7 +63,7 @@ export function ProductShowcase({ products, authHref }: ProductShowcaseProps) {
       >
         {products.map((product) => (
           // [ESC-7-API-PRODDETAIL]: no anon product page — open the in-search product detail.
-          <ProductCard key={product.id} product={product} href={productDetailHref(product.id)} />
+          <ProductCard key={product.id} product={product} href={productHref(product)} />
         ))}
       </ResultsGrid>
     </div>

@@ -16,7 +16,7 @@ import {
   CATEGORY_GROUPS,
   VENDOR_FACETS,
 } from "../../../_components/discovery/seed";
-import { productDetailHref } from "../../../_components/product-detail";
+import { productHref } from "../../../_components/product-url";
 import { vendorHref } from "../../../_components/vendor-url";
 import { CategorySidebarTree } from "./category-sidebar-tree";
 
@@ -193,7 +193,7 @@ export default async function CategoryPage({
               footer={<PaginationControl hasMore hasPrevious={false} />}
             >
               {products.map((p) => (
-                <ProductCard key={p.id} product={p} href={productDetailHref(p.id)} />
+                <ProductCard key={p.id} product={p} href={productHref(p)} />
               ))}
             </ResultsGrid>
           )}
