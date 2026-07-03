@@ -142,6 +142,29 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   standing agenda #11]. 2 non-gating OBS carried, both byte-identical to the buyer hub: `FACETS`
   "Status" omits `cancelled`; "Pending approval" chip label's mild framing tension, WP-card-
   prescribed)_
+- **Current Milestone:** _(none — `VX-01` Vendor Dashboard + sidebar nav redesign ✅ **Closed**,
+  RV-0137, owner-directed, delivered as a verbatim mockup screenshot ("replace the existing vendor
+  dashboard with these"). **Three governance conflicts flagged and adjudicated before building**
+  (Mushok Challan nav item / Trust Score "Increase Score" mutation-affordance + point-delta formula
+  exposure / invented Gold-Platinum tier) — owner ruled "build it literally as shown"; resolved per
+  conflict without violating the underlying invariants (Mushok scaffolded via
+  `ImplementationPendingView`, disclosed not fabricated; "Increase Score" is a real navigation link
+  to Company Profile, never a score mutation, formula softened to a non-numeric nudge; Gold/Platinum
+  built as a new, disclosed, dashboard-only concept distinct from `FinancialTier`/Trust Center
+  bands). A 4th conflict caught mid-build (the mockup's simplified sidebar omitted several
+  already-shipped real pages) resolved by folding them into the new grouping, not dropping them —
+  same tension Team-2 hit at BX-04. **Real shared-shell bug caught and fixed during verification**:
+  `Sidebar`/`MobileNav` left a dangling `aria-controls` on a closed sibling nav-group's toggle button
+  (axe-critical `aria-valid-attr-value`), latent since BX-04, first triggered by this milestone's two
+  sibling single-item groups — fixed in both files, live-reverified. Full record: RV-0137)_
+- **Current Page:** _(none — new sidebar taxonomy [`NavItem.children`, additive] + full dashboard
+  page rebuild: `DashboardHeaderCard` [decorative topbar duplicate, same posture as the buyer
+  track's own], 4 `VendorKpiStatCard` tiles [disclosed presentation-fixture SEED, never
+  client-computed], `RecentActivityFeed`, `GlobalTrustScoreCard` [reuses the real `TrustScoreRing`].
+  4 new nav destinations scaffolded via a vendor-local `ImplementationPendingView` [not
+  cross-imported from the buyer track]: Buyer Inquiries, Project Portfolio, Mushok Challan,
+  Notifications. Axe 0 violations attributable to this milestone after the shell fix [1
+  pre-existing `quick-create.tsx` mobile hit, Board standing agenda #11, unrelated])_
 - **Pipeline stage:** idle
 - **Next Milestone:** `FE-DOC-03 Templates & Generated Documents` (Track 7, WBS v1.2 — S-dep on the
   FE-SH-01 promotion ruling, Board agenda #13, fallback documented — groundwork submitted as
