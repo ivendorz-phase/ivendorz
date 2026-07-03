@@ -173,8 +173,13 @@ instances. **Correctly re-entering at Review-A** (round 2) at `b1dad70` per Amen
 engagement-document kind was silently missing from §2's description and both `FACETS` lists,
 contradicting the correct per-row disclosure in the same component. **Fixed at checkpoint
 `c7ff7b7`** — §2 description + Document Type/Status facets all corrected; an exhaustive
-string-by-string comparison against the buyer hub confirms no further omissions. **Re-entering at
-Review-A round 3** at `c7ff7b7` per Amendment v1.3 §13 —
+string-by-string comparison against the buyer hub confirms no further omissions. **Review-A round
+3: REVISION** — a FIFTH instance: line 372's per-row copy omitted `wcc`, contradicting §2's own
+description 70 lines earlier. **Fixed at checkpoint `f701d23`**, after an exhaustive grep across
+all 3 vendor-documents files for every mention of all four frozen enum families. **Re-entering at
+Review-A round 4** at `f701d23` per Amendment v1.3 §13. **Standing note**: 5 confirmed instances of
+the same root failure class across 4 fix-and-reverify cycles — each small, genuine, disclosed; the
+pipeline is working as designed —
 Team-3 STOPS, holds for the gate → then `FE-DOC-03 Templates & Generated Documents` (S-dep on the
 FE-SH-01 ruling, kit-primitive-rows fallback documented in the packet). _(Out-of-scope note:
 FE-PUB-09 vendored `popover`/`accordion`/`navigation-menu` into `src/frontend/primitives` — verify

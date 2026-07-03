@@ -54,6 +54,13 @@
   equivalents — the only remaining differences are legitimate, disclosed vendor-framing choices, no
   further omissions found. tsc/eslint/prettier green. Re-entering at Review-A (round 3) on
   checkpoint `c7ff7b7` per Amendment v1.3 §13.
+  **RV-0131 Review-A round 3 at `c7ff7b7`: REVISION — a FIFTH instance.** A structured field-by-field
+  audit of all four frozen enums found line 372's per-row copy omits `wcc`, contradicting §2's own
+  description 70 lines earlier. 1 MAJOR, fixed at `f701d23`. 1 OBS (non-actionable): `FACETS`
+  "Status" omits `cancelled`, byte-identical to the buyer hub's own frozen list. Re-entering at
+  Review-A (round 4) on `f701d23`. **Standing note**: 5 confirmed instances of the same root failure
+  class across 4 fix-and-reverify cycles — each small and genuinely caught, cumulatively a signal
+  worth the human owner's awareness (pipeline working as designed, not a false-positive pattern).
 - **Value:** Vendor Growth · **Priority:** P1 · **Size:** M · **Risk:** Med
 
 ## In scope

@@ -121,26 +121,27 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   text and live render [`hasWorkflowTab:false`]. No leave-chrome trade-off this time — none of the
   3 reused components carries an internal link to another Account route)_
 - **Current Milestone (new):** `FE-DOC-02` Vendor Documents Hub — **🔵A Review-A (re-entry, round
-  3)** at checkpoint `c7ff7b7`. Review-A round 2 (RV-0131) verdict: **REVISION** — a FOURTH instance
-  of the recurring buyer-carryover failure class: the real, frozen `loi` engagement-document kind
-  was silently missing from §2's description and both `FACETS` lists (Document Type, Status),
-  contradicting the correct per-row disclosure in the same component. Fixed at `c7ff7b7`; ran an
-  exhaustive string-by-string comparison against the buyer hub before this resubmission — only
-  legitimate, disclosed vendor-framing differences remain. Correctly re-entering at Review-A per
-  Amendment v1.3 §13 (my earlier round-1 process misstep — resubmitting straight to Review-B — is
-  now consistently followed correctly).
+  4)** at checkpoint `f701d23`. Review-A round 3 verdict: **REVISION** — a FIFTH instance: a
+  structured field-by-field audit of all four frozen enums found line 372's per-row copy omitted
+  `wcc`, contradicting §2's own description 70 lines earlier. Fixed at `f701d23`; ran my own
+  exhaustive enum-family grep across all 3 vendor-documents files before resubmitting. **Standing
+  note**: 5 confirmed instances of the same root failure class (buyer-shaped/enumeration
+  assumptions carried onto the vendor track unchecked) across 4 fix-and-reverify cycles — each
+  individually small and genuinely caught, cumulatively worth the owner's awareness; the review
+  pipeline is working exactly as designed (no false positives), not something to unilaterally
+  short-circuit.
 - **Current Page:** _(sole in-scope page — LifecycleStrip/SearchBar/ViewChips/RecentlyOpenedStrip/
   FilterSidebar + 4 sections, reusing the shared documents home + vendor's own
-  `EngagementStatusChip`/`TradeInvoiceStatusChip`/`MoneyBoundaryBanner`. FOUR route/copy-topology
+  `EngagementStatusChip`/`TradeInvoiceStatusChip`/`MoneyBoundaryBanner`. FIVE route/copy-topology
   defects caught and fixed across this milestone's build+review cycle, all disclosed plainly, none
   absorbed: (1) self-caught pre-submission [5 fabricated per-kind engagement routes], (2)
   Review-B-caught round 1 [1 fabricated quotation-detail route], (3) Review-B-caught round 2 [1
   contradictory buyer-copy description + 1 stale comment], (4) Review-A-caught round 2 [LOI/
-  Recorded/Confirmed silently missing from enumeration text + facets]. Axe 0 violations
-  attributable to this milestone [1 pre-existing shared-shell `button-name` hit at mobile, same
-  defect already disclosed at `FE-DOC-01`'s own review, Board standing agenda #11] — Team-3 STOPS,
-  holds for the gate)_
-- **Pipeline stage:** submitted to Review-A, re-entry round 3 (Lane G)
+  Recorded/Confirmed silently missing from enumeration text + facets], (5) Review-A-caught round 3
+  [WCC silently missing from a second enumeration string]. Axe 0 violations attributable to this
+  milestone [1 pre-existing shared-shell `button-name` hit at mobile, same defect already disclosed
+  at `FE-DOC-01`'s own review, Board standing agenda #11] — Team-3 STOPS, holds for the gate)_
+- **Pipeline stage:** submitted to Review-A, re-entry round 4 (Lane G)
 - **Next Milestone:** `FE-DOC-03 Templates & Generated Documents` (Track 7, WBS v1.2 — S-dep on the
   FE-SH-01 promotion ruling, Board agenda #13, fallback documented — groundwork submitted as
   `FE-SH-01/05/07/08 Shared Kit Promotion`, 🔵A 2026-07-03, WP card
