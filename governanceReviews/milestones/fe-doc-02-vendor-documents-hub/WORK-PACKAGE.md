@@ -2,7 +2,21 @@
 
 - **Lane:** G (cross-workspace presentation composition; mirrors `FE-DOC-01`'s adjudicated pattern —
   no new adjudication round implied, only DoD compliance against the same rulings)
-- **Reviewed-SHA record:** _(filled at 🔵A)_
+- **Reviewed-SHA record:** `8c0cb40` — scope complete, submitted to Review-A 2026-07-03. **Real
+  route-topology defect caught in self-verification, fixed before submission**: the initial draft
+  mirrored the buyer hub's five fixed per-kind document routes (`/po`/`/challan`/`/trade-invoice`/
+  `/payments`/`/wcc`), which do not exist on the vendor track (vendor's `EngagementDocuments` tabs
+  are enumeration-build-blocked, `ESC-7G-ENG-03`, and live entirely inside the one
+  `/workspace/engagements/[id]` page) — every per-engagement reference now points at that one real
+  page instead. Live-verified in an isolated `git worktree` (real `npm install`, own dev server
+  port 3031): all hub routes + every deep link 200, no fabricated per-kind hrefs in rendered HTML
+  (confirmed via grep), engagement/generated-doc human refs render correctly, `MoneyBoundaryBanner`
+  text present, "Generate document"/"Bulk download" confirmed `disabled:true` in the RSC payload,
+  vendor nav "Documents" entry confirmed live on `/workspace/dashboard`. Axe (wcag2a/2aa/21a/21aa,
+  desktop/tablet/mobile, 3 view states): **0 violations attributable to FE-DOC-02** — 1 mobile-only
+  `button-name` critical hit is the identical pre-existing shared-shell `quick-create.tsx` defect
+  already disclosed by `FE-DOC-01`'s own Review-B (Board standing agenda #11) — confirmed via
+  `git show 8c0cb40 --stat`: `quick-create.tsx` does not appear in this commit's diff at all.
 - **Value:** Vendor Growth · **Priority:** P1 · **Size:** M · **Risk:** Med
 
 ## In scope

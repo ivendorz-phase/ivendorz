@@ -97,11 +97,24 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   forward not fabricated, independently confirmed by both review lanes against the actual report
   text and live render [`hasWorkflowTab:false`]. No leave-chrome trade-off this time — none of the
   3 reused components carries an internal link to another Account route)_
-- **Pipeline stage:** idle
-- **Next Milestone:** `FE-DOC-02 Vendor Documents Hub` → `FE-DOC-03 Templates & Generated
-  Documents` (Track 7, WBS v1.2 — pulls after FE-DOC-01 establishes the hub pattern; FE-DOC-03
-  S-dep on the FE-SH-01 promotion ruling, Board agenda #13, fallback documented — **groundwork now
-  submitted** as `FE-SH-01/05/07/08 Shared Kit Promotion`, 🔵A 2026-07-03, WP card
+- **Current Milestone (new):** `FE-DOC-02` Vendor Documents Hub — **🔵A Review-A** (checkpoint
+  `8c0cb40`; scope complete — sole in-scope page `workspace/documents` composed against the shared
+  documents home `FE-DOC-01` established; H: `FE-DOC-00` (delivered) · S: `FE-DOC-01` pattern
+  (delivered) both cleared)
+- **Current Page:** _(sole in-scope page — LifecycleStrip/SearchBar/ViewChips/RecentlyOpenedStrip/
+  FilterSidebar + 4 sections, reusing the shared documents home + vendor's own
+  `EngagementStatusChip`/`TradeInvoiceStatusChip`/`MoneyBoundaryBanner`. **Self-caught defect fixed
+  pre-submission**: initial draft mirrored the buyer hub's 5 fixed per-kind document routes, which
+  don't exist on the vendor track [`ESC-7G-ENG-03` enumeration-build-blocked] — every reference now
+  points at the one real `/workspace/engagements/[id]` page instead, caught via an isolated-worktree
+  live-render check before Review-A. Axe 0 violations attributable to this milestone [1 pre-existing
+  shared-shell `button-name` hit at mobile, confirmed absent from this commit's diff, same defect
+  already disclosed at `FE-DOC-01`'s own review, Board standing agenda #11] — submitted to
+  Review-A; Team-3 STOPS, holds for the gate)_
+- **Pipeline stage:** submitted to Review-A (Lane G)
+- **Next Milestone:** `FE-DOC-03 Templates & Generated Documents` (Track 7, WBS v1.2 — S-dep on the
+  FE-SH-01 promotion ruling, Board agenda #13, fallback documented — groundwork submitted as
+  `FE-SH-01/05/07/08 Shared Kit Promotion`, 🔵A 2026-07-03, WP card
   `governanceReviews/milestones/fe-sh-01-shared-kit-promotion/`). *(Available in parallel —
   proposed `FE-PLAT-09` vendor/admin workflow test coverage, `fe-program-wbs.md` Track 8, pending
   Board mint.)*
@@ -116,6 +129,15 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   kinds/facets, opaque counterparty refs, `?q=` refine-not-search, shared-home boundary).
 - **`FE-DOC-00` Charter & Governance Package** (Team-2) — Lane-L deliverable @ `296b2d0`
   (docs/PM only; coverage 150/150; closes on deliverable per the FE-VEN-14 precedent).
+- **`FE-DOC-02` Vendor Documents Hub** (Team-3) — 🔵A submitted 2026-07-03 @ `8c0cb40`; WP card
+  `governanceReviews/milestones/fe-doc-02-vendor-documents-hub/WORK-PACKAGE.md`. Vendor mirror of
+  `FE-DOC-01`, composed against the same shared documents home (never forked). Lens hotspots: fork
+  check on the shared home + vendor `engagements` chips, the route-topology correction (vendor has
+  no per-kind document sub-routes — verify every hub reference points at the real
+  `/workspace/engagements/[id]` page, not a fabricated `/po`/`/challan`/etc.), no `(buyer)/*`
+  import (workspace boundary), status chips reused from `_components/vendor/engagements` not
+  re-derived, `MoneyBoundaryBanner` reused not re-copied, "Pending approval" chip label reused
+  verbatim from the already-approved `FE-DOC-01` precedent (not a new coinage).
 - **`FE-SH-01/05/07/08` Shared Kit Promotion** (Kit owner, cross-team) — 🔵A submitted 2026-07-03
   (working tree, uncommitted); WP card
   `governanceReviews/milestones/fe-sh-01-shared-kit-promotion/WORK-PACKAGE.md`. Lane L proposed

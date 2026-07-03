@@ -131,10 +131,19 @@ imported unmodified, thin `SettingsTabs` over shared `WorkspaceTabs`, zero fork,
 Profile/Security/Notifications, no Workflow tab, no RFQ-approval text — carried forward not
 fabricated]**, no leave-chrome trade-off, scope byte-stable across the FE-PUB-09 Phase-4 HEAD advance,
 static gates green, render D/T/M all 200 + axe 0). **Last of the ruled FE-VEN-10 → 11 → 12 sequence —
-all three approved.** **Next pull: `FE-DOC-02 Vendor Documents Hub` → `FE-DOC-03 Templates &
-Generated Documents`** (Track 7, WBS v1.2 — after FE-DOC-01 establishes the hub pattern;
-FE-DOC-03 S-dep on the FE-SH-01 ruling, kit-primitive-rows fallback documented in the packet). _(Out-of-scope note: FE-PUB-09 vendored
-`popover`/`accordion`/`navigation-menu` into
+all three approved.** `FE-DOC-02 Vendor Documents Hub` — composes the shared documents home
+(`_components/documents`) + vendor's own `EngagementStatusChip`/`TradeInvoiceStatusChip`/
+`MoneyBoundaryBanner` into `workspace/documents/page.tsx`; no vendor `DataListTable` equivalent, §1
+renders as a local row-list. **Self-caught route-topology defect fixed pre-submission**: initial
+draft mirrored the buyer hub's 5 fixed per-kind document routes, which don't exist on the vendor
+track (`ESC-7G-ENG-03` enumeration-build-blocked) — every per-engagement reference now points at the
+real `/workspace/engagements/[id]` page. Live-verified in an isolated `git worktree` (real `npm
+install`): all routes/deep-links 200, no fabricated hrefs, disabled affordances confirmed, axe 0
+violations attributable to this milestone (1 pre-existing shared-shell `button-name` hit, same as
+`FE-DOC-01`'s own disclosed finding, confirmed absent from this commit's diff). **🔵A Review-A
+submitted** at checkpoint `8c0cb40` — Team-3 STOPS, holds for the gate → then `FE-DOC-03 Templates
+& Generated Documents` (S-dep on the FE-SH-01 ruling, kit-primitive-rows fallback documented in the
+packet). _(Out-of-scope note: FE-PUB-09 vendored `popover`/`accordion`/`navigation-menu` into
 `src/frontend/primitives` — verify as a legit demand-driven kit extension under the mega-menu
 package at FE-PUB-09's review.)_
 
