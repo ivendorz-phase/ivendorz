@@ -16,9 +16,10 @@
 
 import Link from "next/link";
 import { Button } from "@/frontend/primitives/button";
+import { Card, CardContent } from "@/frontend/primitives/card";
 import { EmptyState } from "@/frontend/components/empty-state";
 import { StatusChip } from "@/frontend/components/status-chip";
-import { FileText, Plus } from "lucide-react";
+import { ClipboardCheck, FileText, Plus, TrendingUp, Wallet } from "lucide-react";
 import { PageHeader } from "../../_components/shell";
 import { KpiStatCard } from "../_components/kpi-stat-card";
 import { WorkQueueCard, type QueueColumn } from "../_components/work-queue-card";
@@ -142,7 +143,30 @@ function FirstRunEmpty() {
   );
 }
 
-export function BuyerDashboardView({ data }: { data: BuyerDashboardViewModel | null }) {
+/** Presentation-only welcome band (§9.1 layout pass) — echoes the SAME neutral identity placeholder the
+ *  shell topbar already renders (`identity-seed.ts`), never a second, independently-fabricated name. */
+function WelcomeBand({ userName, orgName }: { userName: string; orgName: string }) {
+  return (
+    <Card className="shadow-iv-xs">
+      <CardContent className="flex flex-col gap-1 p-5">
+        <p className="text-lg font-semibold text-foreground">Welcome back</p>
+        <p className="text-sm text-muted-foreground">
+          {userName} · {orgName}
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function BuyerDashboardView({
+  data,
+  identity,
+}: {
+  data: BuyerDashboardViewModel | null;
+  /** Same neutral identity placeholder the shell renders (Doc-7C SR3 — PARKED); optional so existing
+   *  callers/tests need not supply it. */
+  identity?: { userName: string; orgName: string };
+}) {
   if (data === null) {
     return (
       <section className="flex flex-col gap-6">
@@ -181,12 +205,21 @@ export function BuyerDashboardView({ data }: { data: BuyerDashboardViewModel | n
         }
       />
 
+      {identity ? <WelcomeBand userName={identity.userName} orgName={identity.orgName} /> : null}
+
       {/* KPI stat-card band — every figure a contract read; counts non-disclosure-safe (Inv #11). */}
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <KpiStatCard label="Spend" value={kpis.spend ? <Money value={kpis.spend} /> : undefined} />
+        <KpiStatCard
+          label="Spend"
+          value={kpis.spend ? <Money value={kpis.spend} /> : undefined}
+          icon={<Wallet aria-hidden />}
+          tone="brand"
+        />
         <KpiStatCard
           label="Active RFQs"
           value={typeof kpis.activeRfqCount === "number" ? kpis.activeRfqCount : undefined}
+          icon={<FileText aria-hidden />}
+          tone="info"
         />
         <KpiStatCard
           label="Awaiting my approval"
@@ -195,6 +228,8 @@ export function BuyerDashboardView({ data }: { data: BuyerDashboardViewModel | n
               ? kpis.awaitingMyApprovalCount
               : undefined
           }
+          icon={<ClipboardCheck aria-hidden />}
+          tone="warning"
           caption={
             <Link
               href="/approvals"
@@ -204,7 +239,12 @@ export function BuyerDashboardView({ data }: { data: BuyerDashboardViewModel | n
             </Link>
           }
         />
-        <KpiStatCard label="Win rate" value={winRatePct} />
+        <KpiStatCard
+          label="Win rate"
+          value={winRatePct}
+          icon={<TrendingUp aria-hidden />}
+          tone="success"
+        />
       </div>
 
       {/* Sourcing + engagement pipelines — pre- and post-award lifecycle funnels (aggregate contract

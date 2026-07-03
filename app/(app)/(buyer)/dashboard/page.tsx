@@ -15,6 +15,7 @@
 // never client-computed (R7).
 
 import { BuyerDashboardView } from "./dashboard-view";
+import { BUYER_IDENTITY_SEED } from "../_components/identity-seed";
 import type { BuyerDashboardViewModel } from "../_components/view-models";
 
 export const metadata = {
@@ -130,5 +131,10 @@ const SEED: BuyerDashboardViewModel = {
 };
 
 export default function BuyerDashboardPage() {
-  return <BuyerDashboardView data={SEED} />;
+  return (
+    <BuyerDashboardView
+      data={SEED}
+      identity={{ userName: BUYER_IDENTITY_SEED.userName, orgName: BUYER_IDENTITY_SEED.orgName }}
+    />
+  );
 }

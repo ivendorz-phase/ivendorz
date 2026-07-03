@@ -8,16 +8,20 @@
 import type { ReactNode } from "react";
 import { AppShell, type ShellViewModel } from "../_components/shell";
 import { BUYER_NAV, BUYER_QUICK_BAR, BUYER_QUICK_CREATE } from "./_components/buyer-nav-model";
+import { BUYER_IDENTITY_SEED } from "./_components/identity-seed";
 
 const BUYER_SHELL_VM: ShellViewModel = {
   identity: {
-    user: { name: "Your account", email: "" },
-    activeOrg: { id: "active", name: "Active organization", participation: "buyer" },
-    organizations: [{ id: "active", name: "Active organization", participation: "buyer" }],
+    user: { name: BUYER_IDENTITY_SEED.userName, email: "" },
+    activeOrg: { id: "active", name: BUYER_IDENTITY_SEED.orgName, participation: "buyer" },
+    organizations: [{ id: "active", name: BUYER_IDENTITY_SEED.orgName, participation: "buyer" }],
   },
   nav: BUYER_NAV,
   quickCreate: BUYER_QUICK_CREATE,
   quickBar: BUYER_QUICK_BAR,
+  // Discover doubles as the buyer's supplier/vendor search surface (`search_catalog`, Doc-4D §B) — a
+  // legitimate destination, unlike a fabricated live-search box (GI-12). Presentation-only nav shortcut.
+  search: { placeholder: "Search vendors, RFQs…", href: "/discover" },
 };
 
 export default function BuyerLayout({ children }: { children: ReactNode }) {

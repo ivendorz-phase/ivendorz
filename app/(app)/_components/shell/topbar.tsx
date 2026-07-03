@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
 import { BrandMark } from "@/frontend/brand";
 import { MobileNav } from "./mobile-nav";
@@ -24,7 +24,7 @@ export interface TopbarProps {
 }
 
 export function Topbar({ vm, orgSwitcherSlot, notificationSlot, userMenuSlot }: TopbarProps) {
-  const { identity, nav, quickCreate, notifications, unreadCount } = vm;
+  const { identity, nav, quickCreate, notifications, unreadCount, search } = vm;
   return (
     <header className="sticky top-0 z-[var(--iv-z-sticky)] flex h-14 items-center gap-2 border-b border-border bg-background px-3 sm:px-4">
       <MobileNav nav={nav} org={identity.activeOrg} organizations={identity.organizations} />
@@ -40,6 +40,16 @@ export function Topbar({ vm, orgSwitcherSlot, notificationSlot, userMenuSlot }: 
           <OrgSwitcher activeOrg={identity.activeOrg} organizations={identity.organizations} />
         )}
       </div>
+
+      {search ? (
+        <Link
+          href={search.href}
+          className="ml-2 hidden min-w-0 max-w-sm flex-1 items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-muted-foreground shadow-iv-xs transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:flex"
+        >
+          <Search aria-hidden className="size-4 shrink-0" />
+          <span className="truncate">{search.placeholder}</span>
+        </Link>
+      ) : null}
 
       <div className="ml-auto flex items-center gap-1 sm:gap-2">
         {quickCreate && quickCreate.length > 0 ? <QuickCreate items={quickCreate} /> : null}

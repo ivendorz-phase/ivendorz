@@ -83,6 +83,12 @@ export interface ShellViewModel {
   breadcrumb?: BreadcrumbItem[];
   /** Mobile quick-bar destinations — a thumb-reach SUBSET of `nav` (IA §7). */
   quickBar?: NavItem[];
+  /**
+   * Optional topbar search shortcut — a plain LINK to an existing search-capable surface (e.g. Buyer
+   * Discover / `search_catalog`, Doc-4D §B), never a fabricated live-search box (GI-12: no widget implies
+   * functionality the surface does not have). Omitted workspaces render no search affordance.
+   */
+  search?: { placeholder: string; href: string };
 }
 
 /** Up-to-2-char initials for the avatar fallback (presentation helper). */
