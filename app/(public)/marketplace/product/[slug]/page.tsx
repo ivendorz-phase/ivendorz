@@ -4,10 +4,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { ChevronRight, Info, Package, Store } from "lucide-react";
 import { Card, CardContent } from "@/frontend/primitives/card";
 import { Button } from "@/frontend/primitives/button";
-import { Separator } from "@/frontend/primitives/separator";
 import { EmptyState } from "@/frontend/components/empty-state";
-import { ProductCard } from "@/frontend/components/product-card";
-import { ResultsGrid } from "@/frontend/components/results-grid";
 import { categoryHref } from "@/frontend/navigation/model/types";
 import {
   getPublicProductDetail,
@@ -33,9 +30,12 @@ import { VendorVerifiedBadge } from "../../../_components/microsite/vendor-verif
 //    current canonical (`permanentRedirect`, Decision 5 / Doc-5D conformance row F-2).
 //  • Normative exclusion manifest honored — NO price/currency (a correction over the retired
 //    interim, which showed one; the folded contract's exclusion list is binding), NO
-//    trust/performance SCORE, NO counts, NO buyer-private/entitlement facts. The vendor summary
-//    card shows only the binary Verified signal (`VendorVerifiedBadge`, M5 public projection) —
-//    never a fabricated tier/score the seed doesn't carry.
+//    trust/performance SCORE, NO counts, NO related items (carried separately to
+//    `ESC-7-API/related`, not this milestone's to build — Review-A MAJOR, corrected: the retired
+//    interim's "More from {vendor}" section was initially carried forward unchanged and is now
+//    dropped), NO buyer-private/entitlement facts. The vendor summary card shows only the
+//    binary Verified signal (`VendorVerifiedBadge`, M5 public projection) — never a fabricated
+//    tier/score the seed doesn't carry.
 //  • `vendor_slug` is resolved server-side for `vendorHref()` link construction only — never
 //    rendered as bare text (ADR-024/ADR-025 builder-only discipline, same as FE-PUB-10).
 
@@ -187,23 +187,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           description="Datasheets, drawings, and standards documents appear here when the supplier publishes them."
         />
       </section>
-
-      {detail.related.length > 0 ? (
-        <section aria-labelledby="more-from-supplier">
-          <Separator className="mb-6" />
-          <h2 id="more-from-supplier" className="mb-3 text-base font-semibold text-iv-ink-heading">
-            More from {detail.vendorName}
-          </h2>
-          <ResultsGrid
-            count={detail.related.length}
-            columnsClassName="grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
-          >
-            {detail.related.map((rp) => (
-              <ProductCard key={rp.id} product={rp} href={productHref(rp)} />
-            ))}
-          </ResultsGrid>
-        </section>
-      ) : null}
     </div>
   );
 }

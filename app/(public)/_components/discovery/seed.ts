@@ -1,10 +1,12 @@
 // Curated STATIC presentation seed for the Public marketplace-discovery surface (Doc-7D · landing_page
 // _spec §4–§6). This is editorial marketing content, NOT data and NOT a coined taxonomy: it stands in
-// for the wired anonymous Public reads (`search_catalog` · `list_vendor_directory`) under the registered
-// interims [ESC-7-API-CATNAV] / [ESC-7-API-PRODDETAIL]. One source of truth so the homepage and the
-// /marketplace · /vendors · /categories routes stay consistent. No counts/totals are fabricated (GI-03);
-// the "Industry" groupings are a NAVIGATION reference only — industries are not modeled in the frozen
-// corpus (landing_page_spec §4 note), so this coins nothing.
+// for the wired anonymous Public reads (`search_catalog` · `list_vendor_directory` ·
+// `marketplace.get_public_product_detail.v1`) under the registered interim [ESC-7-API-CATNAV]
+// (`ESC-7-API-PRODDETAIL` resolved 2026-07-03, RV-0130 — FE-PUB-05 realizes its FE shape against
+// this seed). One source of truth so the homepage and the /marketplace · /vendors · /categories
+// routes stay consistent. No counts/totals are fabricated (GI-03); the "Industry" groupings are a
+// NAVIGATION reference only — industries are not modeled in the frozen corpus (landing_page_spec
+// §4 note), so this coins nothing.
 import {
   Gauge,
   Cog,
@@ -514,12 +516,14 @@ export interface PublicProductDetailVM {
   primaryCategoryPath: CategoryPathSegment[];
   /** Every resolved path, primary first, remaining ordered by the same comparison rule. */
   categoryPaths: CategoryPathSegment[][];
-  /** Other PUBLISHED products from the same vendor (excludes this product itself). */
-  related: ProductCardVM[];
 }
 
 /** Look up the public Product Detail Projection for a product id — `undefined` → the page renders a
- *  byte-equivalent 404 (R9; unknown id and an orphaned vendor reference collapse identically). */
+ *  byte-equivalent 404 (R9; unknown id and an orphaned vendor reference collapse identically).
+ *  Deliberately carries NO related-items field — the folded contract's normative exclusion
+ *  manifest excludes related items from this projection by name ("no related items — carried
+ *  `ESC-7-API/related`"); that surface is a separate, not-yet-realized escalation, not this
+ *  milestone's to build (Review-A MAJOR, corrected). */
 export function getPublicProductDetail(id: string): PublicProductDetailVM | undefined {
   const product = PRODUCTS.find((p) => p.id === id);
   if (!product) return undefined;
@@ -528,9 +532,6 @@ export function getPublicProductDetail(id: string): PublicProductDetailVM | unde
 
   const assignments = VENDOR_CATEGORY_ASSIGNMENTS[product.vendorSlug] ?? [];
   const { primary, all } = pickPrimaryCategoryPath(assignments);
-  const related = PRODUCTS.filter(
-    (p) => p.vendorSlug === product.vendorSlug && p.id !== product.id,
-  );
 
   return {
     id: product.id,
@@ -542,6 +543,5 @@ export function getPublicProductDetail(id: string): PublicProductDetailVM | unde
     spec: product.spec,
     primaryCategoryPath: primary,
     categoryPaths: all,
-    related,
   };
 }

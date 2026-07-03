@@ -62,7 +62,6 @@ export function ProductShowcase({ products, authHref }: ProductShowcaseProps) {
         }
       >
         {products.map((product) => (
-          // [ESC-7-API-PRODDETAIL]: no anon product page — open the in-search product detail.
           <ProductCard key={product.id} product={product} href={productHref(product)} />
         ))}
       </ResultsGrid>

@@ -69,6 +69,21 @@ real wired read. No backend call is added; nothing here waits on a further escal
   [slug]/page.tsx`, `_components/microsite/product-showcase.tsx`, `_components/landing/
   popular-products.tsx`.
 
+## Fix-and-reverify (round 1)
+
+Review-A (RV-0132) found a real MAJOR: the first build carried forward the retired interim's
+"More from {vendor}" related-products section unchanged. The folded Doc-4D patch's binding
+exclusion manifest excludes related items from this projection by name ("carried
+`ESC-7-API/related`") — the same sentence the WP card had already quoted to justify dropping
+price, but the exclusion wasn't applied to this section. Fixed: removed the `related` field from
+`PublicProductDetailVM`/`getPublicProductDetail` and the whole section + its now-unused imports
+from the page. Also fixed 1 MINOR (a stale `ESC-7-API-PRODDETAIL`-as-open-gap comment in
+`product-showcase.tsx`) and, found during the same pass, a same-class stale reference in `seed.ts`'s
+own header comment. Re-verified clean (tsc/eslint/prettier + a fresh Playwright pass confirming the
+section is gone and axe stays 0). 2 OBS from the same review (case-sensitive UUID matching; a
+plain-string UUID tiebreak comparison) are recorded, not fixed — non-gating, neither exercised by
+any seeded case. Full record: `project-management/review-log.md` RV-0132.
+
 ## Corrected from the interim (found during scoping, not fabricated)
 
 The interim `product-detail.tsx` rendered a **price** (`CurrencyDisplay`/"On request"). The
