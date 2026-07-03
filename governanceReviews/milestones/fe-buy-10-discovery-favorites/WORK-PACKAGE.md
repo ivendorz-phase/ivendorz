@@ -2,7 +2,7 @@
 
 - Lane: L (single fresh-context review — presentation-only link-out delta, no new page, no
   R6/R7/firewall/money/contract surface touched)
-- Reviewed-SHA record: _(filled at checkpoint)_
+- Reviewed-SHA record: `6306de4`
 
 ## Owner decisions (this milestone's unlock — recorded 2026-07-03)
 
@@ -71,6 +71,8 @@ Board = owner (dev-team self-close on a clean A:PASS ∧ B:PASS gate, Amendment 
 
 - Created: 2026-07-03 (owner decisions recorded live in-session)
 - Started: 2026-07-03
+- Submitted to Review-A: 2026-07-03 @ `6306de4`
+- Closed: 2026-07-03 (RV-0117, A:PASS ∧ B:PASS, 0 BLOCKER/MAJOR/MINOR both lanes; Review Team 5 full mode-A pre-close Review-B, dev-team self-close per Amendment v1.3 §13)
 
 ## Forward-looking (not this milestone)
 

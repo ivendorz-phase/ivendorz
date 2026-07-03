@@ -67,15 +67,19 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   surviving clean dev server confirms `/discover` 200 with all 8 cards linking `/vendors/[slug]`,
   and `/vendors/padma-valve-fittings` 200 rendering the matching "Padma Valve & Fittings Ltd."
   profile — card identity and microsite identity now match end-to-end.
-- **Pipeline stage:** `FE-DOC-01` 🔵A Review-A @ `3293009` — Team-2 STOPS (no further FE-DOC pull
-  before gate). `FE-DOC-00` deliverable COMPLETE @ `296b2d0` (Lane-L pass pending; closes on
-  deliverable, FE-VEN-14 precedent — Board rulings on packet items stay open without blocking).
-  *(Available in parallel while gated — proposed `FE-PLAT-08` buyer workflow test coverage,
-  `fe-program-wbs.md` Track 8, pending Board mint.)*
-- **Next Milestone:** _(after the FE-DOC-01 gate)_ — Team-3 holds `FE-DOC-02 → 03`; `FE-DOC-04`
-  Board-assign. Track 7 minted 2026-07-03 (WBS v1.2, universe 144 → 150, coverage PASS 150/150);
-  WP cards `governanceReviews/milestones/fe-doc-00-governance-charter/` +
-  `fe-doc-01-buyer-documents-hub/` (R1–R3 owner-findings adjudication annex).
+- **Pipeline stage:** idle — `FE-DOC-01` ✅ **Approved** (RV-0129, A:PASS ∧ B:PASS, 0
+  BLOCKER/MAJOR/MINOR both lanes, `3293009`; Review Team 5 marked approved 2026-07-03). `FE-DOC-00`
+  deliverable COMPLETE @ `296b2d0` (✅ Approved, RV-0127, Lane-L, closes on deliverable, FE-VEN-14
+  precedent — Board rulings on packet items stay open without blocking). Trackers synced + milestone
+  self-closed this session (Amendment v1.3 §13); 1 pre-existing shared-shell a11y OBS (quick-create
+  mobile `button-name`) carried forward to the shell owner, tracked at Board standing agenda #11 —
+  non-blocking. *(Available in parallel while gated — proposed `FE-PLAT-08` buyer workflow test
+  coverage, `fe-program-wbs.md` Track 8, pending Board mint.)*
+- **Next Milestone:** no unambiguous next pull — `P-BUY-05` stays held on the target-resolution-read
+  projection gap (not a scope decision); `BX-03+` further Buyer UX enhancements are P2 and explicitly
+  owner-paced ("per owner, page-by-page after each review" — Phase F2 rule); `FE-DOC-02 → 03` are
+  Team-3-owned (vendor leg); `FE-PLAT-08` pending Board mint. Awaiting owner direction on which Buyer
+  deliverable to pull next.
 
 ## Team-3 — Vendor (FE-VEN)
 

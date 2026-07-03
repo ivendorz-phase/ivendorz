@@ -105,7 +105,9 @@ Amendment v1.3 §13 (Dev-team self-close on clean A:PASS ∧ B:PASS).
 ## Key dates
 
 Created 2026-07-03 · Started 2026-07-03 (owner decision 3: package then immediate build) ·
-Submitted to Review-A 2026-07-03 @ `3293009` · Closed —
+Submitted to Review-A 2026-07-03 @ `3293009` · Closed 2026-07-03 (RV-0129, A:PASS ∧ B:PASS,
+0 BLOCKER/MAJOR/MINOR both lanes; dev-team self-close per Amendment v1.3 §13; 1 pre-existing
+shared-shell a11y OBS carried forward to the shell owner, non-blocking)
 
 ## Owner findings adjudication annex (§13 Validate-Findings record — Raise ≠ Accept)
 
@@ -146,13 +148,13 @@ Submitted to Review-A 2026-07-03 @ `3293009` · Closed —
 
 ## DoD confirmation (checked at close — carry-forward rule: this is a NEW page, full-page DoD)
 
-☐ page DoD ☐ responsive D/T/M (incl. 390px column-priority behavior) ☐ WCAG-AA (axe 0 own-content)
-☐ tsc/eslint/prettier ☐ realistic mock data (fixture-universe parity with P-BUY-19/22/23 seeds —
-every deep link resolves) ☐ LifecycleStrip = six frozen labels, `?stage=` only, zero
-progress-state rendering ☐ facets frozen-field-only, no Project facet ☐ `?q=`/`?view=`/`?stage=`
-allowlisted with safe fallbacks ☐ disabled affordances match the visibility matrix cell-for-cell
-☐ both empty-state variants reachable ☐ icons only via `document-icon-map.ts` ☐ no
-`_components/vendor/*` import under `(buyer)/documents/` or `_components/documents/` ☐ no coined
-status/kind strings (grep) ☐ no "approval" wording on documents ☐ Review A PASS ☐ Review B PASS
-☐ no TODO/dead code ☐ no duplicate components (DataListTable fallback ≠ fork; no third copy)
-☐ promotion candidates registered ☐ tracker updated ☐ card closed
+☑ page DoD ☑ responsive D/T/M (incl. 390px column-priority behavior) ☑ WCAG-AA (axe 0 own-content)
+☑ tsc/eslint/prettier ☑ realistic mock data (fixture-universe parity with P-BUY-19/22/23 seeds —
+every deep link resolves) ☑ LifecycleStrip = six frozen labels, `?stage=` only, zero
+progress-state rendering ☑ facets frozen-field-only, no Project facet ☑ `?q=`/`?view=`/`?stage=`
+allowlisted with safe fallbacks ☑ disabled affordances match the visibility matrix cell-for-cell
+☑ both empty-state variants reachable ☑ icons only via `document-icon-map.ts` ☑ no
+`_components/vendor/*` import under `(buyer)/documents/` or `_components/documents/` ☑ no coined
+status/kind strings (grep) ☑ no "approval" wording on documents ☑ Review A PASS ☑ Review B PASS
+☑ no TODO/dead code ☑ no duplicate components (DataListTable fallback ≠ fork; no third copy)
+☑ promotion candidates registered ☑ tracker updated ☑ card closed
