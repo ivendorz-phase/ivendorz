@@ -2,7 +2,7 @@
 
 - **Lane:** G (new public route + a URL-law realization; architecture-adjacent — realizes the
   now-folded `ESC-7-API-PRODDETAIL` corpus fold, ADR-025)
-- **Reviewed-SHA record:** `883594f` (round 2 — fixes RV-0132's MAJOR + MINOR over `abd5bb9`)
+- **Reviewed-SHA record:** `50b3c0d` (round 3 — fixes RV-0132 round-2's MINOR over `883594f`)
 - **Value:** Core Marketplace · **Priority:** P1 · **Size:** M · **Risk:** Med
 - **Owns:** P-PUB-11 (Product detail, public)
 
@@ -82,6 +82,18 @@ own header comment. Re-verified clean (tsc/eslint/prettier + a fresh Playwright 
 section is gone and axe stays 0). 2 OBS from the same review (case-sensitive UUID matching; a
 plain-string UUID tiebreak comparison) are recorded, not fixed — non-gating, neither exercised by
 any seeded case. Full record: `project-management/review-log.md` RV-0132.
+
+## Fix-and-reverify (round 2)
+
+Fresh-context Review-A re-check at `883594f` found the MAJOR fix real and complete, but 1 new
+MINOR: `seed.ts`'s section-header comment (just above `getPublicProductDetail`, ~line 372) still
+read "...+ related published products from the same vendor" — a second, unswept stale reference
+to the excluded `related` concept, directly contradicting the corrected docstring 150 lines below
+it in the same file. Same class as round 1's fixed MINOR; missed because round 1's sweep checked
+the top-of-file header comment but not this adjacent section comment. Non-functional
+(tsc/eslint/prettier independently re-confirmed clean) but real — governance-boundary comment
+accuracy is load-bearing in this program. Verdict: REVISION (BLOCKER=MAJOR=0, MINOR=1 — gating
+per §13). Full record: `project-management/review-log.md` RV-0132, round-2 addendum.
 
 ## Corrected from the interim (found during scoping, not fabricated)
 
