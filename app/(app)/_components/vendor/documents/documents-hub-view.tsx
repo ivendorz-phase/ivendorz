@@ -84,6 +84,7 @@ const FACETS: FilterFacetGroup[] = [
   {
     heading: "Document type",
     options: [
+      { label: "LOI" },
       { label: "Purchase Order" },
       { label: "Challan" },
       { label: "Work Completion Certificate" },
@@ -104,6 +105,8 @@ const FACETS: FilterFacetGroup[] = [
       { label: "Partially paid" },
       { label: "Paid" },
       { label: "Disputed" },
+      { label: "Recorded" },
+      { label: "Confirmed" },
     ],
   },
   {
@@ -297,7 +300,7 @@ export function DocumentsHubView({ data }: { data: DocumentsHubData }) {
               description={
                 active_view === "pending"
                   ? "Trade invoices in an attention status."
-                  : "Per-engagement records — purchase order, challan, trade invoice, payments, and WCC live on each engagement's Documents tab."
+                  : "Per-engagement records — LOI, purchase order, challan, trade invoice, payments, and WCC live on each engagement's Documents tab."
               }
             >
               {active_view === "pending" ? (
