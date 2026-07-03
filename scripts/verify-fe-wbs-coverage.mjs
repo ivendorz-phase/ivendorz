@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
  * FE Program WBS coverage check (FE-PM v1.0 — Phase-B gate).
- * Asserts every one of the 144 frozen P-* page IDs is owned by EXACTLY ONE FE-* milestone,
- * by parsing the machine-readable block between <!-- coverage:begin --> and <!-- coverage:end -->
- * in project-management/fe-program-wbs.md. Enumerated per-ID check, not a sum check.
+ * Asserts every P-* page ID in the universe (144 frozen + P-DOC additive, WBS v1.2) is owned by
+ * EXACTLY ONE FE-* milestone, by parsing the machine-readable block between
+ * <!-- coverage:begin --> and <!-- coverage:end --> in project-management/fe-program-wbs.md.
+ * Enumerated per-ID check, not a sum check.
  * Exit 0 = invariant holds; exit 1 = violation (details on stderr).
  */
 import { readFileSync } from "node:fs";
@@ -13,8 +14,9 @@ import { dirname, join } from "node:path";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const wbs = readFileSync(join(root, "project-management", "fe-program-wbs.md"), "utf8");
 
-// The frozen 144-page universe (page_inventory.md prefixes + counts).
-const UNIVERSE = { SH: 6, PUB: 24, AUTH: 8, ACC: 22, BUY: 27, VND: 28, ADM: 29 };
+// The page universe (page_inventory.md prefixes + counts): the frozen 144 + the additive
+// P-DOC mint (owner Board-minted 2026-07-03, WBS v1.2) = 150.
+const UNIVERSE = { SH: 6, PUB: 24, AUTH: 8, ACC: 22, BUY: 27, VND: 28, ADM: 29, DOC: 6 };
 const pad = (n) => String(n).padStart(2, "0");
 const expected = new Set(
   Object.entries(UNIVERSE).flatMap(([p, n]) =>
@@ -69,7 +71,7 @@ if (dupes.length) {
 }
 if (unknown.length) {
   ok = false;
-  console.error("FAIL not in the frozen 144:", unknown.join(", "));
+  console.error(`FAIL not in the ${expected.size}-page universe:`, unknown.join(", "));
 }
 if (missing.length) {
   ok = false;
@@ -78,7 +80,7 @@ if (missing.length) {
 
 if (ok) {
   console.log(
-    `PASS: ${owners.size}/144 pages, each owned exactly once, across ${new Set([...owners.values()].flat()).size} milestones.`,
+    `PASS: ${owners.size}/${expected.size} pages, each owned exactly once, across ${new Set([...owners.values()].flat()).size} milestones.`,
   );
 } else {
   process.exit(1);

@@ -23,7 +23,7 @@ Candidate → Approved (Board) → Extracted → Migrated → Old-removed → Cl
 
 | Candidate | Reason | Current consumers | Owner (Mnt) | Review refs | Target | Cost | State |
 |---|---|---|---|---|---|---|---|
-| FE-SH-01 `DataListTable` | buyer/vendor/admin parallel table stacks; `AdminQueueTable` alone has 19 consumers | buyer shared · vendor shared · admin (AdminQueueTable) | Kit owner | RV-0013 (canonical admin queue) · freeze-report OBS | FE-CLN-03 | L | Candidate |
+| FE-SH-01 `DataListTable` | buyer/vendor/admin parallel table stacks; `AdminQueueTable` alone has 19 consumers. **FE-DOC escalation 2026-07-03:** documents hub incoming in BOTH workspaces (FE-DOC-02/03) — promotion decision requested via `BOARD-PACKET-DOCUMENT-MANAGEMENT_v1.0.md` item 3 (approve-with-extraction before FE-DOC-02/03, or explicit deferral; fallback = buyer-side use + shared `document-table-spec.ts`, no third copy ever) | buyer shared · vendor shared · admin (AdminQueueTable) | Kit owner | RV-0013 (canonical admin queue) · freeze-report OBS · FE-DOC packet item 3 | FE-CLN-03 (or earlier per packet) | L | Candidate |
 | FE-SH-02 `WorkspaceTabs` | vendor M8 extraction proved the shape; buyer tab wrappers similar | vendor/shared · buyer RFQ detail tabs | Kit owner | Team-3 M8 pass (byte-identical) · RV-0075 | FE-CLN-03 | M | Candidate |
 | FE-SH-03 `DescriptionList` | buyer + vendor + public keep parallel copies | vendor/shared · buyer `_components` · public microsite | Kit owner | Team-3 M8 pass · RV-0022/0031 detail pages | FE-CLN-03 | M | Candidate |
 | FE-SH-04 `PresentationFormNote` | presentation-only form notice duplicated across admin/vendor | vendor/shared · admin editors | Kit owner | RV-0029 (promotion OBS) | FE-CLN-03 | S | Candidate |

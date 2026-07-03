@@ -54,6 +54,11 @@ record uncommitted] + start next; owner resolved both gating decisions 2026-07-0
 surfaces for P-BUY-03/04, hold P-BUY-05 build; P-BUY-04 link-out repointed to the public microsite,
 8/8 buyer slugs resolve, favorites correctly held; WP card
 `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`).
+**Next pull: `FE-DOC-00 Charter & Governance Package` → `FE-DOC-01 Buyer Documents Hub`**
+(Track 7, WBS v1.2 — owner Board-minted 2026-07-03; FE-DOC-00 = Lane-L docs/PM deliverable
+[mint + ESC rows + packet], closes on deliverable; FE-DOC-01 starts immediately after per owner
+decision 3; WP cards `governanceReviews/milestones/fe-doc-00-governance-charter/` +
+`fe-doc-01-buyer-documents-hub/`).
 
 **Team-3 (Vendor):**
 ~~FE-VEN-05~~ ✅ **Closed** (RV-0101 @ `e2f8642`) · ~~FE-VEN-06~~ ✅ **Closed** (RV-0103 @
@@ -102,7 +107,9 @@ imported unmodified, thin `SettingsTabs` over shared `WorkspaceTabs`, zero fork,
 Profile/Security/Notifications, no Workflow tab, no RFQ-approval text — carried forward not
 fabricated]**, no leave-chrome trade-off, scope byte-stable across the FE-PUB-09 Phase-4 HEAD advance,
 static gates green, render D/T/M all 200 + axe 0). **Last of the ruled FE-VEN-10 → 11 → 12 sequence —
-all three approved; no further FE-VEN pull queued.** _(Out-of-scope note: FE-PUB-09 vendored
+all three approved.** **Next pull: `FE-DOC-02 Vendor Documents Hub` → `FE-DOC-03 Templates &
+Generated Documents`** (Track 7, WBS v1.2 — after FE-DOC-01 establishes the hub pattern;
+FE-DOC-03 S-dep on the FE-SH-01 ruling, kit-primitive-rows fallback documented in the packet). _(Out-of-scope note: FE-PUB-09 vendored
 `popover`/`accordion`/`navigation-menu` into
 `src/frontend/primitives` — verify as a legit demand-driven kit extension under the mega-menu
 package at FE-PUB-09's review.)_
@@ -174,6 +181,14 @@ starts**; findings feed the FE-PUB packages.
     `governanceReviews/BOARD-PACKET-CANONICAL-VENDOR-SUBDOMAIN_v1.0.md`. **FE-PUB-10 registered**
     (Team-1's next pull after FE-PUB-09); `ESC-MKT-SUBDOMAIN-MIGRATE` opened (migration wire
     contract, API-Gov). Closed milestones not reopened.
+13. **Document Management packet** (`governanceReviews/BOARD-PACKET-DOCUMENT-MANAGEMENT_v1.0.md`,
+    2026-07-03): rule on the excluded document kinds/features — **`ESC-OPS-DOC-MUSHOK`
+    (Bangladesh-statutory VAT forms, priority)** · `ESC-OPS-DOC-KINDS` (credit/debit notes,
+    packing lists; sales order + contracts recommended decline) · `ESC-OPS-DOC-FEATURES`
+    (signatures, expiry reminders, favorites, tags, project-linkage) — and on **FE-SH-01
+    `DataListTable` promotion** (approve-with-extraction before FE-DOC-02/03, or explicit
+    deferral; fallback documented). Item 1 (mint ratification) is a record of owner decisions
+    already made. None of this blocks the FE-DOC builds.
 
 ## Review pipeline (pointer)
 

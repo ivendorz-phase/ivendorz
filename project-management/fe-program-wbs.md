@@ -6,6 +6,12 @@ corpus (§7). **Owner (maintains): FE Program Manager** — status/derivation up
 changes and **new FE-* IDs are Board-only** (teams request, the Board mints).
 **v1.1 (additive amendment, 2026-07-03):** Board-minted **FE-PUB-10 Canonical Vendor Subdomain**
 (ADR-024 realization; owns no pages — coverage block untouched).
+**v1.2 (additive amendment, 2026-07-03):** Owner Board-minted **Track 7 — FE-DOC Cross-workspace
+Documents** (FE-DOC-00..04) + the **P-DOC page mint** (P-DOC-01..06; universe 144 → **150** — first
+universe expansion since cutover; `page_inventory.md` §8A + coverage script UNIVERSE updated in the
+same change). Additive composition only: existing document pages stay owned where they closed;
+FE-DOC deep-links, never re-homes (FE-VEN-10/11/12 composition-not-fork precedent). Owner findings
+adjudicated across 3 rounds at minting (WP cards carry the §13 Validate-Findings record).
 
 **ROADMAP ONLY** — what · lifecycle owners · status · dependencies · gates. Queues and registers:
 [`execution-board.md`](execution-board.md) · process: [`review-process.md`](review-process.md) ·
@@ -22,13 +28,15 @@ wave-gated (§7).
 Milestone status is **derived** from the owning team file's page rows (`team-1/2/3.md` = the
 page-level source record) via the priority chain in `review-process.md` §9. **Owns vs touches:**
 "owns" = coverage accounting (every P-* page exactly once program-wide); "touches" = may modify
-without owning — only "owns" counts toward 144. **Page-gate carve-out:** an ESC-gated page inside
+without owning — only "owns" counts toward 150 (the frozen 144 + the additive P-DOC 6, v1.2).
+**Page-gate carve-out:** an ESC-gated page inside
 a milestone never blocks milestone close; it stays ⛔ tracked at page level and re-enters when its
 handle resolves (the "cluster COMPLETE − P-ACC-12" convention). Statuses re-derived at cutover,
 2026-07-02, post-RV-0100.
 
 **Disambiguation:** shell *pages* (`P-SH-*`) are owned by milestone **FE-PF-06**; the **FE-SH-***
-track is component *promotions* and owns no pages.
+track is component *promotions* and owns no pages. `P-DOC-*` pages (cross-workspace, like `P-SH`)
+are owned by **FE-DOC-01..03**; P-DOC-03..06 are one page ID with two route mounts (buyer + vendor).
 
 ## Row schema
 
@@ -131,6 +139,28 @@ The kit is the frozen foundation — every FE-DS change is Board-gated.
 | FE-CLN-06 Full-tree Integration Gate | Platform | Review Team 5 | P1 | M | Med | H: feature tracks + FE-CLN-01..03 | ⬜ — QCT 5-step Step 4 |
 | FE-CLN-07 Release Candidate Gate | Platform | Review Team 5 | P1 | M | Med | H: FE-CLN-06 | ⬜ — QCT 5-step Step 5 |
 
+## Track 7 — FE-DOC Cross-workspace Documents (owner Board-minted 2026-07-03, WBS v1.2)
+
+Cross-platform Document Management surface spanning the procurement lifecycle (RFQ → Quotation →
+PO → Challan → Trade Invoice → Payment). **Additive composition only** (owner decision 1,
+2026-07-03): mints NEW `P-DOC-*` pages — per-workspace Documents hubs + the previously-unbuilt M4
+BC-OPS-4 surfaces (document templates, generated documents) — and deep-links the 16 already-closed
+document detail pages (FE-BUY-02/04/05/07 · FE-VEN-06/08 · FE-ACC-02), never re-homing or
+duplicating them. UI renders **frozen document kinds only** (owner decision 2): Mushok/VAT,
+credit/debit notes, packing lists, sales orders, contracts, digital signatures, expiry reminders
+have zero corpus anchor → `esc_registry.md` §Document Management +
+`governanceReviews/BOARD-PACKET-DOCUMENT-MANAGEMENT_v1.0.md` (human Board). P-DOC-03..06 are
+**one page ID, two mounts** (buyer `/documents/*` + vendor `/workspace/documents/*`, shared
+components — the composition precedent applied to pages).
+
+| ID · Title | Value | Bld/Mnt | Pri | Sz | Rk | Depends-on | Owns | Status · Scope |
+|---|---|---|---|---|---|---|---|---|
+| FE-DOC-00 Charter & Governance Package | Platform | T2 | P1 | S | Low | — | — (docs/PM only) | ⬜ Registered 2026-07-03 — mint mechanics (WBS v1.2 + coverage script + `page_inventory.md` §8A + trackers), 3 ESC rows, Board packet, FE-SH-01 promotion request. Lane L; closes on deliverable only (FE-VEN-14 precedent) — the excluded-kinds + promotion Board rulings stay open without blocking builds. WP `governanceReviews/milestones/fe-doc-00-governance-charter/` |
+| FE-DOC-01 Buyer Documents Hub | Buyer Productivity | T2 | P1 | M | Med | H: FE-DOC-00 | P-DOC-01 | ⬜ Registered 2026-07-03 — buyer hub at `/documents` + BUYER_NAV entry; LifecycleStrip (six frozen stage names; **navigation, not state**), SearchBar `?q=`, FilterSidebar (frozen facets, no Project facet), presets over frozen fields, per-engagement process timeline, deep links only (5 fixed doc routes + quotations/comparison/approvals/platform-invoices); shared documents home `app/(app)/_components/documents/` created here (known 2nd consumers, M8-extraction rationale). Owner findings R1–R3 adjudicated in WP card. WP `governanceReviews/milestones/fe-doc-01-buyer-documents-hub/` |
+| FE-DOC-02 Vendor Documents Hub | Vendor Growth | T3 | P1 | M | Med | H: FE-DOC-00 · S: FE-DOC-01 (pattern) | P-DOC-02 | ⬜ Registered — vendor hub at `/workspace/documents` (A7-neutral) + vendor nav entry; reuses vendor `document-status-chip`/`MoneyBoundaryBanner` exports + the shared documents home |
+| FE-DOC-03 Templates & Generated Documents | Platform | T3 | P1 | L | Med | H: FE-DOC-00 · S: FE-DOC-01/02 (nav homes) · S: FE-SH-01 ruling (list infra; kit-primitive-rows fallback documented) | P-DOC-03..06 | ⬜ Registered — BC-OPS-4 UI: templates list/detail (fixed-five format enum verbatim, **no PO template**; draft/active/archived; immutable versions) + generated documents list/detail (DOC-… refs, storage refs, grant/revoke disabled); both mounts byte-identical via the shared home + shared `seed.ts`; adds hub cross-link cards (disclosed touch of P-DOC-01/02) |
+| FE-DOC-04 Cross-link Entry Points & Detail Enrichment | Platform | Board-assign | P2 | M | Med | S: FE-DOC-01..03 | — (touches P-BUY-01/20..25, P-VND-01/24..26) | ⬜ Registered — carries owner findings MINOR-03 (detail-side timeline)/MINOR-04 (RelatedDocumentsRail)/NIT-3 (detail print): disclosed touches of closed pages; dashboard document cards; no client-computed counts (R7) |
+
 ## Record tracks (completed — closed, never reopen; future work coins new IDs)
 
 | ID · Title | Bld/Mnt | Owns | Status |
@@ -156,7 +186,7 @@ flowchart LR
 ```
 (solid `==H==>` hard · dashed `-.S.->` soft)
 
-## Coverage ledger — standing invariant: 144 pages, each owned exactly once
+## Coverage ledger — standing invariant: 150 pages, each owned exactly once
 
 Verified by `scripts/verify-fe-wbs-coverage.mjs` at every Phase-B-class change (enumerated per-ID
 check, not just the sum). Machine-readable block (script input — keep syntax: `P-XXX-NN`,
@@ -196,6 +226,9 @@ comma lists, `..` ranges):
 | FE-VEN-09 | P-VND-28 |
 | FE-VEN-13 | P-VND-12..14 |
 | FE-ADM-01 | P-ADM-01..29 |
+| FE-DOC-01 | P-DOC-01 |
+| FE-DOC-02 | P-DOC-02 |
+| FE-DOC-03 | P-DOC-03..06 |
 <!-- coverage:end -->
 
 **Coverage correction (2026-07-03):** `P-VND-27` (Finance/payments, vendor) reassigned from
@@ -207,10 +240,11 @@ comma lists, `..` ranges):
 a disclosed, tracked remainder (mirrors the `FE-VEN-04`-remainder pattern) rather than left silently
 orphaned. Checksum unaffected (VND still totals 28; `FE-VEN-10` now correctly owns 0).
 
-Checksum: SH 6 + PUB 24 + AUTH 8 + ACC 22 + BUY 27 + VND 28 + ADM 29 = **144**.
+Checksum: SH 6 + PUB 24 + AUTH 8 + ACC 22 + BUY 27 + VND 28 + ADM 29 + DOC 6 = **150**
+(the frozen 144 + the additive P-DOC mint, v1.2 — owner Board-minted 2026-07-03).
 Own-nothing milestones (by design): FE-PF-01..05 · FE-PUB-09 · FE-PUB-10 · FE-BUY-08 ·
-FE-VEN-10/11/12 (composition-only, own no page) · FE-VEN-14 (documentation only) · FE-SH-* ·
-FE-DS-* · FE-CLN-*.
+FE-VEN-10/11/12 (composition-only, own no page) · FE-VEN-14 (documentation only) · FE-DOC-00
+(docs/PM only) · FE-DOC-04 (cross-link touches only) · FE-SH-* · FE-DS-* · FE-CLN-*.
 
 ## Change control
 

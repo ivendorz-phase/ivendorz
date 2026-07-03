@@ -1,7 +1,8 @@
 # Team-3 Queue — Vendor / Verification / Admin
 
-**Owns:** `P-VND-*` (Doc-7G) · `P-ADM-*` (Doc-7H). Titles + bindings are the **source record** in
-[`page_inventory.md`](../page_inventory.md).
+**Owns:** `P-VND-*` (Doc-7G) · `P-ADM-*` (Doc-7H) · `P-DOC-02..06` (vendor leg + shared BC-OPS-4
+pages of the FE-DOC cross-workspace Documents track, WBS v1.2). Titles + bindings are the
+**source record** in [`page_inventory.md`](../page_inventory.md).
 
 > **Milestone layer (FE-PM v1.0, 2026-07-02):** pages in this file are grouped into `FE-*`
 > milestones in [`fe-program-wbs.md`](fe-program-wbs.md); pull work from your milestone queue via
@@ -43,6 +44,16 @@ Verification = `P-VND-28` + `P-PUB-18` (Team-1) + `P-ADM-12/13`.
 | P-VND-26 | Trade invoice issue | P2 | Ready | 🟩 Built | records only (DF-6) |
 | P-VND-27 | Finance / payments (vendor) | P2 | Ready | ⬜ | placeholder today. **Reassigned FE-VEN-10 → FE-VEN-08 2026-07-03** (WBS mapping was stale/pre-reuse-strategy; genuinely unbuilt, journey J-SUP-07 same as P-VND-25/26 — own future remainder) |
 | P-VND-28 | Trust & performance | P1 | Ready | 🟩 Built (RV-0120, `32fe6fb`) | `ESC-7G-SCORE-DISPLAY`/`ESC-7B-TRUSTSCORE` ruled 2026-07-03 — Trust band+numeric, Performance band-only |
+
+## Documents — `P-DOC` vendor leg + shared pages (FE-DOC track, WBS v1.2 — owner Board-minted 2026-07-03)
+
+| ID | Title | Priority | Dependency | Status | Notes |
+|---|---|---|---|---|---|
+| P-DOC-02 | Vendor Documents hub | P1 | Ready (H: FE-DOC-00 · S: FE-DOC-01 pattern) | ⬜ | A7-neutral `/workspace/documents`; mirrors P-DOC-01 via the shared documents home; reuses vendor `document-status-chip`/`MoneyBoundaryBanner`. FE-DOC-02 owns |
+| P-DOC-03 | Document templates | P1 | Ready (H: FE-DOC-00 · S: FE-SH-01 ruling, fallback documented) | ⬜ | Both mounts; fixed-five format enum verbatim (**no PO template**); draft/active/archived. FE-DOC-03 owns |
+| P-DOC-04 | Template detail & versions | P2 | Ready (same) | ⬜ | Immutable version chain (Inv#8); commands disabled. FE-DOC-03 owns |
+| P-DOC-05 | Generated documents | P1 | Ready (same) | ⬜ | DOC-… refs, storage refs, ASYNC pending honesty. FE-DOC-03 owns |
+| P-DOC-06 | Generated document detail | P2 | Ready (same) | ⬜ | Grant/revoke rendered disabled; versioned. FE-DOC-03 owns |
 
 ## Admin Console — `P-ADM-*` (Doc-7H · no active-org)
 

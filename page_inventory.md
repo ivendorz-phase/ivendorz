@@ -6,6 +6,7 @@
 **Wave:** 0.3 — Governance Refactor (foundation)
 **Companions:** [`shared_conventions.md`](shared_conventions.md) (**SC** — planning vocab, presets, cross-ref codes) · [`design_philosophy.md`](design_philosophy.md) · [`information_architecture.md`](information_architecture.md) · [`ux_patterns.md`](ux_patterns.md) · [`marketplace_ux.md`](marketplace_ux.md) · [`page_templates.md`](page_templates.md) (**PT** — `T-*`) · [`esc_registry.md`](esc_registry.md) (**ER**) · [`glossary.md`](glossary.md) (**GL**)
 **Revision v0.3:** governance refactor — §13 extended into the **single planning matrix** (adds `Complexity · Priority · Interaction · Visual-hierarchy` from `SC §8` to the existing Actor/Devices/Search/Nav for all 144 pages); §11 ESC register replaced by a pointer to `ER`; a **Depends-on rule** stated once; cross-refs migrated to `SC §6` codes. Inventory tables (§2–§8) and the §12 Master Navigation Matrix are **unchanged**. Coins nothing.
+**Revision v0.4 (additive amendment, 2026-07-03 — owner Board-minted at FE-DOC track creation, WBS v1.2):** new §8A **Cross-workspace Documents** (`P-DOC-01..06`; total 144 → **150**); §12 gains a "Documents" entry in the Buyer and Vendor left-navs; new §13.8 attributes rows. Realizes a presentation-layer composition of frozen M3/M4/M7 module-owned records (Content ≠ Presentation) — **coins no contract, no document kind, no route topology**; absent document kinds are `ER` §Document Management handles, never rendered. The frozen-144 sections §2–§8 are byte-unchanged.
 
 ---
 
@@ -70,7 +71,8 @@ used by `PT`/`SS` + permissions/analytics/testing/search). Their vocabularies ar
 | Buyer Workspace | `P-BUY` | 7F | 27 |
 | Vendor Workspace | `P-VND` | 7G | 28 |
 | Admin Console | `P-ADM` | 7H | 29 |
-| **Total** | | | **144** |
+| Cross-workspace Documents | `P-DOC` | 7F/7G composition + Doc-4F §F5/§F7 (by pointer) | 6 |
+| **Total** | | | **150** |
 
 *(In the 120–180 envelope. Counts are pages; realized screen count is higher once per-page states and
 modals are added — those are pattern states, not inventory rows.)*
@@ -280,6 +282,28 @@ modals are added — those are pattern states, not inventory rows.)*
 
 ---
 
+## 8A. Cross-workspace Documents — `P-DOC-*` (additive v0.4 · FE-DOC track, WBS v1.2)
+
+Presentation-layer **composition** of frozen module-owned records (M3 RFQs/quotations · M4 BC-OPS-2
+engagement documents / BC-OPS-4 templates & generated documents · M7 platform invoices, link-out
+only, DF-6). **Coins nothing:** renders frozen kinds/states only; every detail row **deep-links to
+the already-inventoried owning page** (P-BUY-14/15/21..25, P-VND-17..20/23..27, P-ACC-20/21) —
+never duplicates it. Absent document kinds (Mushok/VAT, credit/debit notes, packing lists, sales
+orders, contracts, signatures, expiry reminders) are `ER` §Document Management handles, never
+rendered. P-DOC-03..06 are **one page, two mounts** (buyer `/documents/*` + vendor
+`/workspace/documents/*`, shared components — byte-identical render).
+
+| ID | Page | Template | Binds | Journey | Notes |
+|---|---|---|---|---|---|
+| P-DOC-01 | Buyer Documents hub | Listing | composition: `ops.list_engagements.v1` + `ops.list_generated_documents.v1` (+ deep links to owning pages) | J-BUY post-award | LifecycleStrip = **navigation, not state** (no global doc lifecycle exists); presets Received/Sent/Pending/Completed = derived presentation groupings over frozen fields; no Project facet (no frozen linkage, `ER`) |
+| P-DOC-02 | Vendor Documents hub | Listing | same, vendor leg | J-SUP-07 adjacent | A7-neutral `/workspace/documents`; mirrors P-DOC-01 via the shared documents home |
+| P-DOC-03 | Document templates | Listing | `ops.list_templates.v1` | post-award ops | Format enum **fixed five** `challan\|bill\|letterhead\|quotation\|wcc` (Doc-4F §F7.1, verbatim — no PO format); states draft/active/archived |
+| P-DOC-04 | Template detail & versions | Details | `ops.get_template.v1` | post-award ops | Immutable `template_versions` chain (Inv#8); lifecycle/`add_template_version` commands disabled (presentation) |
+| P-DOC-05 | Generated documents | Listing | `ops.list_generated_documents.v1` | post-award ops | `DOC-…` human refs; storage refs only (never inline blob); ASYNC pending honesty |
+| P-DOC-06 | Generated document detail | Details | `ops.get_generated_document.v1` | post-award ops | Counterparty grant/revoke (`ops.grant_generated_document.v1`) rendered disabled; versioned (Inv#8) |
+
+---
+
 ## 9. Template coverage
 
 Representative mapping; the authoritative per-page template is the **Template** column (§2–§8), and the
@@ -392,6 +416,7 @@ source. Secondary/contextual pages are reached from these destinations.
 | RFQs | P-BUY-06 |
 | Approvals | P-BUY-12 |
 | Engagements | P-BUY-19 |
+| Documents | P-DOC-01 |
 | Vendor CRM | P-BUY-26 |
 
 **Vendor — left nav**
@@ -407,6 +432,7 @@ source. Secondary/contextual pages are reached from these destinations.
 | Quotations | P-VND-17 |
 | Leads | P-VND-21 |
 | Engagements | P-VND-23 |
+| Documents | P-DOC-02 |
 | Trust & Performance | P-VND-28 |
 
 **Admin — left nav** *(no active-org)*
@@ -643,6 +669,17 @@ every sibling billing page (P-ACC-16/17/18/20/21) is `Shared`. Full record:
 | P-ADM-27 Suggestion triage | Admin | D/T | Occasional | Primary | Medium | P2 | Workflow | Secondary |
 | P-ADM-28 Link triage | Admin | D/T | Rare | Secondary | Medium | P2 | Workflow | Support |
 | P-ADM-29 Support reads | Admin | D/T | Occasional | Secondary | Medium | P2 | Read-only | Secondary |
+
+### 13.8 Cross-workspace Documents *(additive v0.4)*
+
+| Page | Actor | Devices | Search | Nav | Complexity | Priority | Interaction | Visual-hierarchy |
+|---|---|---|---|---|---|---|---|---|
+| P-DOC-01 Buyer Documents hub | Buyer | D/T/M | Frequent | Primary | Medium | P1 | Read-only | Primary |
+| P-DOC-02 Vendor Documents hub | Vendor | D/T/M | Frequent | Primary | Medium | P1 | Read-only | Primary |
+| P-DOC-03 Document templates | Shared | D/T | Occasional | Secondary | Medium | P1 | Read-only | Secondary |
+| P-DOC-04 Template detail & versions | Shared | D/T | Rare | Contextual | Medium | P2 | Read-only | Secondary |
+| P-DOC-05 Generated documents | Shared | D/T | Occasional | Secondary | Medium | P1 | Read-only | Secondary |
+| P-DOC-06 Generated document detail | Shared | D/T | Rare | Contextual | Medium | P2 | Read-only | Secondary |
 
 ---
 

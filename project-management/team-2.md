@@ -1,6 +1,7 @@
 # Team-2 Queue — Buyer
 
-**Owns:** `P-BUY-*` (Doc-7F · Doc-5E/5F/5D). Titles + bindings are the **source record** in
+**Owns:** `P-BUY-*` (Doc-7F · Doc-5E/5F/5D) · `P-DOC-01` (buyer leg of the FE-DOC cross-workspace
+Documents track, WBS v1.2). Titles + bindings are the **source record** in
 [`page_inventory.md`](../page_inventory.md). Work highest-priority `Ready` first. CRM pages
 (`P-BUY-26/27`) are **buyer-private** (Invariant #11) — never leak, blacklist undetectable.
 
@@ -87,3 +88,9 @@ held on the projection gap. WP card:
 `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`. **Still owner-gated:
 none** — P-BUY-05 remains held on the target-resolution-read gap itself (not on a scope
 decision).
+
+## Documents — `P-DOC` buyer leg (FE-DOC track, WBS v1.2 — owner Board-minted 2026-07-03)
+
+| ID | Title | Priority | Dependency | Status | Notes |
+|---|---|---|---|---|---|
+| P-DOC-01 | Buyer Documents hub | P1 | Ready (H: FE-DOC-00 delivered same pass) | ⬜ | `/documents` — presentation composition of frozen M3/M4/M7 records; LifecycleStrip (**navigation, not state**), `?q=`/`?view=`/`?stage=` presets, FilterSidebar (frozen facets, no Project), per-engagement timeline, deep links only (never re-renders P-BUY-14/15/21..25); shared documents home created here. Frozen kinds ONLY — absent kinds = `esc_registry.md` §Document Management, never rendered. WP `governanceReviews/milestones/fe-doc-01-buyer-documents-hub/` |

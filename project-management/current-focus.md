@@ -72,8 +72,11 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   and `/vendors/padma-valve-fittings` 200 rendering the matching "Padma Valve & Fittings Ltd."
   profile — card identity and microsite identity now match end-to-end.
 - **Pipeline stage:** ✅ APPROVED (A:PASS ∧ B:PASS, RV-0117) — Team-2 to commit + start next
-- **Next Milestone:** none queued after FE-BUY-10 closes — Team-2's FE-BUY/FE-CLN queue is
-  otherwise exhausted this session.
+- **Next Milestone:** `FE-DOC-00 Charter & Governance Package` → `FE-DOC-01 Buyer Documents Hub`
+  (Track 7 — owner Board-minted 2026-07-03, WBS v1.2; FE-DOC-00 = Lane-L mint/ESC/packet
+  deliverable, then the buyer hub build starts immediately per owner decision 3; WP cards
+  `governanceReviews/milestones/fe-doc-00-governance-charter/` +
+  `fe-doc-01-buyer-documents-hub/`).
 
 ## Team-3 — Vendor (FE-VEN)
 
@@ -92,7 +95,9 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   text and live render [`hasWorkflowTab:false`]. No leave-chrome trade-off this time — none of the
   3 reused components carries an internal link to another Account route)_
 - **Pipeline stage:** idle
-- **Next Milestone:** none queued — the ruled FE-VEN-10 → 11 → 12 sequence is complete
+- **Next Milestone:** `FE-DOC-02 Vendor Documents Hub` → `FE-DOC-03 Templates & Generated
+  Documents` (Track 7, WBS v1.2 — pulls after FE-DOC-01 establishes the hub pattern; FE-DOC-03
+  S-dep on the FE-SH-01 promotion ruling, Board agenda #13, fallback documented)
 
 ---
 
