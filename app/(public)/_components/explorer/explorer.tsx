@@ -8,23 +8,32 @@
 // gated to fine pointers (R2-NITPICK-02) — touch devices load on tap only.
 
 import * as React from "react";
-import dynamic from "next/dynamic";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/frontend/lib/cn";
+import type { ExplorerMenuProps } from "./explorer-menu";
 
 const HOVER_INTENT_MS = 150;
 
-// FE-PUB-09 fix (Review-B RV-0126 MAJOR): `React.lazy` + a bare `import()` still let Turbopack's
-// production bundler treat this chunk as required-for-hydration and inject it as an eager
-// `<script async>` on every public page, defeating the hover-intent preload contract this
-// component documents. `next/dynamic({ ssr: false })` is the framework-aware code-split API and
-// keeps the chunk genuinely deferred until `load` flips true.
-const ExplorerMenu = dynamic(() => import("./explorer-menu"), { ssr: false });
+type ExplorerMenuComponent = React.ComponentType<ExplorerMenuProps>;
 
+// FE-PUB-09 fix, take 2 (Review-B RV-0126 re-review REGRESSION): `next/dynamic({ ssr: false })`
+// still didn't work — declaring the dynamic import at MODULE scope (whether via `React.lazy` or
+// `next/dynamic`) registers the chunk in Next's client-reference-manifest for this route, and
+// Turbopack's production bundler eagerly `<script async>`s anything in that manifest regardless
+// of a runtime `if (!load)` guard, because `Explorer` is reachable from the root layout (shared by
+// every route) — the manifest has no way to encode "only if this state flips true" at build time.
+// The fix: no `React.lazy`/`next/dynamic` boundary at all. A bare `import()` call, made only
+// INSIDE the preload handler (never referenced at module scope), is invisible to the
+// component-hydration manifest — it's just a promise a browser event handler happens to create.
+// ES module dynamic `import()` still code-splits (that's a language-level guarantee, not a
+// React/Next feature), so the chunk is still its own file; it just isn't declared anywhere the
+// bundler could treat as "this route might need it on load."
 export function Explorer({ className }: { className?: string }) {
   const [load, setLoad] = React.useState(false);
   const [openOnMount, setOpenOnMount] = React.useState(false);
+  const [Menu, setMenu] = React.useState<ExplorerMenuComponent | null>(null);
   const intent = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const importing = React.useRef(false);
 
   React.useEffect(() => {
     return () => {
@@ -32,10 +41,15 @@ export function Explorer({ className }: { className?: string }) {
     };
   }, []);
 
-  const preload = () => setLoad(true);
+  const preload = () => {
+    setLoad(true);
+    if (importing.current || Menu) return;
+    importing.current = true;
+    import("./explorer-menu").then((mod) => setMenu(() => mod.default));
+  };
   const openNow = () => {
     setOpenOnMount(true);
-    setLoad(true);
+    preload();
   };
 
   const placeholder = (
@@ -68,13 +82,9 @@ export function Explorer({ className }: { className?: string }) {
     </button>
   );
 
-  if (!load) return <div className={cn("hidden lg:block", className)}>{placeholder}</div>;
+  if (!load || !Menu) return <div className={cn("hidden lg:block", className)}>{placeholder}</div>;
 
   return (
-    <div className={cn("hidden lg:block", className)}>
-      <React.Suspense fallback={placeholder}>
-        <ExplorerMenu defaultOpen={openOnMount} />
-      </React.Suspense>
-    </div>
+    <div className={cn("hidden lg:block", className)}>{<Menu defaultOpen={openOnMount} />}</div>
   );
 }

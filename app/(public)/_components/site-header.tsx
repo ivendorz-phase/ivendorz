@@ -9,7 +9,6 @@
 // system is THE core buyer value proposition, so it outranks Sign in/Get started visually).
 import * as React from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { FilePlus2, Menu } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
 import { BrandLogo } from "@/frontend/brand";
@@ -23,11 +22,9 @@ import {
 } from "@/frontend/primitives/sheet";
 import { Separator } from "@/frontend/primitives/separator";
 import { Explorer } from "./explorer/explorer";
+import type { ExplorerMobileProps } from "./explorer/explorer-mobile";
 
-// Mobile drawer categories (FE-PUB-09 Phase 2) — lazy chunk, loads on first sheet open only.
-// FE-PUB-09 fix (Review-B RV-0126 MAJOR): `next/dynamic({ ssr: false })`, not `React.lazy` — see
-// `explorer.tsx` for the full rationale (Turbopack eager-`<script async>` production defect).
-const ExplorerMobile = dynamic(() => import("./explorer/explorer-mobile"), { ssr: false });
+type ExplorerMobileComponent = React.ComponentType<ExplorerMobileProps>;
 
 const NAV_LINKS = [
   { href: "/marketplace", label: "Marketplace" }, // P-PUB-10 (M2.2)
@@ -38,6 +35,24 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   const [open, setOpen] = React.useState(false);
+  const [MobileExplorer, setMobileExplorer] = React.useState<ExplorerMobileComponent | null>(null);
+  const importingMobile = React.useRef(false);
+
+  // FE-PUB-09 fix, take 2 (Review-B RV-0126 re-review REGRESSION): a `next/dynamic`/`React.lazy`
+  // boundary declared at module scope — even with `ssr: false` — still gets registered in Next's
+  // client-reference-manifest for this route and Turbopack's production bundler eagerly
+  // `<script async>`s it, because `SiteHeader` is reachable from the root layout (shared by every
+  // route); a runtime conditional can't suppress a build-time manifest entry. Fix: no lazy
+  // boundary at module scope at all — a bare `import()`, made only inside this handler on first
+  // sheet-open, is invisible to the hydration manifest (see `explorer.tsx` for the fuller
+  // rationale — same fix pattern, applied here for the mobile drawer's chunk).
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+    if (next && !importingMobile.current && !MobileExplorer) {
+      importingMobile.current = true;
+      import("./explorer/explorer-mobile").then((mod) => setMobileExplorer(() => mod.default));
+    }
+  }
 
   return (
     <header className="sticky top-0 z-[var(--iv-z-sticky)] border-b border-border bg-background">
@@ -84,7 +99,7 @@ export function SiteHeader() {
         </div>
 
         <div className="ml-auto md:hidden">
-          <Sheet open={open} onOpenChange={setOpen}>
+          <Sheet open={open} onOpenChange={handleOpenChange}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" aria-label="Open menu">
                 <Menu />
@@ -111,13 +126,11 @@ export function SiteHeader() {
                 <h3 className="mb-1 px-1 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
                   All categories
                 </h3>
-                <React.Suspense
-                  fallback={
-                    <p className="px-1 py-2 text-sm text-muted-foreground">Loading categories…</p>
-                  }
-                >
-                  <ExplorerMobile onNavigate={() => setOpen(false)} />
-                </React.Suspense>
+                {MobileExplorer ? (
+                  <MobileExplorer onNavigate={() => setOpen(false)} />
+                ) : (
+                  <p className="px-1 py-2 text-sm text-muted-foreground">Loading categories…</p>
+                )}
               </section>
               <Separator className="my-4" />
               <div className="flex flex-col gap-2">
