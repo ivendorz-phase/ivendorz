@@ -144,12 +144,17 @@ violations attributable to this milestone (1 pre-existing shared-shell `button-n
 WITH PATCH** (RV-0131 — 1 MINOR: the WP card's own "In scope" §2 bullet still described the
 fabricated 5-route plan despite the top-of-file self-disclosure already correcting it; patched in
 place, no resubmission needed; 2 OBS. Fork check clean; route-topology self-correction independently
-re-verified against the real route tree, zero fabricated hrefs found). **🔵B Review-B submitted** at
-checkpoint `8c0cb40` — Team-3 STOPS, holds for the gate → then `FE-DOC-03 Templates
-& Generated Documents` (S-dep on the FE-SH-01 ruling, kit-primitive-rows fallback documented in the
-packet). _(Out-of-scope note: FE-PUB-09 vendored `popover`/`accordion`/`navigation-menu` into
-`src/frontend/primitives` — verify as a legit demand-driven kit extension under the mega-menu
-package at FE-PUB-09's review.)_
+re-verified against the real route tree, zero fabricated hrefs found). **Review-B round 1: ISSUES**
+(1 MAJOR — a second, genuinely-missed fabricated route: the "Quotation" link + its `recently_opened`
+twin hardcoded the buyer's `/rfqs/[id]/quotations/[qId]` route shape onto the vendor track, which
+actually uses `/rfqs/[id]/quotation` singular [a vendor has exactly one quotation per RFQ];
+live-verified 404 before the fix; 1 MINOR — stale route comment). **Fixed at checkpoint `54e8d5f`**,
+live-reverified in a fresh isolated worktree (fixed route now 200). Per review-process.md §5 a pure
+link-target fix re-enters at B, not A — **resubmitted for a confirmatory Review-B pass** at `54e8d5f`
+— Team-3 STOPS, holds for the gate → then `FE-DOC-03 Templates & Generated Documents` (S-dep on the
+FE-SH-01 ruling, kit-primitive-rows fallback documented in the packet). _(Out-of-scope note:
+FE-PUB-09 vendored `popover`/`accordion`/`navigation-menu` into `src/frontend/primitives` — verify
+as a legit demand-driven kit extension under the mega-menu package at FE-PUB-09's review.)_
 
 **Review Team 5 standing backlog (B lane):** Step-3 Public baseline sweep (QCT 5-step Step 3) at a
 stable post-cutover SHA — **owner-authorized 2026-07-02 (agenda #10)**; runs **before FE-PUB-02

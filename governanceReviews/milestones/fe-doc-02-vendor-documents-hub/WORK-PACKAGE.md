@@ -19,6 +19,15 @@
   `git show 8c0cb40 --stat`: `quick-create.tsx` does not appear in this commit's diff at all.
   **RV-0131 Review-A: PASS WITH PATCH** (1 MINOR — this card's own "In scope" §2 bullet had drifted
   from the correction above, patched in place; 2 OBS) — submitted to Review-B.
+  **RV-0131 Review-B: ISSUES → fixed at `54e8d5f`.** 1 MAJOR: a SECOND fabricated route slipped
+  past both self-verification and Review-A — the §3 Sourcing-documents "Quotation" link and its
+  matching `recently_opened` item both hardcoded the buyer's `/rfqs/[id]/quotations/[qId]` route
+  shape onto the vendor track, which actually uses `/rfqs/[id]/quotation` (singular — a vendor has
+  exactly one quotation per RFQ). Live-verified 404 before the fix. 1 MINOR: a stale header comment
+  in `documents-hub-view-models.ts` still described the already-corrected five-fixed-route claim.
+  Both fixed at `54e8d5f`, live-reverified in a fresh isolated worktree (fixed route returns 200).
+  Resubmitted for a confirmatory Review-B pass per review-process.md §5 (pure link-target fix, no
+  scope/contract/architecture change — re-enters at B, not A).
 - **Value:** Vendor Growth · **Priority:** P1 · **Size:** M · **Risk:** Med
 
 ## In scope
