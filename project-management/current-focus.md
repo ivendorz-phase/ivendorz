@@ -113,25 +113,25 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   forward not fabricated, independently confirmed by both review lanes against the actual report
   text and live render [`hasWorkflowTab:false`]. No leave-chrome trade-off this time — none of the
   3 reused components carries an internal link to another Account route)_
-- **Current Milestone (new):** `FE-DOC-02` Vendor Documents Hub — **🔵B Review-B (confirmatory
-  re-check)** (RV-0131 Review-A: PASS WITH PATCH, 1 MINOR patched. Review-B round 1: **ISSUES** — 1
-  MAJOR [a SECOND fabricated route missed by both self-verification and Review-A: the "Quotation"
-  link + its `recently_opened` twin hardcoded the buyer's `/rfqs/[id]/quotations/[qId]` shape onto
-  the vendor track, which actually uses `/rfqs/[id]/quotation` singular — live-verified 404 before
-  the fix], 1 MINOR [stale route comment]. Both fixed at `54e8d5f`, live-reverified in a fresh
-  isolated worktree — fixed route now 200. Per review-process.md §5, a pure link-target fix
-  re-enters at B, not A; resubmitted for a confirmatory pass)
+- **Current Milestone (new):** `FE-DOC-02` Vendor Documents Hub — **🔵A Review-A (re-entry, round
+  2)** at checkpoint `b1dad70`. Round 1 Review-B ISSUES → fix → I mistakenly resubmitted straight to
+  a confirmatory Review-B, citing review-process.md §5's original re-entry nuance — **superseded by
+  Amendment v1.3 §13** ("any Review-B ISSUES... always re-enters at Review-A... no more B-only
+  re-entry shortcut"), caught by the confirmatory Review-B itself. That round-2 Review-B also found
+  a THIRD instance of this milestone's recurring failure class (buyer-shape content carried onto
+  the vendor track unchecked): 1 MAJOR [§2's description text was a near-verbatim buyer-hub
+  carryover contradicting the correct disclosure 70 lines later], 1 MINOR [a second stale "five
+  fixed routes" comment]. Both fixed at `b1dad70`; correctly re-entering at Review-A this time.
 - **Current Page:** _(sole in-scope page — LifecycleStrip/SearchBar/ViewChips/RecentlyOpenedStrip/
   FilterSidebar + 4 sections, reusing the shared documents home + vendor's own
-  `EngagementStatusChip`/`TradeInvoiceStatusChip`/`MoneyBoundaryBanner`. Two route-topology defects
-  caught and fixed across this milestone's build+review cycle — both disclosed plainly, not
-  absorbed: (1) self-caught pre-submission [5 fabricated per-kind engagement routes, don't exist on
-  the vendor track], (2) Review-B-caught post-Review-A [1 fabricated quotation-detail route, buyer
-  shape copy-pasted without checking the real vendor route]. Axe 0 violations attributable to this
-  milestone [1 pre-existing shared-shell `button-name` hit at mobile, confirmed absent from this
-  commit's diff, same defect already disclosed at `FE-DOC-01`'s own review, Board standing agenda
-  #11] — Team-3 STOPS, holds for the gate)_
-- **Pipeline stage:** submitted to Review-B, confirmatory re-check (Lane G)
+  `EngagementStatusChip`/`TradeInvoiceStatusChip`/`MoneyBoundaryBanner`. THREE route/copy-topology
+  defects caught and fixed across this milestone's build+review cycle, all disclosed plainly, none
+  absorbed: (1) self-caught pre-submission [5 fabricated per-kind engagement routes], (2)
+  Review-B-caught round 1 [1 fabricated quotation-detail route], (3) Review-B-caught round 2 [1
+  contradictory buyer-copy description + 1 stale comment]. Axe 0 violations attributable to this
+  milestone [1 pre-existing shared-shell `button-name` hit at mobile, same defect already disclosed
+  at `FE-DOC-01`'s own review, Board standing agenda #11] — Team-3 STOPS, holds for the gate)_
+- **Pipeline stage:** submitted to Review-A, re-entry round 2 (Lane G)
 - **Next Milestone:** `FE-DOC-03 Templates & Generated Documents` (Track 7, WBS v1.2 — S-dep on the
   FE-SH-01 promotion ruling, Board agenda #13, fallback documented — groundwork submitted as
   `FE-SH-01/05/07/08 Shared Kit Promotion`, 🔵A 2026-07-03, WP card
@@ -143,6 +143,14 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Review Team 4 — Architecture & Governance (A lane) — queue
 
+- **`FE-DOC-02` Vendor Documents Hub** (Team-3) — 🔵A **re-entry, round 2**, checkpoint `b1dad70`;
+  WP card `governanceReviews/milestones/fe-doc-02-vendor-documents-hub/WORK-PACKAGE.md`. Per
+  Amendment v1.3 §13, any Review-B ISSUES always re-enters at A — this is that re-entry after round
+  2's Review-B found a third buyer-copy carryover (§2 description text + a stale comment), both
+  fixed. Lens hotspots (in addition to the standard fork/scope checks): re-verify no FOURTH instance
+  of the buyer→vendor copy-paste failure class survives anywhere in the feature folder — this
+  milestone has now had 3 confirmed instances (5 fake routes pre-submission, 1 fake quotation route
+  round 1, 1 contradictory description + 1 stale comment round 2).
 - **`FE-DOC-01` Buyer Documents Hub** (Team-2) — 🔵A submitted 2026-07-03 @ `3293009`; WP card
   `governanceReviews/milestones/fe-doc-01-buyer-documents-hub/WORK-PACKAGE.md` (carries the R1–R3
   owner-findings adjudication annex; lens hotspots: LifecycleStrip navigation-not-state, no coined
@@ -170,15 +178,10 @@ _(`FE-BUY-10` (Team-2) checkpointed 2026-07-03, awaiting Review-A — WP card
 
 ## Review Team 5 — Quality & Adversarial (B lane) — queue
 
-_(**`FE-DOC-02` Vendor Documents Hub (Team-3) resubmitted, checkpoint `54e8d5f`, awaiting a
-  confirmatory Review-B pass** — WP card
-  `governanceReviews/milestones/fe-doc-02-vendor-documents-hub/WORK-PACKAGE.md`. Round 1 Review-B
-  (RV-0131): **ISSUES** — 1 MAJOR (a second fabricated route the buyer/vendor route-shape mismatch
-  slipped past self-verification AND Review-A: the "Quotation" link hardcoded the buyer's
-  `/rfqs/[id]/quotations/[qId]` shape onto the vendor track, which is actually
-  `/rfqs/[id]/quotation` singular — live-verified 404, now fixed and live-reverified 200), 1 MINOR
-  (stale route comment, fixed). Per review-process.md §5 this re-enters at B (pure link-target fix,
-  no scope/contract/architecture change). Otherwise clear — `FE-VEN-12` cleared, RV-0125 A:PASS ∧
+_(B-lane momentarily clear on `FE-DOC-02` — it round-tripped through 2 rounds of B:ISSUES
+  (RV-0131: round 1 a fabricated quotation route, round 2 a contradictory buyer-copy description +
+  stale comment, both fixed) and per Amendment v1.3 §13 is now back at Review-A round 2 [checkpoint
+  `b1dad70`] before it can return to this queue. `FE-VEN-12` cleared, RV-0125 A:PASS ∧
   B:PASS, closed by Team-3
   [Review-B by a live
   Team-5 session — composition-not-fork, P-ACC-13 exclusion, no-leave-chrome, render D/T/M+axe all

@@ -26,8 +26,19 @@
   exactly one quotation per RFQ). Live-verified 404 before the fix. 1 MINOR: a stale header comment
   in `documents-hub-view-models.ts` still described the already-corrected five-fixed-route claim.
   Both fixed at `54e8d5f`, live-reverified in a fresh isolated worktree (fixed route returns 200).
-  Resubmitted for a confirmatory Review-B pass per review-process.md §5 (pure link-target fix, no
-  scope/contract/architecture change — re-enters at B, not A).
+  **Process correction**: initially resubmitted straight to Review-B citing review-process.md §5's
+  original re-entry nuance — but that nuance was retired by **Amendment v1.3 §13** ("any Review-A
+  REVISION or Review-B ISSUES... always re-enters at Review-A... no more B-only re-entry shortcut").
+  Caught by the confirmatory Review-B itself; corrected below.
+  **RV-0131 Review-B round 2 (confirmatory) at `54e8d5f`: ISSUES again.** Both round-1 findings
+  independently reconfirmed fixed, but the mandated adversarial re-sweep found a THIRD instance of
+  the same failure class: 1 MAJOR — §2's `DocumentCollection` description ("...live on their own
+  pages") was a near-verbatim buyer-hub carryover contradicting the correct disclosure 70 lines
+  later in the same component; 1 MINOR — a second stale "five fixed routes" comment. Both fixed at
+  `b1dad70`; exhaustive re-sweep confirms every remaining "five fixed" mention is now a correct
+  buyer-vs-vendor contrast, not a stale claim. tsc/eslint/prettier green.
+  **Per the binding Amendment v1.3 §13 rule, this now correctly re-enters at Review-A** on
+  checkpoint `b1dad70` — not a further Review-B-only cycle.
 - **Value:** Vendor Growth · **Priority:** P1 · **Size:** M · **Risk:** Med
 
 ## In scope

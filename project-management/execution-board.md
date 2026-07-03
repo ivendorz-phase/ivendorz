@@ -160,9 +160,16 @@ re-verified against the real route tree, zero fabricated hrefs found). **Review-
 twin hardcoded the buyer's `/rfqs/[id]/quotations/[qId]` route shape onto the vendor track, which
 actually uses `/rfqs/[id]/quotation` singular [a vendor has exactly one quotation per RFQ];
 live-verified 404 before the fix; 1 MINOR — stale route comment). **Fixed at checkpoint `54e8d5f`**,
-live-reverified in a fresh isolated worktree (fixed route now 200). Per review-process.md §5 a pure
-link-target fix re-enters at B, not A — **resubmitted for a confirmatory Review-B pass** at `54e8d5f`
-— Team-3 STOPS, holds for the gate → then `FE-DOC-03 Templates & Generated Documents` (S-dep on the
+live-reverified in a fresh isolated worktree (fixed route now 200). **Process correction**: this was
+mistakenly resubmitted straight to a confirmatory Review-B citing review-process.md §5's original
+re-entry nuance — superseded by **Amendment v1.3 §13** ("any Review-B ISSUES... always re-enters at
+Review-A... no more B-only re-entry shortcut"), caught by the confirmatory Review-B itself. **Review-B
+round 2 (confirmatory) at `54e8d5f`: ISSUES again** — round 1's findings reconfirmed fixed, but the
+adversarial re-sweep found a THIRD instance of the recurring buyer-copy-carried-onto-vendor failure
+class (1 MAJOR: §2's description text contradicted the correct disclosure 70 lines later; 1 MINOR: a
+second stale comment). **Fixed at checkpoint `b1dad70`** — exhaustive re-sweep confirms no further
+instances. **Correctly re-entering at Review-A** (round 2) at `b1dad70` per Amendment v1.3 §13 —
+Team-3 STOPS, holds for the gate → then `FE-DOC-03 Templates & Generated Documents` (S-dep on the
 FE-SH-01 ruling, kit-primitive-rows fallback documented in the packet). _(Out-of-scope note:
 FE-PUB-09 vendored `popover`/`accordion`/`navigation-menu` into `src/frontend/primitives` — verify
 as a legit demand-driven kit extension under the mega-menu package at FE-PUB-09's review.)_
