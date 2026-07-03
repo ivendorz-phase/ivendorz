@@ -440,9 +440,6 @@ export function DocumentsHubView({ data }: { data: DocumentsHubData }) {
                   },
                 ]}
               />
-              <p className="mt-2 text-xs text-muted-foreground">
-                Quotation history is System-generated and never recommends a price.
-              </p>
             </DocumentCollection>
 
             {/* §4 — platform invoices (M7): visually separated, link-out only (DF-6). */}
