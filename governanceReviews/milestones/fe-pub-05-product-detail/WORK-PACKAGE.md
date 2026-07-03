@@ -2,8 +2,7 @@
 
 - **Lane:** G (new public route + a URL-law realization; architecture-adjacent — realizes the
   now-folded `ESC-7-API-PRODDETAIL` corpus fold, ADR-025)
-- **Reviewed-SHA record:** `abd5bb9` (scope complete — URL builder + new route + seed enrichment +
-  interim retirement + call-site repoints)
+- **Reviewed-SHA record:** `883594f` (round 2 — fixes RV-0132's MAJOR + MINOR over `abd5bb9`)
 - **Value:** Core Marketplace · **Priority:** P1 · **Size:** M · **Risk:** Med
 - **Owns:** P-PUB-11 (Product detail, public)
 
