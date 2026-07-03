@@ -2,7 +2,8 @@
 
 - **Lane:** G (touches the anonymous vendor microsite's URL generation + metadata across all 7
   routes; architecture-adjacent — realizes a fresh Board ruling, ADR-024)
-- **Reviewed-SHA record:** _(filled after checkpoint commit)_
+- **Reviewed-SHA record:** `cafefcb` (scope complete — URL builder + 14 call-site repoints + 7
+  canonical-metadata additions)
 - **Value:** Vendor Growth · **Priority:** P1 · **Size:** M · **Risk:** Med
 - **Owns no pages** (own-nothing by design, per the Board registration) — touches P-PUB-13..17
   (vendor microsite) + every public surface that links out to a vendor profile.
