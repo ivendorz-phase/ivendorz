@@ -23,22 +23,24 @@ a genuine MAJOR finding [landing "Popular search" dead ends] surfaced by the adv
 correctly attributed to the separate, not-yet-started `FE-PUB-01`, carried forward not fixed here)
 · ~~FE-PUB-01 Landing~~ ✅ **Closed** (RV-0121, A:PASS ∧ B:PASS, 0 B/M/M both lanes, no
 fix-and-reverify cycle, Dev-team self-close 2026-07-03 @ `17f93a8` — fixed the FE-PUB-07-carried
-`command-center.tsx` popular-search mismatch, single-file content-only delta). `FE-PUB-09 Mega
-Menu & Taxonomy Nav` — **🟠 Revising** (RV-0126; the double-gate clearance, phases 0–5 build, and
-first A∧B pass all stand as recorded — but a SECOND, independently-dispatched Review-B ran the one
-check both the first Review-A and first Review-B explicitly deferred [a real `next build`, done in
-an isolated same-drive worktree to avoid the shared dev cache] and found **1 MAJOR**: the mega-menu
-panel chunk `React.lazy()`'d correctly in source but Turbopack's *production* bundler injected it
-as an eager `<script async>` on every public page, contradicting the milestone's own documented
-hover-preload contract. The prior "✅ APPROVED... Team-1 to commit + pull FE-PUB-10" instruction is
-**superseded, not acted on** — no close commit was ever made. **Fix applied and independently
-re-verified same-session** (checkpoint `d455151`; both `React.lazy` call sites →
-`next/dynamic({ ssr: false })`; re-isolated-build confirms the chunk no longer appears in any
-page's initial script list) — **re-submitted to a fresh Review-A** per Amendment v1.3's unified
-re-review rule. Full addendum: `project-management/review-log.md` RV-0126.) `FE-PUB-10 Canonical
-Vendor Subdomain` — **⬜ Registered 2026-07-03** (Board-minted, ADR-024 realization @ `c1187a8`;
-owns no pages; WP card at kickoff) — **Team-1's next pull once FE-PUB-09 actually closes**. Only
-`FE-PUB-05` ⛔ remains gated.
+`command-center.tsx` popular-search mismatch, single-file content-only delta) · ~~FE-PUB-09 Mega
+Menu & Taxonomy Nav~~ ✅ **Closed** (RV-0126, A:PASS ∧ B:PASS, 0 B/M/M both lanes, Dev-team
+self-close 2026-07-03 @ `4d1aae8` — **after a 3-round fix-and-reverify cycle**: round 1
+[`d455151`, `React.lazy`→`next/dynamic({ssr:false})`] and round 2 [`631f26a`, a fully manual
+deferred `import()`] both self-verified as fixed using a "Post RFQ" content fingerprint that
+turned out to be a false positive (also `SiteHeader`'s own always-rendered text) — round 2's
+insufficiency was caught by a fresh, independently-dispatched Review-B [REGRESSION]; round 1's was
+self-caught before round 3 with a corrected signal. **Real root cause**: the always-eager
+`ExplorerSeoNav` [`app/(public)/layout.tsx`, every public route] imported from the
+`@/frontend/navigation` barrel, which also re-exports every heavy `MegaMenu*` component from the
+same file — Turbopack's tree-shaking wasn't granular enough to drop the unused re-exports. Round
+3 fix [`4d1aae8`] bypasses the barrel in `ExplorerSeoNav`; empirically re-verified by a fresh
+Review-A + Review-B pair via an independent isolated build and real Playwright interaction
+tracing — chunk absent from `/about`/`/` by every mechanism, genuinely loads within ~200ms of
+hover/tap. Full record: `project-management/review-log.md` RV-0126, all 3 rounds recorded
+transparently including the 2 failed attempts) · `FE-PUB-10 Canonical Vendor Subdomain` — **⬜
+Registered 2026-07-03** (Board-minted, ADR-024 realization @ `c1187a8`; owns no pages; WP card at
+kickoff) — **Team-1's next pull**. Only `FE-PUB-05` ⛔ remains gated.
 
 **Team-2 (Buyer):**
 ~~FE-BUY-04..09~~ ✅ **All Closed** this session (RV-0102/0108/0109/0112/0113/0114 @ `5a4550c`/

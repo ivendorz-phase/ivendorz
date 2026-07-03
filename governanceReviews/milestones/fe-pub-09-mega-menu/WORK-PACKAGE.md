@@ -218,9 +218,26 @@ surfaces + P-PUB-08 landing enrichment.
 ## Key dates
 
 - Created / gates cleared / started: 2026-07-03 (owner Board ruling live in planning session)
+- Closed: 2026-07-03 (after a 3-round fix-and-reverify cycle — see Fix-and-reverify section)
 
 ## DoD confirmation
 
-_(checked at Board close per `review-process.md` §6 — per-phase checkpoint commits; tsc/eslint/
-prettier green per phase; seed drift-check green; axe pass; perf table validated; byte-equivalence
-outside declared touch surface.)_
+☑ per-phase checkpoint commits (P0–P5) ☑ tsc/eslint/prettier green (every phase + every
+fix-and-reverify round) ☑ seed drift-check green (13/13 unit tests) ☑ axe pass (0 violations,
+panel-open/drawer-open/landing/category-landing, re-confirmed at every review round) ☑ perf table
+validated (panel code chunk 16.1KB gz, under the ≤25KB-gz budget) ☑ byte-equivalence outside the
+declared touch surface ☑ Invariant #1 clean (capability-matrix-only, no vendor trade-role labels —
+independently verified 3 times) ☑ frozen-foundation extend-only (3 genuinely-new primitives, zero
+existing primitive modified) ☑ Review A PASS (round 3, `4d1aae8`, 0 findings + 2 OBS) ☑ Review B
+PASS (round 3, `4d1aae8`, 0 findings + 2 OBS, empirically re-verified via an independent isolated
+build + real interaction tracing) ☑ gate approval (A:PASS ∧ B:PASS, BLOCKER=MAJOR=MINOR=0 IS the
+approval signal per Amendment v1.3 §13) ☑ no TODO/dead code ☑ no duplicate components ☑ tracker
+updated ☑ card closed
+
+## Close record
+
+**✅ Closed 2026-07-03**, at stable-target `4d1aae8`, after a 3-round fix-and-reverify cycle —
+see the "Fix-and-reverify" section above for the complete history, including two fix attempts
+that looked correct but weren't (both self-caught before or by an independent review, never
+silently shipped) and the eventual empirically-confirmed root-cause fix. Full record:
+`project-management/review-log.md` RV-0126 (original build + all 3 rounds).

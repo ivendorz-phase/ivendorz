@@ -23,31 +23,31 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   spread. Content-only, single-file delta — no kit/route/filter-logic touched. A confirming sweep
   found no other landing section carries the same bug class [all source from seed-derived
   constants, not independent string literals])_
-- **Pipeline stage:** 🔵A **Review-A (re-review)** — `FE-PUB-09` Mega Menu & Taxonomy Nav.
-  Phases 0–5 built @ `7e95dce`; first A∧B pass both PASSed (RV-0126) and `execution-board.md`
-  briefly recorded "APPROVED... Team-1 to commit + pull FE-PUB-10" — **that instruction is
-  superseded, no close commit was ever made.** A second, independently-dispatched Review-B ran
-  the one check both the first Review-A (finding 7) and first Review-B (its own carried OBS)
-  explicitly deferred — a real `next build`, run in an isolated same-drive git worktree with a
-  genuine `pnpm install` (no node_modules symlink — Turbopack hard-rejects reparse points) to
-  avoid touching the shared dev cache — and found **1 MAJOR**: the desktop `Explorer` panel and
-  mobile `ExplorerMobile` drawer both used `React.lazy(() => import(...))`, correct-looking in
-  source and in dev, but Turbopack's *production* bundler injected the resulting chunk as an
-  eager `<script async>` on every public page, contradicting the milestone's own documented
-  hover-preload contract (`explorer.tsx`'s header comment, `MEGA_MENU_ARCHITECTURE.md` §9.5).
-  **Fixed same-session**: both call sites → `next/dynamic({ ssr: false })` (checkpoint
-  `d455151`) — the framework-aware code-split API, not a workaround. **Independently
-  re-verified** via the identical isolated-build method: the two chunks (content-confirmed as
-  the real mega-menu code) are now registered in Next's `react-loadable-manifest.json` and are
-  **absent** from the initial `<script src>` list of both `/about` and `/` (the page hosting the
-  trigger) — the defect class is gone. Re-submitted to a fresh Review-A per Amendment v1.3's
-  unified re-review rule (any Review-B ISSUES always re-enters at A). Full addendum:
-  `project-management/review-log.md` RV-0126.
+- **Pipeline stage:** idle — `FE-PUB-09` Mega Menu & Taxonomy Nav ✅ **Closed** at `4d1aae8`
+  after a **3-round fix-and-reverify cycle** (RV-0126). Round 1 (checkpoint `d455151`,
+  `React.lazy`→`next/dynamic({ssr:false})`) and round 2 (checkpoint `631f26a`, a fully manual
+  deferred `import()`) both *looked* fixed under self-verification but weren't — both used a
+  content fingerprint ("Post RFQ") that turned out to be a false positive, since that string is
+  also `SiteHeader`'s own always-rendered CTA text. Round 2's insufficiency was caught by a
+  fresh, independently-dispatched Review-B (REGRESSION verdict); round 1's flaw was self-caught
+  before round 3 using a corrected signal. **Real root cause** (round 3): the always-eager
+  `ExplorerSeoNav` (rendered directly in `app/(public)/layout.tsx`, every public route) imported
+  from the `@/frontend/navigation` barrel, which also re-exports every heavy `MegaMenu*`
+  component from the same `index.ts` — Turbopack's production tree-shaking wasn't granular
+  enough to drop the unused re-exports, pulling the whole mega-menu chunk into the always-eager
+  layout bundle. **Fixed** (checkpoint `4d1aae8`): `ExplorerSeoNav` now imports directly from
+  the concrete `model/*.ts` files, bypassing the barrel. **Empirically re-verified** by both a
+  fresh Review-A (architectural/static-analysis PASS) and a fresh Review-B (independent isolated
+  build + real Playwright interaction tracing — confirmed the chunk is absent from `/about`/`/`
+  by every mechanism (`<script>`/`modulepreload`/`prefetch`) and genuinely loads within ~200ms of
+  hover/tap) — both 0 findings, 4 OBS total, gate clean. Dev-team self-close per Amendment v1.3
+  §13. Full record: `project-management/review-log.md` RV-0126 (all 3 rounds, including the two
+  failed attempts, recorded transparently).
 - **Next Milestone:** `FE-PUB-10` Canonical Vendor Subdomain — **⬜ Registered 2026-07-03**
   (Board-minted, ADR-024 realization @ `c1187a8`; owns no pages; WP card at kickoff; acceptance:
   pixel output of all existing pages identical — only URL generation, routing, metadata,
   redirects, discovery artifacts may change) · then FE-PUB-05 ⛔ `ESC-7-API-PRODDETAIL` (still
-  gated) — **pulled only once FE-PUB-09 actually closes**
+  gated)
 
 ## Team-2 — Buyer (FE-BUY / FE-CLN)
 
@@ -99,14 +99,12 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 ## Review Team 4 — Architecture & Governance (A lane) — queue
 
 _(`FE-BUY-10` (Team-2) checkpointed 2026-07-03, awaiting Review-A — WP card
-  `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`. `FE-PUB-09`
-  (Team-1) checkpointed `d455151` 2026-07-03, **re-submitted awaiting a fresh Review-A** — the
-  eager-`<script async>` MAJOR found by a second Review-B pass (RV-0126 addendum) is fixed; needs
-  independent re-verification before Review-B again. Otherwise clear — `FE-PUB-03` (RV-0111),
-  `FE-PUB-04` (RV-0116), `FE-PUB-06` (RV-0118), `FE-PUB-07` (RV-0119), `FE-PUB-01` (RV-0121),
-  `FE-VEN-04` (RV-0110), `FE-VEN-09` (RV-0120), `FE-VEN-10` (RV-0123), `FE-VEN-11` (RV-0124, PASS
-  WITH PATCH — MINOR patched at `b847e7e`), `FE-VEN-12` (RV-0125, clean PASS, 0 B/M/M, 9 OBS,
-  closed), `FE-BUY-07` (RV-0112) all cleared A and closed/advanced.)_
+  `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`. Otherwise clear —
+  `FE-PUB-03` (RV-0111), `FE-PUB-04` (RV-0116), `FE-PUB-06` (RV-0118), `FE-PUB-07` (RV-0119),
+  `FE-PUB-01` (RV-0121), `FE-PUB-09` (RV-0126, round 3, `4d1aae8`, PASS after a 3-round
+  fix-and-reverify cycle), `FE-VEN-04` (RV-0110), `FE-VEN-09` (RV-0120), `FE-VEN-10` (RV-0123),
+  `FE-VEN-11` (RV-0124, PASS WITH PATCH — MINOR patched at `b847e7e`), `FE-VEN-12` (RV-0125, clean
+  PASS, 0 B/M/M, 9 OBS, closed), `FE-BUY-07` (RV-0112) all cleared A and closed/advanced.)_
 
 ## Review Team 5 — Quality & Adversarial (B lane) — queue
 
@@ -120,6 +118,12 @@ _(B-lane clear — `FE-VEN-12` cleared, RV-0125 A:PASS ∧ B:PASS, closed by Tea
   prior, RV-0123 A:PASS ∧ B:PASS, 7 OBS. **All three of the ruled FE-VEN-10 → 11 → 12 sequence now
   closed.**)_
 
+- **`FE-PUB-09` Mega Menu & Taxonomy Nav** (Team-1) — Review-B round 3 **PASS** (RV-0126, `4d1aae8`,
+  0 B/M/M, 4 OBS total across rounds; independent isolated build + real Playwright interaction
+  tracing empirically confirmed the round-3 root-cause fix — chunk absent from `/about`/`/` by
+  every eager-load mechanism, genuinely loads within ~200ms of hover/tap). Closes a 3-round
+  fix-and-reverify cycle (2 prior fix attempts both self-verified with a flawed content
+  fingerprint and didn't actually work — caught before shipping, never silently passed).
 - **`FE-PUB-03` Vendor Profile** (Team-1) — Review-B **PASS** (RV-0111, 0 B/M/M, 8 OBS, `1275f70`;
   render D/T/M + axe 0 mobile/desktop; sticky-bar no-occlusion + dup-control clean) → Team-1 self-close.
 - **`FE-BUY-10` Discovery & Favorites** (Team-2) — full mode-A Review-B **PASS → APPROVED** (RV-0117,
