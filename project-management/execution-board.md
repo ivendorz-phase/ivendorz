@@ -44,8 +44,13 @@ transparently including the 2 failed attempts) · ~~`FE-PUB-10` Canonical Vendor
 repointed, canonical/og:url added to all 7 microsite routes, byte-identical acceptance verified.
 One disputed MINOR [an isolated-worktree `prettier --check` false positive] resolved via a
 1-round procedural re-review with zero code delta — 3 independent reviewers, 4 prettier
-invocations, unanimous PASS; full dispute record in RV-0128). **Team-1's queue is now exhausted —
-only `FE-PUB-05` ⛔ remains gated** on `ESC-7-API-PRODDETAIL`.
+invocations, unanimous PASS; full dispute record in RV-0128). ~~Team-1's queue is now exhausted —
+only `FE-PUB-05` ⛔ remains gated on `ESC-7-API-PRODDETAIL`~~ **`ESC-7-API-PRODDETAIL` RESOLVED
+2026-07-03** (owner Board, `R-ESC7-PRODDETAIL-FREEZE`) — `Doc-4D_PublicProductDetail_Patch_v1.0.3`
++ `Doc-5D_PublicProductDetail_Patch_v1.0.1` + `Doc-3_Policy_Key_Registration_Patch_v1.11` +
+`ADR-025_Marketplace_Public_URL_Law` all folded together into `generatedDocs/`, registered in
+`00_AUTHORITY_MAP.md` + `CORPUS_INDEX.md`. **`FE-PUB-05` Product Detail — ⬜ Un-gated, Team-1's
+next pull.**
 
 **Team-2 (Buyer):**
 ~~FE-BUY-04..09~~ ✅ **All Closed** this session (RV-0102/0108/0109/0112/0113/0114 @ `5a4550c`/
@@ -139,7 +144,7 @@ starts**; findings feed the FE-PUB packages.
 
 | Item | Gate | Interim |
 |---|---|---|
-| FE-PUB-05 (P-PUB-11) | `ESC-7-API-PRODDETAIL` | product modal from `search_catalog` |
+| ~~FE-PUB-05 (P-PUB-11)~~ | ~~`ESC-7-API-PRODDETAIL`~~ **RESOLVED 2026-07-03** (owner Board, `R-ESC7-PRODDETAIL-FREEZE` — E-1/E-2/E-3 all folded) | product modal from `search_catalog` retired at cutover |
 | ~~FE-PUB-09 mega menu~~ | ~~taxonomy P1 + `MEGA_MENU_*` package approval~~ **CLEARED 2026-07-03** (owner Board; S: `ESC-7-API-CATNAV` stays open — build-time seed interim) | — |
 | FE-PF-02 brand | official SVGs under `public/brand/` | placeholder-complete kit `BrandLogo` |
 | Page-gates inside milestones | P-PUB-09 `ESC-7-API-CATNAV` · P-VND-10 `ESC-7-API/upload` · P-ACC-12 `ESC-IDN-DELEG-EXPIRY` | carve-out rule (WBS) |
@@ -222,6 +227,24 @@ starts**; findings feed the FE-PUB packages.
     #13 — not duplicated). productSpec companion is fully governance-tagged
     (FROZEN-BACKED / GATED-ON-R2..R5); FE-BUY-09 `/crm` relabel/re-home registered as an
     FE-change item, not silently respecified. Human-gated; blocks no in-flight build.
+15. ~~**Public Product Detail packet (`ESC-7-API-PRODDETAIL`)**~~ — **RULED by owner 2026-07-03**
+    (`governanceReviews/ESC-7-API-PRODDETAIL_Product_Detail_Architecture_Plan_v1.0_PROPOSAL.md`,
+    `R-ESC7-PRODDETAIL-FREEZE`, Round 4 Final Resolution: APPROVED, review cycle CLOSED). Owner
+    reviewed the 4-document Annex-E package as a single governance package (2026-07-03) and ruled
+    **PASS — 0 BLOCKER/MAJOR/MINOR**: new Public query contract
+    `marketplace.get_public_product_detail.v1` (BC-MKT-6, composed Product Detail Projection, R9
+    non-disclosure collapse enforced once, `vendor_slug` withheld, `canonical_url` opaque/builder-only)
+    + its wire realization + the breadcrumb deterministic pick rule + a `get_spec_library_entry`
+    conformance correction (E-1: `Doc-4D_PublicProductDetail_Patch_v1.0.3` +
+    `Doc-5D_PublicProductDetail_Patch_v1.0.1`, linked pair) · registered POLICY
+    `marketplace.public_read_rate_limit` (E-2: `Doc-3_Policy_Key_Registration_Patch_v1.11`) ·
+    canonical product URL law, apex host `/marketplace/product/{name-slug}-{uuid}`, id-anchored, no
+    vendor-host product route in v1 (E-3: `ADR-025_Marketplace_Public_URL_Law`, composes with
+    ADR-024 — Vendor leg untouched). All four folded together into `generatedDocs/` 2026-07-03,
+    registered in `00_AUTHORITY_MAP.md` + `CORPUS_INDEX.md`; `esc_registry.md` marked RESOLVED.
+    **`FE-PUB-05` un-gated — Team-1's next pull.** The FE Doc-7 leg (builder code, redirects, Host
+    Resolution Matrix) is FE-PUB-05's own build scope, not a further escalation. Closed milestones
+    not reopened.
 
 ## Review pipeline (pointer)
 
