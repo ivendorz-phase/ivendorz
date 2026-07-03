@@ -2,11 +2,50 @@
 
 - Lane: G (full Dev → Review-A [Team-4] → Review-B [Team-5] → close; L size, new kit package +
   header/nav surface + category-landing rebind — architecture-sensitive)
-- Reviewed-SHA record: **`7e95dce`** (phase checkpoints: 1957857 P0 · 53c8649+971aa76 P1 ·
+- Reviewed-SHA record: **`d455151`** (fix-and-reverify checkpoint — supersedes `7e95dce`; see
+  Fix-and-reverify section below). Phase checkpoints: 1957857 P0 · 53c8649+971aa76 P1 ·
   aee81c2 P2 · 22d501c P3 · ad62cfe P4 · 7e95dce P5; docs/gates 6da2e1d. NOTE for reviewers:
   parallel sessions share this working tree — 53c8649/22d501c carry a few unrelated
   FE-BUY-10/FE-VEN-11 tracker/screenshot files swept by concurrent commits; the FE-PUB-09 delta
-  is the navigation package + explorer/header/categories/landing files listed here.)
+  is the navigation package + explorer/header/categories/landing files listed here.
+
+## Fix-and-reverify (RV-0126 addendum, 2026-07-03)
+
+The first Dev → Review-A → Review-B pass at `7e95dce` both PASSed (0 BLOCKER/MAJOR/MINOR) and
+`execution-board.md` briefly recorded the milestone "APPROVED... Team-1 to commit + pull
+FE-PUB-10" — **that instruction was never acted on** (no `milestone(FE-PUB-09): close` commit
+exists) and is now superseded. A second, independently-dispatched Review-B ran the one check both
+the first Review-A (finding 7) and first Review-B (its own carried-forward OBS) had explicitly
+deferred — a real `next build --turbopack`, run in an isolated same-drive git worktree with a
+genuine `pnpm install` (not a `node_modules` symlink/junction — Turbopack's production bundler
+hard-rejects any reparse point as "pointing out of the filesystem root") specifically to avoid
+touching the shared dev cache active parallel sessions depend on.
+
+**Found: 1 MAJOR.** `app/(public)/_components/explorer/explorer.tsx`'s `ExplorerMenu` and
+`app/(public)/_components/site-header.tsx`'s `ExplorerMobile` both used
+`React.lazy(() => import(...))` at module scope — correct-looking in source, indistinguishable
+from correct in a dev server — but Turbopack's *production* bundler injects the resulting chunk
+as an eager `<script async>` tag into every public page's initial HTML, including pages with zero
+relationship to the mega-menu. Confirmed via Playwright network tracing on a cold `next start`
+server with zero interaction. Directly contradicts `explorer.tsx`'s own documented contract ("the
+header pays nothing until first hover intent") and `MEGA_MENU_ARCHITECTURE.md` §9.5.
+
+**Fixed** (checkpoint `d455151`): both call sites switched from `React.lazy` to
+`next/dynamic(() => import(...), { ssr: false })` — the framework-aware code-split API Next's own
+bundler treats as genuinely on-demand rather than required-for-hydration. No other behavior
+change; both pre-existing `React.Suspense` wrappers unchanged and remain compatible.
+`tsc`/`eslint`/`prettier` clean.
+
+**Independently re-verified** (same isolated-worktree + real-install + `next build`/`next start`
+method): the two chunks containing the mega-menu code (content-verified via string search —
+"Post RFQ"/"All Categories"/"MegaMenu") are now registered in Next's
+`react-loadable-manifest.json` (confirming genuine code-splitting) and are **absent** from the
+initial `<script src>` list of both `/about` (unrelated page) and `/` (the landing page hosting
+the trigger) — the defect class is gone.
+
+Re-submitted to a fresh Review-A per Amendment v1.3's unified re-review rule (any Review-B ISSUES
+always re-enters at A, never a B-only shortcut). Full record:
+`project-management/review-log.md` RV-0126 addendum.
 
 ## Build adaptations & disclosures (for Review-A — deviations from the letter of the package)
 

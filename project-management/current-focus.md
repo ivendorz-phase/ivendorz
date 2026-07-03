@@ -23,24 +23,31 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   spread. Content-only, single-file delta — no kit/route/filter-logic touched. A confirming sweep
   found no other landing section carries the same bug class [all source from seed-derived
   constants, not independent string literals])_
-- **Pipeline stage:** 🔵A **Review-A** — `FE-PUB-09` Mega Menu & Taxonomy Nav **BUILT, phases
-  0–5 complete** @ checkpoint `7e95dce` (2026-07-03; gates cleared same session by owner Board —
-  Taxonomy P1 + `MEGA_MENU_*` package, 3 rounds of findings adjudicated). Delivered:
-  `src/frontend/navigation/` package (mega-menu + category-tree tiers, providers, taxonomy
-  index/overlay/icon-registry, `TaxonomySource` seam), 3 vendored primitives, Appendix-C seed
-  generator (794 nodes, drift-check green), header Explorer with preload ladder + prominent
-  Post RFQ CTA, mobile drawer hybrid drill, `/categories` inline explorer + Browse A–Z,
-  Category Landing Contract rebind (794 slugs ∪ legacy; breadcrumb + related rail + sidebar
-  tree), quick category search with synonyms. Verified: 13/13 unit tests · 28/28 Playwright
-  interactive checks (incl. m-03 ≤4-tap mobile walkthrough) · axe 0 critical/serious on panel/
-  drawer/landing · WBS coverage 144/144. WP card (Reviewed-SHA + 6 build
-  adaptations/disclosures): `governanceReviews/milestones/fe-pub-09-mega-menu/WORK-PACKAGE.md`.
-  **Awaiting Review Team 4 (A lane) in a fresh context** — Team-1 stopped at the gate.
+- **Pipeline stage:** 🔵A **Review-A (re-review)** — `FE-PUB-09` Mega Menu & Taxonomy Nav.
+  Phases 0–5 built @ `7e95dce`; first A∧B pass both PASSed (RV-0126) and `execution-board.md`
+  briefly recorded "APPROVED... Team-1 to commit + pull FE-PUB-10" — **that instruction is
+  superseded, no close commit was ever made.** A second, independently-dispatched Review-B ran
+  the one check both the first Review-A (finding 7) and first Review-B (its own carried OBS)
+  explicitly deferred — a real `next build`, run in an isolated same-drive git worktree with a
+  genuine `pnpm install` (no node_modules symlink — Turbopack hard-rejects reparse points) to
+  avoid touching the shared dev cache — and found **1 MAJOR**: the desktop `Explorer` panel and
+  mobile `ExplorerMobile` drawer both used `React.lazy(() => import(...))`, correct-looking in
+  source and in dev, but Turbopack's *production* bundler injected the resulting chunk as an
+  eager `<script async>` on every public page, contradicting the milestone's own documented
+  hover-preload contract (`explorer.tsx`'s header comment, `MEGA_MENU_ARCHITECTURE.md` §9.5).
+  **Fixed same-session**: both call sites → `next/dynamic({ ssr: false })` (checkpoint
+  `d455151`) — the framework-aware code-split API, not a workaround. **Independently
+  re-verified** via the identical isolated-build method: the two chunks (content-confirmed as
+  the real mega-menu code) are now registered in Next's `react-loadable-manifest.json` and are
+  **absent** from the initial `<script src>` list of both `/about` and `/` (the page hosting the
+  trigger) — the defect class is gone. Re-submitted to a fresh Review-A per Amendment v1.3's
+  unified re-review rule (any Review-B ISSUES always re-enters at A). Full addendum:
+  `project-management/review-log.md` RV-0126.
 - **Next Milestone:** `FE-PUB-10` Canonical Vendor Subdomain — **⬜ Registered 2026-07-03**
   (Board-minted, ADR-024 realization @ `c1187a8`; owns no pages; WP card at kickoff; acceptance:
   pixel output of all existing pages identical — only URL generation, routing, metadata,
   redirects, discovery artifacts may change) · then FE-PUB-05 ⛔ `ESC-7-API-PRODDETAIL` (still
-  gated)
+  gated) — **pulled only once FE-PUB-09 actually closes**
 
 ## Team-2 — Buyer (FE-BUY / FE-CLN)
 
@@ -92,11 +99,14 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 ## Review Team 4 — Architecture & Governance (A lane) — queue
 
 _(`FE-BUY-10` (Team-2) checkpointed 2026-07-03, awaiting Review-A — WP card
-  `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`. Otherwise clear —
-  `FE-PUB-03` (RV-0111), `FE-PUB-04` (RV-0116), `FE-PUB-06` (RV-0118), `FE-PUB-07` (RV-0119),
-  `FE-PUB-01` (RV-0121), `FE-VEN-04` (RV-0110), `FE-VEN-09` (RV-0120), `FE-VEN-10` (RV-0123),
-  `FE-VEN-11` (RV-0124, PASS WITH PATCH — MINOR patched at `b847e7e`), `FE-VEN-12` (RV-0125, clean
-  PASS, 0 B/M/M, 9 OBS, closed), `FE-BUY-07` (RV-0112) all cleared A and closed/advanced.)_
+  `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`. `FE-PUB-09`
+  (Team-1) checkpointed `d455151` 2026-07-03, **re-submitted awaiting a fresh Review-A** — the
+  eager-`<script async>` MAJOR found by a second Review-B pass (RV-0126 addendum) is fixed; needs
+  independent re-verification before Review-B again. Otherwise clear — `FE-PUB-03` (RV-0111),
+  `FE-PUB-04` (RV-0116), `FE-PUB-06` (RV-0118), `FE-PUB-07` (RV-0119), `FE-PUB-01` (RV-0121),
+  `FE-VEN-04` (RV-0110), `FE-VEN-09` (RV-0120), `FE-VEN-10` (RV-0123), `FE-VEN-11` (RV-0124, PASS
+  WITH PATCH — MINOR patched at `b847e7e`), `FE-VEN-12` (RV-0125, clean PASS, 0 B/M/M, 9 OBS,
+  closed), `FE-BUY-07` (RV-0112) all cleared A and closed/advanced.)_
 
 ## Review Team 5 — Quality & Adversarial (B lane) — queue
 
