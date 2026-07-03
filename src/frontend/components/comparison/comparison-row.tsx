@@ -1,6 +1,8 @@
-// P-BUY-15 — comparison ATTRIBUTE ROWS (the descriptive rows of the transposed matrix). Each row knows how
-// to render its cell from a `ComparisonSupplier` using the shared kit/format helpers. PRESENTATION-ONLY:
-// pure render of already-resolved values; it computes nothing, ranks nothing, and surfaces no score/winner.
+// Doc-7B kit — comparison ATTRIBUTE ROWS (the descriptive rows of the transposed matrix). Promoted from
+// the buyer-scoped `P-BUY-15` realization (Shared Platform Component Registry §4.2 CTO override —
+// 2026-07-03). Each row knows how to render its cell from a `ComparisonSupplier` using the shared kit/
+// format helpers. PRESENTATION-ONLY: pure render of already-resolved values; it computes nothing, ranks
+// nothing, and surfaces no score/winner.
 //
 // The row SET is the Board's allowed descriptive field list (Supplier is the column identity, not a row).
 // There is deliberately NO trust/performance/match score or standing-band row (firewalled signals stay
@@ -9,9 +11,9 @@
 
 import * as React from "react";
 import { StatusChip } from "@/frontend/components/status-chip";
-import { Money, formatDate } from "../format";
-import { quotationStateDisplay } from "../state-display";
-import { SealedMarker } from "../sealed-marker";
+import { Money, formatDate } from "@/frontend/components/format";
+import { quotationStateDisplay } from "@/frontend/components/quotation-state-display";
+import { SealedMarker } from "@/frontend/components/sealed-marker";
 import type { ComparisonSupplier } from "./comparison-view-models";
 
 /** An em-dash for an absent value (no fabrication). */
@@ -21,8 +23,9 @@ function Dash() {
 
 /**
  * Resolve a protected-commercial-term cell. If the value is present, show it. If ABSENT AND the supplier is
- * sealed, EXPLAIN the seal (`SealedMarker`) — mirrors P-BUY-14's whole-card seal behavior so a server-omitted
- * protected term never reads as "the vendor provided nothing" (Doc-3 §10.1). Otherwise an em-dash.
+ * sealed, EXPLAIN the seal (`SealedMarker`) — mirrors the quotation detail's whole-card seal behavior so a
+ * server-omitted protected term never reads as "the vendor provided nothing" (Doc-3 §10.1). Otherwise an
+ * em-dash.
  */
 function sealedAware(sealed: boolean | undefined, present: React.ReactNode | null) {
   if (present) return present;
@@ -48,8 +51,6 @@ export const COMPARISON_ATTRIBUTES: ComparisonAttribute[] = [
     // R6 / Inv #12: in the COMPARISON the status tone is UNIFORMLY NEUTRAL — no column may read as a
     // winner (`selected`→success) or a soft-positive (`shortlisted`→brand) cue. The factual state LABEL is
     // still shown (Status is a Board-allowed descriptive field); only the winner/positive COLOUR is removed.
-    // (The tone-carrying `quotationStateDisplay` is the correct mapping on the single-quotation detail; here
-    // the side-by-side context makes any non-neutral tone a comparative signal, so it is suppressed.)
     cell: (s) => <StatusChip label={quotationStateDisplay(s.state).label} tone="neutral" />,
   },
   {

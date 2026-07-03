@@ -17,7 +17,7 @@
 // Doc-5 contract and never sets `Iv-Active-Organization` (Inv #5 / Doc-7C SR3).
 
 import { ComparisonView } from "../../../_components/comparison";
-import type { ComparisonData } from "../../../_components/comparison/comparison-view-models";
+import type { ComparisonData } from "@/frontend/components/comparison";
 
 export const metadata = {
   title: "Comparison",

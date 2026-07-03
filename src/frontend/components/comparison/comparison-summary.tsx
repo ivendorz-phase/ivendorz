@@ -1,10 +1,12 @@
-// P-BUY-15 — comparison SUMMARY band. Descriptive context for the matrix (how many quotations are being
-// compared + the immutable statement stamp). PRESENTATION-ONLY: it states a count of DISCLOSED quotations
-// (never a withheld/excluded count — Inv #11/GI-12) and carries NO winner/recommendation/ranking (R6). The
-// "not ranked" note reinforces to the buyer that order is the System's, not a preference.
+// Doc-7B kit — comparison SUMMARY band. Promoted from the buyer-scoped `P-BUY-15` realization (Shared
+// Platform Component Registry §4.2 CTO override — 2026-07-03). Descriptive context for the matrix (how
+// many quotations are being compared + the immutable statement stamp). PRESENTATION-ONLY: it states a
+// count of DISCLOSED quotations (never a withheld/excluded count — Inv #11/GI-12) and carries NO winner/
+// recommendation/ranking (R6). The "not ranked" note reinforces to the buyer that order is the System's,
+// not a preference.
 
 import { Card, CardContent } from "@/frontend/primitives/card";
-import { formatInstant } from "../format";
+import { formatInstant } from "@/frontend/components/format";
 import type { ComparisonData } from "./comparison-view-models";
 
 export function ComparisonSummary({ data }: { data: ComparisonData }) {

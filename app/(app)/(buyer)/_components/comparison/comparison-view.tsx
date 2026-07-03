@@ -3,8 +3,11 @@
 // page resolves the comparison via the wired `rfq.get_comparison_statement.v1` (Doc-4E §E8.6, GI-02) —
 // PARKED until the M3 backend lands (Wave 4).
 //
-// REUSE: the canonical platform-shell `PageHeader` + `Breadcrumbs`, the comparison Summary/Table/Empty
-// compositions (which themselves reuse the shared `DataListTable` + kit `Card`/`StatusChip`/`EmptyState`).
+// REUSE: the canonical platform-shell `PageHeader` + `Breadcrumbs`, and the `ComparisonSummary`/
+// `ComparisonTable`/`ComparisonEmpty` compositions — PROMOTED to the Doc-7B kit at
+// `@/frontend/components/comparison` (Shared Platform Component Registry §4.2 CTO override —
+// 2026-07-03). This host stays here as the buyer-scoped page adapter: it owns the route's data
+// resolution and not-found handling; the kit owns the comparison presentation.
 //
 // GOVERNANCE (the comparison MOAT — most R6-sensitive buyer screen):
 //  • R6 / Inv #12 — PURELY DESCRIPTIVE. No compare-to-winner, no recommended/best/lowest cue, no award
@@ -17,10 +20,12 @@ import { FileText } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
 import { EmptyState } from "@/frontend/components/empty-state";
 import { PageHeader, Breadcrumbs } from "../../../_components/shell";
-import { ComparisonSummary } from "./comparison-summary";
-import { ComparisonTable } from "./comparison-table";
-import { ComparisonEmpty } from "./comparison-empty";
-import type { ComparisonData } from "./comparison-view-models";
+import {
+  ComparisonSummary,
+  ComparisonTable,
+  ComparisonEmpty,
+  type ComparisonData,
+} from "@/frontend/components/comparison";
 
 /** Not-found ≡ genuine absence (byte-identical; Inv #11 / GI-12). Breadcrumb shows only the `RFQs` ancestor. */
 function NotFoundState() {

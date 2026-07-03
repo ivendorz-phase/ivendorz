@@ -67,9 +67,11 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   surviving clean dev server confirms `/discover` 200 with all 8 cards linking `/vendors/[slug]`,
   and `/vendors/padma-valve-fittings` 200 rendering the matching "Padma Valve & Fittings Ltd."
   profile — card identity and microsite identity now match end-to-end.
-- **Pipeline stage:** `FE-DOC-01` 🔵A Review-A @ `3293009` — Team-2 STOPS (no further pull before
-  gate). `FE-DOC-00` deliverable COMPLETE @ `296b2d0` (Lane-L pass pending; closes on deliverable,
-  FE-VEN-14 precedent — Board rulings on packet items stay open without blocking).
+- **Pipeline stage:** `FE-DOC-01` 🔵A Review-A @ `3293009` — Team-2 STOPS (no further FE-DOC pull
+  before gate). `FE-DOC-00` deliverable COMPLETE @ `296b2d0` (Lane-L pass pending; closes on
+  deliverable, FE-VEN-14 precedent — Board rulings on packet items stay open without blocking).
+  *(Available in parallel while gated — proposed `FE-PLAT-08` buyer workflow test coverage,
+  `fe-program-wbs.md` Track 8, pending Board mint.)*
 - **Next Milestone:** _(after the FE-DOC-01 gate)_ — Team-3 holds `FE-DOC-02 → 03`; `FE-DOC-04`
   Board-assign. Track 7 minted 2026-07-03 (WBS v1.2, universe 144 → 150, coverage PASS 150/150);
   WP cards `governanceReviews/milestones/fe-doc-00-governance-charter/` +
@@ -94,7 +96,11 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 - **Pipeline stage:** idle
 - **Next Milestone:** `FE-DOC-02 Vendor Documents Hub` → `FE-DOC-03 Templates & Generated
   Documents` (Track 7, WBS v1.2 — pulls after FE-DOC-01 establishes the hub pattern; FE-DOC-03
-  S-dep on the FE-SH-01 promotion ruling, Board agenda #13, fallback documented)
+  S-dep on the FE-SH-01 promotion ruling, Board agenda #13, fallback documented — **groundwork now
+  submitted** as `FE-SH-01/05/07/08 Shared Kit Promotion`, 🔵A 2026-07-03, WP card
+  `governanceReviews/milestones/fe-sh-01-shared-kit-promotion/`). *(Available in parallel —
+  proposed `FE-PLAT-09` vendor/admin workflow test coverage, `fe-program-wbs.md` Track 8, pending
+  Board mint.)*
 
 ---
 
@@ -106,6 +112,16 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   kinds/facets, opaque counterparty refs, `?q=` refine-not-search, shared-home boundary).
 - **`FE-DOC-00` Charter & Governance Package** (Team-2) — Lane-L deliverable @ `296b2d0`
   (docs/PM only; coverage 150/150; closes on deliverable per the FE-VEN-14 precedent).
+- **`FE-SH-01/05/07/08` Shared Kit Promotion** (Kit owner, cross-team) — 🔵A submitted 2026-07-03
+  (working tree, uncommitted); WP card
+  `governanceReviews/milestones/fe-sh-01-shared-kit-promotion/WORK-PACKAGE.md`. Lane L proposed
+  (zero-behavior-change promotion of `DataListTable`/`quotationStateDisplay`-slice/`SealedMarker`/
+  new Comparison+RFQ-card composition into `src/frontend/components/`, ahead of the registry's
+  normal "2nd consumer" trigger — owner CTO override). Lens hotspots: confirm zero behavior change
+  (shim re-exports vs the promoted originals, byte-for-byte), confirm no `app/`-import creeps into
+  the shared kit, confirm the two skipped candidates (Company Card, Quote Card) genuinely don't
+  exist rather than being silently dropped. Feeds Board agenda #13's FE-SH-01 promotion item —
+  this submission is that item's technical groundwork, not itself the Board ruling.
 
 _(`FE-BUY-10` (Team-2) checkpointed 2026-07-03, awaiting Review-A — WP card
   `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`. Otherwise clear —

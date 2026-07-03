@@ -19,12 +19,14 @@
 // exists on that RFQ — visibility-gated, per page_inventory's P-VND-17 binding. Closes the gap where
 // "Quotations" is its own left-nav destination but the merged listing showed no quotation-state signal.
 // Own-record fact only (ND-2/ND-3) — never another vendor's quotation/state.
-import Link from "next/link";
-import { MessageSquare } from "lucide-react";
+//
+// Row rendering (state chips + link structure) was PROMOTED to the Doc-7B kit as `RfqCard` (Shared
+// Platform Component Registry §4.2 CTO override — 2026-07-03). This module keeps ONLY list composition
+// (sort/group by information hierarchy) and adapts each `InboxItemView` to the kit's `RfqCardVM` —
+// presentation (the card) and transformation (the mapping) stay in separate files.
 import { Card, CardContent } from "@/frontend/primitives/card";
 import { EmptyState } from "@/frontend/components/empty-state";
-import { RfqStateChip, InvitationStateChip, QuotationStateChip } from "./state-chips";
-import { WindowStateChip } from "./window-state-chip";
+import { RfqCard, type RfqCardVM } from "@/frontend/components/rfq";
 import type { InboxItemView, WindowUrgency } from "./types";
 
 export interface InvitationInboxProps {
@@ -53,43 +55,28 @@ function byInformationHierarchy(items: InboxItemView[]): InboxItemView[] {
   });
 }
 
+/** The only transformation this module owns: `InboxItemView` (this workspace's read shape) → the kit's
+ *  `RfqCardVM` (presentation-only). Field names are identical today; kept as an explicit mapping (not a
+ *  cast) so the two types are free to diverge without breaking the card. */
+function toRfqCardVM(item: InboxItemView): RfqCardVM {
+  return {
+    rfq_id: item.rfq_id,
+    rfq_human_ref: item.rfq_human_ref,
+    rfq_summary: item.rfq_summary,
+    rfq_state: item.rfq_state,
+    window_state: item.window_state,
+    window_deadline_label: item.window_deadline_label,
+    window_urgency: item.window_urgency,
+    invitation_state: item.invitation_state,
+    quotation_state: item.quotation_state,
+    unread_clarification: item.unread_clarification,
+  };
+}
+
 function InvitationRow({ item, basePath }: { item: InboxItemView; basePath: string }) {
   return (
     <li>
-      <Link
-        href={`${basePath}/rfqs/${item.rfq_id}`}
-        className="flex flex-col gap-2 p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:flex-row sm:items-start sm:justify-between"
-      >
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <p className="truncate text-sm font-medium text-foreground">
-              {item.rfq_human_ref ?? "RFQ"}
-            </p>
-            {item.unread_clarification ? (
-              <span
-                className="inline-flex items-center gap-1 text-xs text-iv-info-text"
-                title="You have an unread clarification message"
-              >
-                <MessageSquare aria-hidden="true" className="size-3.5" />
-                <span className="sr-only">Unread clarification</span>
-              </span>
-            ) : null}
-          </div>
-          {item.rfq_summary ? (
-            <p className="mt-0.5 truncate text-sm text-muted-foreground">{item.rfq_summary}</p>
-          ) : null}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <RfqStateChip state={item.rfq_state} />
-          <WindowStateChip
-            state={item.window_state}
-            deadlineLabel={item.window_deadline_label}
-            urgency={item.window_urgency}
-          />
-          <InvitationStateChip state={item.invitation_state} />
-          <QuotationStateChip state={item.quotation_state} />
-        </div>
-      </Link>
+      <RfqCard item={toRfqCardVM(item)} href={`${basePath}/rfqs/${item.rfq_id}`} />
     </li>
   );
 }

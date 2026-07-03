@@ -50,7 +50,9 @@ only `FE-PUB-05` ⛔ remains gated on `ESC-7-API-PRODDETAIL`~~ **`ESC-7-API-PROD
 + `Doc-5D_PublicProductDetail_Patch_v1.0.1` + `Doc-3_Policy_Key_Registration_Patch_v1.11` +
 `ADR-025_Marketplace_Public_URL_Law` all folded together into `generatedDocs/`, registered in
 `00_AUTHORITY_MAP.md` + `CORPUS_INDEX.md`. **`FE-PUB-05` Product Detail — ⬜ Un-gated, Team-1's
-next pull.**
+next pull.** *(Available in parallel, proposed FE-PLAT track pending Board mint — see
+`fe-program-wbs.md` Track 8: FE-PLAT-01 SEO Completion, FE-PLAT-02 Storybook, FE-PLAT-05
+Observability SDK init, FE-PLAT-07 shared/E2E test coverage — all Team-1-scoped.)*
 
 **Team-2 (Buyer):**
 ~~FE-BUY-04..09~~ ✅ **All Closed** this session (RV-0102/0108/0109/0112/0113/0114 @ `5a4550c`/
@@ -139,6 +141,18 @@ package at FE-PUB-09's review.)_
 **Review Team 5 standing backlog (B lane):** Step-3 Public baseline sweep (QCT 5-step Step 3) at a
 stable post-cutover SHA — **owner-authorized 2026-07-02 (agenda #10)**; runs **before FE-PUB-02
 starts**; findings feed the FE-PUB packages.
+
+**Kit owner (cross-team, FE-SH):** `FE-SH-01/05/07/08 Shared Kit Promotion` — 🔵A submitted
+2026-07-03 (working tree, uncommitted); WP card
+`governanceReviews/milestones/fe-sh-01-shared-kit-promotion/WORK-PACKAGE.md`. Owner CTO override
+(2026-07-03): promotes `DataListTable` (FE-SH-01), `quotationStateDisplay` slice of `state-display`
+(FE-SH-05, partial), `SealedMarker` (FE-SH-07, proposed ID), and a new Comparison Table + RFQ Card
+composition (FE-SH-08, proposed ID) into `src/frontend/components/` — ahead of the registry's
+normal "2nd consumer" trigger. Lane L proposed (zero-behavior-change move + shims, no firewall/
+money-boundary/contract touch); Board/owner may override to G. **Feeds Board agenda #13**
+(Document Management packet's FE-SH-01 promotion item) — this is that item's technical groundwork,
+not itself the Board ruling. `promotion-watchlist.md` + `shared_platform_component_registry.md`
+already updated in the same change.
 
 ## Gated register (⛔ — waiting on an `esc_registry.md` handle or asset)
 

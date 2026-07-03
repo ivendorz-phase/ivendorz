@@ -1,10 +1,12 @@
-// P-BUY-15 — the comparison MATRIX. REUSES the shared buyer `DataListTable` (no second table primitive is
-// coined): rows = the descriptive ATTRIBUTES, columns = the SUPPLIERS (in System order), the first column a
-// sticky `<th scope="row">` attribute label. The buyer scans a row to compare one attribute across suppliers.
-// PRESENTATION-ONLY; the order is the System's and is never re-sorted/re-ranked here (R6 / GI-04).
+// Doc-7B kit — the comparison MATRIX. Promoted from the buyer-scoped `P-BUY-15` realization (Shared
+// Platform Component Registry §4.2 CTO override — 2026-07-03). REUSES the shared `DataListTable` (no
+// second table primitive is coined): rows = the descriptive ATTRIBUTES, columns = the SUPPLIERS (in System
+// order), the first column a sticky `<th scope="row">` attribute label. The buyer scans a row to compare
+// one attribute across suppliers. PRESENTATION-ONLY; the order is the System's and is never re-sorted/
+// re-ranked here (R6 / GI-04).
 
 import { Card, CardContent } from "@/frontend/primitives/card";
-import { DataListTable } from "../data-list-table";
+import { DataListTable } from "@/frontend/components/data-list-table";
 import { buildComparisonColumns } from "./comparison-column";
 import { COMPARISON_ATTRIBUTES } from "./comparison-row";
 import type { ComparisonSupplier } from "./comparison-view-models";

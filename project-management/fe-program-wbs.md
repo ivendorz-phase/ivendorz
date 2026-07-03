@@ -161,6 +161,30 @@ components — the composition precedent applied to pages).
 | FE-DOC-03 Templates & Generated Documents | Platform | T3 | P1 | L | Med | H: FE-DOC-00 · S: FE-DOC-01/02 (nav homes) · S: FE-SH-01 ruling (list infra; kit-primitive-rows fallback documented) | P-DOC-03..06 | ⬜ Registered — BC-OPS-4 UI: templates list/detail (fixed-five format enum verbatim, **no PO template**; draft/active/archived; immutable versions) + generated documents list/detail (DOC-… refs, storage refs, grant/revoke disabled); both mounts byte-identical via the shared home + shared `seed.ts`; adds hub cross-link cards (disclosed touch of P-DOC-01/02) |
 | FE-DOC-04 Cross-link Entry Points & Detail Enrichment | Platform | Board-assign | P2 | M | Med | S: FE-DOC-01..03 | — (touches P-BUY-01/20..25, P-VND-01/24..26) | ⬜ Registered — carries owner findings MINOR-03 (detail-side timeline)/MINOR-04 (RelatedDocumentsRail)/NIT-3 (detail print): disclosed touches of closed pages; dashboard document cards; no client-computed counts (R7) |
 
+## Track 8 — FE-PLAT Platform Readiness (PROPOSED — owner/Board ID mint pending, 2026-07-03)
+
+Cross-cutting engineering readiness raised in this session's CTO-level audit (frontend-only,
+doable before backend wiring — Wave 4). **Not yet Board-minted** — IDs below are proposed, framed
+the same way FE-DOC was proposed before its 2026-07-03 mint. None own a page (like FE-SH/FE-DS/
+FE-CLN); ownership is cross-team/Board-assign except where a single workspace is the natural home.
+
+| ID · Title (proposed) | Value | Bld/Mnt | Pri | Sz | Depends-on | Scope |
+|---|---|---|---|---|---|---|
+| FE-PLAT-01 SEO Completion | Platform | Team-1 | P2 | S | — | `app/sitemap.ts`, `app/robots.ts`, JSON-LD structured data for public + vendor microsite pages. Per-page metadata/OG already exists (FE-PUB-10); this finishes Doc-7D's "published+Public content only in sitemap/metadata" requirement, not a new one |
+| FE-PLAT-02 Component Documentation (Storybook) | Platform | Team-1 (kit owner) | P3 | M | — | `.storybook/` setup + stories for the newly-promoted `ComparisonTable`/`RfqCard` + existing `VendorCard`/`ProductCard`. Deliberately separate from FE-SH-01/05/07/08 (owner MINOR-1 — keep promotion diffs focused) |
+| FE-PLAT-03 Security Foundation | Platform | Board-assign | P1 | M | — | CSP + security headers (`next.config.ts`/`middleware.ts`), dependency scanning (`dependabot.yml`/`npm audit` gate), production security checklist doc |
+| FE-PLAT-04 Deployment Readiness | Platform | Board-assign | P2 | S | — | Production `Dockerfile` (current `docker-compose.yml` is dev-only Postgres), `vercel.json`, environment strategy doc |
+| FE-PLAT-05 Monitoring & Observability | Platform | Team-1 (SDK init) → all teams (capture calls) | P2 | M | — | Wire the already-declared, currently-empty "telemetry hook point — GI-12" comments in `app/(public)/error.tsx` + `app/(app)/workspace/error.tsx`; PostHog SDK init (env already declared) + a small event taxonomy |
+| FE-PLAT-06 Operational Documentation | Platform | Board-assign | P3 | M | — | Release checklist, rollback procedure, backup strategy, incident-response runbook, logging strategy doc — none exist in `generatedDocs/` or repo root today |
+| FE-PLAT-07 Test Coverage — Shared | Platform | Team-1 | P1 | M | — | Unit tests for `src/frontend/primitives`/`components` (currently 2 unit test files total, 0 component-level); E2E harness beyond the single smoke test |
+| FE-PLAT-08 Test Coverage — Buyer | Buyer Productivity | Team-2 | P1 | M | — | Workflow tests for RFQ/quote/engagement flows (currently 4 buyer-profile integration tests only, 0 RFQ/quote/engagement coverage) |
+| FE-PLAT-09 Test Coverage — Vendor/Admin | Vendor Growth | Team-3 | P1 | M | — | Workflow tests for vendor RFQ/quotation/leads/engagements + admin queues (currently 0 vendor/admin test coverage; admin `*-seed.ts` fixtures exist with no assertions) |
+
+**Not proposing:** i18n/Bengali localization (frozen corpus already closed this — Doc-7A MINOR-2,
+Doc-7B BR7: locale set is a product requirement, deliberately deferred, not a gap) · frontend
+contract-stub typing (ad-hoc-by-design per `quotation-view-models.ts`; formalizing now would edge
+into Doc-4A/API-Gov territory ahead of real backend wiring).
+
 ## Record tracks (completed — closed, never reopen; future work coins new IDs)
 
 | ID · Title | Bld/Mnt | Owns | Status |

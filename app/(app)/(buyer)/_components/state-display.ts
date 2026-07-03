@@ -7,11 +7,16 @@
 //
 // Labels are presentation strings (title-cased phrasing); the underlying state KEYS are the frozen
 // values from `view-models.ts`. Adding a state here without it existing in the frozen union is forbidden.
+//
+// `quotationStateDisplay` was PROMOTED to the Doc-7B kit (Shared Platform Component Registry §4.2 CTO
+// override — 2026-07-03) — re-exported below from `@/frontend/components/quotation-state-display` so
+// existing buyer imports of it continue to resolve unchanged. The other domain mappings here
+// (RFQ/engagement/payment/invoice/vendor-link/buyer-vendor/invitation) stay buyer-scoped until a second
+// workspace needs them too (registry §4).
 
 import type { StatusTone } from "@/frontend/components/status-chip";
 import type {
   RfqState,
-  QuotationState,
   EngagementState,
   PaymentStatus,
   TradeInvoiceStatus,
@@ -19,6 +24,8 @@ import type {
   BuyerVendorStatus,
   InvitationState,
 } from "./view-models";
+
+export { quotationStateDisplay } from "@/frontend/components/quotation-state-display";
 
 export interface StateDisplay {
   label: string;
@@ -43,20 +50,6 @@ const RFQ_STATE_DISPLAY: Record<RfqState, StateDisplay> = {
 };
 
 /**
- * Quotation state → label + tone. `not_selected` is rendered uniformly and NON-PENALIZINGLY (Doc-3 §9.5):
- * neutral tone, never a "rejected/loser" cue — a vendor must never learn it "lost".
- */
-const QUOTATION_STATE_DISPLAY: Record<QuotationState, StateDisplay> = {
-  draft: { label: "Draft", tone: "neutral" },
-  submitted: { label: "Submitted", tone: "info" },
-  withdrawn: { label: "Withdrawn", tone: "neutral" },
-  shortlisted: { label: "Shortlisted", tone: "brand" },
-  selected: { label: "Selected", tone: "success" },
-  not_selected: { label: "Not selected", tone: "neutral" },
-  expired: { label: "Expired", tone: "neutral" },
-};
-
-/**
  * Engagement state → label + tone — the pinned contract-authority set only (Doc-4F §F5 / Doc-2 §3.5).
  * CARRIED FLAG-AND-HALT (§0.1): the Doc-4M divergence (`active/disputed/terminated`) is intentionally
  * absent here pending Board reconciliation; do not add those keys without it.
@@ -70,10 +63,6 @@ const ENGAGEMENT_STATE_DISPLAY: Record<EngagementState, StateDisplay> = {
 
 export function rfqStateDisplay(state: RfqState): StateDisplay {
   return RFQ_STATE_DISPLAY[state];
-}
-
-export function quotationStateDisplay(state: QuotationState): StateDisplay {
-  return QUOTATION_STATE_DISPLAY[state];
 }
 
 export function engagementStateDisplay(state: EngagementState): StateDisplay {

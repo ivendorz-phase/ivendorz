@@ -1,28 +1,22 @@
-// P-BUY-15 Buyer Supplier Comparison — PRESENTATION VIEW-MODEL.
-//
-// The presentation shape the server layer (Doc-7C SR5, GI-02) MAPS the wired `rfq.get_comparison_statement.v1`
-// (Doc-4E §E8.6, T-ANALYTICS) read onto when backend wiring lands (Wave 4; PARKED today). It is NOT the frozen
-// DTO and it coins nothing. The comparison is a SYSTEM-GENERATED, versioned `comparison_statements.matrix_jsonb`
-// (Doc-2 §10.4) whose internal schema is "dev-doc" (NOT in the frozen corpus) — so the surface PROJECTS the
-// matrix into the render-ready shape below and the presentation renders it GENERICALLY (no coined matrix keys).
+// Doc-7B kit — Comparison Table PRESENTATION VIEW-MODEL. Promoted from the buyer-scoped `P-BUY-15`
+// realization (Shared Platform Component Registry §4.2 CTO override — 2026-07-03). NOT the frozen DTO and
+// coins nothing — the server layer maps the wired `rfq.get_comparison_statement.v1` (Doc-4E §E8.6) read
+// onto this shape when backend wiring lands (Wave 4; PARKED today).
 //
 // GOVERNANCE (load-bearing — this is the comparison MOAT, the most R6-sensitive buyer screen):
 //  • R6 / Inv #12 — the comparison is PURELY DESCRIPTIVE. It NEVER ranks to a winner and carries NO
 //    recommended/best/lowest-bidder/winner cue. `suppliers` render in the SYSTEM-supplied order and the UI
-//    NEVER re-ranks/re-sorts the matrix (GI-04). Award is a separate, deliberate act (P-BUY-17) — not here.
-//  • Doc-3 §9.1 (FIXED) — "the comparison shows standing bands but NEVER an auto-recommended winner." Per the
-//    Board's P-BUY-15 scope this presentation surfaces ONLY the descriptive allowed fields below and renders
-//    NO trust/performance/match SCORE or standing-band column (the firewalled signals stay firewalled).
-//  • Inv #11 / GI-12 — VISIBILITY-GATED: the server returns only DISCLOSED quotations; an out-of-visibility RFQ
-//    collapses to NOT_FOUND server-side (byte-identical). An empty comparison reads as "awaiting responses",
-//    never implying a vendor was excluded. No client count of withheld suppliers.
-//  • Doc-3 §10.1 — SEALED-UNTIL-CLOSE: a sealed supplier's price/commercial cells are omitted by the server;
-//    the cell explains the seal (never implies the vendor under-quoted) — consistent with P-BUY-14.
+//    NEVER re-ranks/re-sorts the matrix (GI-04).
+//  • Inv #11 / GI-12 — VISIBILITY-GATED: an empty comparison reads as "awaiting responses", never implying
+//    a vendor was excluded.
+//  • Doc-3 §10.1 — SEALED-UNTIL-CLOSE: a sealed supplier's price/commercial cells are omitted server-side;
+//    the cell explains the seal (never implies the vendor under-quoted).
 //  • Inv #8 — the comparison is a versioned immutable statement (`version_no`, `generated_at`).
 //
 // SCOPE: presentation only — no fetch, no mutation, no business logic, no client computation (Inv #9 / R7).
 
-import type { QuotationState, MoneyValue } from "../view-models";
+import type { QuotationState } from "@/frontend/components/quotation-state-display";
+import type { MoneyValue } from "@/frontend/components/format";
 
 /**
  * One column of the comparison = one DISCLOSED quotation (a "supplier"), as the System ordered it. The
@@ -30,7 +24,7 @@ import type { QuotationState, MoneyValue } from "../view-models";
  * projection. There is deliberately NO score/band/rank/winner field. Routes (if any) use the opaque id.
  */
 export interface ComparisonSupplier {
-  /** Opaque quotation id (the P-BUY-14 detail identity; never a human ref). */
+  /** Opaque quotation id (the detail identity; never a human ref). */
   quotationId: string;
   /** Vendor display name as the disclosed projection carries it. */
   vendorName: string;
@@ -56,9 +50,9 @@ export interface ComparisonSupplier {
 }
 
 /**
- * The P-BUY-15 comparison view-model. `null` drives the not-found ≡ genuine-absence state (the
- * `get_comparison_statement` read collapses an out-of-visibility RFQ to NOT_FOUND server-side, §7.5 —
- * byte-identical 404, no copy/layout/timing tell). A non-null statement with `suppliers: []` drives the
+ * The comparison view-model. `null` drives the not-found ≡ genuine-absence state (the
+ * `get_comparison_statement` read collapses an out-of-visibility RFQ to NOT_FOUND server-side — byte-
+ * identical 404, no copy/layout/timing tell). A non-null statement with `suppliers: []` drives the
  * visibility-gated "awaiting responses" empty. The matrix auto-generates at the first quotation and
  * re-versions on every quotation event (Doc-3 §9.1) — `versionNo`/`generatedAt` are the immutable stamps.
  */
