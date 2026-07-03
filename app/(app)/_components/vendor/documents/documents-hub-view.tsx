@@ -369,7 +369,7 @@ export function DocumentsHubView({ data }: { data: DocumentsHubData }) {
                         <EngagementStatusChip status={e.status} />
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        LOI/PO/challan/trade invoice/payment records live on{" "}
+                        LOI/PO/challan/WCC/trade invoice/payment records live on{" "}
                         <Link
                           href={`${BASE}/engagements/${e.id}`}
                           className="underline underline-offset-2"
