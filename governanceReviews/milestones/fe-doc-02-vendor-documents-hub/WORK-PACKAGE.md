@@ -17,6 +17,8 @@
   `button-name` critical hit is the identical pre-existing shared-shell `quick-create.tsx` defect
   already disclosed by `FE-DOC-01`'s own Review-B (Board standing agenda #11) — confirmed via
   `git show 8c0cb40 --stat`: `quick-create.tsx` does not appear in this commit's diff at all.
+  **RV-0131 Review-A: PASS WITH PATCH** (1 MINOR — this card's own "In scope" §2 bullet had drifted
+  from the correction above, patched in place; 2 OBS) — submitted to Review-B.
 - **Value:** Vendor Growth · **Priority:** P1 · **Size:** M · **Risk:** Med
 
 ## In scope
@@ -40,11 +42,14 @@
     column-priority constants without a shared cross-workspace table (same fallback posture as the
     buyer hub's pre-FE-SH-01 state).
   - **§2 Engagement document records** — per-engagement rows (ref + `EngagementStatusChip`,
-    vendor-owned, not the buyer's `engagementStateDisplay`) + the five fixed deep links
-    (`/workspace/engagements/[id]/po|payments|trade-invoice|challan|wcc` — plain navigation, no
-    existence claims, ESC-7G-ENG-03 discipline) + expandable `DocumentProcessTimeline`. DF-6
-    money-boundary note renders via the vendor's own **`<MoneyBoundaryBanner />`**
-    (`_components/vendor/engagements`) — not a new `Callout` copy.
+    vendor-owned, not the buyer's `engagementStateDisplay`) + a single plain-navigation link to the
+    one real `/workspace/engagements/[id]` page (**not** the buyer leg's five fixed per-kind
+    routes — the vendor track has no `/po|/challan|/trade-invoice|/payments|/wcc` sub-routes; its
+    `EngagementDocuments` doc-kind tabs are enumeration-build-blocked, `ESC-7G-ENG-03`, and live
+    entirely inside that one page) + expandable `DocumentProcessTimeline` (entries also link to
+    that same page, never a fabricated per-kind route). DF-6 money-boundary note renders via the
+    vendor's own **`<MoneyBoundaryBanner />`** (`_components/vendor/engagements`) — not a new
+    `Callout` copy.
   - **§3 Sourcing documents** — `DocumentRelations` deep links to `/workspace/rfqs`,
     `/workspace/leads` (vendor's pipeline equivalent of "approvals"), quotation detail — vendor
     framing of the buyer hub's §3 (vendor has no "RFQ internal approvals" concept; links point at

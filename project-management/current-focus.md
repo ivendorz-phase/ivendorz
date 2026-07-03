@@ -97,21 +97,21 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   forward not fabricated, independently confirmed by both review lanes against the actual report
   text and live render [`hasWorkflowTab:false`]. No leave-chrome trade-off this time — none of the
   3 reused components carries an internal link to another Account route)_
-- **Current Milestone (new):** `FE-DOC-02` Vendor Documents Hub — **🔵A Review-A** (checkpoint
-  `8c0cb40`; scope complete — sole in-scope page `workspace/documents` composed against the shared
-  documents home `FE-DOC-01` established; H: `FE-DOC-00` (delivered) · S: `FE-DOC-01` pattern
-  (delivered) both cleared)
+- **Current Milestone (new):** `FE-DOC-02` Vendor Documents Hub — **🔵B Review-B** (RV-0131
+  Review-A: PASS WITH PATCH, 1 MINOR — WP card's own "In scope" §2 bullet still described the
+  fabricated 5-route plan despite the top-of-file self-disclosure already correcting it; patched
+  in place, no resubmission needed — 2 OBS; submitted to Review-B at `8c0cb40`)
 - **Current Page:** _(sole in-scope page — LifecycleStrip/SearchBar/ViewChips/RecentlyOpenedStrip/
   FilterSidebar + 4 sections, reusing the shared documents home + vendor's own
   `EngagementStatusChip`/`TradeInvoiceStatusChip`/`MoneyBoundaryBanner`. **Self-caught defect fixed
   pre-submission**: initial draft mirrored the buyer hub's 5 fixed per-kind document routes, which
   don't exist on the vendor track [`ESC-7G-ENG-03` enumeration-build-blocked] — every reference now
   points at the one real `/workspace/engagements/[id]` page instead, caught via an isolated-worktree
-  live-render check before Review-A. Axe 0 violations attributable to this milestone [1 pre-existing
-  shared-shell `button-name` hit at mobile, confirmed absent from this commit's diff, same defect
-  already disclosed at `FE-DOC-01`'s own review, Board standing agenda #11] — submitted to
-  Review-A; Team-3 STOPS, holds for the gate)_
-- **Pipeline stage:** submitted to Review-A (Lane G)
+  live-render check before Review-A, independently re-verified by Review-A against the real route
+  tree. Axe 0 violations attributable to this milestone [1 pre-existing shared-shell `button-name`
+  hit at mobile, confirmed absent from this commit's diff, same defect already disclosed at
+  `FE-DOC-01`'s own review, Board standing agenda #11] — Team-3 STOPS, holds for the gate)_
+- **Pipeline stage:** submitted to Review-B (Lane G)
 - **Next Milestone:** `FE-DOC-03 Templates & Generated Documents` (Track 7, WBS v1.2 — S-dep on the
   FE-SH-01 promotion ruling, Board agenda #13, fallback documented — groundwork submitted as
   `FE-SH-01/05/07/08 Shared Kit Promotion`, 🔵A 2026-07-03, WP card
@@ -129,15 +129,6 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   kinds/facets, opaque counterparty refs, `?q=` refine-not-search, shared-home boundary).
 - **`FE-DOC-00` Charter & Governance Package** (Team-2) — Lane-L deliverable @ `296b2d0`
   (docs/PM only; coverage 150/150; closes on deliverable per the FE-VEN-14 precedent).
-- **`FE-DOC-02` Vendor Documents Hub** (Team-3) — 🔵A submitted 2026-07-03 @ `8c0cb40`; WP card
-  `governanceReviews/milestones/fe-doc-02-vendor-documents-hub/WORK-PACKAGE.md`. Vendor mirror of
-  `FE-DOC-01`, composed against the same shared documents home (never forked). Lens hotspots: fork
-  check on the shared home + vendor `engagements` chips, the route-topology correction (vendor has
-  no per-kind document sub-routes — verify every hub reference points at the real
-  `/workspace/engagements/[id]` page, not a fabricated `/po`/`/challan`/etc.), no `(buyer)/*`
-  import (workspace boundary), status chips reused from `_components/vendor/engagements` not
-  re-derived, `MoneyBoundaryBanner` reused not re-copied, "Pending approval" chip label reused
-  verbatim from the already-approved `FE-DOC-01` precedent (not a new coinage).
 - **`FE-SH-01/05/07/08` Shared Kit Promotion** (Kit owner, cross-team) — 🔵A submitted 2026-07-03
   (working tree, uncommitted); WP card
   `governanceReviews/milestones/fe-sh-01-shared-kit-promotion/WORK-PACKAGE.md`. Lane L proposed
@@ -159,7 +150,12 @@ _(`FE-BUY-10` (Team-2) checkpointed 2026-07-03, awaiting Review-A — WP card
 
 ## Review Team 5 — Quality & Adversarial (B lane) — queue
 
-_(B-lane clear — `FE-VEN-12` cleared, RV-0125 A:PASS ∧ B:PASS, closed by Team-3 [Review-B by a live
+_(**`FE-DOC-02` Vendor Documents Hub (Team-3) submitted, checkpoint `8c0cb40`, awaiting Review-B** —
+  WP card `governanceReviews/milestones/fe-doc-02-vendor-documents-hub/WORK-PACKAGE.md`. Review-A
+  (RV-0131): PASS WITH PATCH — 1 MINOR (WP card doc-drift, patched), 2 OBS; fork check clean, the
+  self-caught route-topology fix independently re-verified against the real route tree, zero
+  fabricated hrefs. Otherwise clear — `FE-VEN-12` cleared, RV-0125 A:PASS ∧ B:PASS, closed by Team-3
+  [Review-B by a live
   Team-5 session — composition-not-fork, P-ACC-13 exclusion, no-leave-chrome, render D/T/M+axe all
   independently confirmed; a second, independently-spawned Review-B agent reached the same
   technical PASS concurrently but misdiagnosed the live entry as a fabricated/self-certified

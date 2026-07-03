@@ -140,8 +140,12 @@ track (`ESC-7G-ENG-03` enumeration-build-blocked) — every per-engagement refer
 real `/workspace/engagements/[id]` page. Live-verified in an isolated `git worktree` (real `npm
 install`): all routes/deep-links 200, no fabricated hrefs, disabled affordances confirmed, axe 0
 violations attributable to this milestone (1 pre-existing shared-shell `button-name` hit, same as
-`FE-DOC-01`'s own disclosed finding, confirmed absent from this commit's diff). **🔵A Review-A
-submitted** at checkpoint `8c0cb40` — Team-3 STOPS, holds for the gate → then `FE-DOC-03 Templates
+`FE-DOC-01`'s own disclosed finding, confirmed absent from this commit's diff). **Review-A: PASS
+WITH PATCH** (RV-0131 — 1 MINOR: the WP card's own "In scope" §2 bullet still described the
+fabricated 5-route plan despite the top-of-file self-disclosure already correcting it; patched in
+place, no resubmission needed; 2 OBS. Fork check clean; route-topology self-correction independently
+re-verified against the real route tree, zero fabricated hrefs found). **🔵B Review-B submitted** at
+checkpoint `8c0cb40` — Team-3 STOPS, holds for the gate → then `FE-DOC-03 Templates
 & Generated Documents` (S-dep on the FE-SH-01 ruling, kit-primitive-rows fallback documented in the
 packet). _(Out-of-scope note: FE-PUB-09 vendored `popover`/`accordion`/`navigation-menu` into
 `src/frontend/primitives` — verify as a legit demand-driven kit extension under the mega-menu
