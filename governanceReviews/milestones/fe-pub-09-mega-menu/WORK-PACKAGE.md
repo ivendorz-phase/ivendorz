@@ -2,27 +2,27 @@
 
 - Lane: G (full Dev → Review-A [Team-4] → Review-B [Team-5] → close; L size, new kit package +
   header/nav surface + category-landing rebind — architecture-sensitive)
-- Reviewed-SHA record: **`d455151`** (fix-and-reverify checkpoint — supersedes `7e95dce`; see
-  Fix-and-reverify section below). Phase checkpoints: 1957857 P0 · 53c8649+971aa76 P1 ·
-  aee81c2 P2 · 22d501c P3 · ad62cfe P4 · 7e95dce P5; docs/gates 6da2e1d. NOTE for reviewers:
-  parallel sessions share this working tree — 53c8649/22d501c carry a few unrelated
-  FE-BUY-10/FE-VEN-11 tracker/screenshot files swept by concurrent commits; the FE-PUB-09 delta
-  is the navigation package + explorer/header/categories/landing files listed here.
+- Reviewed-SHA record: **`4d1aae8`** (fix-and-reverify checkpoint, round 3 — supersedes `d455151`
+  and `7e95dce`; see Fix-and-reverify section below). Phase checkpoints: 1957857 P0 ·
+  53c8649+971aa76 P1 · aee81c2 P2 · 22d501c P3 · ad62cfe P4 · 7e95dce P5; docs/gates 6da2e1d.
+  NOTE for reviewers: parallel sessions share this working tree — 53c8649/22d501c carry a few
+  unrelated FE-BUY-10/FE-VEN-11 tracker/screenshot files swept by concurrent commits; the
+  FE-PUB-09 delta is the navigation package + explorer/header/categories/landing files listed here.
 
-## Fix-and-reverify (RV-0126 addendum, 2026-07-03)
+## Fix-and-reverify (RV-0126 addendum, 2026-07-03) — 3 rounds, the real root cause found at round 3
 
 The first Dev → Review-A → Review-B pass at `7e95dce` both PASSed (0 BLOCKER/MAJOR/MINOR) and
 `execution-board.md` briefly recorded the milestone "APPROVED... Team-1 to commit + pull
 FE-PUB-10" — **that instruction was never acted on** (no `milestone(FE-PUB-09): close` commit
-exists) and is now superseded. A second, independently-dispatched Review-B ran the one check both
-the first Review-A (finding 7) and first Review-B (its own carried-forward OBS) had explicitly
-deferred — a real `next build --turbopack`, run in an isolated same-drive git worktree with a
-genuine `pnpm install` (not a `node_modules` symlink/junction — Turbopack's production bundler
-hard-rejects any reparse point as "pointing out of the filesystem root") specifically to avoid
-touching the shared dev cache active parallel sessions depend on.
+exists at any point in this cycle) and is now superseded. A second, independently-dispatched
+Review-B ran the one check both the first Review-A (finding 7) and first Review-B (its own
+carried-forward OBS) had explicitly deferred — a real `next build --turbopack`, run in an isolated
+same-drive git worktree with a genuine `pnpm install` (not a `node_modules` symlink/junction —
+Turbopack's production bundler hard-rejects any reparse point as "pointing out of the filesystem
+root") specifically to avoid touching the shared dev cache active parallel sessions depend on.
 
-**Found: 1 MAJOR.** `app/(public)/_components/explorer/explorer.tsx`'s `ExplorerMenu` and
-`app/(public)/_components/site-header.tsx`'s `ExplorerMobile` both used
+**Found (round 1 Review-B): 1 MAJOR.** `app/(public)/_components/explorer/explorer.tsx`'s
+`ExplorerMenu` and `app/(public)/_components/site-header.tsx`'s `ExplorerMobile` both used
 `React.lazy(() => import(...))` at module scope — correct-looking in source, indistinguishable
 from correct in a dev server — but Turbopack's *production* bundler injects the resulting chunk
 as an eager `<script async>` tag into every public page's initial HTML, including pages with zero
@@ -30,22 +30,78 @@ relationship to the mega-menu. Confirmed via Playwright network tracing on a col
 server with zero interaction. Directly contradicts `explorer.tsx`'s own documented contract ("the
 header pays nothing until first hover intent") and `MEGA_MENU_ARCHITECTURE.md` §9.5.
 
-**Fixed** (checkpoint `d455151`): both call sites switched from `React.lazy` to
-`next/dynamic(() => import(...), { ssr: false })` — the framework-aware code-split API Next's own
-bundler treats as genuinely on-demand rather than required-for-hydration. No other behavior
-change; both pre-existing `React.Suspense` wrappers unchanged and remain compatible.
-`tsc`/`eslint`/`prettier` clean.
+**Round 1 fix** (checkpoint `d455151`): both call sites switched from `React.lazy` to
+`next/dynamic(() => import(...), { ssr: false })`. Self-verified via the same isolated-build
+method — but that verification used "Post RFQ"/"All Categories"/"MegaMenu" as a content
+fingerprint to identify the chunk, and **that fingerprint was a false positive**: "Post RFQ" is
+also `SiteHeader`'s own always-rendered CTA text, so the check couldn't actually distinguish the
+lazy chunk from the always-loaded header chunk. This was only caught at round 2.
 
-**Independently re-verified** (same isolated-worktree + real-install + `next build`/`next start`
-method): the two chunks containing the mega-menu code (content-verified via string search —
-"Post RFQ"/"All Categories"/"MegaMenu") are now registered in Next's
-`react-loadable-manifest.json` (confirming genuine code-splitting) and are **absent** from the
-initial `<script src>` list of both `/about` (unrelated page) and `/` (the landing page hosting
-the trigger) — the defect class is gone.
+**Found (round 2 Review-B, fresh dispatch): REGRESSION.** The independently-dispatched round-2
+Review-B rebuilt in its own isolated worktree and reproduced the identical eager `<script async>`
+defect — `next/dynamic({ ssr: false })` doesn't solve it either. `ssr: false` only suppresses
+server rendering; it doesn't remove the module from the route's client-reference-manifest, which
+is what Turbopack's production bundler uses to decide what to eagerly inject.
+
+**Round 2 fix** (checkpoint `631f26a`): removed the `React.lazy`/`next/dynamic` module-scope
+boundary entirely from both `explorer.tsx` and `site-header.tsx`, replacing it with a bare
+`import()` call made only inside the interaction handler, with the resolved component held in
+local state (no lazy-loading API at all — just a manual promise). Self-re-verified — **using the
+same flawed "Post RFQ" fingerprint again**, which again produced a false "fixed" read.
+
+**Found (self-caught before round 3 Review-B, using a corrected fingerprint): the round-2 fix
+ALSO didn't work.** Re-running the identical isolated-build verification with a precise,
+non-ambiguous signal (the literal component name `MegaMenuVendors`, which exists nowhere outside
+the `mega-menu/*` component tree — confirmed by locating the exact chunk file containing it and
+cross-checking it against `SiteHeader`'s own bundle) showed the chunk was **still** eagerly
+`<script async>`'d on `/about`. The lazy-loading API on the trigger side was never the actual
+leak.
+
+**Real root cause, found by tracing the precise chunk's other imports:** the mega-menu package's
+barrel file (`src/frontend/navigation/index.ts`) re-exports BOTH the lightweight, always-needed
+model/provider code AND every heavy interactive `MegaMenu*` component from ONE `index.ts`.
+`app/(public)/_components/explorer/explorer-seo-nav.tsx` — the zero-JS, server-rendered,
+crawlable category-links baseline, rendered directly in `app/(public)/layout.tsx` (every public
+route, always, by design — it's the progressive-enhancement fallback for the interactive
+Explorer) — imported `buildTaxonomyIndex`/`categoryHref`/`OVERLAY_V1` **through that same barrel**.
+Turbopack's production tree-shaking wasn't granular enough to prove the barrel's unused
+`MegaMenu*` re-exports were safe to drop when only the lightweight exports were referenced, so
+importing anything through the barrel from an always-eager component pulled the ENTIRE mega-menu
+chunk in as collateral. Neither prior fix round touched this file, because both were focused on
+the trigger-side lazy-loading API, which was never where the leak actually was.
+
+**Round 3 fix** (checkpoint `4d1aae8`): `explorer-seo-nav.tsx` now imports directly from the
+concrete `model/taxonomy-index.ts`/`model/types.ts`/`model/overlay.v1.ts` files it actually needs,
+bypassing the `@/frontend/navigation` barrel entirely. `model/*` and `mega-menu/*` are separate
+subtrees with no other shared dependency, so this fully decouples the always-eager path's module
+graph from the interactive package. The round-2 manual-`import()` fix on the trigger side stays —
+it's still correct, just wasn't sufficient on its own; both fixes are needed together.
+
+**Round 3 re-verification, with a corrected methodology closing the gaps both prior rounds
+missed:**
+- **Precise signal**: identified the chunk by grepping for the literal string `MegaMenuVendors`
+  (a name that cannot appear in `SiteHeader`'s own bundle or anywhere outside the `mega-menu/*`
+  tree), not a generic marketing string.
+- **Negative path, 3 pages**: the identified chunk (`077f93c84a0fc493.js`) has **zero**
+  references — no `<script>` tag, no `<link rel="modulepreload">`, no `<link rel="prefetch">` of
+  any kind, checked by grepping the full served HTML — on `/about` (unrelated page) and `/`
+  (the landing page hosting the trigger). A second matched chunk (`5ec4df5ef8e968e2.js`, part of
+  the mega-menu tree but a different split point) legitimately DOES appear on `/categories`,
+  which directly and intentionally renders the interactive category tree inline — correctly
+  eager there, not a defect.
+- **Positive path (never directly confirmed by any prior round)**: real Playwright browser
+  automation (`@playwright/test`'s `chromium`, not just `curl`/static HTML inspection) with
+  network-request tracing (`page.on("request")`) confirms the mega-menu chunk is **not**
+  requested on initial `/` page load, and **is** requested within ~500ms of hovering the desktop
+  Explorer trigger. Same confirmation for the mobile drawer: chunk not requested until the sheet
+  is opened via tap.
+- Isolated same-drive `git worktree` + genuine `pnpm install` + `next build --turbopack` +
+  `next start`, fully independent of the shared dev cache, per the established safe-verification
+  method; worktree and processes cleaned up after.
 
 Re-submitted to a fresh Review-A per Amendment v1.3's unified re-review rule (any Review-B ISSUES
 always re-enters at A, never a B-only shortcut). Full record:
-`project-management/review-log.md` RV-0126 addendum.
+`project-management/review-log.md` RV-0126 addendum (rounds 1–3).
 
 ## Build adaptations & disclosures (for Review-A — deviations from the letter of the package)
 
