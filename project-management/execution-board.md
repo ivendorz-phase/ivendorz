@@ -183,7 +183,10 @@ pipeline is working as designed. **Review-A round 4: REVISION** — a SIXTH inst
 trailing sentence was an invented, ungrounded "quotation history" claim contradicting the file's own
 disclosure. **Fixed at checkpoint `067c5c0`** by deletion, after a full sentence-by-sentence
 grounding read of the whole file. **Re-entering at Review-A round 5** at `067c5c0` — 6 confirmed
-instances across 5 cycles —
+instances across 5 cycles. **Review-A round 5: PASS** — the 6-instance streak genuinely closed; every
+frozen enum enumeration complete, every claim grounded, all cross-file comments consistent; 2 OBS
+carried, non-gating, byte-identical to the already-passed buyer hub. **🔵B Review-B submitted** at
+the same checkpoint `067c5c0` per Amendment v1.3 §13 —
 Team-3 STOPS, holds for the gate → then `FE-DOC-03 Templates & Generated Documents` (S-dep on the
 FE-SH-01 ruling, kit-primitive-rows fallback documented in the packet). _(Out-of-scope note:
 FE-PUB-09 vendored `popover`/`accordion`/`navigation-menu` into `src/frontend/primitives` — verify

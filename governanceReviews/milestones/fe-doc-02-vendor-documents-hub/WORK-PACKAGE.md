@@ -69,6 +69,13 @@
   front-to-back sentence-by-sentence grounding check of the whole file before this resubmission — no
   further invented claims found. Re-entering at Review-A (round 5) on `067c5c0`. **6 confirmed
   instances across 5 fix-and-reverify cycles.**
+  **RV-0131 Review-A round 5 at `067c5c0`: PASS.** No drift confirmed since `abea47d`. Full
+  end-to-end read of all 3 files + buyer-hub parity check: every frozen enum enumeration complete,
+  every claim grounded, all cross-file comments consistent. Fork/scope/route/gates all clean. 2 OBS
+  carried (both byte-identical to the already-passed buyer hub, explicitly non-gating): `FACETS`
+  "Status" omits `cancelled`; the "Pending approval" chip label sits in mild tension with this
+  file's "no RFQ approvals" framing but is WP-card-prescribed and buyer-identical. **The 6-instance
+  streak is closed — dispatching Review-B on the same checkpoint `067c5c0`.**
 - **Value:** Vendor Growth · **Priority:** P1 · **Size:** M · **Risk:** Med
 
 ## In scope

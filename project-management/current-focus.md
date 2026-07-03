@@ -120,17 +120,14 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   forward not fabricated, independently confirmed by both review lanes against the actual report
   text and live render [`hasWorkflowTab:false`]. No leave-chrome trade-off this time — none of the
   3 reused components carries an internal link to another Account route)_
-- **Current Milestone (new):** `FE-DOC-02` Vendor Documents Hub — **🔵A Review-A (re-entry, round
-  5)** at checkpoint `067c5c0`. Review-A round 4 verdict: **REVISION** — a SIXTH instance, a NEW
-  failure shape: §3's trailing sentence ("Quotation history is System-generated and never
-  recommends a price.") was an invented, ungrounded substitute claim — no such concept exists
-  anywhere in the codebase, and it contradicted this file's own disclosure that a vendor has
-  exactly one quotation per RFQ. Fixed at `067c5c0` by deletion (no real equivalent to disclose).
-  Given the new failure shape (fabrication, not omission), did a full front-to-back
-  sentence-by-sentence grounding check of the whole file rather than another string-diff — no
-  further invented claims found. **6 confirmed instances across 5 fix-and-reverify cycles** — the
-  review pipeline continues to catch something real each round (no false positives), but this is an
-  unusually long cycle worth the owner's awareness.
+- **Current Milestone (new):** `FE-DOC-02` Vendor Documents Hub — **🔵B Review-B** at checkpoint
+  `067c5c0`. Review-A round 5 (RV-0131) verdict: **PASS** — the 6-instance recurring-failure streak
+  is genuinely closed. Full end-to-end read of all 3 files + buyer-hub parity check: every frozen
+  enum enumeration complete, every claim grounded, all cross-file comments consistent. 2 OBS carried
+  (non-gating, byte-identical to the already-passed buyer hub): `FACETS` "Status" omits `cancelled`;
+  the "Pending approval" chip label's mild tension with the "no RFQ approvals" framing is
+  WP-card-prescribed and buyer-identical, declined to gate (Raise≠Accept — not overriding an
+  approved preset name). Dispatching Review-B on the same checkpoint next.
 - **Current Page:** _(sole in-scope page — LifecycleStrip/SearchBar/ViewChips/RecentlyOpenedStrip/
   FilterSidebar + 4 sections, reusing the shared documents home + vendor's own
   `EngagementStatusChip`/`TradeInvoiceStatusChip`/`MoneyBoundaryBanner`. SIX route/copy-topology
@@ -144,7 +141,7 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   violations attributable to this milestone [1 pre-existing shared-shell `button-name` hit at
   mobile, same defect already disclosed at `FE-DOC-01`'s own review, Board standing agenda #11] —
   Team-3 STOPS, holds for the gate)_
-- **Pipeline stage:** submitted to Review-A, re-entry round 5 (Lane G)
+- **Pipeline stage:** submitted to Review-B (Lane G)
 - **Next Milestone:** `FE-DOC-03 Templates & Generated Documents` (Track 7, WBS v1.2 — S-dep on the
   FE-SH-01 promotion ruling, Board agenda #13, fallback documented — groundwork submitted as
   `FE-SH-01/05/07/08 Shared Kit Promotion`, 🔵A 2026-07-03, WP card
