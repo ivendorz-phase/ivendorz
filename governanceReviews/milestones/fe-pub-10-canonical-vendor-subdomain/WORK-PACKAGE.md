@@ -102,12 +102,30 @@ A:PASS ∧ B:PASS gate the owning Dev team self-closes per `review-process.md` A
 
 ## Key dates
 
-Created 2026-07-03 · Started 2026-07-03 · Paused — · Resumed — · Closed —
+Created 2026-07-03 · Started 2026-07-03 · Paused — · Resumed — · Closed 2026-07-03
+
+## Review cycle — RV-0128 (`project-management/review-log.md`)
+
+Review-A **PASS** (0 B/M/M, 2 OBS) → Review-B **ISSUES** (1 MINOR disputed: an isolated-worktree
+`prettier --check` claim on `vendor-url.ts`, contradicted by the commit's own toolchain — 2 OBS
+non-actionable) → per Amendment v1.3's unified re-review rule, re-entered **Review-A** to
+adjudicate the disputed MINOR from scratch (no code change — nothing to fix, the committed file
+already matched prettier's own output): **PASS**, disputed MINOR ruled NOT VALID (4 independent
+verification methods: working-tree check, byte-exact git-blob check, `printWidth:100` vs the
+103-char single-line candidate, prettier-version/lockfile cross-check) → re-check **Review-B**
+(tie-breaker): **PASS**, third independent confirmation, findings unanimous across 3 reviewers / 4
+prettier invocations / 3 distinct point-releases. Gate clear: **A:PASS ∧ B:PASS, B/M/M=0** on the
+same checkpoint SHA (`cafefcb`) — the approval signal per §13; no Board turn required. Full
+transparency record (the dispute recorded start to finish, not summarized away) in RV-0128.
 
 ## DoD confirmation (checked at close)
 
-☐ page DoD ☐ pixel-identical acceptance verified (screenshot/text diff on all touched routes) ☐
-WCAG-AA ☐ tsc/eslint/prettier ☐ all ~14 call sites repointed, zero remaining inline
-`` `/vendors/${slug}` `` concatenation in Team-1-owned files ☐ canonical + og:url present on all 7
-microsite routes ☐ Review A PASS ☐ Review B PASS (B/M/M=0) ☐ gate approval ☐ no TODO/dead code ☐
-no duplicate components ☐ tracker updated ☐ card closed
+☑ page DoD (N/A — owns no pages, by design) ☑ pixel-identical acceptance verified (text-content +
+screenshot-hash diff on 3 routes, byte-identical before/after Review-B) ☑ WCAG-AA (fresh axe sweep,
+0 new violations — the one pre-existing `landmark-unique` finding confirmed unrelated, disclosed
+above, not fixed) ☑ tsc/eslint/prettier (prettier disputed then independently re-confirmed clean by
+3 reviewers) ☑ all ~14 call sites repointed, zero remaining inline `` `/vendors/${slug}` ``
+concatenation in Team-1-owned files (repo-wide grep, both review lanes) ☑ canonical + og:url
+present on all 7 microsite routes, confirmed absolute via `metadataBase` ☑ Review A PASS ☑ Review B
+PASS (B/M/M=0) ☑ gate approval (Dev-team self-close, Amendment v1.3 §13) ☑ no TODO/dead code ☑ no
+duplicate components ☑ tracker updated ☑ card closed

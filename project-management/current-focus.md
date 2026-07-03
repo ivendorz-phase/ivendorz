@@ -12,42 +12,30 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 
 ## Team-1 — Public / Platform (FE-PUB · FE-PF)
 
-- **Current Milestone:** _(none — `FE-PUB-01` Landing ✅ **Closed**, RV-0121, A:PASS ∧ B:PASS
-  (0 B/M/M both lanes, 2 OBS total, no fix-and-reverify cycle), checkpoint `17f93a8`; Dev-team
-  self-close per Amendment v1.3 §13. Fourth consecutive Team-1 milestone this session to pass both
-  lanes clean on the first submission. Closes the loop opened by `FE-PUB-07`'s audit)_
-- **Current Page:** _(none — P-PUB-01's Command Center `DEFAULT_POPULAR_SEARCHES` fixed: 4 of 5
-  curated "Popular" search chips didn't substring-match any product in `discovery/seed.ts`
-  [content mismatch, not a route/contract defect, found during FE-PUB-07's audit]; replaced with 5
-  terms each independently verified to match a real product, preserving the original cross-category
-  spread. Content-only, single-file delta — no kit/route/filter-logic touched. A confirming sweep
-  found no other landing section carries the same bug class [all source from seed-derived
-  constants, not independent string literals])_
-- **Pipeline stage:** idle — `FE-PUB-09` Mega Menu & Taxonomy Nav ✅ **Closed** at `4d1aae8`
-  after a **3-round fix-and-reverify cycle** (RV-0126). Round 1 (checkpoint `d455151`,
-  `React.lazy`→`next/dynamic({ssr:false})`) and round 2 (checkpoint `631f26a`, a fully manual
-  deferred `import()`) both *looked* fixed under self-verification but weren't — both used a
-  content fingerprint ("Post RFQ") that turned out to be a false positive, since that string is
-  also `SiteHeader`'s own always-rendered CTA text. Round 2's insufficiency was caught by a
-  fresh, independently-dispatched Review-B (REGRESSION verdict); round 1's flaw was self-caught
-  before round 3 using a corrected signal. **Real root cause** (round 3): the always-eager
-  `ExplorerSeoNav` (rendered directly in `app/(public)/layout.tsx`, every public route) imported
-  from the `@/frontend/navigation` barrel, which also re-exports every heavy `MegaMenu*`
-  component from the same `index.ts` — Turbopack's production tree-shaking wasn't granular
-  enough to drop the unused re-exports, pulling the whole mega-menu chunk into the always-eager
-  layout bundle. **Fixed** (checkpoint `4d1aae8`): `ExplorerSeoNav` now imports directly from
-  the concrete `model/*.ts` files, bypassing the barrel. **Empirically re-verified** by both a
-  fresh Review-A (architectural/static-analysis PASS) and a fresh Review-B (independent isolated
-  build + real Playwright interaction tracing — confirmed the chunk is absent from `/about`/`/`
-  by every mechanism (`<script>`/`modulepreload`/`prefetch`) and genuinely loads within ~200ms of
-  hover/tap) — both 0 findings, 4 OBS total, gate clean. Dev-team self-close per Amendment v1.3
-  §13. Full record: `project-management/review-log.md` RV-0126 (all 3 rounds, including the two
-  failed attempts, recorded transparently).
-- **Next Milestone:** `FE-PUB-10` Canonical Vendor Subdomain — **⬜ Registered 2026-07-03**
-  (Board-minted, ADR-024 realization @ `c1187a8`; owns no pages; WP card at kickoff; acceptance:
-  pixel output of all existing pages identical — only URL generation, routing, metadata,
-  redirects, discovery artifacts may change) · then FE-PUB-05 ⛔ `ESC-7-API-PRODDETAIL` (still
-  gated)
+- **Current Milestone:** _(none — `FE-PUB-10` Canonical Vendor Subdomain ✅ **Closed**, RV-0128,
+  A:PASS ∧ B:PASS (B/M/M=0 both lanes on the same checkpoint SHA `cafefcb`), Dev-team self-close
+  per Amendment v1.3 §13. One MINOR raised by the first Review-B (a claimed `prettier --check`
+  failure on the new `vendor-url.ts`, from an isolated-worktree environment) was disputed by
+  Team-1's own investigation, then independently adjudicated NOT VALID by a re-entered Review-A
+  and re-confirmed by a tie-breaker Review-B — three reviewers, four prettier invocations, three
+  distinct prettier point-releases, unanimous PASS; the committed file's multi-line wrap is
+  prettier's own required output under this repo's `printWidth:100` (the single-line form is 103
+  chars). Zero code delta across the whole dispute. Full transparency record in
+  `project-management/review-log.md` RV-0128)_
+- **Current Page:** _(none — owns no pages by design. New shared `vendorHref(slug, subpage?)`
+  builder (`app/(public)/_components/vendor-url.ts`) realizes ADR-024's Vendor URL Builder rule
+  (SHALL) in presentation-mode interim: byte-identical `/vendors/${slug}` output, single swap
+  point for a later wave's real CHR-resolved host. 16 files repointed off inline concatenation;
+  `alternates.canonical` + `openGraph.url` (absolute via `metadataBase`) added to all 7 vendor
+  microsite routes' `generateMetadata`. A pre-existing `landmark-unique` a11y finding [duplicate
+  `"Vendor sections"` nav label] was found during verification, confirmed unrelated via `git diff`
+  [href-value only, zero DOM/aria change], and correctly left unfixed — out of the "pixel output
+  identical" acceptance bound)_
+- **Pipeline stage:** idle — Team-1's queue is now exhausted. Only `FE-PUB-05` remains, still ⛔
+  gated on `ESC-7-API-PRODDETAIL`.
+- **Next Milestone:** _(none pullable — `FE-PUB-05` ⛔ `ESC-7-API-PRODDETAIL` still gated; no
+  other Team-1 milestone registered on the execution board. Awaiting either the gate's resolution
+  or a fresh Board registration.)_
 
 ## Team-2 — Buyer (FE-BUY / FE-CLN)
 

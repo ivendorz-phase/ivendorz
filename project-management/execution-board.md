@@ -38,9 +38,14 @@ same file — Turbopack's tree-shaking wasn't granular enough to drop the unused
 Review-A + Review-B pair via an independent isolated build and real Playwright interaction
 tracing — chunk absent from `/about`/`/` by every mechanism, genuinely loads within ~200ms of
 hover/tap. Full record: `project-management/review-log.md` RV-0126, all 3 rounds recorded
-transparently including the 2 failed attempts) · `FE-PUB-10 Canonical Vendor Subdomain` — **⬜
-Registered 2026-07-03** (Board-minted, ADR-024 realization @ `c1187a8`; owns no pages; WP card at
-kickoff) — **Team-1's next pull**. Only `FE-PUB-05` ⛔ remains gated.
+transparently including the 2 failed attempts) · ~~`FE-PUB-10` Canonical Vendor Subdomain~~ ✅
+**Closed** (RV-0128, A:PASS ∧ B:PASS, B/M/M=0 both lanes on `cafefcb`, Dev-team self-close
+2026-07-03 — new `vendorHref()` builder realizing ADR-024's URL Builder rule, 16 call sites
+repointed, canonical/og:url added to all 7 microsite routes, byte-identical acceptance verified.
+One disputed MINOR [an isolated-worktree `prettier --check` false positive] resolved via a
+1-round procedural re-review with zero code delta — 3 independent reviewers, 4 prettier
+invocations, unanimous PASS; full dispute record in RV-0128). **Team-1's queue is now exhausted —
+only `FE-PUB-05` ⛔ remains gated** on `ESC-7-API-PRODDETAIL`.
 
 **Team-2 (Buyer):**
 ~~FE-BUY-04..09~~ ✅ **All Closed** this session (RV-0102/0108/0109/0112/0113/0114 @ `5a4550c`/
@@ -54,9 +59,12 @@ record uncommitted] + start next; owner resolved both gating decisions 2026-07-0
 surfaces for P-BUY-03/04, hold P-BUY-05 build; P-BUY-04 link-out repointed to the public microsite,
 8/8 buyer slugs resolve, favorites correctly held; WP card
 `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`).
-`FE-DOC-00 Charter & Governance Package` — **deliverable COMPLETE @ `296b2d0`, 🔵A Lane-L**
-(Track 7 minted: WBS v1.2, universe 144 → 150, coverage PASS 150/150, 3 ESC rows, Board packet
-[agenda #13]; closes on deliverable, FE-VEN-14 precedent) · `FE-DOC-01 Buyer Documents Hub` —
+`FE-DOC-00 Charter & Governance Package` — **✅ APPROVED @ `296b2d0` (Lane-L, RV-0127, A:PASS ∧
+B:PASS, 0 BLOCKER/MAJOR/MINOR both lanes; Review Team 5 marked approved 2026-07-03)** (Track 7
+minted: WBS v1.2, universe 144 → 150, coverage PASS 150/150 [Team-5 re-ran the gate], 3 ESC rows
+[coined-enum firewall clean — excluded kinds routed to human Board, nothing coined], frozen-144
+§2–§8 byte-unchanged, Board packet [agenda #13] non-authoritative/human-gated; closes on
+deliverable, FE-VEN-14 precedent; Team-2 updates trackers + proceeds) · `FE-DOC-01 Buyer Documents Hub` —
 **🔵A Review-A @ `3293009`** (built same session per owner decision 3; walkthrough 7/7 + deep
 links 8/8; WP cards `governanceReviews/milestones/fe-doc-00-governance-charter/` +
 `fe-doc-01-buyer-documents-hub/`). **Team-2 STOPS before the gate.**
@@ -179,9 +187,11 @@ starts**; findings feed the FE-PUB packages.
     reused; **CHR** canonical-host algorithm (Doc-2 v1.0.5, fail-closed, authoritative on any
     conflict); an `active` custom domain is canonical while active; ADR-024 + 5-patch linked set +
     Doc-7D §11 (fold pending); full record
-    `governanceReviews/BOARD-PACKET-CANONICAL-VENDOR-SUBDOMAIN_v1.0.md`. **FE-PUB-10 registered**
-    (Team-1's next pull after FE-PUB-09); `ESC-MKT-SUBDOMAIN-MIGRATE` opened (migration wire
-    contract, API-Gov). Closed milestones not reopened.
+    `governanceReviews/BOARD-PACKET-CANONICAL-VENDOR-SUBDOMAIN_v1.0.md`. **FE-PUB-10 ✅ Closed**
+    (RV-0128, `cafefcb`, A:PASS ∧ B:PASS, presentation-mode-interim URL builder + canonical
+    metadata); `ESC-MKT-SUBDOMAIN-MIGRATE` opened (migration wire contract, API-Gov) and
+    `ESC-MKT-CANONICAL-URL` stays resolved-with-interim — both still open on their handles, real
+    CHR/DNS/301s not yet buildable presentation-only. Closed milestones not reopened.
 13. **Document Management packet** (`governanceReviews/BOARD-PACKET-DOCUMENT-MANAGEMENT_v1.0.md`,
     2026-07-03): rule on the excluded document kinds/features — **`ESC-OPS-DOC-MUSHOK`
     (Bangladesh-statutory VAT forms, priority)** · `ESC-OPS-DOC-KINDS` (credit/debit notes,
@@ -190,6 +200,20 @@ starts**; findings feed the FE-PUB packages.
     `DataListTable` promotion** (approve-with-extraction before FE-DOC-02/03, or explicit
     deferral; fallback documented). Item 1 (mint ratification) is a record of owner decisions
     already made. None of this blocks the FE-DOC builds.
+
+14. **Buyer Vendor Directory & Vendor Discovery packet**
+    (`governanceReviews/BOARD-PACKET-BUYER-VENDOR-DIRECTORY_v1.0.md`, 2026-07-03; pre-read
+    `DECISION-MATRIX-BUYER-VENDOR-DIRECTORY_v1.0.md`): owner-proposed feature reconciled against
+    the frozen corpus — directory core / Smart-Upgrade linking / vendor types / permissions =
+    **already frozen** (BC-OPS-1; pointed, not re-coined; FE shipped in FE-BUY-09). Rulings sought:
+    **R1** ratify dispositions · **R2 `ESC-VENDIR-DISCOVERY`** anonymous discovery layer
+    (Flag-and-Halt, conflicts Inv#6/#11/§6.4/§10.4 — options a/b/c presented NEUTRALLY per owner
+    instruction; c = rank-0, human-only) · **R3 `ESC-VENDIR-OFFPLATFORM`** off-platform recording
+    shape A/B (direction owner-ruled: pursue) · **R4 `ESC-VENDIR-INVITE`** buyer-invite flow ·
+    **R5 `ESC-VENDIR-FIELDS`** field/enum basket (Mushok stays on `ESC-OPS-DOC-MUSHOK`, agenda
+    #13 — not duplicated). productSpec companion is fully governance-tagged
+    (FROZEN-BACKED / GATED-ON-R2..R5); FE-BUY-09 `/crm` relabel/re-home registered as an
+    FE-change item, not silently respecified. Human-gated; blocks no in-flight build.
 
 ## Review pipeline (pointer)
 
