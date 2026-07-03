@@ -8,12 +8,18 @@
 // gated to fine pointers (R2-NITPICK-02) — touch devices load on tap only.
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/frontend/lib/cn";
 
 const HOVER_INTENT_MS = 150;
 
-const ExplorerMenu = React.lazy(() => import("./explorer-menu"));
+// FE-PUB-09 fix (Review-B RV-0126 MAJOR): `React.lazy` + a bare `import()` still let Turbopack's
+// production bundler treat this chunk as required-for-hydration and inject it as an eager
+// `<script async>` on every public page, defeating the hover-intent preload contract this
+// component documents. `next/dynamic({ ssr: false })` is the framework-aware code-split API and
+// keeps the chunk genuinely deferred until `load` flips true.
+const ExplorerMenu = dynamic(() => import("./explorer-menu"), { ssr: false });
 
 export function Explorer({ className }: { className?: string }) {
   const [load, setLoad] = React.useState(false);

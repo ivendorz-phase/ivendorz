@@ -9,6 +9,7 @@
 // system is THE core buyer value proposition, so it outranks Sign in/Get started visually).
 import * as React from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { FilePlus2, Menu } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
 import { BrandLogo } from "@/frontend/brand";
@@ -24,7 +25,9 @@ import { Separator } from "@/frontend/primitives/separator";
 import { Explorer } from "./explorer/explorer";
 
 // Mobile drawer categories (FE-PUB-09 Phase 2) — lazy chunk, loads on first sheet open only.
-const ExplorerMobile = React.lazy(() => import("./explorer/explorer-mobile"));
+// FE-PUB-09 fix (Review-B RV-0126 MAJOR): `next/dynamic({ ssr: false })`, not `React.lazy` — see
+// `explorer.tsx` for the full rationale (Turbopack eager-`<script async>` production defect).
+const ExplorerMobile = dynamic(() => import("./explorer/explorer-mobile"), { ssr: false });
 
 const NAV_LINKS = [
   { href: "/marketplace", label: "Marketplace" }, // P-PUB-10 (M2.2)
