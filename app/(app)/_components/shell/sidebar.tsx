@@ -103,7 +103,7 @@ function NavGroup({
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
-        aria-controls={panelId}
+        aria-controls={!collapsed && isOpen ? panelId : undefined}
         title={collapsed ? item.label : undefined}
         className={cn(
           "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-iv-nav-fg transition-colors hover:bg-iv-nav-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",

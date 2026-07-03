@@ -96,7 +96,7 @@ function NavGroup({
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
-        aria-controls={panelId}
+        aria-controls={isOpen ? panelId : undefined}
         className={cn(
           "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-iv-nav-fg hover:bg-iv-nav-hover",
           hasActiveChild && "text-iv-nav-selected-fg",
