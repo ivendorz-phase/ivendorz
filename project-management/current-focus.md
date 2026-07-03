@@ -55,18 +55,22 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   route topology → **reuse existing surfaces** (no new in-app directory/profile route); P-BUY-05
   favorites → **scope confirmed product/category, build stays held** on the display-projection
   gap. WP card: `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`.
-- **Current Page:** P-BUY-04 closed as a link-out (no in-app route): `discover-view.tsx`'s
+- **Current Page:** `P-BUY-01` — **BX-03 enhancement CLOSED** (RV-0133, `6316763`; owner-direct
+  edit + Team-2 verification pass): `WelcomeBand` welcome-back card on the populated dashboard
+  (single shared `BUYER_IDENTITY_SEED`, no second fabricated identity), `KpiStatCard` icon/tone
+  treatment (decorative, `StatusChip` tone vocabulary, buyer-scoped not a new kit primitive),
+  topbar search shortcut (`ShellViewModel.search`, additive/optional field — plain `Link` to the
+  real `/discover` route, GI-12-clean). tsc/eslint/prettier clean; axe 0 desktop, 1 mobile OBS
+  (pre-existing shell `quick-create` `button-name`, Board agenda #11, confirmed not this delta's
+  defect); confirmed the new optional shell field doesn't regress any of the other 21
+  `ShellViewModel` construction sites (vendor/admin/account all still render clean).
+  Prior page: P-BUY-04 closed as a link-out (no in-app route): `discover-view.tsx`'s
   `VendorCard` href changed from the dead `/discover/${slug}` forward-ref to the live public
   microsite `/vendors/${slug}` (P-PUB-13); `discover/page.tsx`'s `MOCK_VENDORS` re-aligned
   field-for-field with the public discovery seed (`app/(public)/_components/discovery/seed.ts`
   `VENDORS`) so every card's slug resolves against the microsite instead of two divergent mock
   catalogs. P-BUY-03 superseded (no build, `/discover` = the directory). P-BUY-05 out of scope,
-  stays held. `tsc`/`eslint`/`prettier --check` clean. **Live-verified** — after the owner
-  authorized a cleanup of ~30 stale/zombie `next dev` processes that had accumulated across
-  parallel team sessions and corrupted the shared turbopack chunk cache (500s repo-wide), the
-  surviving clean dev server confirms `/discover` 200 with all 8 cards linking `/vendors/[slug]`,
-  and `/vendors/padma-valve-fittings` 200 rendering the matching "Padma Valve & Fittings Ltd."
-  profile — card identity and microsite identity now match end-to-end.
+  stays held.
 - **Pipeline stage:** idle — `FE-DOC-01` ✅ **Approved** (RV-0129, A:PASS ∧ B:PASS, 0
   BLOCKER/MAJOR/MINOR both lanes, `3293009`; Review Team 5 marked approved 2026-07-03). `FE-DOC-00`
   deliverable COMPLETE @ `296b2d0` (✅ Approved, RV-0127, Lane-L, closes on deliverable, FE-VEN-14
@@ -76,7 +80,7 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   non-blocking. *(Available in parallel while gated — proposed `FE-PLAT-08` buyer workflow test
   coverage, `fe-program-wbs.md` Track 8, pending Board mint.)*
 - **Next Milestone:** no unambiguous next pull — `P-BUY-05` stays held on the target-resolution-read
-  projection gap (not a scope decision); `BX-03+` further Buyer UX enhancements are P2 and explicitly
+  projection gap (not a scope decision); `BX-04+` further Buyer UX enhancements are P2 and explicitly
   owner-paced ("per owner, page-by-page after each review" — Phase F2 rule); `FE-DOC-02 → 03` are
   Team-3-owned (vendor leg); `FE-PLAT-08` pending Board mint. Awaiting owner direction on which Buyer
   deliverable to pull next.
