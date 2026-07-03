@@ -95,6 +95,45 @@ the top-of-file header comment but not this adjacent section comment. Non-functi
 accuracy is load-bearing in this program. Verdict: REVISION (BLOCKER=MAJOR=0, MINOR=1 — gating
 per §13). Full record: `project-management/review-log.md` RV-0132, round-2 addendum.
 
+## Review-B (fresh dispatch, checkpoint `50b3c0d`)
+
+Independent Review-B, real Playwright + `@axe-core/playwright` access (both already devDependencies,
+Chromium pre-installed) — closed the one gap all 3 Review-A rounds disclosed: drove a real
+`next dev --turbopack -p 3320` server with headless Chromium, confirming both redirect cases via
+actual post-hydration `page.url()` (not curl/RSC-payload inference). Non-canonical slug prefix and
+bare-UUID requests both land on the canonical URL. Canonical render confirmed first-hand (correct
+`<h1>`, 4-level Padma breadcrumb, no "More from" text, no price/currency). Karnaphuli gear-oil
+breadcrumb independently confirmed showing the `is_specialized`-tiebreak result ("Lubricants, Oils &
+Greases"). R9 404 confirmed on both unknown-UUID and malformed-slug requests with zero leaked
+product/vendor strings. Adversarial slug-injection probe (`<script>`-shaped prefix over a valid
+UUID tail) — no crash, no script execution, clean 301 to canonical. Axe: 0 violations. Regression
+check: `/`, `/search`, `/marketplace/category/valves-fittings?tab=products` all link to the new
+canonical product URLs, 0 remaining `?product=` pattern hits. `tsc`/`eslint`/`prettier` independently
+re-run clean. **Verdict: PASS — 0 BLOCKER/MAJOR/MINOR/new-OBS.** Full record:
+`project-management/review-log.md` RV-0132, Review-B addendum.
+
+**Gate cleared: A:PASS ∧ B:PASS (B/M/M=0) — the self-close signal per Amendment v1.3 §13.**
+
+## Fix-and-reverify (round 3)
+
+Author fixed the round-2 MINOR at `50b3c0d` (deleted the stale "+ related published products from
+the same vendor" clause and corrected the stale `TrustBadge` mention to `VendorVerifiedBadge` in
+`seed.ts`'s section-header comment). A third, independent fresh-context Review-A re-checked this
+fix plus did an exhaustive whole-tree re-sweep (not just the previously-touched files) for both
+defect classes, confirmed zero kit-file drift across all 4 substantive + 3 chore commits, confirmed
+the cumulative `abd5bb9..50b3c0d` diff stays coherent (only removes the related-items feature and
+fixes stale comments — URL builder, breadcrumb tiebreak body, and R9 gate all untouched),
+independently re-ran `tsc`/`eslint`/`prettier` clean, and did a partial live-render pass (real dev
+server + curl-driven SSR-body inspection, since no Playwright/browser tool was available this
+session either): canonical URL renders correctly (real 4-level breadcrumb, no related section, no
+price/currency, `VendorVerifiedBadge` "Verified" text present); unknown-id request's body already
+shows 404 content with zero leaked product/vendor data. The two redirect cases could not be
+confirmed via true JS-executed `page.url()` (curl can't run client JS); the RSC payload evidence is
+consistent with the redirect firing but is not a first-hand confirmation — flagged for Review-B to
+close out with real browser-tool access. **Verdict: PASS** (0 BLOCKER/MAJOR/MINOR/new-OBS). Full
+record: `project-management/review-log.md` RV-0132, round-3 addendum. Milestone proceeds to a
+fresh Review-B dispatch.
+
 ## Corrected from the interim (found during scoping, not fabricated)
 
 The interim `product-detail.tsx` rendered a **price** (`CurrencyDisplay`/"On request"). The
@@ -141,7 +180,7 @@ A:PASS ∧ B:PASS gate the owning Dev team self-closes per `review-process.md` A
 
 ## Key dates
 
-Created 2026-07-03 · Started 2026-07-03 · Paused — · Resumed — · Closed —
+Created 2026-07-03 · Started 2026-07-03 · Paused — · Resumed — · Closed 2026-07-03
 
 ## DoD confirmation (checked at close)
 
@@ -154,9 +193,14 @@ bare-id request both land on the canonical URL — `permanentRedirect`, verified
 after `networkidle`, same dev-mode timing caveat) ☑ canonical + og:url absolute via `metadataBase`
 ☑ breadcrumb deterministic pick rule verified against real taxonomy data on two vendors exercising
 both tiebreak branches (Padma: depth wins, Butterfly Valves over Valves & Piping; Karnaphuli:
-`is_specialized` wins at equal depth, Lubricants over Basic Chemicals) ☑ no price/currency rendered
-on the detail hero card (scoped check — the unrelated "More from {vendor}" grid's shared
-`ProductCard` legitimately keeps its own price display, out of scope) ☑ interim
-`product-detail.tsx` deleted, zero remaining `productDetailHref` imports (repo-wide grep) ☐ Review
-A PASS ☐ Review B PASS (B/M/M=0) ☐ gate approval (Dev-team self-close, Amendment v1.3 §13) ☑ no
-TODO/dead code ☑ no duplicate components ☐ tracker updated ☐ card closed
+`is_specialized` wins at equal depth, Lubricants over Basic Chemicals) ☑ no price/currency
+rendered anywhere on the detail page (the retired interim's "More from {vendor}" related-products
+grid — the section that would have carried a price display — was removed entirely in round 1's
+fix, per the folded contract's exclusion manifest; see "Fix-and-reverify (round 1)") ☑ interim
+`product-detail.tsx` deleted, zero remaining `productDetailHref` imports (repo-wide grep) ☑ Review
+A PASS ☑ Review B PASS (B/M/M=0) ☑ gate approval (Dev-team self-close, Amendment v1.3 §13) ☑ no
+TODO/dead code ☑ no duplicate components ☑ tracker updated ☑ card closed
+
+**Round 3 update:** ☑ Review A PASS (`50b3c0d`, RV-0132 round-3 addendum) — ☑ Review B PASS
+(`50b3c0d`, RV-0132 Review-B addendum — live redirect confirmation closed via real Playwright
+access). Gate cleared: A:PASS ∧ B:PASS, B/M/M=0. Dev-team self-close per Amendment v1.3 §13.

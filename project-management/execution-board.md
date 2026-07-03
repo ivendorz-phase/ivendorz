@@ -44,15 +44,26 @@ transparently including the 2 failed attempts) · ~~`FE-PUB-10` Canonical Vendor
 repointed, canonical/og:url added to all 7 microsite routes, byte-identical acceptance verified.
 One disputed MINOR [an isolated-worktree `prettier --check` false positive] resolved via a
 1-round procedural re-review with zero code delta — 3 independent reviewers, 4 prettier
-invocations, unanimous PASS; full dispute record in RV-0128). ~~Team-1's queue is now exhausted —
-only `FE-PUB-05` ⛔ remains gated on `ESC-7-API-PRODDETAIL`~~ **`ESC-7-API-PRODDETAIL` RESOLVED
+invocations, unanimous PASS; full dispute record in RV-0128). `ESC-7-API-PRODDETAIL` **RESOLVED
 2026-07-03** (owner Board, `R-ESC7-PRODDETAIL-FREEZE`) — `Doc-4D_PublicProductDetail_Patch_v1.0.3`
 + `Doc-5D_PublicProductDetail_Patch_v1.0.1` + `Doc-3_Policy_Key_Registration_Patch_v1.11` +
 `ADR-025_Marketplace_Public_URL_Law` all folded together into `generatedDocs/`, registered in
-`00_AUTHORITY_MAP.md` + `CORPUS_INDEX.md`. **`FE-PUB-05` Product Detail — ⬜ Un-gated, Team-1's
-next pull.** *(Available in parallel, proposed FE-PLAT track pending Board mint — see
-`fe-program-wbs.md` Track 8: FE-PLAT-01 SEO Completion, FE-PLAT-02 Storybook, FE-PLAT-05
-Observability SDK init, FE-PLAT-07 shared/E2E test coverage — all Team-1-scoped.)*
+`00_AUTHORITY_MAP.md` + `CORPUS_INDEX.md`. · ~~`FE-PUB-05` Product Detail~~ ✅ **Closed** (RV-0132,
+A:PASS ∧ B:PASS, B/M/M=0 both lanes on `50b3c0d`, Dev-team self-close 2026-07-03 — new standalone
+route realizing `marketplace.get_public_product_detail.v1` + `ADR-025`'s id-anchored canonical URL
+law + the Doc-5D breadcrumb deterministic pick rule against the real 794-node taxonomy tree.
+**3-round fix-and-reverify cycle**: round 1 [`abd5bb9`→fix] caught a real MAJOR — the retired
+interim's "More from {vendor}" related-products section was carried forward unchanged, but the
+folded contract's exclusion manifest explicitly excludes related items (carried separately to
+`ESC-7-API/related`) — fixed by removing the section entirely, which also incidentally re-excluded
+the price/currency it was smuggling back in via the shared `ProductCard`; rounds 2–3 [`883594f`,
+`50b3c0d`] caught two stale governance comments of the same class the prior sweep(s) missed in the
+same file. Interim `product-detail.tsx` retired, all 4 call sites + the `/search?product=`
+inline-swap branch repointed. Full record: `project-management/review-log.md` RV-0132.)
+**Team-1's FE-PUB queue is now fully complete (FE-PUB-01 through FE-PUB-10 all closed).** No
+further Team-1 milestone registered — a proposed FE-PLAT track (SEO completion, Storybook,
+observability SDK init, shared/E2E test coverage) is pending Board mint — see `fe-program-wbs.md`
+Track 8.
 
 **Team-2 (Buyer):**
 ~~FE-BUY-04..09~~ ✅ **All Closed** this session (RV-0102/0108/0109/0112/0113/0114 @ `5a4550c`/
@@ -176,7 +187,7 @@ already updated in the same change.
 
 | Item | Gate | Interim |
 |---|---|---|
-| ~~FE-PUB-05 (P-PUB-11)~~ | ~~`ESC-7-API-PRODDETAIL`~~ **RESOLVED 2026-07-03** (owner Board, `R-ESC7-PRODDETAIL-FREEZE` — E-1/E-2/E-3 all folded) | product modal from `search_catalog` retired at cutover |
+| ~~FE-PUB-05 (P-PUB-11)~~ | ~~`ESC-7-API-PRODDETAIL`~~ **RESOLVED 2026-07-03** (owner Board, `R-ESC7-PRODDETAIL-FREEZE` — E-1/E-2/E-3 all folded) | ✅ **Closed** RV-0132 @ `50b3c0d` — product modal from `search_catalog` retired at cutover |
 | ~~FE-PUB-09 mega menu~~ | ~~taxonomy P1 + `MEGA_MENU_*` package approval~~ **CLEARED 2026-07-03** (owner Board; S: `ESC-7-API-CATNAV` stays open — build-time seed interim) | — |
 | FE-PF-02 brand | official SVGs under `public/brand/` | placeholder-complete kit `BrandLogo` |
 | Page-gates inside milestones | P-PUB-09 `ESC-7-API-CATNAV` · P-VND-10 `ESC-7-API/upload` · P-ACC-12 `ESC-IDN-DELEG-EXPIRY` | carve-out rule (WBS) |

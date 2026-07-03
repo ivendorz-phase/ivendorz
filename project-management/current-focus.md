@@ -31,19 +31,31 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   `"Vendor sections"` nav label] was found during verification, confirmed unrelated via `git diff`
   [href-value only, zero DOM/aria change], and correctly left unfixed — out of the "pixel output
   identical" acceptance bound)_
-- **Pipeline stage:** idle — `ESC-7-API-PRODDETAIL` **RESOLVED 2026-07-03** (owner Board,
-  `R-ESC7-PRODDETAIL-FREEZE`, reviewed as a single 4-document governance package: PASS 0
-  BLOCKER/MAJOR/MINOR). `Doc-4D_PublicProductDetail_Patch_v1.0.3` + `Doc-5D_PublicProductDetail_Patch_v1.0.1`
-  (E-1, linked pair) + `Doc-3_Policy_Key_Registration_Patch_v1.11_PublicReadRateLimit` (E-2) +
-  `ADR-025_Marketplace_Public_URL_Law` (E-3) all folded together into `generatedDocs/`, registered
-  in `00_AUTHORITY_MAP.md` + `CORPUS_INDEX.md`; `esc_registry.md` marked RESOLVED.
-- **Next Milestone:** **`FE-PUB-05` Product Detail — ⬜ Un-gated, Team-1's next pull.** New Public
-  contract `marketplace.get_public_product_detail.v1` (composed Product Detail Projection, R9
-  collapse enforced once, `vendor_slug` withheld, `canonical_url` opaque/builder-only); canonical
-  URL law = apex host `/marketplace/product/{name-slug}-{uuid}` (id-anchored, no vendor-host
-  product route in v1, per `ADR-025`); breadcrumb `primary_category_path` via the folded
-  deterministic pick rule. Retire the interim `search_catalog`-modal at cutover. The FE Doc-7 leg
-  (URL builder code, 301 redirects, Host Resolution Matrix) is this milestone's own build scope.
+- **Current Milestone:** _(none — `FE-PUB-05` Product Detail ✅ **Closed**, RV-0132, A:PASS ∧
+  B:PASS (B/M/M=0 both lanes on checkpoint `50b3c0d`), Dev-team self-close per Amendment v1.3 §13.
+  New standalone route `app/(public)/marketplace/product/[slug]/page.tsx` realizes
+  `marketplace.get_public_product_detail.v1`'s composed projection + `ADR-025`'s canonical product
+  URL law (`/marketplace/product/{name-slug}-{uuid}`, id-anchored, `permanentRedirect` on a
+  non-canonical prefix or bare-UUID request) + the Doc-5D breadcrumb deterministic pick rule
+  against the REAL 794-node taxonomy tree (not a second invented one). **3-round fix-and-reverify
+  cycle**: round 1 caught a real MAJOR (the retired interim's "More from {vendor}" related-products
+  section was carried forward unchanged, but the folded contract's exclusion manifest explicitly
+  excludes related items — fixed by removing the section entirely); rounds 2–3 caught two stale
+  governance comments the prior sweep missed in the same file. Retired the interim
+  `product-detail.tsx` and repointed all 4 call sites + the `/search?product=` inline-swap branch.
+  Full record: `project-management/review-log.md` RV-0132.)_
+- **Current Page:** _(none — owns P-PUB-11. No price/currency rendered anywhere on the detail page
+  [a correction over the retired interim, which showed one]; vendor summary card shows only the
+  binary `VendorVerifiedBadge`, no fabricated trust tier/score; R9 non-disclosure via `notFound()`
+  collapses both an unknown id and an orphaned vendor reference identically; breadcrumb tiebreak
+  verified on two vendors exercising both branches [depth wins; `is_specialized` wins at equal
+  depth] against real taxonomy node ids)_
+- **Pipeline stage:** idle — Team-1's FE-PUB queue is now fully complete (all of FE-PUB-01
+  through FE-PUB-10 closed). No further Team-1 milestone registered on the execution board; a
+  proposed FE-PLAT track (SEO completion, Storybook, observability SDK init, shared/E2E test
+  coverage) is pending Board mint.
+- **Next Milestone:** _(none pullable — awaiting either a fresh Board registration or the FE-PLAT
+  track's mint.)_
 
 ## Team-2 — Buyer (FE-BUY / FE-CLN)
 
