@@ -118,6 +118,24 @@ the frozen post-award document set is exactly `loi | po | challan | wcc` (+ `tra
 | **`ESC-OPS-DOC-KINDS`** | Credit/debit notes, packing lists, sales orders, contracts/agreements are unmodeled as document kinds (sales order + contract overlap PO/LOI semantics; credit/debit notes are invoice adjustments; packing lists are delivery children) | No placeholder categories, no coined slugs/states; taxonomy shows frozen kinds only | Additive Doc-2 §10.5 (+§5.9) + Doc-4F patch per accepted item; credit/debit routed via BC-OPS-5 Finance-Records owner analysis (human Architecture Board) — packet item 2b |
 | **`ESC-OPS-DOC-FEATURES`** | Digital signatures (no PKI/signature aggregate), expiry reminders (no post-award expiry or scheduled-reminder workflow), document favorites/pinning (M2 catalog favorites ≠ document favorites), document tags, document↔project linkage (no frozen link from M4 documents to M2 projects) | No affordance rendered for any of these; hub facets exclude "Project"; no tag/favorite UI | Per-feature channels: Doc-4B/e-sign patch · M6 Doc-5H notification-rule patch · owner-module analysis for favorites/tags/project-linkage (human Architecture Board) — packet item 2c |
 
+### Buyer Vendor Directory & Vendor Discovery (owner intake, 2026-07-03)
+
+Source: owner proposal + 4 review rounds (2026-07-03). Package:
+`governanceReviews/BUYER-VENDOR-DIRECTORY-RECONCILIATION_v1.0.md` +
+[`BOARD-PACKET-BUYER-VENDOR-DIRECTORY_v1.0.md`](governanceReviews/BOARD-PACKET-BUYER-VENDOR-DIRECTORY_v1.0.md)
+(pre-read: `DECISION-MATRIX-BUYER-VENDOR-DIRECTORY_v1.0.md`) + 3 additive patch proposals +
+`productSpec/BUYER_VENDOR_DIRECTORY_SPEC_v1.0.md` (non-authoritative). All human-Board gated.
+Directory core / Smart-Upgrade linking / vendor types / permissions = **already frozen** (BC-OPS-1;
+A-03/PATCH-05 link-not-merge; PATCH-02) — pointed, not escalated. Mushok remains
+**`ESC-OPS-DOC-MUSHOK`** (above) — not re-registered here.
+
+| Handle | Scope / gap | Interim presentation | Channel |
+|---|---|---|---|
+| **`ESC-VENDIR-DISCOVERY`** | Anonymous cross-buyer "Discovered Vendor" aggregation **conflicts with frozen canon** (Inv #6 · Inv #11 · Master §6.4 "analytics, or inference" · §10.4); no module may own it (M9 forbidden by Inv #12). Flag-and-Halt | **No discovery surface, aggregate count, or "referenced by N buyers" signal renders anywhere**; conformant adjacency = M8 missing-vendor intake + Doc-3 §11.4 cell grid | Human Architecture Board — packet **R2** (a: reject · b: consent-based submit via M8 intake, additive · c: **rank-0** Master §4/§6.4/§16.2 patch, Annex A draft, human-only) |
+| **`ESC-VENDIR-OFFPLATFORM`** | Private (unlinked) vendors cannot participate in RFQ/engagement flows — every frozen surface binds `vendor_profile_id` (Doc-4E B.3; `operations.engagements` A-02). Owner ruled: pursue buyer-private off-platform **recording** (no vendor side; recording-only per ADR-002; M3 untouched) | Directory renders "Record off-platform purchase" **only after the ruling**; UI never offers RFQ/quote to unlinked private vendors | Human Architecture Board — packet **R3** (Shape A: XOR party ref on frozen engagements · Shape B: parallel buyer-private M4 aggregate) → `Doc-4F/Doc-2_Vendor_Directory` additive patches |
+| **`ESC-VENDIR-INVITE`** | Buyer-initiated invite-to-platform unmodeled — frozen seeding is admin-driven (`vendor_claim_records.source enum<excel\|admin\|registration>`); `missing_vendor_suggestions` has **no submit contract** (admin triage/close only) | "Pending Invitation" nav section + Invite button absent until ruled | Human Architecture Board — packet **R4** → `Doc-4D_or_4J_Buyer_Invite` additive patch (M2 source enum + M8 intake submit + M6 delivery; M4 link-back already frozen) |
+| **`ESC-VENDIR-FIELDS`** | Field/enum basket: contact/address/registration fields (`details_jsonb` vs first-class), category refs on private records, logo ref, `link_suggestions.match_basis` +`bin`/+`domain`, buyer import/export (no slug/contract), private↔private **Merge** (corpus is link-not-merge; merge silent) | Form fields beyond the frozen set persist via `details_jsonb` (no coined columns); duplicate prompt offers **Archive duplicate** in place of Merge; no import/export affordance | Human Architecture Board — packet **R5** items 1–6 → `Doc-4F/Doc-2_Vendor_Directory` additive patches; OBS-1 (trade-license home) + OBS-2 (Doc-4F "ADR-003 link-not-merge" vs Compendium ADR-003/ADR-005 pointer) noted for errata |
+
 ### Known non-ESC gaps (recorded, not escalations)
 - **Industry taxonomy** — now tracked as **`ESC-CLASS-INDUSTRY`** above (was: "not modeled"); the
   `Doc-2_IndustryTaxonomy` patch proposal recommends an M2-owned model for Board ratification.

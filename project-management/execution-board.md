@@ -65,9 +65,17 @@ minted: WBS v1.2, universe 144 → 150, coverage PASS 150/150 [Team-5 re-ran the
 [coined-enum firewall clean — excluded kinds routed to human Board, nothing coined], frozen-144
 §2–§8 byte-unchanged, Board packet [agenda #13] non-authoritative/human-gated; closes on
 deliverable, FE-VEN-14 precedent; Team-2 updates trackers + proceeds) · `FE-DOC-01 Buyer Documents Hub` —
-**🔵A Review-A @ `3293009`** (built same session per owner decision 3; walkthrough 7/7 + deep
-links 8/8; WP cards `governanceReviews/milestones/fe-doc-00-governance-charter/` +
-`fe-doc-01-buyer-documents-hub/`). **Team-2 STOPS before the gate.**
+**✅ APPROVED @ `3293009` (RV-0129, A:PASS ∧ B:PASS, 0 BLOCKER/MAJOR/MINOR both lanes for FE-DOC-01's
+own code; Review Team 5 marked approved 2026-07-03)** — static gates green (main-repo pinned deps),
+governance clean (LifecycleStrip nav-not-state MAJOR-01 honored, DF-6 money-boundary [M7 invoices
+separate card + link-out only, no settle/escrow], Generate/Bulk-download disabled, no coined
+doc-kind/status enum, composition-not-fork via existing `DataListTable`, no "document approvals"),
+live render `/documents` D/T/M 200 + axe 0 desktop/tablet + LifecycleStrip 6-stage filter + M7
+link-out verified. **1 non-gating OBS → shell owner (FE-SH): PRE-EXISTING shared app-shell mobile
+`button-name` a11y violation — `quick-create.tsx` trigger label `hidden sm:inline` w/ no fallback
+`aria-label`, icon-only+unnamed <640px; reproduces on `/rfqs`+`/engagements`, NOT FE-DOC-01's; fix =
+add `aria-label="Create"`.** WP cards `governanceReviews/milestones/fe-doc-00-governance-charter/` +
+`fe-doc-01-buyer-documents-hub/`. Owning Team-2 commits [checkpoints/trackers; close uncommitted] + proceeds.
 
 **Team-3 (Vendor):**
 ~~FE-VEN-05~~ ✅ **Closed** (RV-0101 @ `e2f8642`) · ~~FE-VEN-06~~ ✅ **Closed** (RV-0103 @
