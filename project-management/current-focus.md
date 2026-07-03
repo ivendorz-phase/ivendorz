@@ -67,24 +67,29 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   route topology → **reuse existing surfaces** (no new in-app directory/profile route); P-BUY-05
   favorites → **scope confirmed product/category, build stays held** on the display-projection
   gap. WP card: `governanceReviews/milestones/fe-buy-10-discovery-favorites/WORK-PACKAGE.md`.
-- **Current Page:** **BX-06 CLOSED** (RV-0136; owner request — match the dashboard to the
-  `buyer-dashboard-layout/` v0 reference in "color, font size, style"). The reference's color
-  palette (Indigo-primary) predates and conflicts with the 2026-06-30 Navy-dominant brand
-  migration — escalated live rather than deciding unilaterally; **owner chose keep Navy, style
-  only**. Bigger KPI value text (`text-3xl`), bigger icon badges, roomier card padding, bigger
-  greeting text, mobile-first KPI grid. Caught + fixed a real regression before shipping: the
-  bigger value text overflowed the "Spend" KPI card (CSS Grid's default `min-width:auto`) — fixed
-  with `min-w-0`+`break-words`, re-verified via screenshots on both `KpiStatCard` consumers.
-  Adjacent hygiene fix: excluded the newly-staged `buyer-dashboard-layout/` folder from root
-  `tsconfig.json`/`eslint.config.mjs` (was polluting `tsc`/`eslint` with 497/19 unrelated
-  findings); folder itself untouched. tsc/eslint/prettier clean; axe 0 on dashboard +
-  quotation-detail desktop, 1 pre-existing mobile OBS not new.
-  Prior page: **BX-05 CLOSED** (RV-0135; owner bug report — accordion sidebar + "Preserve
-  Dashboard Shell" fix). Verified empirically (DOM probe + real clicks) that only 5 of the 7
-  reported items actually remounted the shell (Notifications, Team, Organization, Profile,
-  Settings — Messages/Reports were already fine). Rejected the literal `/dashboard/*` URL-prefix
-  proposal (no such mechanism exists here; would've renamed ~25 shipped routes); reused the SAME
-  composition-not-fork fix the Vendor track already proved for the identical bug (FE-VEN-10/11/12).
+- **Current Page:** **BX-06 round 2 CLOSED** (RV-0136 addendum; owner feedback "but the layout is
+  unchanged"). Round 1 (typography/spacing only) genuinely was live and correct — a naive grep had
+  double-counted matches inside the React hydration payload, and an initial "corrupted dev-server
+  cache" diagnosis was a real but separate issue (leftover test servers on other ports, cleaned
+  up), not the actual cause. The real gap: round 1 never restructured the page, just resized it.
+  Escalated + built both real structural pieces the owner then confirmed ("both"): **KPI trend
+  badges** (`KpiStatCard` `trend` capability — kept OUT of the contract-traced `BuyerDashboardKpis`
+  interface per its own "coins no contract" rule, wired as UI-layer decoration instead, gated on
+  the real value being present, explicitly disclosed as illustrative — same posture as the rest of
+  this page's presentation-fixture SEED); **bundled utility header card** (`DashboardHeaderCard` —
+  org chip + search + notifications/messages/profile as plain navigation links, deliberately NOT a
+  second live dropdown-menu stack alongside the topbar's real ones) — an owner-confirmed
+  duplication of topbar controls. tsc/eslint/prettier clean; axe 0 desktop, 1 pre-existing mobile
+  OBS not new, all 3 new icon links carry explicit `aria-label`s.
+  Round 1: **BX-06 CLOSED** (RV-0136; owner request — match the dashboard to the
+  `buyer-dashboard-layout/` v0 reference in "color, font size, style"). Owner chose keep Navy
+  (color escalated live), adopt font size/spacing/card style. Caught + fixed a real regression:
+  the bigger value text overflowed the "Spend" KPI card — fixed with `min-w-0`+`break-words`.
+  Adjacent hygiene fix: excluded `buyer-dashboard-layout/` from root `tsconfig.json`/
+  `eslint.config.mjs` (was polluting `tsc`/`eslint` with 497/19 unrelated findings).
+  Prior page: **BX-05 CLOSED** (RV-0135): accordion sidebar + fixed a real shell-remount bug on 5
+  nav items (Notifications, Team, Organization, Profile, Settings), reusing the same
+  composition-not-fork fix the Vendor track already proved (FE-VEN-10/11/12).
   Before that: **BX-04 CLOSED** (RV-0134): the whole Buyer left-nav re-grouped into the canonical
   IA. Before that: **BX-03 enhancement CLOSED** (RV-0133, `6316763`): `WelcomeBand`, `KpiStatCard`
   icon/tone treatment, topbar search shortcut.

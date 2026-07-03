@@ -12,7 +12,9 @@
 // rather than a fabricated number.
 
 import * as React from "react";
+import { TrendingDown, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/frontend/primitives/card";
+import { Badge } from "@/frontend/primitives/badge";
 import { cn } from "@/frontend/lib/cn";
 
 /** Icon-box tint — a PRESENTATION-ONLY accent, keyed on the same tone vocabulary as `StatusChip`
@@ -28,6 +30,20 @@ const TONE_ICON_BOX: Record<KpiStatTone, string> = {
   neutral: "bg-secondary text-secondary-foreground",
 };
 
+/**
+ * A pre-formatted, caller-supplied trend delta (e.g. "+3 this week", "-4%"). BX-06 UI-layer
+ * DECORATION only — unlike `value` (a contract-traced KPI figure), no frozen trend/delta read
+ * exists anywhere in the corpus, so a surface that renders this MUST treat it the same way the
+ * rest of this dashboard's presentation fixture already does (clearly disclosed illustrative
+ * content standing in for a future wired comparison read, not an authoritative figure) — never a
+ * silently-fabricated business claim. Direction conveys meaning via icon + signed text, never
+ * color alone (GI-06).
+ */
+export interface KpiTrend {
+  label: string;
+  direction: "up" | "down";
+}
+
 export interface KpiStatCardProps {
   /** KPI label (e.g. "Spend", "Active RFQs"). */
   label: string;
@@ -36,7 +52,9 @@ export interface KpiStatCardProps {
    * surface from a contract read. Absent → a neutral "—" placeholder (no fabricated value).
    */
   value?: React.ReactNode;
-  /** Optional secondary caption (e.g. a trend delta or context). Presentation only. */
+  /** Optional trend delta chip (see `KpiTrend`) — illustrative decoration, not a contract figure. */
+  trend?: KpiTrend;
+  /** Optional secondary caption (e.g. context text or a link). Presentation only. */
   caption?: React.ReactNode;
   /** Optional leading icon (lucide), decorative. */
   icon?: React.ReactNode;
@@ -48,6 +66,7 @@ export interface KpiStatCardProps {
 export function KpiStatCard({
   label,
   value,
+  trend,
   caption,
   icon,
   tone = "neutral",
@@ -81,7 +100,27 @@ export function KpiStatCard({
         <div className="break-words text-3xl font-semibold leading-tight tracking-tight text-foreground tabular-nums">
           {value ?? <span className="text-muted-foreground">—</span>}
         </div>
-        {caption ? <div className="text-xs text-muted-foreground">{caption}</div> : null}
+        {trend || caption ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {trend ? (
+              <Badge
+                variant={trend.direction === "up" ? "success" : "danger"}
+                className="gap-1 normal-case tracking-normal"
+              >
+                {trend.direction === "up" ? (
+                  <TrendingUp aria-hidden className="size-3" />
+                ) : (
+                  <TrendingDown aria-hidden className="size-3" />
+                )}
+                <span className="sr-only">
+                  {trend.direction === "up" ? "Increase of " : "Decrease of "}
+                </span>
+                {trend.label}
+              </Badge>
+            ) : null}
+            {caption ? <span className="text-xs text-muted-foreground">{caption}</span> : null}
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );

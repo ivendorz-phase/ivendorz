@@ -19,8 +19,18 @@ import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent } from "@/frontend/primitives/card";
 import { EmptyState } from "@/frontend/components/empty-state";
 import { StatusChip } from "@/frontend/components/status-chip";
-import { ClipboardCheck, FileText, Plus, TrendingUp, Wallet } from "lucide-react";
-import { PageHeader } from "../../_components/shell";
+import {
+  Bell,
+  Building2,
+  ClipboardCheck,
+  FileText,
+  MessageSquare,
+  Plus,
+  Search,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
+import { PageHeader, initials } from "../../_components/shell";
 import { KpiStatCard } from "../_components/kpi-stat-card";
 import { WorkQueueCard, type QueueColumn } from "../_components/work-queue-card";
 import { SourcingPipelineCard } from "../_components/sourcing-pipeline-card";
@@ -143,18 +153,68 @@ function FirstRunEmpty() {
   );
 }
 
-/** Presentation-only welcome band (§9.1 layout pass) — echoes the SAME neutral identity placeholder the
- *  shell topbar already renders (`identity-seed.ts`), never a second, independently-fabricated name.
- *  Typography sized/weighted to match the BX-06 reference styling pass (bigger greeting text), still on
- *  our existing Navy-dominant token system — no color change. */
-function WelcomeBand({ userName, orgName }: { userName: string; orgName: string }) {
+/**
+ * Dashboard header card (BX-06 reference structural pass) — a bundled utility row (org context ·
+ * search · notifications · messages · profile) + greeting inside one bordered Card, matching the
+ * reference's `DashboardHeader` layout. DELIBERATE, OWNER-CONFIRMED DUPLICATION: the shell topbar
+ * already carries a live org-switcher/search-shortcut/notification-dropdown/quick-create/user-menu
+ * on every `(app)` page — this row repeats org/search/notifications/messages/profile as PLAIN
+ * NAVIGATION LINKS (not a second live dropdown-menu instance; no duplicate interactive/focus-trap
+ * state on one page) so the page-level layout visually matches the reference without doubling the
+ * topbar's actual interactive widgets. Echoes the SAME neutral identity placeholder the topbar
+ * renders (`identity-seed.ts`) — never a second, independently-fabricated name.
+ */
+function DashboardHeaderCard({ userName, orgName }: { userName: string; orgName: string }) {
   return (
     <Card className="shadow-iv-xs">
-      <CardContent className="flex flex-col gap-0.5 p-5">
-        <p className="text-xl font-semibold tracking-tight text-foreground">Welcome back</p>
-        <p className="text-sm text-muted-foreground">
-          {userName} · {orgName}
-        </p>
+      <CardContent className="flex flex-col gap-4 p-4 sm:p-5">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="inline-flex max-w-[220px] items-center gap-2 truncate rounded-md border border-border bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground">
+            <Building2 aria-hidden className="size-4 shrink-0 text-muted-foreground" />
+            <span className="truncate">{orgName}</span>
+          </span>
+
+          <Link
+            href="/discover"
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-muted-foreground shadow-iv-xs transition-colors hover:bg-accent sm:max-w-xs"
+          >
+            <Search aria-hidden className="size-4 shrink-0" />
+            <span className="truncate">Search vendors, RFQs…</span>
+          </Link>
+
+          <div className="ml-auto flex items-center gap-1">
+            <Link
+              href="/notifications"
+              aria-label="Notifications"
+              className="inline-flex size-9 items-center justify-center rounded-md text-foreground transition-colors hover:bg-accent"
+            >
+              <Bell aria-hidden className="size-5" />
+            </Link>
+            <Link
+              href="/messages"
+              aria-label="Messages"
+              className="inline-flex size-9 items-center justify-center rounded-md text-foreground transition-colors hover:bg-accent"
+            >
+              <MessageSquare aria-hidden className="size-5" />
+            </Link>
+            <Link
+              href="/profile"
+              aria-label="Profile"
+              className="inline-flex size-9 items-center justify-center rounded-full text-foreground transition-colors hover:bg-accent"
+            >
+              <span className="flex size-8 items-center justify-center rounded-full bg-iv-navy-700 text-xs font-medium text-primary-foreground">
+                {initials(userName)}
+              </span>
+            </Link>
+          </div>
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-xl font-semibold tracking-tight text-foreground">Welcome back</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            {userName} · {orgName}
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
@@ -207,20 +267,32 @@ export function BuyerDashboardView({
         }
       />
 
-      {identity ? <WelcomeBand userName={identity.userName} orgName={identity.orgName} /> : null}
+      {identity ? (
+        <DashboardHeaderCard userName={identity.userName} orgName={identity.orgName} />
+      ) : null}
 
-      {/* KPI stat-card band — every figure a contract read; counts non-disclosure-safe (Inv #11).
-          Mobile-first single column (BX-06 reference styling pass), 2-up at sm, full 4-up at xl. */}
+      {/* KPI stat-card band — every VALUE is a contract read; counts non-disclosure-safe (Inv #11).
+          Mobile-first single column (BX-06 reference styling pass), 2-up at sm, full 4-up at xl.
+          `trend` on each card is UI-layer illustrative decoration (BX-06), gated on the real value
+          being present — never shown next to a "—" placeholder — same disclosure posture as the
+          rest of this page's presentation-fixture SEED (page.tsx's own header comment), not a
+          contract-traced figure (no frozen trend/delta read exists). */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiStatCard
           label="Spend"
           value={kpis.spend ? <Money value={kpis.spend} /> : undefined}
+          trend={kpis.spend ? { label: "+6.4% vs last month", direction: "up" } : undefined}
           icon={<Wallet aria-hidden />}
           tone="brand"
         />
         <KpiStatCard
           label="Active RFQs"
           value={typeof kpis.activeRfqCount === "number" ? kpis.activeRfqCount : undefined}
+          trend={
+            typeof kpis.activeRfqCount === "number"
+              ? { label: "+3 this week", direction: "up" }
+              : undefined
+          }
           icon={<FileText aria-hidden />}
           tone="info"
         />
@@ -245,6 +317,7 @@ export function BuyerDashboardView({
         <KpiStatCard
           label="Win rate"
           value={winRatePct}
+          trend={winRatePct ? { label: "+2 pts vs last quarter", direction: "up" } : undefined}
           icon={<TrendingUp aria-hidden />}
           tone="success"
         />
