@@ -299,17 +299,17 @@
        primary buttons). Subtle; no neon, no glassmorphism. */
     --iv-gradient-primary: linear-gradient(135deg, #23438f 0%, #2f5eb8 100%);
 
-    /* Navigation rail — always Deep Navy (the industrial sidebar; light content).
+    /* Navigation rail — light industrial-gray surface (dark content).
        Selected = soft Indigo highlight; hover = subtle. */
-    --iv-nav-bg: var(--iv-navy-800);
-    --iv-nav-fg: #cbd5ea;
-    --iv-nav-fg-muted: #8ea3c4;
-    --iv-nav-border: rgba(255, 255, 255, 0.08);
-    --iv-nav-hover-bg: rgba(255, 255, 255, 0.06);
-    --iv-nav-selected-bg: rgba(99, 102, 241, 0.18);
-    --iv-nav-selected-fg: #c7d2fe;
-    --iv-nav-badge-bg: rgba(255, 255, 255, 0.1);
-    --iv-nav-badge-fg: #cbd5ea;
+    --iv-nav-bg: #f2f5f9;
+    --iv-nav-fg: var(--iv-fg);
+    --iv-nav-fg-muted: var(--iv-fg-muted);
+    --iv-nav-border: var(--iv-light-border);
+    --iv-nav-hover-bg: rgba(15, 23, 42, 0.05);
+    --iv-nav-selected-bg: var(--iv-brand-100);
+    --iv-nav-selected-fg: var(--iv-brand-700);
+    --iv-nav-badge-bg: var(--iv-light-border);
+    --iv-nav-badge-fg: var(--iv-fg-secondary);
 
     /* shadcn/ui compatibility aliases — vendored primitives are themed THROUGH
        the iv semantic tokens via these names (full color values, not HSL

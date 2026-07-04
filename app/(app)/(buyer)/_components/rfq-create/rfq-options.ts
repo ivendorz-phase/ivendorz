@@ -14,12 +14,13 @@ export interface Option<T extends string = string> {
 
 // ── FROZEN (verbatim) ────────────────────────────────────────────────────────────────────────────────
 
-/** `work_nature` ⊆ {supply,service,fabricate,consult} (Inv #1 capability matrix; pick 1..4). */
+/** `work_nature` ⊆ {supply,service,fabricate,consult} (Inv #1 capability matrix; pick 1..4). Presentation
+ *  labels only — the underlying frozen enum values are unchanged. */
 export const WORK_NATURE_OPTIONS: Option<WorkNature>[] = [
-  { value: "supply", label: "Supply", hint: "Provide / deliver goods" },
-  { value: "service", label: "Service", hint: "Perform a service" },
-  { value: "fabricate", label: "Fabricate", hint: "Build / fabricate to spec" },
-  { value: "consult", label: "Consult", hint: "Advisory / consulting" },
+  { value: "supply", label: "Product Supply", hint: "Provide / deliver goods" },
+  { value: "service", label: "Service / Contract Work", hint: "Perform a service" },
+  { value: "fabricate", label: "Custom Fabrication", hint: "Build / fabricate to spec" },
+  { value: "consult", label: "Engineering & Consulting", hint: "Advisory / consulting" },
 ];
 
 /** `work_nature` value → presentation label, derived from `WORK_NATURE_OPTIONS` (single source; no drift).

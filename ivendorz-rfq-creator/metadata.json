@@ -1,0 +1,6 @@
+{
+  "name": "iVendorz RFQ Creator",
+  "description": "High-fidelity industrial procurement Request for Quotation (RFQ) creator and review dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

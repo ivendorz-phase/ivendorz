@@ -41,7 +41,7 @@ export const MegaMenuCategory = React.memo(function MegaMenuCategory({
   const hasChildren = node.children.length > 0;
 
   const rowClass = cn(
-    "flex min-h-[44px] w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-start text-sm outline-none transition-colors",
+    "flex min-h-[36px] w-full items-center gap-2 rounded-md px-2 py-1.5 text-start text-[13px] outline-none transition-colors",
     active
       ? "bg-accent text-accent-foreground"
       : "text-foreground hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent",

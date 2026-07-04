@@ -57,11 +57,11 @@ function NavLink({
         href={item.href}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
+          "flex items-center gap-3 rounded-md px-3 py-2 text-[13px] font-medium",
           active
             ? "bg-iv-nav-selected-bg text-iv-nav-selected-fg"
             : "text-iv-nav-fg hover:bg-iv-nav-hover",
-          indented && "py-1.5 pl-9 text-[13px] font-normal",
+          indented && "py-1.5 pl-9 font-normal",
         )}
       >
         {Icon && !indented ? <Icon className="size-4 shrink-0" aria-hidden="true" /> : null}
@@ -98,7 +98,7 @@ function NavGroup({
         aria-expanded={isOpen}
         aria-controls={isOpen ? panelId : undefined}
         className={cn(
-          "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-iv-nav-fg hover:bg-iv-nav-hover",
+          "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-[13px] font-medium text-iv-nav-fg hover:bg-iv-nav-hover",
           hasActiveChild && "text-iv-nav-selected-fg",
         )}
       >

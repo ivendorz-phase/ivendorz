@@ -52,6 +52,16 @@ export interface RfqAttachment {
   status?: "ready" | "too-large" | "unsupported";
 }
 
+/** One line of the Item Requirements List (Request type section) — dev-doc capture, repeatable version
+ *  of the single item/quantity/unit fields below. Serializes into `content_jsonb` at wiring. */
+export interface RfqItemRow {
+  id: string;
+  itemName: string;
+  size: string;
+  quantity: string;
+  unit: string;
+}
+
 export interface RfqDraftForm {
   // Phase 2 — Requirement details
   /** Presentation-only industry grouping that filters the category picker — NOT a stored create_rfq field. */
@@ -65,6 +75,8 @@ export interface RfqDraftForm {
   itemName?: string;
   quantity?: string;
   unit?: string;
+  /** Repeatable line items (Item Requirements List) — the multi-row version of the above. */
+  itemRows?: RfqItemRow[];
 
   // Phase 3 — Technical requirements (dev-doc capture; `scope_text` is the frozen free-text home)
   /** `scope_text` — the specification editor (the one frozen text field; min length enforced at submit). */

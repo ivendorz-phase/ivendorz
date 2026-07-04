@@ -1,12 +1,19 @@
 "use client";
 
 // FE-PUB-09 MEGA_MENU — MegaMenuColumn + MegaMenuColumns (MEGA_MENU_COMPONENT_SPEC.md).
-// Column count = drilled depth (data-bounded, max 4 by the frozen level CHECK — never a code
-// bound). Hover drill is intent-delayed (~80ms via provider tokens) and pending activation is
-// CANCELLED when the pointer is already inside a deeper column — the pragmatic safe-triangle:
-// moving diagonally into the child column never flips the active parent (UX doc §1.3; real-
-// device tuning is a Phase 4 exit). Keyboard map per UX doc §4 (roving focus across columns,
-// Home/End, a–z typeahead); hover paths are gated to fine pointers (R2-NITPICK-02).
+// Redesigned 2026-07-04 (owner-directed, globalsources.com genre convention — supersedes the
+// original §9-ratified cascading drill-columns model; see MEGA_MENU_ARCHITECTURE.md §9.8
+// amendment): column 0 is the PERSISTENT root list (unchanged — `MegaMenuColumn level={0}`);
+// hovering a root no longer drills one level at a time — it instantly swaps in that root's FULL
+// L2+L3 subtree via `MegaMenuSubtreePanel` (mega-menu-subtree.tsx), all simultaneously visible.
+// `activePath[0]` (which root is active) is the only index this file still writes; index 1 is
+// still updated on L2/L3 hover but ONLY to enrich `MegaMenuTrail`'s breadcrumb preview — nothing
+// downstream reads it to decide what to render anymore (see mega-menu-subtree.tsx). Hover-intent
+// (~80ms) still gates ROOT activation only (switching which subtree shows); the L2/L3 rows inside
+// the subtree panel have nothing left to debounce (their content was already visible). Keyboard
+// map per UX doc §4 (roving focus across columns, Home/End, a–z typeahead) is UNCHANGED — it
+// already generalizes from "one column per drilled depth" to "one column per visible group"
+// (root list = column 0, each L2 group = columns 1..N) with zero code changes to `onKeyDown`.
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -15,6 +22,7 @@ import { useTaxonomy } from "../providers/taxonomy-provider";
 import { useMenuState } from "../providers/menu-state-provider";
 import { useMenuInstance } from "./menu-context";
 import { MegaMenuCategory } from "./mega-menu-category";
+import { MegaMenuSubtreePanel } from "./mega-menu-subtree";
 import type { CategoryNodeVM } from "../model/types";
 
 export interface MegaMenuColumnProps {
@@ -123,10 +131,18 @@ export function MegaMenuColumn({ level, parentId, emptyHint, className }: MegaMe
   );
 }
 
-/** Renders Column × (drilled depth + 1). Wrap in the keyboard-nav container. */
+/** Renders the root list + the active root's full subtree panel. Wrap in the keyboard-nav container. */
 export function MegaMenuColumns({ className }: { className?: string }) {
-  const { activePath } = useMenuState();
+  const { roots } = useTaxonomy();
+  const { activePath, setActiveAt } = useMenuState();
   const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Default-select the first root on open so the subtree panel is never blank (genre
+  // convention — globalsources.com/Alibaba-style flyouts always show a filled panel
+  // immediately, not empty space waiting for the first hover).
+  React.useEffect(() => {
+    if (activePath.length === 0 && roots.length > 0) setActiveAt(0, roots[0].id);
+  }, [activePath.length, roots, setActiveAt]);
 
   // Keyboard map (UX doc §4 + SPEC addendum table). Roving DOM focus over [data-menu-row]
   // links, column-scoped; ArrowRight enters the next column (the row's focus already set the
@@ -209,9 +225,7 @@ export function MegaMenuColumns({ className }: { className?: string }) {
 
     <div ref={containerRef} className={cn("flex min-w-0", className)} onKeyDown={onKeyDown}>
       <MegaMenuColumn level={0} parentId={null} />
-      {activePath.map((id, i) => (
-        <MegaMenuColumn key={id} level={i + 1} parentId={id} />
-      ))}
+      <MegaMenuSubtreePanel rootId={activePath[0] ?? null} />
     </div>
   );
 }

@@ -12,13 +12,14 @@
 // submit-required fields (budget / district / routing) are noted, never enforced client-side here.
 
 import Link from "next/link";
-import { CheckCircle2, Plus } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
 import { ErrorState } from "@/frontend/components/error-state";
 import { Breadcrumbs } from "../../../_components/shell";
 import { WizardStepper } from "./wizard-stepper";
 import { UploadArea } from "./upload-area";
+import { SubmitPreview } from "./submit-preview";
 import {
   TitledCard,
   RequirementSection,
@@ -58,27 +59,25 @@ function SubmittedState() {
   );
 }
 
-/** The sticky assistance sidebar (Phase 1). Presentation-only guidance — no AI (Board scope). */
-function AssistanceSidebar() {
+/** Compact tips card nested above the sticky Review column (Phase 1 content, restyled). Presentation-only
+ *  guidance — no AI (Board scope). */
+function TipsCard() {
   return (
-    <aside className="lg:sticky lg:top-20" aria-label="Help">
-      <Card>
-        <CardHeader className="p-4">
-          <CardTitle className="text-sm font-semibold">Tips for a strong RFQ</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2 p-4 pt-0 text-sm text-muted-foreground">
-          <p>
-            • Be specific about grade, dimensions, and tolerances — it gets you better-matched
-            quotes.
-          </p>
-          <p>• Attach drawings or a bill of quantities so vendors quote against the same scope.</p>
-          <p>• Set a realistic delivery date and a district so logistics can be priced.</p>
-          <p className="text-xs">
-            Vendors are matched by the routing engine — you choose the breadth, not the winner.
-          </p>
-        </CardContent>
-      </Card>
-    </aside>
+    <Card aria-label="Help">
+      <CardHeader className="p-4">
+        <CardTitle className="text-sm font-semibold">Tips for a strong RFQ</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-2 p-4 pt-0 text-sm text-muted-foreground">
+        <p>
+          • Be specific about grade, dimensions, and tolerances — it gets you better-matched quotes.
+        </p>
+        <p>• Attach drawings or a bill of quantities so vendors quote against the same scope.</p>
+        <p>• Set a realistic delivery date and a district so logistics can be priced.</p>
+        <p className="text-xs">
+          Vendors are matched by the routing engine — you choose the breadth, not the winner.
+        </p>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -112,8 +111,10 @@ export function RfqCreateView({ data }: { data: RfqCreateData }) {
         </p>
       </header>
 
-      {/* Phase 1 — progress indicator */}
-      <div className="mb-6 rounded-lg border border-border bg-card p-4 shadow-iv-xs">
+      {/* Phase 1 — progress indicator. Sticky below the shell topbar (h-14 = top-14), porting the
+          reference prototype's sticky steps bar; scroll-spy/click-to-scroll is prototype-only JS
+          flourish and intentionally left out (this stays a Server Component). */}
+      <div className="sticky top-14 z-[var(--iv-z-sticky)] -mx-4 mb-6 border-b border-border bg-card/95 px-4 py-3 shadow-iv-xs backdrop-blur sm:-mx-6 sm:px-6">
         <WizardStepper steps={RFQ_WIZARD_STEPS} activeStep={data.activeStep ?? 0} />
       </div>
 
@@ -130,9 +131,10 @@ export function RfqCreateView({ data }: { data: RfqCreateData }) {
         />
       ) : null}
 
-      {/* Phase 1 — responsive two-column layout (form + sticky assistance sidebar) */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="flex flex-col gap-4 lg:col-span-2">
+      {/* Two-column layout ported from the reference prototype: left = stacked section cards, right =
+          sticky Review column (top offset clears the sticky topbar + sticky steps bar above). */}
+      <div className="grid grid-cols-1 gap-6 pb-8 lg:grid-cols-12 lg:items-start">
+        <div className="flex flex-col gap-4 lg:col-span-7">
           <RequirementSection form={form} />
           <TechnicalSection form={form} />
           <TitledCard title="Attachments">
@@ -142,28 +144,18 @@ export function RfqCreateView({ data }: { data: RfqCreateData }) {
           <VendorSection form={form} />
           <BudgetSection form={form} />
           <CommunicationSection form={form} />
+        </div>
+        <div className="flex flex-col gap-4 lg:sticky lg:top-32 lg:col-span-5">
           <TitledCard title="Review">
             <ReviewSection form={form} />
           </TitledCard>
-        </div>
-        <div>
-          <AssistanceSidebar />
+          <TipsCard />
         </div>
       </div>
 
-      {/* Phase 8 — submission save-bar (sticky). Save Draft is a disabled placeholder; Submit is presentation. */}
-      <div className="sticky bottom-0 z-10 mt-4 flex flex-wrap items-center justify-end gap-2 border-t border-border bg-background/95 py-3 backdrop-blur">
-        <p className="mr-auto text-xs text-muted-foreground">
-          Drafts and submission connect in the integration phase.
-        </p>
-        <Button type="button" variant="secondary" disabled>
-          Save draft
-        </Button>
-        <Button type="button" disabled={submitting} className="gap-1.5">
-          <Plus aria-hidden />
-          {submitting ? "Submitting…" : "Submit RFQ"}
-        </Button>
-      </div>
+      {/* Phase 8 — submit action. Save Draft is a disabled placeholder; Submit opens a floating
+          Review preview (Edit / Confirm) rather than submitting directly — still presentation-only. */}
+      <SubmitPreview form={form} submitting={submitting} />
     </div>
   );
 }

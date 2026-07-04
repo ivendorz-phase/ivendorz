@@ -252,3 +252,39 @@ platform budget — Doc-8 owns those):
 "Recommended For You" / "Based on RFQs" / "Trending" / "Seasonal Demand" are recorded as reserved
 panel slots, **disabled and unbuilt** until recommendation services exist; any activation is
 M9-governed ("AI suggests; modules decide") and requires its own gate. No code ships for them.
+
+### 9.8 Desktop interaction model superseded — full-subtree reveal (owner-directed, 2026-07-04)
+
+**Supersedes §2/§3/§9.3's cascading drill-columns model** (column count = drilled depth, one
+level revealed per hover). Owner directive: match the globalsources.com genre convention — a
+persistent left list of top-level categories, with a right panel that reveals the hovered
+category's **full L2+L3 subtree simultaneously** (no additional hover/click needed to see
+grandchildren). Rationale: the drill-column model required progressively deeper hovers to see
+structure below the first level; the reference genre shows parent and child together in one
+reveal.
+
+**What changed:** `MegaMenuColumns` (`mega-menu-column.tsx`) now renders exactly two regions —
+the unchanged root list (`MegaMenuColumn level={0}`) and a new `MegaMenuSubtreePanel`
+(`mega-menu-subtree.tsx`) that lays out the active root's L2 children as titled groups, each
+listing its own L3 children beneath, in a responsive wrapping grid. `activePath[0]` (which root
+is active) is the only index driving what renders now; index 1 is still written on L2/L3 hover
+but purely to keep `MegaMenuTrail`'s breadcrumb preview informative — nothing downstream reads it
+to decide what to render. The panel defaults to the first root active on open (never blank).
+**L4** (where a taxonomy node goes 4 levels deep) is not shown inline in the flyout — it stays
+reachable by clicking through to that L3's own category landing page, matching the reference
+genre's typical flyout depth.
+
+**What did not change:** the root list's hover-intent/keyboard-nav engine (§4/§5) — the existing
+Arrow-key/typeahead/roving-focus code in `MegaMenuColumns.onKeyDown` needed zero changes; it
+already generalized from "one column per drilled depth" to "one column per visible group." The
+mobile drawer (§6, `mega-menu-mobile.tsx`), the right rail (Featured/Vendors, §9.2), Recent/
+Popular/Industry/Quick-actions/Footer, Invariant #1 (capability-matrix-only, §9.2), and the
+barrel-avoidance discipline (§8) are all unchanged. §9.3's breakpoint table's *column count*
+language is superseded by this section for desktop; the mobile row is unaffected.
+
+Verified: axe 0 violations on the open panel; keyboard Arrow-Right/Left correctly move between
+the root list and the subtree panel; hovering a different root swaps the entire panel instantly;
+`MegaMenuSubtreePanel` is memoized on `rootId` so hovering within an already-open panel (L2/L3,
+for Trail purposes only) does not re-render the panel's contents — a real perf consideration
+this redesign introduces, since one panel can now hold far more rows at once than any single old
+drill-column did.

@@ -11,12 +11,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/
 import { FormField } from "@/frontend/components/form-field";
 import { cn } from "@/frontend/lib/cn";
 import { Textarea, Select, CheckboxRow, RadioRow } from "../form-controls";
+import { ItemRequirementsTable } from "./item-requirements-table";
 import { DescriptionList, type DescriptionItem } from "../description-list";
 import {
   WORK_NATURE_OPTIONS,
+  WORK_NATURE_LABEL,
   ROUTING_MODE_OPTIONS,
   FINANCIAL_TIER_OPTIONS,
-  UNIT_OPTIONS,
   CONDITION_OPTIONS,
   DELIVERY_SITE_OPTIONS,
   URGENCY_OPTIONS,
@@ -87,7 +88,7 @@ export function RequirementSection({ form }: { form: RfqDraftForm }) {
           <span className="sr-only">(required)</span>
         </legend>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Pick all that apply (supply / service / fabricate / consult).
+          Pick all that apply (Product Supply / Service / Fabrication / Consulting).
         </p>
         <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {WORK_NATURE_OPTIONS.map((o) => (
@@ -100,22 +101,7 @@ export function RequirementSection({ form }: { form: RfqDraftForm }) {
           ))}
         </div>
       </fieldset>
-      {/* Item name is dev-doc capture, not in the frozen submission FIXED-set — no required asterisk. */}
-      <FormField
-        id="rfq-item"
-        label="Item name"
-        inputProps={{ defaultValue: form.itemName, placeholder: "e.g. MS plate 12mm" }}
-      />
-      <div className="grid grid-cols-2 gap-3">
-        <FormField
-          id="rfq-qty"
-          label="Quantity"
-          inputProps={{ defaultValue: form.quantity, type: "number", inputMode: "decimal", min: 0 }}
-        />
-        <FormField id="rfq-unit" label="Unit">
-          <Select options={UNIT_OPTIONS} placeholder="Unit" defaultValue={form.unit ?? ""} />
-        </FormField>
-      </div>
+      <ItemRequirementsTable rows={form.itemRows} />
     </SectionCard>
   );
 }
@@ -419,13 +405,17 @@ export function ReviewSection({ form }: { form: RfqDraftForm }) {
       label: "Request type",
       value:
         form.workNature && form.workNature.length > 0
-          ? form.workNature.map((w) => w[0].toUpperCase() + w.slice(1)).join(", ")
+          ? form.workNature.map((w) => WORK_NATURE_LABEL[w]).join(", ")
           : "—",
     },
-    { label: "Item", value: dash(form.itemName) },
     {
-      label: "Quantity",
-      value: form.quantity ? `${form.quantity} ${form.unit ?? ""}`.trim() : "—",
+      label: "Items",
+      value: (() => {
+        const rows = (form.itemRows ?? []).filter((r) => r.itemName.trim().length > 0);
+        return rows.length === 0
+          ? "—"
+          : `${rows.length} item${rows.length === 1 ? "" : "s"} listed`;
+      })(),
     },
   ];
   const specs: DescriptionItem[] = [

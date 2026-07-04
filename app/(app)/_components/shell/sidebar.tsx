@@ -53,12 +53,12 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       title={collapsed ? item.label : undefined}
       className={cn(
-        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "flex items-center gap-3 rounded-md px-3 py-2 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         active
           ? "bg-iv-nav-selected-bg text-iv-nav-selected-fg"
           : "text-iv-nav-fg hover:bg-iv-nav-hover",
         collapsed && "justify-center px-0",
-        indented && !collapsed && "py-1.5 pl-9 text-[13px] font-normal",
+        indented && !collapsed && "py-1.5 pl-9 font-normal",
       )}
     >
       {Icon && !indented ? <Icon className="size-4 shrink-0" aria-hidden="true" /> : null}
@@ -106,7 +106,7 @@ function NavGroup({
         aria-controls={!collapsed && isOpen ? panelId : undefined}
         title={collapsed ? item.label : undefined}
         className={cn(
-          "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-iv-nav-fg transition-colors hover:bg-iv-nav-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-[13px] font-medium text-iv-nav-fg transition-colors hover:bg-iv-nav-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           hasActiveChild && "text-iv-nav-selected-fg",
           collapsed && "justify-center px-0",
         )}
@@ -178,6 +178,9 @@ export function Sidebar({ nav }: { nav: NavSection[] }) {
     return () => mql.removeEventListener("change", apply);
   }, []);
 
+  // The RFQ create wizard is a focused, full-width task surface — no primary nav alongside it.
+  if (pathname === "/rfqs/new") return null;
+
   return (
     <div
       data-collapsed={collapsed}
@@ -232,7 +235,7 @@ export function Sidebar({ nav }: { nav: NavSection[] }) {
           }}
           aria-expanded={!collapsed}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="w-full justify-center gap-2 text-iv-nav-fg hover:bg-iv-nav-hover hover:text-white"
+          className="w-full justify-center gap-2 text-iv-nav-fg hover:bg-iv-nav-hover hover:text-iv-nav-fg"
         >
           {collapsed ? <PanelLeft /> : <PanelLeftClose />}
           {!collapsed ? <span>Collapse</span> : null}
