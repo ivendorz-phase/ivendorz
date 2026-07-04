@@ -121,13 +121,11 @@ export interface WizardStep {
   label: string;
 }
 
+// Collapsed to 3 stages (was 8) — the page itself is a single long scroll, never paginated; this is a
+// progress ORIENTATION only, grouping the section cards below into 3 legible stages instead of one per
+// card.
 export const RFQ_WIZARD_STEPS: WizardStep[] = [
-  { key: "requirement", label: "Requirement" },
-  { key: "technical", label: "Technical" },
-  { key: "attachments", label: "Attachments" },
-  { key: "delivery", label: "Delivery" },
-  { key: "vendors", label: "Vendor preferences" },
-  { key: "budget", label: "Budget & priority" },
-  { key: "communication", label: "Communication" },
-  { key: "review", label: "Review" },
+  { key: "requirement", label: "Requirement details" },
+  { key: "delivery", label: "Delivery & vendors" },
+  { key: "review", label: "Review & submit" },
 ];
