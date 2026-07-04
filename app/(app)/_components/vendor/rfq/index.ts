@@ -30,6 +30,7 @@ export { QuotationSubmitPanel, type QuotationSubmitPanelProps } from "./quotatio
 export { QuotaMeter, type QuotaMeterProps } from "./quota-meter";
 export { WindowStateChip, type WindowStateChipProps } from "./window-state-chip";
 export { RfqStateChip, InvitationStateChip, QuotationStateChip } from "./state-chips";
+export { RFQ_SNAPSHOT_SEED } from "./rfq-snapshot-seed";
 
 export type {
   RfqState,

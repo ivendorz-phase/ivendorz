@@ -83,8 +83,11 @@ export interface InboxItemView {
 }
 
 /** Vendor-entitled RFQ snapshot for the detail (S3) — read = `rfq.get_rfq.v1`, grant-scoped via
- *  rfq_invitation_grantees ([ESC-7G-Q-01] CLOSED, B-1). Binds frozen rfq.rfqs / rfq_versions fields.
- *  Carries NOTHING about other vendors or the matching decision (ND-1..ND-6). */
+ *  rfq_invitation_grantees ([ESC-7G-Q-01] CLOSED, B-1). Binds frozen rfq.rfqs / rfq_versions fields,
+ *  PLUS the dev-doc-capture requirement detail the buyer wizard serializes into those fields (see
+ *  block below) — all optional. Carries NOTHING about other vendors or the matching decision
+ *  (ND-1..ND-6), and NOTHING about buyer routing/targeting preferences or commercial guidance
+ *  (excluded by design — see the dev-doc-capture block below). */
 export interface RfqSnapshotView {
   rfq_id: string;
   human_ref?: string;
@@ -112,6 +115,48 @@ export interface RfqSnapshotView {
   window_state?: WindowState;
   window_deadline_label?: string;
   window_urgency?: WindowUrgency;
+
+  // ── Dev-doc capture (NOT standalone frozen columns — serialized by the buyer wizard into
+  // scope_text / delivery_geography / rfq_versions.content_jsonb by integration; mirrors
+  // RfqDraftForm 1:1, buyer module's rfq-form-models.ts). Shown here because a vendor genuinely
+  // needs this detail to quote — this is the requirement CONTENT, not a targeting/routing signal.
+  //
+  // EXCLUDED BY DESIGN: the buyer wizard's "Vendor preferences" section (routing_mode,
+  // preferredVendor, verifiedOnly, manufacturerOrImporter, financialTier, acceptAlternatives) and
+  // "Budget & priority" guidance fields (budget/urgency/specialInstructions) are buyer-side
+  // routing/targeting inputs and commercial guidance — never surfaced to the vendor here, per the
+  // non-disclosure convention (ND-1..ND-8) that withholds matching-engine breadth/targeting
+  // criteria the same way competitor counts/ranks/match-confidence are withheld. `estimated_value`
+  // + `currency` above is the one exception: it is ALREADY a frozen create_rfq field and already shown.
+
+  /** Item identification — dev-doc capture (mirrors RfqDraftForm.itemName/quantity/unit). */
+  item_name?: string;
+  quantity?: string;
+  unit?: string;
+
+  /** Technical detail — dev-doc capture (mirrors RfqDraftForm brandPreference/alternativeBrand/
+   *  productCondition/standards/certifications). */
+  brand_preference?: string;
+  alternative_brand?: string;
+  product_condition?: string;
+  standards?: string;
+  certifications?: string;
+
+  /** Delivery detail — dev-doc capture (mirrors RfqDraftForm deliveryLocation/district/deliveryDate/
+   *  deliverySite/deliveryInstructions). `delivery_date_label` is server-formatted (Asia/Dhaka / BST),
+   *  no client clock — follows the `window_deadline_label` pattern. */
+  delivery_location?: string;
+  delivery_district?: string;
+  delivery_date_label?: string;
+  delivery_site?: string;
+  delivery_instructions?: string;
+
+  /** Communication preference — dev-doc capture (mirrors RfqDraftForm contactPhone/contactWhatsapp/
+   *  contactEmail/preferredContactTime). Platform messages are always-on (M6 system of record) and
+   *  are not listed here as a "channel"; these are the OPTIONAL off-platform channels the buyer opted
+   *  into, shared only with vendors who receive this RFQ (non-disclosure). */
+  preferred_contact_channels?: ("platform" | "phone" | "whatsapp" | "email")[];
+  preferred_contact_time_label?: string;
 }
 
 /** The vendor's own invitation on an RFQ (S3 right pane) — frozen rfq_invitations fields. */

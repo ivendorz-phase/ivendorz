@@ -11,6 +11,7 @@ import {
   InvitationResponse,
   QuotationStatusCard,
   RfqSnapshot,
+  RFQ_SNAPSHOT_SEED,
 } from "../../../_components/vendor/rfq";
 
 export const metadata: Metadata = { title: "RFQ detail" };
@@ -31,7 +32,7 @@ export default async function RfqDetailPage({ params }: { params: Promise<{ rfqI
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <RfqSnapshot />
+        <RfqSnapshot rfq={RFQ_SNAPSHOT_SEED} />
         <InvitationResponse rfqId={rfqId} />
       </div>
 

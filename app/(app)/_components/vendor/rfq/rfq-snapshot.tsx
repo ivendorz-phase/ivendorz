@@ -18,12 +18,21 @@ const WORK_NATURE_LABEL: Record<WorkNature, string> = {
   consult: "Consult",
 };
 
+const CONTACT_CHANNEL_LABEL: Record<"platform" | "phone" | "whatsapp" | "email", string> = {
+  platform: "Platform messages",
+  phone: "Phone",
+  whatsapp: "WhatsApp",
+  email: "Email",
+};
+
 export interface RfqSnapshotProps {
   rfq?: RfqSnapshotView;
 }
 
 export function RfqSnapshot({ rfq }: RfqSnapshotProps) {
   const documents = (rfq?.granted_documents ?? []).filter((doc) => doc.href);
+
+  const itemLine = [rfq?.quantity, rfq?.unit].filter(Boolean).join(" ") || undefined;
 
   const items: DescriptionItem[] = [
     { label: "Scope", value: rfq?.scope_text },
@@ -35,7 +44,6 @@ export function RfqSnapshot({ rfq }: RfqSnapshotProps) {
           : undefined,
     },
     { label: "Category", value: rfq?.category_label },
-    { label: "Delivery", value: rfq?.delivery_geography },
     {
       label: "Estimated value",
       value:
@@ -48,6 +56,30 @@ export function RfqSnapshot({ rfq }: RfqSnapshotProps) {
       value: rfq?.no_formal_spec ? "No formal specification" : undefined,
     },
     { label: "Version locked", value: rfq?.version_locked_label },
+    { label: "Item", value: rfq?.item_name },
+    { label: "Quantity", value: itemLine },
+    { label: "Brand preference", value: rfq?.brand_preference },
+    { label: "Alternative brand accepted", value: rfq?.alternative_brand },
+    { label: "Condition", value: rfq?.product_condition },
+    { label: "Standards", value: rfq?.standards },
+    { label: "Certifications", value: rfq?.certifications },
+  ];
+
+  const deliveryItems: DescriptionItem[] = [
+    { label: "Delivery area", value: rfq?.delivery_geography },
+    { label: "Location", value: rfq?.delivery_location },
+    { label: "District", value: rfq?.delivery_district },
+    { label: "Requested by", value: rfq?.delivery_date_label },
+    { label: "Site", value: rfq?.delivery_site },
+    { label: "Instructions", value: rfq?.delivery_instructions },
+    {
+      label: "Preferred contact channels",
+      value:
+        rfq?.preferred_contact_channels && rfq.preferred_contact_channels.length > 0
+          ? rfq.preferred_contact_channels.map((c) => CONTACT_CHANNEL_LABEL[c]).join(" · ")
+          : undefined,
+    },
+    { label: "Preferred contact time", value: rfq?.preferred_contact_time_label },
   ];
 
   return (
@@ -58,6 +90,15 @@ export function RfqSnapshot({ rfq }: RfqSnapshotProps) {
         </CardHeader>
         <CardContent>
           <DescriptionList items={items} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Delivery</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DescriptionList items={deliveryItems} />
         </CardContent>
       </Card>
 
