@@ -1,20 +1,27 @@
-// ProjectShowcase (M2.6) — a presentation showcase of selected work the supplier has delivered. The
-// frozen `showcase_projects` M2 entity is NOT wired into the public read, so this renders EDITORIAL,
-// supplier-provided project cards (no frozen field; coins nothing) with DECORATIVE image tiles (no
-// fabricated <img> source) and a DISABLED "View details" action (no deep route is invented until wired).
-// "Client" is a sector/role descriptor only — never a fabricated company name. Presentation-only;
-// genuine-empty when absent. Reuses the kit (Card/Badge/Button); RSC-friendly.
+// ProjectShowcase (M2.6 · FE-PUB-11 detail-link) — a presentation showcase of selected work the
+// supplier has delivered. The frozen `showcase_projects` M2 entity is NOT wired into the public read,
+// so this renders EDITORIAL, supplier-provided project cards (no frozen field; coins nothing) with
+// DECORATIVE image tiles (no fabricated <img> source). "View details" now links to the per-project
+// detail page (FE-PUB-11, `/vendors/[slug]/projects/[projectSlug]`) WHEN a `vendorSlug` is supplied and
+// the project carries a `slug`; without either it stays DISABLED (no route fabricated). The list card's
+// "Client" is the sector/role descriptor only — the NAMED client renders on the DETAIL page only
+// (companion §6.9 R2, scoped there). Presentation-only; genuine-empty when absent. Reuses the kit
+// (Card/Badge/Button) + the canonical vendor URL builder; RSC-friendly.
+import Link from "next/link";
 import { Image as ImageIcon } from "lucide-react";
 import { Badge } from "@/frontend/primitives/badge";
 import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent } from "@/frontend/primitives/card";
+import { vendorHref } from "../vendor-url";
 import type { ProjectShowcaseVM } from "./company-content-seed";
 
 export interface ProjectShowcaseProps {
   projects?: ProjectShowcaseVM[];
+  /** Vendor slug — enables the per-project "View details" link (FE-PUB-11). Omit → link stays disabled. */
+  vendorSlug?: string;
 }
 
-export function ProjectShowcase({ projects }: ProjectShowcaseProps) {
+export function ProjectShowcase({ projects, vendorSlug }: ProjectShowcaseProps) {
   if (!projects || projects.length === 0) return null;
   return (
     <div className="flex flex-col gap-3">
@@ -53,10 +60,18 @@ export function ProjectShowcase({ projects }: ProjectShowcaseProps) {
                   </div>
                 ) : null}
                 <div className="mt-auto pt-1">
-                  {/* Disabled until the project read is wired — no deep route fabricated. */}
-                  <Button size="sm" variant="outline" disabled>
-                    View details
-                  </Button>
+                  {vendorSlug && project.slug ? (
+                    <Button asChild size="sm" variant="outline">
+                      <Link href={`${vendorHref(vendorSlug, "projects")}/${project.slug}`}>
+                        View details
+                      </Link>
+                    </Button>
+                  ) : (
+                    // No vendor slug or no project slug -> no deep route fabricated (stays disabled).
+                    <Button size="sm" variant="outline" disabled>
+                      View details
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

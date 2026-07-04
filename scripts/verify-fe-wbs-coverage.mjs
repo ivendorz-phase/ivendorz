@@ -15,8 +15,9 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const wbs = readFileSync(join(root, "project-management", "fe-program-wbs.md"), "utf8");
 
 // The page universe (page_inventory.md prefixes + counts): the frozen 144 + the additive
-// P-DOC mint (owner Board-minted 2026-07-03, WBS v1.2) = 150.
-const UNIVERSE = { SH: 6, PUB: 24, AUTH: 8, ACC: 22, BUY: 27, VND: 28, ADM: 29, DOC: 6 };
+// P-DOC mint (owner Board-minted 2026-07-03, WBS v1.2) = 150 + the P-PUB-25 Project Detail mint
+// (owner Board-minted 2026-07-03, FE-PUB-11, WBS v1.3) = 151.
+const UNIVERSE = { SH: 6, PUB: 25, AUTH: 8, ACC: 22, BUY: 27, VND: 28, ADM: 29, DOC: 6 };
 const pad = (n) => String(n).padStart(2, "0");
 const expected = new Set(
   Object.entries(UNIVERSE).flatMap(([p, n]) =>

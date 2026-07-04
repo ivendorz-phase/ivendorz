@@ -27,12 +27,18 @@ export { CompanyStatistics, type CompanyStatisticsProps } from "./company-statis
 export { CompanyTimeline, type CompanyTimelineProps } from "./company-timeline";
 export { WhyChooseUs, type WhyChooseUsProps } from "./why-choose-us";
 export { ProjectShowcase, type ProjectShowcaseProps } from "./project-showcase";
+export { ProjectHero, type ProjectHeroProps } from "./project-hero";
+export {
+  ProjectVendorSummaryCard,
+  type ProjectVendorSummaryCardProps,
+} from "./project-vendor-summary-card";
 export { ProductShowcase, type ProductShowcaseProps } from "./product-showcase";
 export { DownloadCenter, type DownloadCenterProps } from "./download-center";
 export { CompanyFaq, type CompanyFaqProps } from "./company-faq";
 export { CompanyContact, type CompanyContactProps } from "./company-contact";
 export {
   getCompanyContent,
+  getShowcaseProject,
   type VendorCompanyContentVM,
   type CompanyValueVM,
   type CompanyDifferentiatorVM,

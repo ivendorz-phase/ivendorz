@@ -50,12 +50,15 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   collapses both an unknown id and an orphaned vendor reference identically; breadcrumb tiebreak
   verified on two vendors exercising both branches [depth wins; `is_specialized` wins at equal
   depth] against real taxonomy node ids)_
-- **Pipeline stage:** idle — Team-1's FE-PUB queue is now fully complete (all of FE-PUB-01
-  through FE-PUB-10 closed). No further Team-1 milestone registered on the execution board; a
-  proposed FE-PLAT track (SEO completion, Storybook, observability SDK init, shared/E2E test
-  coverage) is pending Board mint.
-- **Next Milestone:** _(none pullable — awaiting either a fresh Board registration or the FE-PLAT
-  track's mint.)_
+- **Pipeline stage:** idle — Team-1's FE-PUB queue FE-PUB-01 through **FE-PUB-11 all closed**.
+  `FE-PUB-11 Project Detail Page` ✅ **Built + Closed** (RV-0138, owner-directed same-day build):
+  new `/vendors/[slug]/projects/[projectSlug]` route completing the Vendor Profile → Project Card →
+  Project Detail journey (`ProjectShowcase` "View details" now a real link); presentation-only vs.
+  the editorial seed; `P-PUB-25` minted, coverage PASS 151/151; §6.9 rulings R1–R4 honored; 1
+  pre-existing microsite `landmark-unique` OBS carried (FE-PUB-10 precedent).
+- **Next Milestone:** _(none pullable — a proposed FE-PLAT track (SEO completion, Storybook,
+  observability SDK init, shared/E2E test coverage) is pending Board mint; otherwise awaiting a
+  fresh Board registration.)_
 
 ## Team-2 — Buyer (FE-BUY / FE-CLN)
 

@@ -91,7 +91,7 @@ export default async function VendorHomePage({ params }: { params: Promise<{ slu
         title="Featured projects"
         action={viewAll(vendorHref(slug, "projects"))}
       >
-        <ProjectShowcase projects={featuredProjects} />
+        <ProjectShowcase projects={featuredProjects} vendorSlug={slug} />
       </VendorSection>
 
       <VendorSection

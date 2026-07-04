@@ -60,10 +60,17 @@ the price/currency it was smuggling back in via the shared `ProductCard`; rounds
 `50b3c0d`] caught two stale governance comments of the same class the prior sweep(s) missed in the
 same file. Interim `product-detail.tsx` retired, all 4 call sites + the `/search?product=`
 inline-swap branch repointed. Full record: `project-management/review-log.md` RV-0132.)
-**Team-1's FE-PUB queue is now fully complete (FE-PUB-01 through FE-PUB-10 all closed).** No
-further Team-1 milestone registered — a proposed FE-PLAT track (SEO completion, Storybook,
-observability SDK init, shared/E2E test coverage) is pending Board mint — see `fe-program-wbs.md`
-Track 8.
+**FE-PUB-01 through FE-PUB-10 all closed.** `FE-PUB-11 Project Detail Page` — ✅ **Built + Closed**
+(RV-0138, owner-directed same-day implementation; Team-1 self-close, no BLOCKER/MAJOR/MINOR). New
+`/vendors/[slug]/projects/[projectSlug]` case-study detail route nested under the microsite chrome —
+completes the Vendor Profile → Project Card → **Project Detail** journey (`ProjectShowcase`'s "View
+details" wired `disabled`→real link at both call sites). Presentation-only against the editorial
+project seed (real `showcase_projects` read stays Wave-4); 2 new thin components + `getShowcaseProject`
+lookup, zero new kit primitives; §6.9 rulings R1–R4 honored. **`P-PUB-25` minted** (page_inventory §5
++ coverage UNIVERSE 150→151 + ledger; coverage PASS 151/151). Ownership held: single Public/M2 surface
+= Team-1's, not a 1/2/3 split (Buyer/Vendor-workspace own no code here). Also available: a proposed
+FE-PLAT track (SEO completion, Storybook, observability SDK init, shared/E2E test coverage) pending
+Board mint — see `fe-program-wbs.md` Track 8.
 
 **Team-2 (Buyer):**
 ~~FE-BUY-04..09~~ ✅ **All Closed** this session (RV-0102/0108/0109/0112/0113/0114 @ `5a4550c`/
@@ -218,6 +225,7 @@ already updated in the same change.
 | ~~FE-PUB-05 (P-PUB-11)~~ | ~~`ESC-7-API-PRODDETAIL`~~ **RESOLVED 2026-07-03** (owner Board, `R-ESC7-PRODDETAIL-FREEZE` — E-1/E-2/E-3 all folded) | ✅ **Closed** RV-0132 @ `50b3c0d` — product modal from `search_catalog` retired at cutover |
 | ~~FE-PUB-09 mega menu~~ | ~~taxonomy P1 + `MEGA_MENU_*` package approval~~ **CLEARED 2026-07-03** (owner Board; S: `ESC-7-API-CATNAV` stays open — build-time seed interim) | — |
 | FE-PF-02 brand | official SVGs under `public/brand/` | placeholder-complete kit `BrandLogo` |
+| FE-PUB-11 (P-PUB-25) | `showcase_projects` public read (ESC-class, unwired) + `P-PUB-25` mint / coverage 150→151 at kickoff | design specced (companion §6); `ProjectShowcase` "View details" stays `disabled` until wired |
 | Page-gates inside milestones | P-PUB-09 `ESC-7-API-CATNAV` · P-VND-10 `ESC-7-API/upload` · P-ACC-12 `ESC-IDN-DELEG-EXPIRY` | carve-out rule (WBS) |
 
 ## Parked register (🅿 — waiting on an owner decision)

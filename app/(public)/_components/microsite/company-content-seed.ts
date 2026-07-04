@@ -55,7 +55,7 @@ export interface GalleryItemVM {
 export interface ProjectShowcaseVM {
   name: string;
   industry?: string;
-  /** Sector/role descriptor ONLY — never a fabricated client company name. */
+  /** Sector/role descriptor (list-card default) — the list cards show THIS, never a company name. */
   client?: string;
   scope?: string;
   /** Generic period label — never a fabricated exact date. */
@@ -64,6 +64,39 @@ export interface ProjectShowcaseVM {
   equipment?: string[];
   /** Decorative tile label (no fabricated image source). */
   imageLabel?: string;
+
+  // ── FE-PUB-11 Project Detail page fields (all optional; the list card ignores them, so its render
+  //    is byte-stable). Every field is vendor-authored editorial content (coins no platform signal,
+  //    R7-safe). Governance rulings from the design companion §6.9 are honored HERE:
+  /** URL segment for the detail page (`/vendors/[slug]/projects/[slug]`). Absent → "View details" stays disabled. */
+  slug?: string;
+  /**
+   * Named client — shown on the DETAIL page only (owner Board ruling R2, companion §6.9). Vendor-authored
+   * + consent-responsible; coins no platform signal; never exposes a buyer-private/blacklisted relationship
+   * (a vendor publishing its own reference ≠ the platform disclosing a buyer's private sourcing record).
+   * The list card deliberately keeps showing the sector/role `client` above (R2 scoped to the detail page).
+   */
+  namedClient?: string;
+  /** Project status label — rendered as a StatusChip (frozen state vocabulary, e.g. "completed"). */
+  status?: string;
+  /** Duration label (e.g. "6 Months") — editorial, never a computed figure. */
+  durationLabel?: string;
+  /** Location label (e.g. "Chittagong, Bangladesh"). */
+  location?: string;
+  /** Decorative hero-tile caption (no fabricated image source, R4). */
+  heroCaption?: string;
+  /** "The Challenge" narrative block (vendor-authored). */
+  challenge?: string;
+  /** "Our Solution" narrative block (vendor-authored). */
+  solution?: string;
+  /** Scope-of-deliverables checklist (vendor-authored editorial). */
+  deliverables?: string[];
+  /** Technologies & methods tags (editorial descriptors, not a coined governance signal). */
+  technologies?: string[];
+  /** Decorative gallery-tile captions (no fabricated image sources, R4). */
+  galleryLabels?: string[];
+  /** Category tags for the sidebar (e.g. ["Power", "Infrastructure"]) — labels only, no facet read. */
+  tags?: string[];
 }
 export interface DownloadItemVM {
   label: string;
@@ -214,39 +247,112 @@ const DEFAULT_STATS: CompanyStatVM[] = [
 
 const DEFAULT_PROJECTS: ProjectShowcaseVM[] = [
   {
+    name: "High Voltage Substation",
+    slug: "high-voltage-substation",
+    industry: "Power",
+    client: "National utility",
+    namedClient: "National Grid",
+    scope: "132/33kV power transformers and switchgear for grid distribution.",
+    year: "2022",
+    status: "completed",
+    durationLabel: "6 Months",
+    location: "Chittagong, Bangladesh",
+    heroCaption: "Precision Welding",
+    challenge:
+      "This project required comprehensive engineering oversight for a national grid client. The primary challenge involved retrofitting existing infrastructure with modern power capabilities while strictly maintaining operational uptime to avoid production losses.",
+    solution:
+      "Installation of 132/33kV power transformers and switchgear for efficient grid distribution and industrial power supply. To ensure precision, specialized teams handled the structural modifications and system integration simultaneously, using 3D modelling (BIM) to prevent clashes and ensure a seamless installation process.",
+    deliverables: [
+      "Structural Analysis & Design",
+      "Fabrication (500 Tons)",
+      "On-site Installation",
+      "Procurement Grade Materials",
+      "Non-Destructive Testing (NDT)",
+    ],
+    technologies: ["3D Modelling (BIM)", "Precision Welding", "Switchgear Integration"],
+    galleryLabels: [
+      "Site Preparation",
+      "Transmission Towers",
+      "Structural Steel Erection",
+      "Crane Lift",
+      "Commissioning",
+      "Control Room",
+    ],
+    equipment: ["Power transformers", "Switchgear", "Structural steel"],
+    tags: ["Power", "Infrastructure"],
+    imageLabel: "Substation",
+  },
+  {
     name: "Process plant valve supply",
+    slug: "process-plant-valve-supply",
     industry: "Chemical",
     client: "Process manufacturer",
+    namedClient: "Meghna Petrochemical Ltd.",
     scope: "Supply of industrial valves, actuators, and fittings for a plant upgrade.",
     year: "2023",
+    status: "completed",
+    durationLabel: "4 Months",
+    location: "Narayanganj, Bangladesh",
+    heroCaption: "Valve Assembly",
+    challenge:
+      "A process plant upgrade required a phased valve and actuator replacement without shutting the line down, under strict material-traceability requirements.",
+    solution:
+      "Staged supply of gate valves, actuators, and flanged fittings with full material certification, sequenced around the plant's maintenance windows to keep production running.",
+    deliverables: [
+      "Valve & actuator supply",
+      "Material traceability certificates",
+      "On-site fitment support",
+    ],
+    technologies: ["Material Traceability", "Actuator Calibration"],
+    galleryLabels: ["Valve Assembly", "Actuator Test", "Installation"],
     equipment: ["Gate valves", "Actuators", "Flanged fittings"],
+    tags: ["Chemical", "Process"],
     imageLabel: "Installation",
   },
   {
     name: "Water treatment pumping",
+    slug: "water-treatment-pumping",
     industry: "Water Treatment",
     client: "Municipal utility",
+    namedClient: "Chattogram WASA",
     scope: "Pump supply, installation, and commissioning for a treatment facility.",
     year: "2022",
+    status: "completed",
+    durationLabel: "5 Months",
+    location: "Chittagong, Bangladesh",
+    heroCaption: "Pumping Station",
+    challenge:
+      "A municipal treatment facility needed additional pumping capacity commissioned within a tight civil-works schedule.",
+    solution:
+      "Supply, installation, and commissioning of centrifugal pumps with control panels, coordinated with the civil contractor to meet the facility's cutover date.",
+    deliverables: ["Pump supply", "Control-panel integration", "Commissioning & handover"],
+    technologies: ["Pump Commissioning", "Control Panel Integration"],
+    galleryLabels: ["Pumping Station", "Control Panel", "Commissioning"],
     equipment: ["Centrifugal pumps", "Control panels"],
+    tags: ["Water Treatment", "Utilities"],
     imageLabel: "Pumping station",
   },
   {
-    name: "Power plant maintenance",
-    industry: "Power",
-    client: "Power producer",
-    scope: "Scheduled maintenance and spare-parts supply for rotating equipment.",
-    year: "2022",
-    equipment: ["Bearings", "Seals", "Spares"],
-    imageLabel: "Workshop",
-  },
-  {
     name: "Food & beverage line",
+    slug: "food-beverage-line",
     industry: "Food & Beverage",
     client: "FMCG manufacturer",
+    namedClient: "Pran-RFL Group",
     scope: "Hygienic valves and stainless fittings for a production line.",
     year: "2021",
+    status: "completed",
+    durationLabel: "3 Months",
+    location: "Gazipur, Bangladesh",
+    heroCaption: "Production Line",
+    challenge:
+      "A new production line required hygienic-grade valves and stainless fittings meeting food-safety standards, delivered ahead of the line's start-up.",
+    solution:
+      "Supply of hygienic valves and stainless fittings to the required food-safety grade, delivered and fitted ahead of the line's commissioning date.",
+    deliverables: ["Hygienic valve supply", "Stainless fitting supply", "Fitment support"],
+    technologies: ["Hygienic Design", "Stainless Fabrication"],
+    galleryLabels: ["Production Line", "Hygienic Valves", "Fitting"],
     equipment: ["Hygienic valves", "SS fittings"],
+    tags: ["Food & Beverage", "Manufacturing"],
     imageLabel: "Production line",
   },
 ];
@@ -357,4 +463,14 @@ export function getCompanyContent(profile: PublicVendorProfileVM): VendorCompany
   };
 
   return { ...base, ...OVERRIDES[profile.slug] };
+}
+
+/** Resolve a single showcase project for a vendor by its slug (FE-PUB-11 detail page). Presentation
+ *  stand-in for the frozen `showcase_projects` read (unwired) — returns `undefined` for an unknown
+ *  slug so the route renders the byte-equivalent 404 (Invariant #11). Coins no contract. */
+export function getShowcaseProject(
+  profile: PublicVendorProfileVM,
+  projectSlug: string,
+): ProjectShowcaseVM | undefined {
+  return getCompanyContent(profile).projects?.find((project) => project.slug === projectSlug);
 }

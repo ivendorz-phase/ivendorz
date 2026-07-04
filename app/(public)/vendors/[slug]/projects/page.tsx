@@ -49,7 +49,7 @@ export default async function VendorProjectsPage({
         title="Selected work"
         description="Projects this supplier has delivered."
       >
-        <ProjectShowcase projects={content.projects} />
+        <ProjectShowcase projects={content.projects} vendorSlug={profile.slug} />
       </VendorSection>
     </>
   );

@@ -122,6 +122,7 @@ modals are added — those are pattern states, not inventory rows.)*
 | P-PUB-22 | Legal — Privacy | Static | — | — | |
 | P-PUB-23 | Resources / Blog | Static | — | J-GST-01 | Optional, SEO |
 | P-PUB-24 | Contact / Support (public) | Static | — | — | |
+| P-PUB-25 | Microsite — Project detail (case study) | Details | `get_public_vendor_profile` + `showcase_projects` (unwired; editorial seed interim) | J-GST-04 | FE-PUB-11 (owner Board-minted 2026-07-03). Nested `/vendors/[slug]/projects/[projectSlug]`. Named client shown (companion §6.9 R2); binary Verified only, no tier/score (R1/Inv#6); Documents genuine-empty, no platform "verify" (R3); placeholder media (R4). |
 
 > Public has **zero concept of buyer-private status** (Invariant #11). Ads not rendered anonymously →
 > `ESC-7-API-ADS` (`ER`).
