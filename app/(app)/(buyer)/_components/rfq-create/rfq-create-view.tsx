@@ -4,7 +4,7 @@
 // (Wave 4; PARKED behind the write-wiring milestone). PRESENTATION-ONLY.
 //
 // REUSE: shell `Breadcrumbs`; kit `Card`/`Button`/`FormField`/`EmptyState`/`ErrorState`; buyer `Textarea`/
-// `Select`/`DescriptionList`; buyer-scoped `WizardStepper` + `UploadArea`.
+// `Select`/`DescriptionList`; buyer-scoped `UploadArea`.
 //
 // GOVERNANCE: no real submit/mutation/upload/search/AI/matching (Board scope). The buyer sets routing
 // BREADTH (`routing_mode`) + preference hints — never matching weights (R6); the engine decides who is
@@ -17,7 +17,6 @@ import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent } from "@/frontend/primitives/card";
 import { ErrorState } from "@/frontend/components/error-state";
 import { Breadcrumbs } from "../../../_components/shell";
-import { WizardStepper } from "./wizard-stepper";
 import { UploadArea } from "./upload-area";
 import { SubmitPreview } from "./submit-preview";
 import { CommunicationSection } from "./communication-section";
@@ -30,7 +29,6 @@ import {
   VendorSection,
   BudgetSection,
 } from "./rfq-sections";
-import { RFQ_WIZARD_STEPS } from "./rfq-options";
 import type { RfqCreateData } from "./rfq-form-models";
 
 /** Phase 8 — success page (presentation only; no RFQ is actually created this milestone). */
@@ -88,13 +86,6 @@ export function RfqCreateView({ data }: { data: RfqCreateData }) {
           quotations.
         </p>
       </header>
-
-      {/* Phase 1 — progress indicator. Sticky below the shell topbar (h-14 = top-14), porting the
-          reference prototype's sticky steps bar; scroll-spy/click-to-scroll is prototype-only JS
-          flourish and intentionally left out (this stays a Server Component). */}
-      <div className="sticky top-14 z-[var(--iv-z-sticky)] -mx-4 mb-6 border-b border-border bg-card/95 px-4 py-3 shadow-iv-xs backdrop-blur sm:-mx-6 sm:px-6">
-        <WizardStepper steps={RFQ_WIZARD_STEPS} activeStep={data.activeStep ?? 0} />
-      </div>
 
       {submission === "error" ? (
         <ErrorState
