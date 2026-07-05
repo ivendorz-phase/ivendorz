@@ -1,7 +1,7 @@
 // RFQ detail (S3) — presentation SEED for RfqSnapshotView. Curated, realistic Bangladesh industrial
 // procurement example standing in for the wired grant-scoped read (`rfq.get_rfq.v1`, not wired yet)
 // — NOT data, coins nothing. Presentation-only; do not wire a real fetch here.
-import type { RfqSnapshotView } from "./types";
+import type { InvitationView, PriceBreakdownLine, QuotaView, RfqSnapshotView } from "./types";
 
 export const RFQ_SNAPSHOT_SEED: RfqSnapshotView = {
   rfq_id: "rfq-000318",
@@ -43,3 +43,29 @@ export const RFQ_SNAPSHOT_SEED: RfqSnapshotView = {
   preferred_contact_channels: ["platform", "whatsapp"],
   preferred_contact_time_label: "Weekdays, 10am–5pm",
 };
+
+/** Companion SEED for InvitationView — same mock-data convention as RFQ_SNAPSHOT_SEED above. */
+export const INVITATION_SEED: InvitationView = {
+  id: "inv-000318",
+  rfq_id: RFQ_SNAPSHOT_SEED.rfq_id,
+  state: "delivered",
+  delivered_at: "3 Jul 2026, 11:20 AM (Asia/Dhaka)",
+};
+
+/** Companion SEED for QuotaView. */
+export const QUOTA_SEED: QuotaView = {
+  used: 6,
+  limit: 20,
+  resets_label: "1 Aug 2026",
+};
+
+/** Companion SEED for the price breakdown starting lines (companion §13.1) — a realistic starting
+ * draft the vendor edits; NOT data, coins nothing. */
+export const PRICE_BREAKDOWN_SEED: PriceBreakdownLine[] = [
+  {
+    description: "MS Plate, 10mm thickness (ASTM A36 equiv.)",
+    qty: 20,
+    unit_amount: 92_000,
+    amount: 1_840_000,
+  },
+];

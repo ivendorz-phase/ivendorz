@@ -6,7 +6,12 @@
 // the platform shell PageHeader + Breadcrumbs.
 import type { Metadata } from "next";
 import { Breadcrumbs, PageHeader } from "../../../../_components/shell";
-import { QuotationBuilder } from "../../../../_components/vendor/rfq";
+import {
+  QuotationBuilder,
+  RFQ_SNAPSHOT_SEED,
+  QUOTA_SEED,
+  PRICE_BREAKDOWN_SEED,
+} from "../../../../_components/vendor/rfq";
 
 export const metadata: Metadata = { title: "Author quotation" };
 
@@ -32,7 +37,17 @@ export default async function QuotationBuilderPage({
         description="Presentation only — saving and submitting connect in the integration phase."
         meta={<span className="font-mono text-xs text-muted-foreground">{rfqId}</span>}
       />
-      <QuotationBuilder />
+      <QuotationBuilder
+        rfqId={rfqId}
+        rfqHumanRef={RFQ_SNAPSHOT_SEED.human_ref}
+        versionLockedLabel={RFQ_SNAPSHOT_SEED.version_locked_label}
+        windowState={RFQ_SNAPSHOT_SEED.window_state}
+        windowDeadlineLabel={RFQ_SNAPSHOT_SEED.window_deadline_label}
+        windowUrgency={RFQ_SNAPSHOT_SEED.window_urgency}
+        quota={QUOTA_SEED}
+        lines={PRICE_BREAKDOWN_SEED}
+        currency={RFQ_SNAPSHOT_SEED.currency}
+      />
     </div>
   );
 }
