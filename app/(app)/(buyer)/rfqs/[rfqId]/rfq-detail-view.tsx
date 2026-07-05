@@ -169,7 +169,15 @@ function NotFoundState() {
   );
 }
 
-export function RfqDetailView({ data }: { data: RfqDetailData | null }) {
+export function RfqDetailView({
+  data,
+  journey,
+}: {
+  data: RfqDetailData | null;
+  /** Optional journey-orientation slot (navigation-not-state), rendered between the header and the
+   *  tabs — NEVER in the not-found branch (byte-identical genuine absence, Inv #11 / GI-12). */
+  journey?: React.ReactNode;
+}) {
   if (data === null) {
     return <NotFoundState />;
   }
@@ -192,6 +200,7 @@ export function RfqDetailView({ data }: { data: RfqDetailData | null }) {
         }
         actions={<LifecycleActions actions={data.permittedActions} />}
       />
+      {journey ? <div className="mb-4">{journey}</div> : null}
       {/* The (server-rendered) tab contents are handed to the thin client tab chrome (only it hydrates). */}
       <RfqDetailTabs
         overview={<OverviewTab data={data} />}

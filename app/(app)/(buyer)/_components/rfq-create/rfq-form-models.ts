@@ -64,8 +64,8 @@ export interface RfqItemRow {
 
 export interface RfqDraftForm {
   // Phase 2 — Requirement details
-  /** Presentation-only industry grouping that filters the category picker — NOT a stored create_rfq field. */
-  industry?: string;
+  // (Industry removed — modern marketplace UX (Alibaba/IndiaMART/Amazon Business) goes straight to a
+  // searchable category picker rather than an industry-first funnel.)
   /** `category_id` (the picker's value is the opaque category id; the label is display). */
   categoryId?: string;
   categoryLabel?: string;

@@ -7,9 +7,10 @@
 // them in its quotation (Board ruling 2026-07-01); the buyer states only optional budget GUIDANCE (R8).
 
 import * as React from "react";
-import { Info } from "lucide-react";
+import { Info, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/frontend/primitives/tooltip";
+import { Input } from "@/frontend/primitives/input";
 import { FormField } from "@/frontend/components/form-field";
 import { cn } from "@/frontend/lib/cn";
 import { Textarea, Select, CheckboxRow } from "../form-controls";
@@ -119,18 +120,18 @@ export function RequirementSection({ form }: { form: RfqDraftForm }) {
         />
       }
     >
-      <FormField
-        id="rfq-industry"
-        label="Industry"
-        description="Helps narrow the category list (not stored on the RFQ)."
-        inputProps={{ defaultValue: form.industry, placeholder: "e.g. Steel & Metals" }}
-      />
       <FormField id="rfq-category" label="Category" required>
-        <Select
-          options={form.categoryLabel ? [{ value: "c", label: form.categoryLabel }] : []}
-          placeholder="Select a category"
-          defaultValue={form.categoryLabel ? "c" : ""}
-        />
+        <div className="relative">
+          <Search
+            aria-hidden
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            defaultValue={form.categoryLabel}
+            placeholder="Search category…"
+            className="pl-9"
+          />
+        </div>
       </FormField>
       {/* A checkbox GROUP → fieldset/legend (not FormField, which wires a single label→control). */}
       <fieldset className="sm:col-span-2">
@@ -269,14 +270,13 @@ export function DeliverySection({ form }: { form: RfqDraftForm }) {
 export function BudgetSection({ form }: { form: RfqDraftForm }) {
   return (
     <SectionCard title="Budget & priority (optional)">
-      {/* FZ-06: `required` (asterisk + aria-required) — `estimated_value` is in the frozen submission
-          FIXED-set (rfq-form-models.ts:23-24); draft itself stays permissive (Doc-3 §1.2), never
-          enforced here. */}
+      {/* Made fully optional in the wizard (no asterisk/required marker) per product direction — the
+          frozen submission FIXED-set (rfq-form-models.ts) still lists `estimated_value` as a backend
+          submit-time field, but the buyer is never forced to state a budget figure client-side. */}
       <FormField
         id="rfq-budget"
         label="Estimated budget (BDT)"
-        description="Optional guidance — required only at submit. No currency selector: BDT at create."
-        required
+        description="Optional guidance for vendors. No currency selector: BDT at create."
         inputProps={{
           defaultValue: form.budget,
           type: "number",

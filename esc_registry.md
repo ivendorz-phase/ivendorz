@@ -136,6 +136,19 @@ A-03/PATCH-05 link-not-merge; PATCH-02) — pointed, not escalated. Mushok remai
 | **`ESC-VENDIR-INVITE`** | Buyer-initiated invite-to-platform unmodeled — frozen seeding is admin-driven (`vendor_claim_records.source enum<excel\|admin\|registration>`); `missing_vendor_suggestions` has **no submit contract** (admin triage/close only) | "Pending Invitation" nav section + Invite button absent until ruled | Human Architecture Board — packet **R4** → `Doc-4D_or_4J_Buyer_Invite` additive patch (M2 source enum + M8 intake submit + M6 delivery; M4 link-back already frozen) |
 | **`ESC-VENDIR-FIELDS`** | Field/enum basket: contact/address/registration fields (`details_jsonb` vs first-class), category refs on private records, logo ref, `link_suggestions.match_basis` +`bin`/+`domain`, buyer import/export (no slug/contract), private↔private **Merge** (corpus is link-not-merge; merge silent) | Form fields beyond the frozen set persist via `details_jsonb` (no coined columns); duplicate prompt offers **Archive duplicate** in place of Merge; no import/export affordance | Human Architecture Board — packet **R5** items 1–6 → `Doc-4F/Doc-2_Vendor_Directory` additive patches; OBS-1 (trade-license home) + OBS-2 (Doc-4F "ADR-003 link-not-merge" vs Compendium ADR-003/ADR-005 pointer) noted for errata |
 
+### Journey Atlas (journeys/ intake, 2026-07-06)
+
+Source: the journey/lifecycle companion program ([`journeys/JOURNEY_ATLAS.md`](journeys/JOURNEY_ATLAS.md)
++ 9 domain files). Packet: [`BOARD-PACKET-JOURNEY-ATLAS_v1.0.md`](governanceReviews/BOARD-PACKET-JOURNEY-ATLAS_v1.0.md).
+Both items **grep-verified absent** from the frozen corpus during authoring; neither journey is
+authorable without coining. The vendor-lead state-machine conflict surfaced by the same authoring
+pass is **already registered** as `ESC-7G-LEAD-MACHINE` (above) — not re-registered.
+
+| Handle | Scope / gap | Interim presentation | Channel |
+|---|---|---|---|
+| **`ESC-JRN-BUYER-VERIF`** | Buyer-side verification ("Trusted Buyer") is **unmodeled** — `verification_records` bind to the vendor's owning org (Doc-4G H.3/H.9a/H.10; subject/type enums fixed "do not extend"; sole event `VendorVerified`); `identity.organizations` carries a `verification_level` field (`unverified/verified/enhanced_verified`, Doc-2 §3) but **no buyer-facing verification contract, flow, or badge exists** | No buyer-verification journey authored (atlas §8 "not ratified — escalated"); no "Trusted Buyer" badge/flow rendered anywhere | Additive Doc-4G/Doc-4C patch (human Architecture Board) — product decision first |
+| **`ESC-JRN-LEAD-DIST`** | Admin "lead distribution" is **unmodeled** — Doc-4J has no lead entity or function; `vendor_leads` are created **only** by seam M6-2 (`VendorInvited` at invitation `delivered`); M7 lead credits are a commercial balance, never an assignment instrument | No admin lead-assignment surface or journey; leads remain invitation-born only | Human Architecture Board (owner product decision) — would require Doc-4J + Doc-4F additive patches |
+
 ### Known non-ESC gaps (recorded, not escalations)
 - **Industry taxonomy** — now tracked as **`ESC-CLASS-INDUSTRY`** above (was: "not modeled"); the
   `Doc-2_IndustryTaxonomy` patch proposal recommends an M2-owned model for Board ratification.

@@ -73,7 +73,15 @@ function NewRfqButton() {
   );
 }
 
-export function RfqListView({ data }: { data: RfqListData | null }) {
+export function RfqListView({
+  data,
+  summary,
+}: {
+  data: RfqListData | null;
+  /** Optional workflow summary slot (e.g. the adapter-supplied journey-bucket counts), rendered
+   *  between the header and the list. Pure composition — the view renders it verbatim. */
+  summary?: React.ReactNode;
+}) {
   const items = data?.items ?? [];
   const isEmpty = items.length === 0;
 
@@ -84,6 +92,8 @@ export function RfqListView({ data }: { data: RfqListData | null }) {
         description="Author, track and manage your organization's requests for quotation."
         actions={<NewRfqButton />}
       />
+
+      {summary && !isEmpty ? <div className="mb-4">{summary}</div> : null}
 
       {isEmpty ? (
         <EmptyState
