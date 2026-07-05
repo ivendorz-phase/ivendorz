@@ -21,6 +21,7 @@ import { WizardStepper } from "./wizard-stepper";
 import { UploadArea } from "./upload-area";
 import { SubmitPreview } from "./submit-preview";
 import { CommunicationSection } from "./communication-section";
+import { TermsConditionsSection } from "./terms-conditions-section";
 import {
   TitledCard,
   RequirementSection,
@@ -116,6 +117,7 @@ export function RfqCreateView({ data }: { data: RfqCreateData }) {
         <TitledCard title="Attachments">
           <UploadArea attachments={form.attachments} />
         </TitledCard>
+        <TermsConditionsSection terms={form.termsAndConditions} />
         <DeliverySection form={form} />
         <VendorSection form={form} />
         <BudgetSection form={form} />

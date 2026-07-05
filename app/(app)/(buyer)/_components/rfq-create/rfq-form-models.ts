@@ -92,6 +92,11 @@ export interface RfqDraftForm {
   // Phase 4 — Attachments (`spec_document_ids[]` at wiring; presentation-only here)
   attachments?: RfqAttachment[];
 
+  // Phase 4 — Terms & conditions (dev-doc capture; serializes into `content_jsonb` at wiring). NOT a
+  // frozen `create_rfq`/`submit_rfq` field (no such field is pinned in Doc-4E §E4.1) — a buyer-facing
+  // presentation list of conditions vendors must accept to quote, ordered.
+  termsAndConditions?: string[];
+
   // Delivery requirements (`delivery_geography` jsonb + dev-doc capture). NOTE: payment terms / incoterms /
   // tax are NOT here — they are COMMERCIAL terms the vendor defines in its quotation (Board ruling 2026-07-01),
   // not what the buyer requests. The buyer describes the NEED; the vendor defines how/under what terms it supplies.

@@ -1,10 +1,11 @@
 // P-BUY-RFQ Phase 4 — Attachments. PRESENTATION-ONLY: a drag-&-drop AREA (visual only — no file input, no
-// real upload), an uploaded-file list with preview rows + per-file validation state, and an empty state.
+// real upload) and an uploaded-file list with preview rows + per-file validation state. With zero files
+// the drop-zone's own copy ("Drag & drop… / No attachments") IS the empty state — no separate `EmptyState`
+// block underneath (that doubled the section's height with a redundant "nothing here" message).
 // The real upload (→ `spec_document_ids[]`) is capped by `[ESC-7-API/upload]` and connects at integration —
-// this milestone renders the UI and handles no files (Board scope: "no uploads"). Reuses kit `EmptyState`.
+// this milestone renders the UI and handles no files (Board scope: "no uploads").
 
 import { UploadCloud, Paperclip, AlertTriangle } from "lucide-react";
-import { EmptyState } from "@/frontend/components/empty-state";
 import { cn } from "@/frontend/lib/cn";
 import type { RfqAttachment } from "./rfq-form-models";
 
@@ -18,7 +19,7 @@ export function UploadArea({ attachments }: { attachments?: RfqAttachment[] }) {
           <label>+file-input/button) lands when upload is wired — `[ESC-7-API/upload]`. */}
       <div
         aria-disabled="true"
-        className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-secondary/40 px-4 py-10 text-center"
+        className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-secondary/40 px-4 py-6 text-center"
       >
         <UploadCloud aria-hidden className="size-7 text-muted-foreground" />
         <p className="text-sm font-medium text-foreground">Drag &amp; drop spec documents here</p>
@@ -27,13 +28,7 @@ export function UploadArea({ attachments }: { attachments?: RfqAttachment[] }) {
           phase.
         </p>
       </div>
-      {files.length === 0 ? (
-        <EmptyState
-          title="No attachments yet"
-          description="Attach drawings, BOQ, datasheets, images, or technical documents for vendors to quote against."
-          className="py-6"
-        />
-      ) : (
+      {files.length === 0 ? null : (
         <ul className="flex flex-col gap-2">
           {files.map((f) => {
             const invalid = f.status === "too-large" || f.status === "unsupported";

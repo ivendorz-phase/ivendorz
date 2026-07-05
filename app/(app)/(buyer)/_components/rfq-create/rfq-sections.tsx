@@ -431,6 +431,7 @@ export function ReviewSection({ form }: { form: RfqDraftForm }) {
     { label: "Contact time", value: dash(form.preferredContactTime) },
   ];
   const fileCount = form.attachments?.length ?? 0;
+  const termsCount = (form.termsAndConditions ?? []).filter((t) => t.trim().length > 0).length;
 
   return (
     <div className="flex flex-col gap-4">
@@ -443,6 +444,13 @@ export function ReviewSection({ form }: { form: RfqDraftForm }) {
             : fileCount === 1
               ? "1 file attached"
               : `${fileCount} files attached`}
+        </p>
+      </TitledCard>
+      <TitledCard title="Terms & conditions" titleAs="h3">
+        <p className="text-sm text-muted-foreground">
+          {termsCount === 0
+            ? "No conditions added"
+            : `${termsCount} condition${termsCount === 1 ? "" : "s"}`}
         </p>
       </TitledCard>
       <SummaryCard title="Delivery" items={delivery} />
