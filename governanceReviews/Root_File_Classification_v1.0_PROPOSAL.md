@@ -48,6 +48,7 @@
 | `design_philosophy.md`, `page_templates.md` | `docs/frontend/design-system/` |
 | `ui_realization_framework.md` | `docs/frontend/architecture/` |
 | `shared_conventions.md`, `shared_platform_component_registry.md` | `docs/frontend/components/` |
+| `visual_reference_implementation.md` *(post-G1 closure row — the file postdated this classification; owner directed closure 2026-07-06)* | `docs/frontend/architecture/` (realization standard, sibling of `ui_realization_framework.md`; zero frozen refs — R2 grep-verified; sole live ref = ISH companions row, updated) |
 
 ### → other homes
 
@@ -98,6 +99,7 @@
 | `shared_conventions.md` · `shared_platform_component_registry.md` | `docs/frontend/components/<same name>` | C4 |
 | `glossary.md` · `deferred_decisions.md` | `docs/reference/<same name>` | C4 |
 | `frontend_first_slice.md` | `project-management/frontend_first_slice.md` | C5 |
+| `visual_reference_implementation.md` | `docs/frontend/architecture/visual_reference_implementation.md` | post-G1 closure (owner-directed 2026-07-06) |
 
 Deleted (C2, history-recoverable): `ChatGPT prompt.txt` · `review.txt` · `pnpm-lock.yaml` · `pnpm-workspace.yaml` (F-06 Option A, npm canonical) · `.git.code-workspace` (ask ⑧).
 

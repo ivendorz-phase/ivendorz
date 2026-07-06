@@ -46,7 +46,8 @@ New here? Read [`README.md`](README.md) (documentation philosophy + ownership), 
 
 ## Frontend
 
-- **Architecture** — [`ui_realization_framework.md`](frontend/architecture/ui_realization_framework.md)
+- **Architecture** — [`ui_realization_framework.md`](frontend/architecture/ui_realization_framework.md) ·
+  [`visual_reference_implementation.md`](frontend/architecture/visual_reference_implementation.md) (reference-driven UI standard)
 - **Components** — [`shared_conventions.md`](frontend/components/shared_conventions.md) ·
   [`shared_platform_component_registry.md`](frontend/components/shared_platform_component_registry.md)
 - **Design system** — [`design_philosophy.md`](frontend/design-system/design_philosophy.md) ·

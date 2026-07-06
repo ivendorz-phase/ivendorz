@@ -4,7 +4,7 @@
 **Status:** **FINAL v1.0** — Reference-Driven UI Implementation Standard (non-authoritative companion to the Doc-7 program)
 **Date:** 2026-07-06
 **Supersedes:** draft "Frontend Visual Implementation Guidelines v1.0" (unfiled; review round 1 raised 2 BLOCKER / 4 MAJOR / 2 MINOR — all eight findings accepted by owner adjudication 2026-07-06 and folded here)
-**Companions:** [`design_philosophy.md`](docs/frontend/design-system/design_philosophy.md) · [`shared_conventions.md`](docs/frontend/components/shared_conventions.md) · [`ux_patterns.md`](docs/product/ux/ux_patterns.md) · [`ui_realization_framework.md`](docs/frontend/architecture/ui_realization_framework.md) · [`shared_platform_component_registry.md`](docs/frontend/components/shared_platform_component_registry.md)
+**Companions:** [`design_philosophy.md`](../design-system/design_philosophy.md) · [`shared_conventions.md`](../components/shared_conventions.md) · [`ux_patterns.md`](../../product/ux/ux_patterns.md) · [`ui_realization_framework.md`](ui_realization_framework.md) · [`shared_platform_component_registry.md`](../components/shared_platform_component_registry.md)
 
 ---
 
@@ -24,8 +24,8 @@ Master → ADR → Doc-2/Doc-3 → Doc-4A…4M → Doc-5A…5K → Doc-7A → {D
 - **Doc-7A** (Frontend Realization Metastandard) and **Doc-7B** (Design System & Component Kit) own
   the token architecture, component kit, and the a11y/i18n/currency/**responsive** baseline.
   **Doc-7C** owns the app shell; **Doc-7D…7H** own the surfaces. Concrete token values live in
-  [`design_philosophy.md`](docs/frontend/design-system/design_philosophy.md); shared realization defaults in
-  [`shared_conventions.md`](docs/frontend/components/shared_conventions.md).
+  [`design_philosophy.md`](../design-system/design_philosophy.md); shared realization defaults in
+  [`shared_conventions.md`](../components/shared_conventions.md).
 - On any conflict, the frozen corpus wins and this document is corrected (CLAUDE.md §7, §11).
 
 ---
@@ -100,7 +100,7 @@ from the reference, **the kit and token win** and the divergence is correct, not
 
 No numeric similarity percentage is defined or measured; conformance is judged qualitatively in
 the normal review pipeline (CLAUDE.md §13). Numeric acceptance/test criteria are **Doc-8's** to
-define, never this document's ([`deferred_decisions.md`](docs/reference/deferred_decisions.md) REJ-02).
+define, never this document's ([`deferred_decisions.md`](../../reference/deferred_decisions.md) REJ-02).
 
 ---
 
@@ -118,7 +118,7 @@ Consistency with the existing surface outranks fidelity to an external reference
 ## 5. Component Reuse
 
 Before creating any UI element, check the frontend kit (**`src/frontend/`**) and the
-[`shared_platform_component_registry.md`](docs/frontend/components/shared_platform_component_registry.md).
+[`shared_platform_component_registry.md`](../components/shared_platform_component_registry.md).
 
 Binding rule: **extend the kit, never duplicate a primitive.** A raw `<input>`, `<button>`,
 `<select>`, or `<textarea>` that re-implements an existing kit primitive is a review finding
@@ -133,7 +133,7 @@ Desktop is the primary experience — iVendorz serves industrial procurement tea
 predominantly on PCs and laptops. Authoring stays **mobile-first** (Doc-7B §8.1; `SC` GI-07) —
 desktop-primary describes the usage target, not the authoring order. Breakpoints, device tiers,
 and the responsive baseline are owned by **Doc-7A/Doc-7B** and realized per
-[`shared_conventions.md`](docs/frontend/components/shared_conventions.md); this document defines none of its own. A reference's mobile/desktop arrangement may inform composition
+[`shared_conventions.md`](../components/shared_conventions.md); this document defines none of its own. A reference's mobile/desktop arrangement may inform composition
 at each tier, within that baseline.
 
 ---
