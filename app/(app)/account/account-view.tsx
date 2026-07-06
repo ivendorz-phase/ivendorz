@@ -21,9 +21,7 @@ import type { BuyerProfileView } from "@/modules/identity/contracts";
 
 /** Discriminated presentation state — the page maps the server DATA outcome onto exactly one of these. */
 export type AccountViewState =
-  | { kind: "unauthenticated" }
-  | { kind: "empty" }
-  | { kind: "present"; profile: BuyerProfileView };
+  { kind: "unauthenticated" } | { kind: "empty" } | { kind: "present"; profile: BuyerProfileView };
 
 /**
  * Render the account-settings read view for one presentation state. Pure: no fetching, no mutation, no

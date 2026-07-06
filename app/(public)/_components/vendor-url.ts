@@ -17,12 +17,7 @@
 // The 2 legacy redirect stubs (`capabilities`→`about`, `certifications`→`resources`) are not
 // destinations here — they call this builder for their redirect TARGET, same as any other emitter.
 export type VendorSubpage =
-  | "about"
-  | "products"
-  | "projects"
-  | "industries"
-  | "contact"
-  | "resources";
+  "about" | "products" | "projects" | "industries" | "contact" | "resources";
 
 /** The canonical vendor profile URL builder — every emitter must call this, never concatenate. */
 export function vendorHref(slug: string, subpage?: VendorSubpage): string {
