@@ -14,8 +14,8 @@
 //  • MONEY BOUNDARY (DF-6 / R8): the value is a RECORDED figure only — the platform never holds/moves
 //    funds. A standing note states this; there is no pay/settle/escrow affordance anywhere.
 //  • `rfq_id` is NOT projected → the engagement→RFQ link is an interim, not a live link (`ESC-7G-ENG-01`).
-//  • The Documents section links to the FIXED, always-known document-kind routes (PO/Payments/Trade
-//    invoice/Challan/WCC — P-BUY-21..25, all already built) — plain navigation, never a fabricated
+//  • The Documents section links to the FIXED, always-known document-kind routes (LOI/PO/Payments/Trade
+//    invoice/Challan/WCC — P-BUY-21..25 + the LOI face of P-BUY-21, all built) — plain navigation, never a fabricated
 //    existence indicator. This is NOT the blocked `ESC-7G-ENG-03` enumeration (which is "which documents
 //    exist for this engagement" — still correctly ungrounded, no contract): the hub asserts nothing about
 //    presence; each destination's own `notFound()` handles absence gracefully (byte-identical, Inv#11/H.9).
@@ -31,12 +31,14 @@ import { engagementStateDisplay } from "../../_components/state-display";
 import { Callout } from "../../_components/callout";
 import type { EngagementDetailData } from "../../_components/engagement-detail-view-models";
 
-/** The engagement's document-kind routes — FIXED, always-known (P-BUY-21..25), never a dynamic
- *  enumeration (`ESC-7G-ENG-03` stays ungrounded). Plain navigation only: no existence claim is made
- *  here — an absent document collapses to the destination's own byte-identical not-found. */
+/** The engagement's document-kind routes — FIXED, always-known (P-BUY-21..25; LOI is P-BUY-21's second
+ *  face, WP-1), never a dynamic enumeration (`ESC-7G-ENG-03` stays ungrounded). Plain navigation only: no
+ *  existence claim is made here — an absent document collapses to the destination's own byte-identical
+ *  not-found. LOI listed first: it precedes the PO in issuance order. */
 function documentLinks(engagementId: string) {
   const base = `/engagements/${engagementId}`;
   return [
+    { label: "Letter of intent", href: `${base}/loi` },
     { label: "Purchase order", href: `${base}/po` },
     { label: "Payments", href: `${base}/payments` },
     { label: "Trade invoice", href: `${base}/trade-invoice` },

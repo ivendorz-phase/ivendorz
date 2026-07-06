@@ -12,7 +12,8 @@
 //
 // GOVERNANCE (WP fe-doc-01):
 //  • LifecycleStrip = NAVIGATION, NOT STATE (MAJOR-01) — no per-engagement stage/progress cue.
-//  • §2 rows are PLAIN NAVIGATION to the five fixed document routes (P-BUY-21..25) — no
+//  • §2 rows are PLAIN NAVIGATION to the six fixed document routes (P-BUY-21..25 + the LOI face
+//    of P-BUY-21, WP-1) — no
 //    existence claims (ESC-7G-ENG-03; the FE-BUY-07 caption MAJOR); the destination owns absence.
 //  • Frozen labels only: state chips via the buyer state-display maps; doc-kind labels via the
 //    as-projected-string map; direction is the documented presentation derivation.
@@ -150,10 +151,20 @@ const PENDING_INVOICE_COLUMNS: DataColumn<TradeInvoicePointer>[] = [
   { key: "amount", header: "Amount", numeric: true, render: (p) => <Money value={p.amount} /> },
 ];
 
-// The five fixed per-engagement document routes (P-BUY-21..25) — plain navigation, the FE-BUY-07
-// pattern. `stage` narrows the cluster to the selected kind (a filter, never an existence claim).
+// The six fixed per-engagement document routes (P-BUY-21..25 + the LOI face of P-BUY-21, WP-1) — plain
+// navigation, the FE-BUY-07 pattern. `stage` narrows the cluster to the selected kind (a filter, never an
+// existence claim). LOI carries NO stageKey — the LifecycleStrip deliberately excludes LOI/WCC (its own
+// header rule) — so, exactly like WCC, it renders in the unfiltered cluster (and via the empty-narrowing
+// fallback) and drops out while a different stage filter is active. Reachable always via the engagement
+// detail page and the Document Type facet.
 function engagementDocLinks(e: HubEngagementRow, stage?: DocumentStageKey): RelatedDocumentLink[] {
   const all: (RelatedDocumentLink & { stageKey?: DocumentStageKey })[] = [
+    {
+      id: "loi",
+      label: "LOI",
+      href: `/engagements/${e.id}/loi`,
+      kindKey: "loi",
+    },
     {
       id: "po",
       label: "Purchase order",
@@ -380,7 +391,7 @@ export function DocumentsHubView({ data }: { data: DocumentsHubData }) {
               </p>
             </DocumentCollection>
 
-            {/* §2 — engagement document records (links to the five fixed routes; timeline restates facts). */}
+            {/* §2 — engagement document records (links to the six fixed routes; timeline restates facts). */}
             <DocumentCollection
               id="engagement-documents"
               title={activeView === "pending" ? "Needs attention" : "Engagement document records"}
