@@ -1,7 +1,10 @@
 # iVendorz — Journey Atlas (Registry & Governance)
 
 **Role:** Lead Product Designer + Frontend UI Engineer
-**Status:** **DRAFT v1.0** — Journey/Lifecycle registry (non-authoritative companion)
+**Status:** **FROZEN v1.0** (`journey-atlas-frozen-v1`, Board resolution 2026-07-06) —
+Journey/Lifecycle registry. Remains a **non-authoritative companion under the frozen corpus**
+(freezing governs change control, never authority — §0 stance unchanged); changes require an
+**additive patch + version bump** per the Atlas Governance lifecycle (§3.1).
 **Date:** 2026-07-06
 **Companions:** [`../marketplace_ux.md`](../marketplace_ux.md) (the six actor journeys) ·
 [`../information_architecture.md`](../information_architecture.md) · [`../ux_patterns.md`](../ux_patterns.md)
@@ -212,9 +215,10 @@ verified`).
 ## 5. Journey Registry
 
 Keys sorted alphabetically **within each domain file**. Type: **L** = `<Entity> Lifecycle`
-(state-bound) · **J** = `<Process> Journey` (narrative, no own enum). Status: all new entries are
-`authored` pending Review A/B (§3.1). Phase = authoring wave in this program (all presentation/
-docs-only; no build-wave gate).
+(state-bound) · **J** = `<Process> Journey` (narrative, no own enum). Status: **all 45 entries
+`registered`** (§3.1 lifecycle completed — Review-B RV-0141 gate B/M/M = 0 → Board resolution
+2026-07-06 APPROVED + freeze). Phase = the authoring wave this program used (historical; all
+presentation/docs-only).
 
 ### Reserved — actor journeys (owned by `marketplace_ux.md`, registered here only)
 
@@ -447,6 +451,18 @@ where already minted in `page_inventory.md` / FE WBS.
 ---
 
 ## 10. Appendix — Review adjudication records
+
+### R3 — Board freeze resolution (2026-07-06)
+
+**Board resolution (owner): Journey Atlas Program APPROVED · Freeze APPROVED · Implementation
+Readiness APPROVED.** The companion family is promoted to **FROZEN v1.0**
+(`journey-atlas-frozen-v1`): all 45 lifecycle journeys move `reviewed → registered` (§3.1);
+every file's status header carries the freeze; henceforth changes require an **additive patch +
+version bump** — never in-place edits. Freezing is change control only: the family remains
+non-authoritative under the frozen corpus (§0), and on any conflict the frozen corpus wins and
+the family is patched. The two ESC items (`ESC-JRN-BUYER-VERIF`, `ESC-JRN-LEAD-DIST` —
+`BOARD-PACKET-JOURNEY-ATLAS_v1.0.md`) remain **separate open Board decisions** and, per the
+resolution, do not block use of the atlas. Fix-delta baseline at freeze: commit `574c095`.
 
 ### R2 — Review B (fresh-context adversarial, 2026-07-06)
 

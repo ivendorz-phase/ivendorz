@@ -1,7 +1,7 @@
 # Journeys — Admin Operations (M8)
 
 **Breadcrumb:** [`JOURNEY_ATLAS.md`](JOURNEY_ATLAS.md) ▸ File H — Admin Operations
-**Status:** **DRAFT v1.0** — non-authoritative companion (atlas §0 stance applies in full)
+**Status:** **FROZEN v1.0** (Board resolution 2026-07-06) — non-authoritative companion under the frozen corpus (atlas §0 stance applies in full); changes require an additive patch + version bump
 **Date:** 2026-07-06
 **Owner module:** M8 Admin Operations (`admin` · Doc-4J — also the **authoritative event
 catalog**)

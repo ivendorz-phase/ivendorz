@@ -1,7 +1,7 @@
 # Journeys — RFQ Procurement Engine (M3)
 
 **Breadcrumb:** [`JOURNEY_ATLAS.md`](JOURNEY_ATLAS.md) ▸ File D — RFQ Procurement Engine
-**Status:** **DRAFT v1.0** — non-authoritative companion (atlas §0 stance applies in full)
+**Status:** **FROZEN v1.0** (Board resolution 2026-07-06) — non-authoritative companion under the frozen corpus (atlas §0 stance applies in full); changes require an additive patch + version bump
 **Date:** 2026-07-06
 **Owner module:** M3 RFQ Procurement Engine (`rfq` · Doc-4E, Doc-3)
 **Journeys:** J-MATCH · J-RINV · J-QUO · J-CMP · J-AWD

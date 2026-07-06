@@ -1,7 +1,7 @@
 # Journeys — Trust & Verification (M5)
 
 **Breadcrumb:** [`JOURNEY_ATLAS.md`](JOURNEY_ATLAS.md) ▸ File B — Trust & Verification
-**Status:** **DRAFT v1.0** — non-authoritative companion (atlas §0 stance applies in full)
+**Status:** **FROZEN v1.0** (Board resolution 2026-07-06) — non-authoritative companion under the frozen corpus (atlas §0 stance applies in full); changes require an additive patch + version bump
 **Date:** 2026-07-06
 **Owner module:** M5 Trust & Verification (`trust` · Doc-4G)
 **Journeys:** J-VER · J-TIER · J-TSC · J-PSC · J-REV · J-FRD

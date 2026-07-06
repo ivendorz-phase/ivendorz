@@ -1,7 +1,7 @@
 # Journeys — Business Operations (M4)
 
 **Breadcrumb:** [`JOURNEY_ATLAS.md`](JOURNEY_ATLAS.md) ▸ File E — Business Operations
-**Status:** **DRAFT v1.0** — non-authoritative companion (atlas §0 stance applies in full)
+**Status:** **FROZEN v1.0** (Board resolution 2026-07-06) — non-authoritative companion under the frozen corpus (atlas §0 stance applies in full); changes require an additive patch + version bump
 **Date:** 2026-07-06
 **Owner module:** M4 Business Operations (`operations` · Doc-4F)
 **Journeys:** J-ENG · J-DOC · J-DLV · J-WCC · J-DSP · J-LEAD · J-CRM · J-TPL · J-FIN

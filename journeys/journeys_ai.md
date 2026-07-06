@@ -1,7 +1,7 @@
 # Journeys — AI Layer (M9, reserved)
 
 **Breadcrumb:** [`JOURNEY_ATLAS.md`](JOURNEY_ATLAS.md) ▸ File I — AI Layer
-**Status:** **DRAFT v1.0** — non-authoritative companion (atlas §0 stance applies in full)
+**Status:** **FROZEN v1.0** (Board resolution 2026-07-06) — non-authoritative companion under the frozen corpus (atlas §0 stance applies in full); changes require an additive patch + version bump
 **Date:** 2026-07-06
 **Owner module:** M9 AI Layer (`ai` · Doc-4K — reserved; future activation, Wave 6 advisory
 panels)

@@ -1,7 +1,7 @@
 # Journeys — Marketplace & Discovery (M2)
 
 **Breadcrumb:** [`JOURNEY_ATLAS.md`](JOURNEY_ATLAS.md) ▸ File C — Marketplace & Discovery
-**Status:** **DRAFT v1.0** — non-authoritative companion (atlas §0 stance applies in full)
+**Status:** **FROZEN v1.0** (Board resolution 2026-07-06) — non-authoritative companion under the frozen corpus (atlas §0 stance applies in full); changes require an additive patch + version bump
 **Date:** 2026-07-06
 **Owner module:** M2 Marketplace & Discovery (`marketplace` · Doc-4D)
 **Journeys:** J-CLM · J-PRD · J-SITE · J-PORT · J-CAT · J-ADV · J-VOT
