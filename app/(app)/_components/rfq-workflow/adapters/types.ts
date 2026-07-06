@@ -22,6 +22,7 @@
 // `EngagementHandoffView` pointer.
 
 import type { ComparisonData } from "@/frontend/components/comparison";
+import type { ComparativeStatementData } from "../../../(buyer)/_components/comparative-statement";
 import type { RfqListData, RfqDetailData } from "../../../(buyer)/_components/rfq-view-models";
 import type { RfqPipelineStage } from "../../../(buyer)/_components/view-models";
 import type { RfqVersionHistoryData } from "../../../(buyer)/_components/rfq-version-view-models";
@@ -58,6 +59,19 @@ export interface BuyerRfqWorkflowReads {
   getRoutingInvitations(rfqId: string): Promise<RoutingInvitationsData | null>;
   /** Mirrors `get_comparison_statement` (System-generated; read-only decision support — R6). */
   getComparison(rfqId: string): Promise<ComparisonData | null>;
+  /**
+   * The Comparative Statement (CS) print-view projection over the SAME `get_comparison_statement`
+   * read (freeze COMPARE_SHEET_UX_FREEZE header v1.0 §3) — a generated procurement document
+   * derived from the buyer's Workspace selection, NOT an independent business entity until the
+   * Board approves ESC-CS-DOCKIND. `selectedQuotationIds` = the ephemeral W-1 selection (2–5);
+   * absent/invalid → the full disclosed set. Arithmetic facts (totals/VAT/lowest) are computed
+   * HERE (R7); evaluative content is the buyer's own record (R6). Line items are mock until the
+   * ESC-CS-LINEITEMS dev-doc schema is ratified.
+   */
+  getComparativeStatement(
+    rfqId: string,
+    selectedQuotationIds?: string[],
+  ): Promise<ComparativeStatementData | null>;
   /** Mirrors the shortlist read behind P-BUY-17 (candidates in System-persisted order — GI-04). */
   getAwardShortlist(rfqId: string): Promise<AwardData | null>;
   /** Mirrors `get_quotation` (visibility-gated; disclosed values only — Doc-3 §9.1). */

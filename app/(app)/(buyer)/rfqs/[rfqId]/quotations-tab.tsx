@@ -14,9 +14,14 @@
 //    vendor was excluded/deferred (Inv #11 / GI-12); no client count of withheld quotes.
 //  • The buyer sees each disclosed quotation's REAL values (Doc-3 §9.1). `not_selected`/`withdrawn` render
 //    uniformly and NON-PENALIZINGLY (Doc-3 §8.3/§9.5).
-//  • NO "Compare" / "recommended" / winner affordance here — comparison (P-BUY-15) is a separate,
-//    later-milestone destination (R6 / Inv #12). Rows open the quotation detail (P-BUY-14, later milestone).
+//  • "Compare quotations" CTA per COMPARE_SHEET_UX_FREEZE header v1.0 W-2.1 (the freeze superseded this
+//    file's earlier no-Compare deferral): visible when ≥ 1 disclosed quotation exists; at exactly 1 it
+//    opens the single-column statement view (W-6). Plain GET navigation to P-BUY-15 — still NO
+//    "recommended"/winner cue anywhere here (R6 / Inv #12). Rows open the quotation detail (P-BUY-14).
 
+import Link from "next/link";
+import { Scale } from "lucide-react";
+import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent } from "@/frontend/primitives/card";
 import { EmptyState } from "@/frontend/components/empty-state";
 import { StatusChip } from "@/frontend/components/status-chip";
@@ -83,6 +88,14 @@ export function QuotationsTab({ data, rfqId }: { data: QuotationListData | null;
 
   return (
     <div className="flex flex-col gap-4">
+      {/* W-2.1 primary CTA — the comparison surface is the freeze-ruled destination for evaluation. */}
+      <div className="flex justify-end">
+        <Button asChild variant="secondary" size="sm">
+          <Link href={`/rfqs/${rfqId}/compare`}>
+            <Scale aria-hidden /> Compare quotations
+          </Link>
+        </Button>
+      </div>
       <Card>
         <CardContent className="p-0">
           <DataListTable

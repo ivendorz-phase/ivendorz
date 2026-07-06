@@ -14,9 +14,13 @@
 //    affordance (Award is the separate, deliberate P-BUY-17). Suppliers render in System order, never re-ranked.
 //  • Inv #11 / GI-12 — VISIBILITY-GATED: `null` ⇒ not-found ≡ genuine absence (byte-identical; breadcrumb
 //    shows only the `RFQs` ancestor). Empty suppliers ⇒ "awaiting responses" (never implies exclusion).
+//  • COMPARE_SHEET_UX_FREEZE header v1.0 W-2.4 — the "Comparative Statement" affordance (≥ 2 disclosed
+//    quotations, W-1 minimum): plain GET navigation to the CS print view, a DOCUMENT rendering of this
+//    same statement. It carries no selection yet (the W-1 picker is WP-2 follow-on scope) → the CS
+//    renders the full disclosed set (D1 conformance note).
 
 import Link from "next/link";
-import { FileText } from "lucide-react";
+import { FileText, Printer } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
 import { EmptyState } from "@/frontend/components/empty-state";
 import { PageHeader, Breadcrumbs } from "../../../_components/shell";
@@ -67,6 +71,15 @@ export function ComparisonView({ data }: { data: ComparisonData | null }) {
       <PageHeader
         title="Supplier comparison"
         meta={<span className="text-xs text-muted-foreground">Descriptive · not ranked</span>}
+        actions={
+          data.suppliers.length >= 2 ? (
+            <Button asChild variant="secondary" size="sm">
+              <Link href={`/rfqs/${data.rfqId}/comparative-statement`}>
+                <Printer aria-hidden /> Comparative Statement
+              </Link>
+            </Button>
+          ) : undefined
+        }
       />
       {data.suppliers.length === 0 ? (
         <ComparisonEmpty />
