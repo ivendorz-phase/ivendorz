@@ -1,6 +1,9 @@
-// S4 Quote Authoring (companion §13.1 → (app)/rfqs/[rfqId]/quotation). The staged quotation builder,
-// bound to a fixed rfq_version_id snapshot resolved server-side from the grant (read = rfq.get_rfq.v1).
-// Compose vs revise mode is resolved server-side (Invariant 5), never a client flag.
+// S4 Quote Authoring (companion §13.1 → (app)/rfqs/[rfqId]/quotation). The quotation builder —
+// single-scroll stacked-card document (owner reference format, 2026-07-06; all seven §13.1 sections
+// retained) — bound to a fixed rfq_version_id snapshot resolved server-side from the grant (read =
+// rfq.get_rfq.v1; the same grant-scoped snapshot + own-invitation reads the detail page uses feed the
+// hero and buyer-parameters strip). Compose vs revise mode is resolved server-side (Invariant 5),
+// never a client flag.
 //
 // PRESENTATION-ONLY: the builder's working-draft content now arrives through the RFQ WORKFLOW ADAPTER
 // SEAM (`_components/rfq-workflow/adapters`) — own data only (draft lines, terms, the version-locked
@@ -22,9 +25,11 @@ export default async function QuotationBuilderPage({
   params: Promise<{ rfqId: string }>;
 }) {
   const { rfqId } = await params;
-  const [draft, quota] = await Promise.all([
+  const [draft, quota, snapshot, invitation] = await Promise.all([
     rfqWorkflowData.vendor.getQuotationDraft(rfqId),
     rfqWorkflowData.vendor.getQuota(),
+    rfqWorkflowData.vendor.getRfqSnapshot(rfqId),
+    rfqWorkflowData.vendor.getInvitation(rfqId),
   ]);
   if (!draft) notFound();
 
@@ -43,7 +48,12 @@ export default async function QuotationBuilderPage({
         description="Presentation only — saving and submitting connect in the integration phase."
         meta={<span className="font-mono text-xs text-muted-foreground">{rfqId}</span>}
       />
-      <QuotationBuilder {...draft} quota={quota} />
+      <QuotationBuilder
+        {...draft}
+        quota={quota}
+        rfq={snapshot ?? undefined}
+        invitation={invitation ?? undefined}
+      />
     </div>
   );
 }

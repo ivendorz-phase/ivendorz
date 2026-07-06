@@ -1,7 +1,9 @@
-// S3 RFQ Detail (companion §6.3 → (app)/rfqs/[rfqId]). Two panes: SPECS & REQUIREMENTS + granted
-// documents (left), YOUR INVITATION respond + start-quotation (right); below, the M6 Clarifications
-// thread (S8, delivery-only) and "Your quotation" status/version-history/outcome (S5/S9). Read =
-// rfq.get_rfq.v1 (grant-scoped, [ESC-7G-Q-01] CLOSED).
+// S3 RFQ Detail (companion §6.3 → (app)/rfqs/[rfqId]). Leads with the YOUR INVITATION hero card
+// (respond + start-quotation; owner invitation-hero redesign — the full SPECS & REQUIREMENTS pane
+// was removed from this page by owner direction, the hero's summary strip + item table carry the
+// vendor-facing requirement summary); below, the M6 Clarifications thread (S8, delivery-only) and
+// "Your quotation" status/version-history/outcome (S5/S9). Read = rfq.get_rfq.v1 (grant-scoped,
+// [ESC-7G-Q-01] CLOSED).
 //
 // PRESENTATION-ONLY: data now arrives through the RFQ WORKFLOW ADAPTER SEAM
 // (`_components/rfq-workflow/adapters`) — the mock adapter resolves the OPAQUE id against the vendor
@@ -17,7 +19,6 @@ import {
   ClarificationsSection,
   InvitationResponse,
   QuotationStatusCard,
-  RfqSnapshot,
 } from "../../../_components/vendor/rfq";
 
 export const metadata: Metadata = { title: "RFQ detail" };
@@ -47,15 +48,13 @@ export default async function RfqDetailPage({ params }: { params: Promise<{ rfqI
 
       <VendorJourneyStrip invitationState={invitation?.state} quotationState={quotation?.state} />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <RfqSnapshot rfq={snapshot} />
-        <InvitationResponse
-          rfqId={rfqId}
-          invitation={invitation ?? undefined}
-          quota={quota}
-          hasQuotation={Boolean(quotation)}
-        />
-      </div>
+      <InvitationResponse
+        rfqId={rfqId}
+        invitation={invitation ?? undefined}
+        quota={quota}
+        hasQuotation={Boolean(quotation)}
+        rfq={snapshot}
+      />
 
       <ClarificationsSection />
 

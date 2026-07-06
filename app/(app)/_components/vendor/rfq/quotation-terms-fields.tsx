@@ -45,9 +45,11 @@ const SECTION: Record<
 export interface QuotationTermsFieldProps {
   section: QuotationTermSection;
   value?: string;
+  /** Hide the per-form presentation note when several sections stack in ONE card (the group shows one). */
+  showNote?: boolean;
 }
 
-export function QuotationTermsField({ section, value }: QuotationTermsFieldProps) {
+export function QuotationTermsField({ section, value, showNote = true }: QuotationTermsFieldProps) {
   const cfg = SECTION[section];
   return (
     <form className="space-y-6" aria-label={cfg.label}>
@@ -65,7 +67,7 @@ export function QuotationTermsField({ section, value }: QuotationTermsFieldProps
           disabled
         />
       </FormField>
-      <PresentationFormNote />
+      {showNote ? <PresentationFormNote /> : null}
     </form>
   );
 }
