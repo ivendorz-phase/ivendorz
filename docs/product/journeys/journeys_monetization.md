@@ -174,7 +174,7 @@ composed by `J-SUP-06` (pipeline leg), `J-VND` billing legs.
 | Dunning sequences | Communication effects (J-NTF), not billing states | Doc-4H |
 | Marketplace commission / transaction fees | Do not exist — the platform never takes buyer↔vendor transaction money | CLAUDE.md §1 |
 
-*Cross-links:* actor journeys [`../marketplace_ux.md`](../marketplace_ux.md) §3 (`J-BUY-06`), §5
+*Cross-links:* actor journeys [`../marketplace_ux.md`](../ux/marketplace_ux.md) §3 (`J-BUY-06`), §5
 (`J-VND-06`) · registry [`JOURNEY_ATLAS.md`](JOURNEY_ATLAS.md) §5-G.
 
 *Non-authoritative; coins nothing; on conflict the frozen corpus wins (CLAUDE.md §7/§11).*

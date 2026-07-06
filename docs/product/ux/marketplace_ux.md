@@ -4,7 +4,7 @@
 **Status:** **DRAFT v0.2** — Marketplace UX / Journeys (non-authoritative companion to the Doc-7 program)
 **Date:** 2026-06-29
 **Wave:** 0E — Marketplace UX Specification
-**Companions:** [`design_philosophy.md`](design_philosophy.md) · [`information_architecture.md`](information_architecture.md) · [`ux_patterns.md`](ux_patterns.md)
+**Companions:** [`design_philosophy.md`](../../frontend/design-system/design_philosophy.md) · [`information_architecture.md`](../information-architecture/information_architecture.md) · [`ux_patterns.md`](ux_patterns.md)
 **Revision v0.2:** added a one-page Visual Journey Map + intent ("emotion") arcs (§1.3), **Journey IDs**
 (`J-GST`/`J-BUY`/`J-PROC`/`J-VND`/`J-SUP`/`J-ADM`) with per-step IDs, per-journey **Success criteria**,
 and a reserved **Future Journey Extensions** appendix (§12).
@@ -23,7 +23,7 @@ Master Architecture → ADR → Doc-2/Doc-3 → Doc-4A…4M → Doc-5A…5K → 
                                   ▲ state machines                                    ▲ this doc conforms upward
 ```
 
-- Journeys traverse the surfaces in [`information_architecture.md`](information_architecture.md) §6,
+- Journeys traverse the surfaces in [`information_architecture.md`](../information-architecture/information_architecture.md) §6,
   use the patterns in [`ux_patterns.md`](ux_patterns.md) §2–§9, and follow the state machines in
   `ux_patterns.md` §8 (Doc-4M). **Every step binds a wired Doc-5 contract**; gaps are flagged
   `[ESC-7-*]` (§11) — never invented.
@@ -334,7 +334,7 @@ Constraints honored **by pointer** (reference-never-restate):
 ### `[ESC-7-*]` register
 
 Inherits the registers from [`ux_patterns.md`](ux_patterns.md) §12 and
-[`information_architecture.md`](information_architecture.md) §10 — `[ESC-7-API-CATNAV]`,
+[`information_architecture.md`](../information-architecture/information_architecture.md) §10 — `[ESC-7-API-CATNAV]`,
 `[ESC-7-API-PRODDETAIL]`, `[ESC-7-API-ADS]`, `[ESC-7-API]` (upload/export/related), `[ESC-7-AI]`. No new
 gaps coined here.
 

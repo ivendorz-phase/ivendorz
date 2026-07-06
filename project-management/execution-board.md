@@ -114,7 +114,7 @@ concurrent-review conflict at round 2 — two independent reviews of the same SH
 REVISION; reconciled on fact-checked findings to REVISION, both records preserved (RV-0125/0126
 transparency style). Checkpoints `c382d44` → `6fd1a71` → `1ce722a`. WP card
 `governanceReviews/milestones/wp-1-buyer-loi-view/WORK-PACKAGE.md`. Next Team-2 pull: WP-2 stays
-🅿 (compare-sheet UX freeze awaits owner D2–D7 sign-off, `productSpec/COMPARE_SHEET_UX_FREEZE_v0.1.md`).
+🅿 (compare-sheet UX freeze awaits owner D2–D7 sign-off, `docs/product/requirements/COMPARE_SHEET_UX_FREEZE_v0.1.md`).
 
 **Team-3 (Vendor):**
 ~~FE-VEN-05~~ ✅ **Closed** (RV-0101 @ `e2f8642`) · ~~FE-VEN-06~~ ✅ **Closed** (RV-0103 @

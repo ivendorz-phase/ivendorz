@@ -2,7 +2,7 @@
 
 **Owns:** `P-BUY-*` (Doc-7F · Doc-5E/5F/5D) · `P-DOC-01` (buyer leg of the FE-DOC cross-workspace
 Documents track, WBS v1.2). Titles + bindings are the **source record** in
-[`page_inventory.md`](../page_inventory.md). Work highest-priority `Ready` first. CRM pages
+[`page_inventory.md`](../docs/product/ux/page_inventory.md). Work highest-priority `Ready` first. CRM pages
 (`P-BUY-26/27`) are **buyer-private** (Invariant #11) — never leak, blacklist undetectable.
 
 > **Milestone layer (FE-PM v1.0, 2026-07-02):** pages in this file are grouped into `FE-*`

@@ -1,6 +1,6 @@
 // FE-PUB-09 MEGA_MENU Phase 0 — taxonomy seed generator (MEGA_MENU_DATA_MODEL.md §4).
 //
-// Parses Taxonomy Content v1.0's master table (productSpec/CATEGORY_MIGRATION_PLAN.md
+// Parses Taxonomy Content v1.0's master table (docs/product/requirements/CATEGORY_MIGRATION_PLAN.md
 // **Appendix C** — the Board-ratified 794-node tree, P1-approved 2026-07-03) and emits
 // `src/frontend/navigation/model/taxonomy.v1.json` (flat CategoryNodeData[]). The seed is
 // ALWAYS generated, never hand-copied — this script is the only writer, so the menu cannot
@@ -20,7 +20,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const SOURCE = path.join(ROOT, "productSpec", "CATEGORY_MIGRATION_PLAN.md");
+const SOURCE = path.join(ROOT, "docs", "product", "requirements", "CATEGORY_MIGRATION_PLAN.md");
 const TARGET = path.join(ROOT, "src", "frontend", "navigation", "model", "taxonomy.v1.json");
 
 const EXPECTED_TOTAL = 794;

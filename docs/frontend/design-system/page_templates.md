@@ -5,7 +5,7 @@
 **Date:** 2026-06-29
 **Wave:** 0.3 — Governance Refactor
 **Revision:** v0.3 — adopt `SC` spine: per-template "Inherited From" banner (SC §2) + deltas-only; inherited boilerplate (a11y/state/AI/responsive/currency/pagination) replaced by `GI` refs; toolbar/skeleton/mobile cited as `TB/SK/MB` presets (SC §3); page-specific hero/marketing/pricing moved to `LP`/page specs; ESC explanations replaced by bare `ER` handles; companion refs via `SC §6` codes. ~24% smaller.
-**Companions:** [`shared_conventions.md`](shared_conventions.md) (`SC` — spine) · `DP` · `IA` · `UX` · `MX` · `PI` · `SS` · `LP` · [`esc_registry.md`](esc_registry.md) (`ER`) · [`glossary.md`](glossary.md) (`GL`). Cross-ref codes: `SC §6`.
+**Companions:** [`shared_conventions.md`](../components/shared_conventions.md) (`SC` — spine) · `DP` · `IA` · `UX` · `MX` · `PI` · `SS` · `LP` · [`esc_registry.md`](../../../esc_registry.md) (`ER`) · [`glossary.md`](../../reference/glossary.md) (`GL`). Cross-ref codes: `SC §6`.
 
 ---
 

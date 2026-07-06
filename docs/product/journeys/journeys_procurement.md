@@ -258,7 +258,7 @@ composed by `J-PROC-12/12b`.
 | Public RFQ board | Does not exist — no anonymous RFQ visibility (Doc-3 §5.1) | marketplace_ux.md §2 rails |
 | Buyer-side supplier discovery / shortlisting pre-RFQ | Presentation-layer discovery inside `J-PROC-01`; buyer-invite concept is Board-gated (ESC-VENDIR R4) | esc_registry.md |
 
-*Cross-links:* actor journeys [`../marketplace_ux.md`](../marketplace_ux.md) §4 (`J-PROC`), §6
+*Cross-links:* actor journeys [`../marketplace_ux.md`](../ux/marketplace_ux.md) §4 (`J-PROC`), §6
 (`J-SUP`) · registry [`JOURNEY_ATLAS.md`](JOURNEY_ATLAS.md) §5-D.
 
 *Non-authoritative; coins nothing; on conflict the frozen corpus wins (CLAUDE.md §7/§11).*

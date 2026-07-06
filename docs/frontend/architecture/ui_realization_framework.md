@@ -4,7 +4,7 @@
 **Status:** **DRAFT v0.1** — UI Realization Framework (`RF`) — non-authoritative companion; the **AI-tool-agnostic prompt-assembly layer** for the design-wave family
 **Date:** 2026-06-29
 **Wave:** 0.3 — Governance Refactor (additive)
-**Companions:** [`shared_conventions.md`](shared_conventions.md) (`SC` — spine) · [`design_philosophy.md`](design_philosophy.md) (`DP`) · [`information_architecture.md`](information_architecture.md) (`IA`) · [`ux_patterns.md`](ux_patterns.md) (`UX`) · [`marketplace_ux.md`](marketplace_ux.md) (`MX`) · [`page_inventory.md`](page_inventory.md) (`PI`) · [`page_templates.md`](page_templates.md) (`PT`) · [`screen_specifications.md`](screen_specifications.md) (`SS`) · [`landing_page_spec.md`](landing_page_spec.md) (`LP`) · [`esc_registry.md`](esc_registry.md) (`ER`) · [`glossary.md`](glossary.md) (`GL`). Cross-ref codes: `SC §6`.
+**Companions:** [`shared_conventions.md`](../components/shared_conventions.md) (`SC` — spine) · [`design_philosophy.md`](../design-system/design_philosophy.md) (`DP`) · [`information_architecture.md`](../../product/information-architecture/information_architecture.md) (`IA`) · [`ux_patterns.md`](../../product/ux/ux_patterns.md) (`UX`) · [`marketplace_ux.md`](../../product/ux/marketplace_ux.md) (`MX`) · [`page_inventory.md`](../../product/ux/page_inventory.md) (`PI`) · [`page_templates.md`](../design-system/page_templates.md) (`PT`) · [`screen_specifications.md`](../../product/ux/screen_specifications.md) (`SS`) · [`landing_page_spec.md`](../../product/ux/landing_page_spec.md) (`LP`) · [`esc_registry.md`](../../../esc_registry.md) (`ER`) · [`glossary.md`](../../reference/glossary.md) (`GL`). Cross-ref codes: `SC §6`.
 
 ---
 

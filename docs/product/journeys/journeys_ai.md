@@ -85,7 +85,7 @@ J-CRM link suggestions (`link_confidence` triage) · future extensions per marke
 | AI-driven matching or scoring | Constitutionally excluded — matching is M3, scores are M5; AI may never own or influence either | Invariant #12; §4 firewall |
 | Model/provider operations (prompts, evals, versions) | Infrastructure concern of the future activation — not a business journey | Doc-4K |
 
-*Cross-links:* actor journeys [`../marketplace_ux.md`](../marketplace_ux.md) §12 (`FX-AI`) ·
+*Cross-links:* actor journeys [`../marketplace_ux.md`](../ux/marketplace_ux.md) §12 (`FX-AI`) ·
 registry [`JOURNEY_ATLAS.md`](JOURNEY_ATLAS.md) §5-I.
 
 *Non-authoritative; coins nothing; on conflict the frozen corpus wins (CLAUDE.md §7/§11).*

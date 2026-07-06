@@ -310,7 +310,7 @@ governed instruments, not the signal itself.
 | Score formulas / weights | Deliberately undocumented in journeys — display-silent per Board ruling | Doc-4G BC-TRUST-2/3 |
 | Capacity Profile verification detail | Rides J-VER with subject `capacity_claim` — no separate journey needed | Doc-2 §5.6 subjects |
 
-*Cross-links:* actor journeys [`../marketplace_ux.md`](../marketplace_ux.md) §5 (`J-VND`), §7
+*Cross-links:* actor journeys [`../marketplace_ux.md`](../ux/marketplace_ux.md) §5 (`J-VND`), §7
 (`J-ADM`) · registry [`JOURNEY_ATLAS.md`](JOURNEY_ATLAS.md) §5-B.
 
 *Non-authoritative; coins nothing; on conflict the frozen corpus wins (CLAUDE.md §7/§11).*

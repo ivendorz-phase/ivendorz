@@ -22,11 +22,11 @@ Master → ADR → Doc-2/3 → Doc-4A…4M → Doc-5A…5K → Doc-7A → {7B,7C
                                                               ▲ this folder tracks, never overrides
 ```
 
-- **Page IDs + per-page metadata:** [`page_inventory.md`](../page_inventory.md) — the frozen
+- **Page IDs + per-page metadata:** [`page_inventory.md`](../docs/product/ux/page_inventory.md) — the frozen
   144-page record. Milestones **reference** `P-*` IDs; they never re-list or re-coin pages.
 - **Gap handles:** [`esc_registry.md`](../esc_registry.md) — every gate cites a handle; never
   invent a contract.
-- **Page standards / vocab:** [`shared_conventions.md`](../shared_conventions.md) +
+- **Page standards / vocab:** [`shared_conventions.md`](../docs/frontend/components/shared_conventions.md) +
   [`page-standards.md`](page-standards.md) (per-page Definition of Done — unchanged).
 - **Process:** [`review-process.md`](review-process.md) — states, lanes, verdicts, milestone DoD,
   WP-card template, derivation chain, glossary.

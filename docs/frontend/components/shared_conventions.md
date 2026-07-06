@@ -4,7 +4,7 @@
 **Status:** **DRAFT v0.3** — Shared Conventions (non-authoritative companion; the de-duplication spine for the design-wave family)
 **Date:** 2026-06-29
 **Wave:** 0.3 — Governance Refactor (foundation)
-**Companions:** [`design_philosophy.md`](design_philosophy.md) · [`information_architecture.md`](information_architecture.md) · [`ux_patterns.md`](ux_patterns.md) · [`marketplace_ux.md`](marketplace_ux.md) · [`page_inventory.md`](page_inventory.md) · [`page_templates.md`](page_templates.md) · [`screen_specifications.md`](screen_specifications.md) · [`landing_page_spec.md`](landing_page_spec.md) · [`esc_registry.md`](esc_registry.md) · [`glossary.md`](glossary.md)
+**Companions:** [`design_philosophy.md`](../design-system/design_philosophy.md) · [`information_architecture.md`](../../product/information-architecture/information_architecture.md) · [`ux_patterns.md`](../../product/ux/ux_patterns.md) · [`marketplace_ux.md`](../../product/ux/marketplace_ux.md) · [`page_inventory.md`](../../product/ux/page_inventory.md) · [`page_templates.md`](../design-system/page_templates.md) · [`screen_specifications.md`](../../product/ux/screen_specifications.md) · [`landing_page_spec.md`](../../product/ux/landing_page_spec.md) · [`esc_registry.md`](../../../esc_registry.md) · [`glossary.md`](../../reference/glossary.md)
 
 ---
 
@@ -20,7 +20,7 @@ Master → ADR → Doc-2/Doc-3 → Doc-4A…4M → Doc-5A…5K → Doc-7A → {D
 ```
 
 On any conflict the frozen corpus wins and this doc is corrected (CLAUDE.md §7, §11). ESC handles are
-defined once in [`esc_registry.md`](esc_registry.md); terms in [`glossary.md`](glossary.md).
+defined once in [`esc_registry.md`](../../../esc_registry.md); terms in [`glossary.md`](../../reference/glossary.md).
 
 ---
 
@@ -40,9 +40,9 @@ differs.
 | **GI-06** | **Accessibility baseline** — WCAG-AA: semantic markup, full keyboard, visible `:focus-visible` ring, ARIA where the primitive needs it, contrast; **no color-only meaning**. The a11y *test* is Doc-8's. | Doc-7B §7.1 · DP §11 |
 | **GI-07** | **Responsive** — mobile-first; breakpoints per DP §2.8; shell sidebar → icon-rail → drawer; mobile presets (§3). | DP §3.2 · IA §7 |
 | **GI-08** | **Currency** — every money value is `{amount, currency}` carried by the field, **default BDT, never hardcoded**. | Doc-2 §0.4 |
-| **GI-09** | **Files & async** — blobs to Supabase Storage; the contract carries `file_ref` only; client upload-grant is [`ESC-7-API`](esc_registry.md); `ASYNC_PENDING` → **poll the status resource**. | Doc-7C §8 · Doc-7A §5.3 |
+| **GI-09** | **Files & async** — blobs to Supabase Storage; the contract carries `file_ref` only; client upload-grant is [`ESC-7-API`](../../../esc_registry.md); `ASYNC_PENDING` → **poll the status resource**. | Doc-7C §8 · Doc-7A §5.3 |
 | **GI-10** | **State-machine UI + optimistic** — offer **only Doc-4M-permitted transitions**; reconcile on `CONFLICT`/`STATE` (409); stable idempotency key per submission. | Doc-7A §7 · Doc-4M |
-| **GI-11** | **AI advisory** — the only AI surface is M9's `ai-advisory-panel` (`Doc-5K`): **suggests, never decides / ranks-to-winner / auto-selects / executes**; future-activation ([`ESC-7-AI`](esc_registry.md)). | Invariant #12 · GR #6 · UX §5.5 |
+| **GI-11** | **AI advisory** — the only AI surface is M9's `ai-advisory-panel` (`Doc-5K`): **suggests, never decides / ranks-to-winner / auto-selects / executes**; future-activation ([`ESC-7-AI`](../../../esc_registry.md)). | Invariant #12 · GR #6 · UX §5.5 |
 | **GI-12** | **Non-disclosure / byte-equivalence + analytics** — nothing (list, count, facet, empty, notification, error, telemetry) reveals an excluded/blacklisted/buyer-private signal; analytics is presentation telemetry that **coins no Doc-2 §8 event** (grammar §4). | Invariant #11 · CHK-7-040/041 |
 
 > **Performance posture (inherited):** RSC streaming + suspense boundaries, image/font optimization
@@ -122,7 +122,7 @@ must respect GI-12 (never log excluded/blacklisted/buyer-private/non-invited dat
 Use **only** these standard values in any "Future" field (avoids drift):
 
 `—` (none) · `Localization` · `AI` *(→ `ESC-7-AI`)* · `Analytics` · `ESC-<id>` *(named gap in
-[`esc_registry.md`](esc_registry.md))* · `Later wave`.
+[`esc_registry.md`](../../../esc_registry.md))* · `Later wave`.
 
 ---
 
@@ -192,7 +192,7 @@ v0.3 refactor stamps every doc to v0.3 with a one-line revision note.
 ## 10. Governance Alignment
 
 This doc consolidates, by pointer, the rails already established in DP/IA/UX/MX/PI and the frozen
-corpus; it restates none of them as authority and coins nothing. ESC handles → [`ER`](esc_registry.md).
+corpus; it restates none of them as authority and coins nothing. ESC handles → [`ER`](../../../esc_registry.md).
 
 ---
 

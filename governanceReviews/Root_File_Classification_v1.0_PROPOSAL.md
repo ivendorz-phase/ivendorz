@@ -79,7 +79,27 @@
 
 ## 5. Old→New mapping table
 
-Published in this document **at execution time** (C4/C5), one row per moved file: `old path → new path · commit`. Historical documents are never edited; this table is the permanent lookup for stale links in `governanceReviews/`, `review-log.md`, `changelog.md`, and the frozen corpus's non-path name mentions.
+**PUBLISHED at execution (branch `chore/repo-structure`, G1 approved 2026-07-06).** Historical documents are never edited; this table is the permanent lookup for stale links in `governanceReviews/`, `review-log.md`, `changelog.md`, and the frozen corpus's non-path name mentions.
+
+| Old path | New path | Commit |
+|---|---|---|
+| `ivendorz-rfq-creator/**` (27 files) | `prototypes/ivendorz-rfq-creator/**` | C3 |
+| `information_architecture_demo.html` | `prototypes/information_architecture_demo.html` | C3 |
+| `MEGA_MENU_ARCHITECTURE.md` · `MEGA_MENU_COMPONENT_SPEC.md` · `MEGA_MENU_DATA_MODEL.md` · `MEGA_MENU_IMPLEMENTATION_PLAN.md` · `MEGA_MENU_UX_FLOW.md` | `docs/product/navigation/<same name>` | C4 |
+| `information_architecture.md` | `docs/product/information-architecture/information_architecture.md` | C4 |
+| `ux_patterns.md` · `marketplace_ux.md` · `screen_specifications.md` · `landing_page_spec.md` · `page_inventory.md` | `docs/product/ux/<same name>` | C4 |
+| `buyer_planning_and_design.md` · `vendor_planning_and_design.md` · `rfq-workflow.md` | `docs/product/requirements/<same name>` | C4 |
+| `productSpec/*.md` (all 14) | `docs/product/requirements/<same name>` | C4 |
+| `public_marketplace_ui_benchmark_and_design_direction.md` | `docs/product/benchmarks/public_marketplace_ui_benchmark_and_design_direction.md` | C4 |
+| `buyer_journey_v1.0.md` · `vendor_journey_plan.md` | `docs/product/journeys/<same name>` | C4 |
+| `journeys/*.md` (JOURNEY_ATLAS + 9 domain files) | `docs/product/journeys/<same name>` | C4 |
+| `design_philosophy.md` · `page_templates.md` | `docs/frontend/design-system/<same name>` | C4 |
+| `ui_realization_framework.md` | `docs/frontend/architecture/ui_realization_framework.md` | C4 |
+| `shared_conventions.md` · `shared_platform_component_registry.md` | `docs/frontend/components/<same name>` | C4 |
+| `glossary.md` · `deferred_decisions.md` | `docs/reference/<same name>` | C4 |
+| `frontend_first_slice.md` | `project-management/frontend_first_slice.md` | C5 |
+
+Deleted (C2, history-recoverable): `ChatGPT prompt.txt` · `review.txt` · `pnpm-lock.yaml` · `pnpm-workspace.yaml` (F-06 Option A, npm canonical) · `.git.code-workspace` (ask ⑧).
 
 ## 6. `.github/CODEOWNERS` seed (registered deferral — created when multiple contributors join)
 

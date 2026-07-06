@@ -438,7 +438,7 @@ by `J-PROC-13` · platform-side billing is J-PINV (different module, different m
 | Reconciliation dashboards / stat tiles | Derived views only — no reconciliation aggregate is ratified (ENG-03 discipline) | vendor FE track notes |
 | Buyer-feedback journey (engagement-bound) | `ops.record_buyer_feedback.v1` (+ `(BuyerFeedbackRecorded)`) is narrated as a J-ENG rail, not a separate journey — distinct from the public review J-REV; expand later if a surface needs it | Doc-4F Part2; Doc-2 §8 |
 
-*Cross-links:* actor journeys [`../marketplace_ux.md`](../marketplace_ux.md) §4 (`J-PROC`), §6
+*Cross-links:* actor journeys [`../marketplace_ux.md`](../ux/marketplace_ux.md) §4 (`J-PROC`), §6
 (`J-SUP`) · registry [`JOURNEY_ATLAS.md`](JOURNEY_ATLAS.md) §5-E.
 
 *Non-authoritative; coins nothing; on conflict the frozen corpus wins (CLAUDE.md §7/§11).*

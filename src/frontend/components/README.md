@@ -13,8 +13,8 @@ Admin).
   workspace folder.
 - Components here are **pure presentation**: props in, JSX out. No fetch, no mutation, no workspace-
   specific business shaping, and — per `NIT-2` below — **no imports from `app/`**.
-- Promotion into this directory follows the process in the repo-root
-  [`shared_platform_component_registry.md`](../../../shared_platform_component_registry.md) — normally
+- Promotion into this directory follows the process in
+  [`shared_platform_component_registry.md`](../../../docs/frontend/components/shared_platform_component_registry.md) — normally
   triggered by a genuine second-workspace consumer (§4, "promote on the 2nd consumer"). `comparison/` and
   `rfq/` were promoted here ahead of that trigger under an explicit CTO override (2026-07-03); treat that
   as the exception, not the pattern, for future promotions.

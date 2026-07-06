@@ -24,7 +24,7 @@ vendor-microsite kit 100% + 2 new thin compositions (`ProjectHero`, `ProjectVend
 [`execution-board.md`](execution-board.md) · process: [`review-process.md`](review-process.md) ·
 promotions: [`promotion-watchlist.md`](promotion-watchlist.md). `FE-*` IDs are program-management
 handles, never corpus IDs; milestones **reference** frozen `P-*` pages
-([`page_inventory.md`](../page_inventory.md)), never re-coin them.
+([`page_inventory.md`](../docs/product/ux/page_inventory.md)), never re-coin them.
 
 **Wave-gate binding:** presentation-only parallel stream (owner-authorized, "parallelization, not
 reorder") — never reorders or supersedes `generatedDocs/Build_Roadmap_v1.0.md`; wiring stays

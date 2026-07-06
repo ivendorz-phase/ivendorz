@@ -4,7 +4,7 @@
 **Status:** **DRAFT v0.3** — ESC Registry (non-authoritative companion; the single source for escalation handles)
 **Date:** 2026-06-29
 **Wave:** 0.3 — Governance Refactor (foundation)
-**Companions:** all design-wave docs reference this; see [`shared_conventions.md`](shared_conventions.md)
+**Companions:** all design-wave docs reference this; see [`shared_conventions.md`](docs/frontend/components/shared_conventions.md)
 
 ---
 
@@ -38,7 +38,7 @@ Precedence: non-authoritative; on conflict the frozen corpus wins.
 
 ### Vendor Workspace (Doc-7G design companion — Track 2/3, 2026-06-30)
 
-Source: `vendor_planning_and_design.md` (v0.9-rc, freeze WITHHELD) — detail in its §12/§13. Packets in
+Source: `docs/product/requirements/vendor_planning_and_design.md` (v0.9-rc, freeze WITHHELD) — detail in its §12/§13. Packets in
 `governanceReviews/`: [`BOARD-PACKET-VENDOR-FE-BLOCKERS_v1.0.md`](governanceReviews/BOARD-PACKET-VENDOR-FE-BLOCKERS_v1.0.md)
 (the 3 BLOCKERs) · [`API-GOV-INTAKE-VENDOR-FE_v1.0.md`](governanceReviews/API-GOV-INTAKE-VENDOR-FE_v1.0.md)
 (contract questions). Freeze convened by [`BOARD-SPRINT-VENDOR-FE-FREEZE_v1.0.md`](governanceReviews/BOARD-SPRINT-VENDOR-FE-FREEZE_v1.0.md). 30-second landscape: [`DECISION-MATRIX-VENDOR-FE_v1.0.md`](governanceReviews/DECISION-MATRIX-VENDOR-FE_v1.0.md).
@@ -124,7 +124,7 @@ Source: owner proposal + 4 review rounds (2026-07-03). Package:
 `governanceReviews/BUYER-VENDOR-DIRECTORY-RECONCILIATION_v1.0.md` +
 [`BOARD-PACKET-BUYER-VENDOR-DIRECTORY_v1.0.md`](governanceReviews/BOARD-PACKET-BUYER-VENDOR-DIRECTORY_v1.0.md)
 (pre-read: `DECISION-MATRIX-BUYER-VENDOR-DIRECTORY_v1.0.md`) + 3 additive patch proposals +
-`productSpec/BUYER_VENDOR_DIRECTORY_SPEC_v1.0.md` (non-authoritative). All human-Board gated.
+`docs/product/requirements/BUYER_VENDOR_DIRECTORY_SPEC_v1.0.md` (non-authoritative). All human-Board gated.
 Directory core / Smart-Upgrade linking / vendor types / permissions = **already frozen** (BC-OPS-1;
 A-03/PATCH-05 link-not-merge; PATCH-02) — pointed, not escalated. Mushok remains
 **`ESC-OPS-DOC-MUSHOK`** (above) — not re-registered here.
@@ -138,7 +138,7 @@ A-03/PATCH-05 link-not-merge; PATCH-02) — pointed, not escalated. Mushok remai
 
 ### Journey Atlas (journeys/ intake, 2026-07-06)
 
-Source: the journey/lifecycle companion program ([`journeys/JOURNEY_ATLAS.md`](journeys/JOURNEY_ATLAS.md)
+Source: the journey/lifecycle companion program ([`JOURNEY_ATLAS.md`](docs/product/journeys/JOURNEY_ATLAS.md)
 + 9 domain files). Packet: [`BOARD-PACKET-JOURNEY-ATLAS_v1.0.md`](governanceReviews/BOARD-PACKET-JOURNEY-ATLAS_v1.0.md).
 Both items **grep-verified absent** from the frozen corpus during authoring; neither journey is
 authorable without coining. The vendor-lead state-machine conflict surfaced by the same authoring
@@ -152,7 +152,7 @@ pass is **already registered** as `ESC-7G-LEAD-MACHINE` (above) — not re-regis
 
 ### Buyer Frontend Contract Gaps (buyer_journey_v1.0 intake, 2026-07-06)
 
-Source: [`buyer_journey_v1.0.md`](buyer_journey_v1.0.md) Part C (owner-directed Board intake,
+Source: [`buyer_journey_v1.0.md`](docs/product/journeys/buyer_journey_v1.0.md) Part C (owner-directed Board intake,
 2026-07-06 — "resolve individually, never by modifying the journey document"). Packet:
 [`BOARD-PACKET-BUYER-FE-CONTRACT-GAPS_v1.0.md`](governanceReviews/BOARD-PACKET-BUYER-FE-CONTRACT-GAPS_v1.0.md).
 All six routes were **reserved at BX-04** with the absence recorded in each `page.tsx` header;

@@ -965,7 +965,7 @@ Part II adds the capability / ownership / surface layer the Board approved, sitt
 
 ### II.1 Buyer Capability Map
 
-A capability-first layer **above** the pages. The stable unit is the **frozen business-capability code** (`BC-*`); a `P-BUY-*` page is one *composition* of a capability's buyer-leg contracts. Every operation below binds **by pointer** to its frozen owner (CLAUDE.md §3) — the buyer surface **consumes**; the owning module **owns**. No identifier here is coined; gaps carry an `[ESC-7-*]` handle ([`ER`](esc_registry.md)).
+A capability-first layer **above** the pages. The stable unit is the **frozen business-capability code** (`BC-*`); a `P-BUY-*` page is one *composition* of a capability's buyer-leg contracts. Every operation below binds **by pointer** to its frozen owner (CLAUDE.md §3) — the buyer surface **consumes**; the owning module **owns**. No identifier here is coined; gaps carry an `[ESC-7-*]` handle ([`ER`](../../../esc_registry.md)).
 
 **Reading the columns**
 - **Capability** — the frozen `BC-*` code and its owning module.

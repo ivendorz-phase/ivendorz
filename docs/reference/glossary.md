@@ -4,7 +4,7 @@
 **Status:** **DRAFT v0.3** — Glossary (non-authoritative companion; one meaning per term)
 **Date:** 2026-06-29
 **Wave:** 0.3 — Governance Refactor (foundation)
-**Companions:** referenced by all design-wave docs; see [`shared_conventions.md`](shared_conventions.md)
+**Companions:** referenced by all design-wave docs; see [`shared_conventions.md`](../frontend/components/shared_conventions.md)
 
 ---
 

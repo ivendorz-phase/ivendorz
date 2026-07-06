@@ -69,7 +69,7 @@ In review now: **P-PUB-05 For Buyers** (🔵 awaiting Team-4; page built + uncom
    batch → buyer frontend freeze approval).
 4. **P-ACC-12** — `ESC-IDN-DELEG-EXPIRY` (delegation grant reinstate path).
 5. **M2.5 vendor public microsite** — approve continuation past the foundation.
-6. **Taxonomy seeding** — human P1 approval of the Taxonomy Content v1.0 package (`productSpec/`);
+6. **Taxonomy seeding** — human P1 approval of the Taxonomy Content v1.0 package (`docs/product/requirements/`, formerly `productSpec/`);
    mega-menu implementation gated behind the same approval chain.
 7. **Official brand SVGs** — supply unmodified assets under `public/brand/` (never regenerated);
    completes runtime branding.

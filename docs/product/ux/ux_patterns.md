@@ -4,7 +4,7 @@
 **Status:** **DRAFT v0.2** — Reusable UX Patterns (non-authoritative companion to the Doc-7 program)
 **Date:** 2026-06-29
 **Wave:** 0D — UX Patterns
-**Companions:** [`design_philosophy.md`](design_philosophy.md) (tokens) · [`information_architecture.md`](information_architecture.md) (structure)
+**Companions:** [`design_philosophy.md`](../../frontend/design-system/design_philosophy.md) (tokens) · [`information_architecture.md`](../information-architecture/information_architecture.md) (structure)
 **Revision v0.2:** added Navigation & Wayfinding patterns (Command Palette §3.1, Industrial Category
 Explorer §3.2, Breadcrumbs §3.3), Enterprise Data Table (§2.6), Empty-State Library (§4.2),
 Progressive Disclosure (§5.4), AI Interaction (§5.5), Layout & Composition — Detail Page + KPI Cards
@@ -29,8 +29,8 @@ Master Architecture → ADR → Doc-2/Doc-3 → Doc-4A…4M → Doc-5A…5K → 
 - **Doc-7A §5–§9** owns realization rules; **Doc-7B §5/§6** owns the embedded components + state
   primitives; **Doc-7C §5/§6/§8** owns the data layer, notification center, files/realtime. Referenced,
   never re-authored.
-- Tokens come from [`design_philosophy.md`](design_philosophy.md); structure/nav from
-  [`information_architecture.md`](information_architecture.md) — **referenced by name, never redefined.**
+- Tokens come from [`design_philosophy.md`](../../frontend/design-system/design_philosophy.md); structure/nav from
+  [`information_architecture.md`](../information-architecture/information_architecture.md) — **referenced by name, never redefined.**
 - **On any conflict, the frozen corpus wins and this doc is corrected** (CLAUDE.md §7, §11). Gaps are
   flagged `[ESC-7-*]` and halted — **never invented** (§12).
 
@@ -75,7 +75,7 @@ catalog serves both.
 
 ### 2.1 Search
 
-- **Intent:** context-aware lookup across the surface's entity set ([`information_architecture.md`](information_architecture.md) §5.1).
+- **Intent:** context-aware lookup across the surface's entity set ([`information_architecture.md`](../information-architecture/information_architecture.md) §5.1).
 - **Bindings:** wired reads only — `search_catalog`, `list_vendor_directory`, `list_rfqs`, etc.
   Un-bound types (Industries/Brands/Standards) are **not modeled** (IA §5.1), never invented.
 - **Governance:** results are **presentation over the contract result set**; ordering/filtering
@@ -119,7 +119,7 @@ catalog serves both.
 ### 2.6 Enterprise Data Table
 
 The workhorse of the enterprise surfaces (~60% of workspace UI). Builds on Doc-7B's `data-table` and
-the **Table Specification in [`design_philosophy.md`](design_philosophy.md) §5.1** (referenced, not
+the **Table Specification in [`design_philosophy.md`](../../frontend/design-system/design_philosophy.md) §5.1** (referenced, not
 duplicated).
 
 - **Intent:** dense, scannable, action-capable tabular data (RFQ lists, quotations, vendors, admin queues).
@@ -152,7 +152,7 @@ duplicated).
 
 ### 3.1 Command Palette (⌘K)
 
-The realization of the **Universal Command Center** ([`information_architecture.md`](information_architecture.md) §5.2).
+The realization of the **Universal Command Center** ([`information_architecture.md`](../information-architecture/information_architecture.md) §5.2).
 
 - **Intent:** keyboard-first hub — universal navigation, quick actions, AI entry, entity search,
   recent pages.
@@ -167,7 +167,7 @@ The realization of the **Universal Command Center** ([`information_architecture.
 
 ### 3.2 Industrial Category Explorer
 
-The realization of [`information_architecture.md`](information_architecture.md) §5.3 — **public
+The realization of [`information_architecture.md`](../information-architecture/information_architecture.md) §5.3 — **public
 marketplace only** (the iVendorz answer to the consumer "mega menu"; a discovery moat).
 
 - **Anatomy:** **four synchronized columns** `Parent → Child → Child-2 → Child-3` (entire taxonomy
@@ -463,7 +463,7 @@ draft ──submit_rfq──▶ pending_internal_approval ──approve_rfq─�
 
 ## 9. Mobile Interaction Library
 
-Realizes the responsive/mobile shell of [`information_architecture.md`](information_architecture.md) §7
+Realizes the responsive/mobile shell of [`information_architecture.md`](../information-architecture/information_architecture.md) §7
 as reusable interactions. Touch targets + focus order meet the a11y baseline (`design_philosophy.md` §11).
 
 | Pattern | Use |
@@ -543,7 +543,7 @@ Constraints honored **by pointer** (reference-never-restate):
 | `[ESC-7-AI]` | A global conversational AI navigator beyond `Doc-5K` advisory is absent | AI reserved; limited to `Doc-5K` advisory until an additive patch (§5.5) |
 | `[ESC-RFQ-POLICY]` / `[ESC-OPS-POLICY]` | Some idempotency dedup-window POLICY keys not yet registered | Use the named POLICY key once registered; never a UI literal (§5.3) |
 
-> Inherits the cross-doc registers from [`information_architecture.md`](information_architecture.md) §10
+> Inherits the cross-doc registers from [`information_architecture.md`](../information-architecture/information_architecture.md) §10
 > (incl. `[ESC-7-API-ADS]`).
 
 ---

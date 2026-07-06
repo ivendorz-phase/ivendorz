@@ -163,7 +163,7 @@ J-CMPL · user side surfaces in Doc-7E.
 | Email-only supplier participation | Future extension FX-EMAIL — reserved, not designed | marketplace_ux.md §12 |
 | Notification preference matrix | Rides BC-COMM-2 config by pointer; no separate lifecycle | Doc-4H |
 
-*Cross-links:* actor journeys [`../marketplace_ux.md`](../marketplace_ux.md) §8 (cross-journey
+*Cross-links:* actor journeys [`../marketplace_ux.md`](../ux/marketplace_ux.md) §8 (cross-journey
 rails) · registry [`JOURNEY_ATLAS.md`](JOURNEY_ATLAS.md) §5-F.
 
 *Non-authoritative; coins nothing; on conflict the frozen corpus wins (CLAUDE.md §7/§11).*

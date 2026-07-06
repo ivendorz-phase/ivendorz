@@ -334,7 +334,7 @@ J-SUC** (org ownership) — this transfers a *profile between orgs*.
 | Profile-section/branding/SEO-OG surpluses | Open companion↔corpus surplus register (vendor FE track) — not journeys | vendor_planning_and_design.md |
 | Favorites | A discovery affordance (`add_catalog_favorite`) inside `J-GST`/`J-PROC-01`, not a lifecycle | marketplace_ux.md |
 
-*Cross-links:* actor journeys [`../marketplace_ux.md`](../marketplace_ux.md) §2 (`J-GST`), §5
+*Cross-links:* actor journeys [`../marketplace_ux.md`](../ux/marketplace_ux.md) §2 (`J-GST`), §5
 (`J-VND`) · registry [`JOURNEY_ATLAS.md`](JOURNEY_ATLAS.md) §5-C.
 
 *Non-authoritative; coins nothing; on conflict the frozen corpus wins (CLAUDE.md §7/§11).*

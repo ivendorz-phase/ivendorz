@@ -6,8 +6,8 @@ Journey/Lifecycle registry. Remains a **non-authoritative companion under the fr
 (freezing governs change control, never authority — §0 stance unchanged); changes require an
 **additive patch + version bump** per the Atlas Governance lifecycle (§3.1).
 **Date:** 2026-07-06
-**Companions:** [`../marketplace_ux.md`](../marketplace_ux.md) (the six actor journeys) ·
-[`../information_architecture.md`](../information_architecture.md) · [`../ux_patterns.md`](../ux_patterns.md)
+**Companions:** [`../marketplace_ux.md`](../ux/marketplace_ux.md) (the six actor journeys) ·
+[`../information_architecture.md`](../information-architecture/information_architecture.md) · [`../ux_patterns.md`](../ux/ux_patterns.md)
 **Domain files:** [`journeys_identity.md`](journeys_identity.md) · [`journeys_trust.md`](journeys_trust.md) ·
 [`journeys_marketplace.md`](journeys_marketplace.md) · [`journeys_procurement.md`](journeys_procurement.md) ·
 [`journeys_operations.md`](journeys_operations.md) · [`journeys_communication.md`](journeys_communication.md) ·
@@ -38,7 +38,7 @@ Master Architecture → ADR → Doc-2/Doc-3 → Doc-4A…4M → Doc-5A…5K → 
 - **On any conflict, the frozen corpus wins and this file is corrected** (CLAUDE.md §7, §11).
   Corpus-internal conflicts are **Flag-and-Halt**, never resolved here.
 - The six actor journeys (`J-GST/J-BUY/J-PROC/J-VND/J-SUP/J-ADM`) remain owned by
-  [`../marketplace_ux.md`](../marketplace_ux.md) — this atlas registers them and builds on them;
+  [`../marketplace_ux.md`](../ux/marketplace_ux.md) — this atlas registers them and builds on them;
   it **never restates or renumbers them**.
 
 ---

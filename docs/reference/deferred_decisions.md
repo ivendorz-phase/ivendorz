@@ -4,7 +4,7 @@
 **Status:** **DRAFT v0.3** — Deferred Decisions Register (non-authoritative companion)
 **Date:** 2026-06-29
 **Wave:** 0.3 — Governance Refactor (deferred-work annotation)
-**Companions:** [`shared_conventions.md`](shared_conventions.md) · [`landing_page_spec.md`](landing_page_spec.md) · [`design_philosophy.md`](design_philosophy.md)
+**Companions:** [`shared_conventions.md`](../frontend/components/shared_conventions.md) · [`landing_page_spec.md`](../product/ux/landing_page_spec.md) · [`design_philosophy.md`](../frontend/design-system/design_philosophy.md)
 
 ---
 
@@ -19,7 +19,7 @@ Master → ADR → Doc-2/Doc-3 → Doc-4A…4M → Doc-5A…5K → Doc-7A → {D
                                                                         ▲ this doc conforms upward
 ```
 
-On any conflict the frozen corpus wins. ESC handles → [`esc_registry.md`](esc_registry.md).
+On any conflict the frozen corpus wins. ESC handles → [`esc_registry.md`](../../esc_registry.md).
 
 ---
 

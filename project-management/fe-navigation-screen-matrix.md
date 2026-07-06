@@ -5,7 +5,7 @@
 the frontend is substantially complete / backend work begins).
 
 **Derived, non-authoritative.** This matrix is a tracking VIEW over on-disk truth + the trackers —
-it coins nothing and re-homes nothing. Frozen page ids stay in [`page_inventory.md`](../page_inventory.md)
+it coins nothing and re-homes nothing. Frozen page ids stay in [`page_inventory.md`](../docs/product/ux/page_inventory.md)
 (universe **151**, coverage-verified); milestones stay in [`fe-program-wbs.md`](fe-program-wbs.md);
 queues/gates stay in [`execution-board.md`](execution-board.md). On divergence, those win and this
 file is patched. Statuses reflect the working tree as of 2026-07-06.
@@ -34,7 +34,7 @@ UNASSIGNED (Board to assign)** — note: in this program Team-4/Team-5 are the R
 | RFQ list + journey buckets | `/rfqs` | ✅ Wired (mock) | `list_rfqs` + pipeline summary |
 | RFQ create wizard | `/rfqs/new` | 🟩 Built | blank-draft presentation |
 | RFQ detail (+ journey strip) | `/rfqs/[rfqId]` | ✅ Wired (mock) | `get_rfq` + quotations tab |
-| Compare sheet | `/rfqs/[rfqId]/compare` | ✅ Wired (mock) | **WP-2 changes HELD until the Compare UX freeze is signed** (`productSpec/COMPARE_SHEET_UX_FREEZE_v0.1.md`) |
+| Compare sheet | `/rfqs/[rfqId]/compare` | ✅ Wired (mock) | **WP-2 changes HELD until the Compare UX freeze is signed** (`docs/product/requirements/COMPARE_SHEET_UX_FREEZE_v0.1.md`) |
 | Award wizard | `/rfqs/[rfqId]/award` | ✅ Wired (mock) | shortlist read; `award_rfq` write parked |
 | Version history | `/rfqs/[rfqId]/versions` | ✅ Wired (mock) | immutable chain (Inv #8) |
 | Routing & invitations log | `/rfqs/[rfqId]/routing` | ✅ Wired (mock) | delivered-onward only |
@@ -95,7 +95,7 @@ UNASSIGNED (Board to assign)** — note: in this program Team-4/Team-5 are the R
 
 The RFQ journey is not a third page tree — it is the **workflow spine** both legs share:
 `app/(app)/_components/rfq-workflow/` (journey model · frozen transition projection · document
-registry · adapter seam · journey UI), documented in [`rfq-workflow.md`](../rfq-workflow.md) v1.1.
+registry · adapter seam · journey UI), documented in [`rfq-workflow.md`](../docs/product/requirements/rfq-workflow.md) v1.1.
 The 13 adapter-wired routes above ARE the RFQ journey's realization. Owner status: **✅ approved as
 the implementation blueprint** (WP-1 rules: approved pages only · mock adapters · no backend logic
 · no reserved/blocked routes · no new workflow states · frozen journey exactly).
@@ -160,7 +160,7 @@ journey *document* + M4 *wiring*, not the surfaces.
 | Public | — | complete (Track 1 closed) | — | Team-1 |
 
 **Owner-ruled priority order (2026-07-06):** 1) finish Team-2 buyer implementation (WP-1 rules) →
-2) freeze Compare UX (`productSpec/COMPARE_SHEET_UX_FREEZE_v0.1.md`, owner sign-off) → 3) implement
+2) freeze Compare UX (`docs/product/requirements/COMPARE_SHEET_UX_FREEZE_v0.1.md`, owner sign-off) → 3) implement
 Buyer → Vendor → RFQ → Admin from the approved journeys → 4) backend begins; only then produce the
 Business Operations Journey. ESC items go through Board intake (ESC → discussion → decision →
 patch → freeze), never by editing frozen journey documents.

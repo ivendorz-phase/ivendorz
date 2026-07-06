@@ -288,7 +288,7 @@ composed by `J-ADM-01/07`.
 | Routing-rule governance detail | `manage_routing_rule`/`assist_routing` narrated in J-MATCH-06 (Stage-gated) | Doc-4E Part3 |
 | Import job state enumeration | Owned by Doc-4J; not restated to avoid coinage | Doc-4J |
 
-*Cross-links:* actor journey [`../marketplace_ux.md`](../marketplace_ux.md) §7 (`J-ADM`) ·
+*Cross-links:* actor journey [`../marketplace_ux.md`](../ux/marketplace_ux.md) §7 (`J-ADM`) ·
 registry [`JOURNEY_ATLAS.md`](JOURNEY_ATLAS.md) §5-H.
 
 *Non-authoritative; coins nothing; on conflict the frozen corpus wins (CLAUDE.md §7/§11).*

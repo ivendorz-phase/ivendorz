@@ -16,7 +16,7 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
    pages only · mock adapters · no backend logic · no reserved/blocked routes · no new workflow
    states · the frozen journey exactly.
 2. **WP-2 (Quotation Compare) is HELD** until the Compare UX product freeze is signed:
-   [`productSpec/COMPARE_SHEET_UX_FREEZE_v0.1.md`](../productSpec/COMPARE_SHEET_UX_FREEZE_v0.1.md)
+   [`COMPARE_SHEET_UX_FREEZE_v0.1.md`](../docs/product/requirements/COMPARE_SHEET_UX_FREEZE_v0.1.md)
    — D1 already RULED (side-by-side min 2 / max 5); D2–D7 drafted, awaiting owner sign-off. Teams
    do NOT decide these during implementation.
 3. **Implementation order:** Buyer → Vendor → RFQ spine → Admin, from the approved journeys.
@@ -100,7 +100,7 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   milestone; shell owner needed). Checkpoints `c382d44` → `6fd1a71` → `1ce722a`; WP card
   `governanceReviews/milestones/wp-1-buyer-loi-view/WORK-PACKAGE.md`. **Next pull:** WP-2
   compare picker stays 🅿 (awaits owner D2–D7 sign-off on
-  `productSpec/COMPARE_SHEET_UX_FREEZE_v0.1.md`); otherwise awaiting the next owner-approved
+  `docs/product/requirements/COMPARE_SHEET_UX_FREEZE_v0.1.md`); otherwise awaiting the next owner-approved
   buyer deliverable.
 - **Prior Milestone:** `FE-BUY-10` Discovery & Favorites — ✅ **APPROVED** (RV-0117, A:PASS ∧
   B:PASS, 0 BLOCKER/MAJOR/MINOR both lanes, checkpoint `6306de4`; **Review Team 5 marked approved in

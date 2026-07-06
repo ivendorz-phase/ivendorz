@@ -2,7 +2,7 @@
 
 **Owns:** `P-VND-*` (Doc-7G) · `P-ADM-*` (Doc-7H) · `P-DOC-02..06` (vendor leg + shared BC-OPS-4
 pages of the FE-DOC cross-workspace Documents track, WBS v1.2). Titles + bindings are the
-**source record** in [`page_inventory.md`](../page_inventory.md).
+**source record** in [`page_inventory.md`](../docs/product/ux/page_inventory.md).
 
 > **Milestone layer (FE-PM v1.0, 2026-07-02):** pages in this file are grouped into `FE-*`
 > milestones in [`fe-program-wbs.md`](fe-program-wbs.md); pull work from your milestone queue via

@@ -1,7 +1,7 @@
 # Page Standards — Definition of Done
 
 **Non-authoritative.** Points to the frozen standards; coins nothing. Vocabulary + presets are owned
-by [`shared_conventions.md`](../shared_conventions.md) (`SC`); gaps by
+by [`shared_conventions.md`](../docs/frontend/components/shared_conventions.md) (`SC`); gaps by
 [`esc_registry.md`](../esc_registry.md). A page is **Ready for Review** only when every box below is
 satisfied.
 

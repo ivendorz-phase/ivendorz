@@ -4,7 +4,7 @@
 **Status:** **DRAFT v0.3** — Page Inventory (non-authoritative companion; the **single source for per-page planning metadata**)
 **Date:** 2026-06-29
 **Wave:** 0.3 — Governance Refactor (foundation)
-**Companions:** [`shared_conventions.md`](shared_conventions.md) (**SC** — planning vocab, presets, cross-ref codes) · [`design_philosophy.md`](design_philosophy.md) · [`information_architecture.md`](information_architecture.md) · [`ux_patterns.md`](ux_patterns.md) · [`marketplace_ux.md`](marketplace_ux.md) · [`page_templates.md`](page_templates.md) (**PT** — `T-*`) · [`esc_registry.md`](esc_registry.md) (**ER**) · [`glossary.md`](glossary.md) (**GL**)
+**Companions:** [`shared_conventions.md`](../../frontend/components/shared_conventions.md) (**SC** — planning vocab, presets, cross-ref codes) · [`design_philosophy.md`](../../frontend/design-system/design_philosophy.md) · [`information_architecture.md`](../information-architecture/information_architecture.md) · [`ux_patterns.md`](ux_patterns.md) · [`marketplace_ux.md`](marketplace_ux.md) · [`page_templates.md`](../../frontend/design-system/page_templates.md) (**PT** — `T-*`) · [`esc_registry.md`](../../../esc_registry.md) (**ER**) · [`glossary.md`](../../reference/glossary.md) (**GL**)
 **Revision v0.3:** governance refactor — §13 extended into the **single planning matrix** (adds `Complexity · Priority · Interaction · Visual-hierarchy` from `SC §8` to the existing Actor/Devices/Search/Nav for all 144 pages); §11 ESC register replaced by a pointer to `ER`; a **Depends-on rule** stated once; cross-refs migrated to `SC §6` codes. Inventory tables (§2–§8) and the §12 Master Navigation Matrix are **unchanged**. Coins nothing.
 **Revision v0.4 (additive amendment, 2026-07-03 — owner Board-minted at FE-DOC track creation, WBS v1.2):** new §8A **Cross-workspace Documents** (`P-DOC-01..06`; total 144 → **150**); §12 gains a "Documents" entry in the Buyer and Vendor left-navs; new §13.8 attributes rows. Realizes a presentation-layer composition of frozen M3/M4/M7 module-owned records (Content ≠ Presentation) — **coins no contract, no document kind, no route topology**; absent document kinds are `ER` §Document Management handles, never rendered. The frozen-144 sections §2–§8 are byte-unchanged.
 
@@ -16,7 +16,7 @@ A **non-authoritative companion**. It **enumerates every page** of the product a
 surface (`IA §6`), a journey step (`MX` `J-*`), a template (`PT` `T-*`), and the **wired Doc-5
 contract(s)** it binds; v0.3 also makes it the **single home for per-page planning metadata** (§13). It
 **coins no architecture, route, contract, page, or ESC tag** — pages needing an absent contract point
-at the handle in [`ER`](esc_registry.md) (§11), never invent one.
+at the handle in [`ER`](../../../esc_registry.md) (§11), never invent one.
 
 ```
 Master → ADR → Doc-2/Doc-3 → Doc-4A…4M → Doc-5A…5K → Doc-7A → {Doc-7B, Doc-7C, Doc-7D…7H} → Code
@@ -27,7 +27,7 @@ Master → ADR → Doc-2/Doc-3 → Doc-4A…4M → Doc-5A…5K → Doc-7A → {D
   authoritative route topology is **Doc-7C / Doc-7D…7H**. **Routes carry opaque IDs (UUIDs), never human
   refs** (`IA §8`); human refs like `RFQ-2026-000123` are display labels only.
 - **On any conflict, the frozen corpus wins and this doc is corrected** (CLAUDE.md §7, §11). ESC handles
-  are defined once in [`ER`](esc_registry.md); terms in [`GL`](glossary.md).
+  are defined once in [`ER`](../../../esc_registry.md); terms in [`GL`](../../reference/glossary.md).
 
 > **Scope of this inventory:** the *complete page list* — the unit that `PT` turns into templates and
 > `SS` turns into screens. **Page-level**, not component- or state-level: loading / empty / error /
@@ -46,7 +46,7 @@ Master → ADR → Doc-2/Doc-3 → Doc-4A…4M → Doc-5A…5K → Doc-7A → {D
 - **Binds:** the wired Doc-5 contract(s) or source the page reads/writes (by pointer).
 - **Journey:** the Marketplace UX step(s) (`MX` `J-*`) the page realizes.
 - **⚠ ESC:** the page (or part of it) depends on a gap in the frozen wired surface — handle defined in
-  [`ER`](esc_registry.md); referenced here, never re-explained.
+  [`ER`](../../../esc_registry.md); referenced here, never re-explained.
 
 Forward-looking per-page attributes are **consolidated in the §13 planning matrix** (the single source
 used by `PT`/`SS` + permissions/analytics/testing/search). Their vocabularies are owned by `SC §8`:
@@ -338,7 +338,7 @@ canonical *layout* each value resolves to is defined in **`PT`** (`T-*`, see `PT
 ## 11. Governance Alignment & Precedence
 
 Constraints honored **by pointer** (reference-never-restate). Planning vocabularies are owned by
-`SC §8`; escalation handles are owned by [`ER`](esc_registry.md); terminology by [`GL`](glossary.md).
+`SC §8`; escalation handles are owned by [`ER`](../../../esc_registry.md); terminology by [`GL`](../../reference/glossary.md).
 
 | Constraint | Source | Where honored |
 |---|---|---|
@@ -355,9 +355,9 @@ Constraints honored **by pointer** (reference-never-restate). Planning vocabular
 | Admin-decides / owning-module-owns; no active-org | R5 / Doc-7C §4 | §8 |
 | Cursor pagination on all lists | Doc-7C §5.3 | every Listing |
 
-### ESC handles → see [`ER`](esc_registry.md)
+### ESC handles → see [`ER`](../../../esc_registry.md)
 
-The `[ESC-…]` register **now lives in [`ER`](esc_registry.md)** (the single source: gap · interim
+The `[ESC-…]` register **now lives in [`ER`](../../../esc_registry.md)** (the single source: gap · interim
 presentation · resolution channel). This inventory **references handles only** and **coins none**.
 For orientation, the affected-pages mapping is retained below (the gap/interim prose is **not**
 restated — read `ER`):
@@ -371,7 +371,7 @@ restated — read `ER`):
 | `ESC-IDN-DELEG-EXPIRY` | P-ACC-12 |
 | Industry/Brand/Standard taxonomies (non-ESC gap, `ER`) | P-PUB-09 |
 
-> `ESC-7-AI` and the export/related gaps are likewise defined in [`ER`](esc_registry.md) and inherited
+> `ESC-7-AI` and the export/related gaps are likewise defined in [`ER`](../../../esc_registry.md) and inherited
 > by reference (also surfaced via `UX §12`). Each handle resolves only via its named channel — never
 > locally (Doc-7C §0.3; CLAUDE.md §11).
 
@@ -688,5 +688,5 @@ every sibling billing page (P-ACC-16/17/18/20/21) is `Shared`. Full record:
 per-page planning metadata (§13). It operates under the frozen corpus authority order (CLAUDE.md §7)
 and the Doc-7 precedence chain (§0); it introduces no architecture change and coins no route, contract,
 page, or ESC tag without a binding. Planning vocabularies are owned by `SC §8`; escalation handles by
-[`ER`](esc_registry.md); terms by [`GL`](glossary.md). On any conflict, the frozen document wins and
+[`ER`](../../../esc_registry.md); terms by [`GL`](../../reference/glossary.md). On any conflict, the frozen document wins and
 this file is patched to match.*

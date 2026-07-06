@@ -255,7 +255,7 @@ ownership transfer of a **profile** is J-VOT (different thing — M2/M5).
 | User account lifecycle (2FA, deactivation, admin status) | Doc-4C §C4 contracts exist but are account hygiene, not an org journey; fold into a future extension only if a surface needs it | Doc-4C §C4 |
 | Identity domain events | None exist — M1 consumes no outbox | Doc-4C §C12.7 |
 
-*Cross-links:* actor journeys [`../marketplace_ux.md`](../marketplace_ux.md) §3 (`J-BUY`), §5
+*Cross-links:* actor journeys [`../marketplace_ux.md`](../ux/marketplace_ux.md) §3 (`J-BUY`), §5
 (`J-VND`) · registry [`JOURNEY_ATLAS.md`](JOURNEY_ATLAS.md) §5-A.
 
 *Non-authoritative; coins nothing; on conflict the frozen corpus wins (CLAUDE.md §7/§11).*

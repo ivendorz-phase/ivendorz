@@ -4,7 +4,7 @@
 **Status:** **DRAFT v0.2** — Information Architecture (non-authoritative companion to the Doc-7 program)
 **Date:** 2026-06-29
 **Wave:** 0C — Information Architecture
-**Companion to:** [`design_philosophy.md`](design_philosophy.md) (tokens & visual vocabulary)
+**Companion to:** [`design_philosophy.md`](../../frontend/design-system/design_philosophy.md) (tokens & visual vocabulary)
 **Revision v0.2:** added Navigation Philosophy (§1.1), Quick Create (§4.9) and an AI Assistant entry
 point (§4.10); elevated the command palette to the **Universal Command Center** (§5.2); renamed
 *Mega menu → **Industrial Category Explorer*** and expanded it (§5.3); expanded Global search scope
@@ -29,7 +29,7 @@ Master Architecture → ADR → Doc-2/Doc-3 → Doc-4A…4M → Doc-5A…5K → 
   active-org context, the server-side typed Doc-5 data layer, and the notification center. **This IA
   doc realizes the *navigable experience* within that shell; it never re-decides the shell.**
 - **Doc-7D…7H** own the actual surfaces and bind every view to a frozen **Doc-5** contract.
-- **Doc-7A** is the frontend metastandard; **Doc-7B** + [`design_philosophy.md`](design_philosophy.md)
+- **Doc-7A** is the frontend metastandard; **Doc-7B** + [`design_philosophy.md`](../../frontend/design-system/design_philosophy.md)
   own design tokens and component vocabulary — this doc **references tokens by name, never redefines them**.
 - **On any conflict, the frozen corpus wins and this document is corrected** (CLAUDE.md §7, §11).
   Frozen facts are bound **by pointer**. Where a needed contract/route/POLICY key is absent, this doc
@@ -53,7 +53,7 @@ inventory, templates, screens) snaps onto a stable skeleton.
 |---|---|
 | Route topology, shell slots, active-org context, data layer, notification center | **Doc-7C** (frozen) — this doc *references* |
 | Pages bound to contracts, per-surface views | **Doc-7D…7H** (frozen) — this doc *maps*, never invents |
-| Design tokens, breakpoints, layout dimensions, component/template vocabulary | [`design_philosophy.md`](design_philosophy.md) — this doc *references by name* |
+| Design tokens, breakpoints, layout dimensions, component/template vocabulary | [`design_philosophy.md`](../../frontend/design-system/design_philosophy.md) — this doc *references by name* |
 | **Navigation model, shell anatomy, wayfinding, responsive shell, surface sitemap** | **This document** |
 | Exhaustive page enumeration | **Wave 0F** (deferred) |
 
@@ -153,7 +153,7 @@ This doc designs the **presentation** of those slots; it does not change what th
 
 ### 3.3 Dashboard shell anatomy
 
-Uses the layout tokens already defined in [`design_philosophy.md`](design_philosophy.md) §2.9 — this
+Uses the layout tokens already defined in [`design_philosophy.md`](../../frontend/design-system/design_philosophy.md) §2.9 — this
 doc composes them, never redefines them.
 
 ```
@@ -519,7 +519,7 @@ Staff tools  (non-disclosure)
 
 ## 7. Responsive Behavior & Mobile Navigation
 
-Uses the **mobile-first** strategy and breakpoints from [`design_philosophy.md`](design_philosophy.md)
+Uses the **mobile-first** strategy and breakpoints from [`design_philosophy.md`](../../frontend/design-system/design_philosophy.md)
 §3.2 / §2.8 (`xs` 480 · `sm` 640 · `md` 768 · `lg` 1024 · `xl` 1280 · `2xl` 1536 · `3xl` 1920).
 Desktop (`xl`) is the **primary usage target** for dashboards; nothing breaks below it.
 

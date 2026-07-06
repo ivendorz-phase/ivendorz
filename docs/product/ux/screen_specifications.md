@@ -4,17 +4,17 @@
 **Status:** **DRAFT v0.3** — Screen Specifications (non-authoritative companion to the Doc-7 program)
 **Date:** 2026-06-29
 **Wave:** 0.3 — Governance Refactor (the highest-value de-duplication of the 0H screen set)
-**Revision v0.3:** de-duplicated against [`shared_conventions.md`](shared_conventions.md) (SC). Per-page
+**Revision v0.3:** de-duplicated against [`shared_conventions.md`](../../frontend/components/shared_conventions.md) (SC). Per-page
 inherited defaults (loading/skeleton, RSC/performance, analytics disclaimer, accessibility, responsive,
 error/success boilerplate, in-action authority citations) are **stated once in SC** and inherited via the
 **Inherited-From banner** (SC §2); each page now carries **only its deltas**. Coins nothing; all 144
 pages preserved.
-**Companions:** [`shared_conventions.md`](shared_conventions.md) (SC — GI/presets/grammar) ·
-[`design_philosophy.md`](design_philosophy.md) (DP) · [`information_architecture.md`](information_architecture.md) (IA) ·
+**Companions:** [`shared_conventions.md`](../../frontend/components/shared_conventions.md) (SC — GI/presets/grammar) ·
+[`design_philosophy.md`](../../frontend/design-system/design_philosophy.md) (DP) · [`information_architecture.md`](../information-architecture/information_architecture.md) (IA) ·
 [`ux_patterns.md`](ux_patterns.md) (UX) · [`marketplace_ux.md`](marketplace_ux.md) (MX, `J-*`) ·
 [`page_inventory.md`](page_inventory.md) (PI — the 144 `P-*` pages, §12 nav, §13 attributes/planning matrix) ·
-[`page_templates.md`](page_templates.md) (PT — `T-*` templates) · [`esc_registry.md`](esc_registry.md) (ER) ·
-[`glossary.md`](glossary.md) (GL).
+[`page_templates.md`](../../frontend/design-system/page_templates.md) (PT — `T-*` templates) · [`esc_registry.md`](../../../esc_registry.md) (ER) ·
+[`glossary.md`](../../reference/glossary.md) (GL).
 
 ---
 
@@ -771,7 +771,7 @@ inside per-page actions. Constraints honored (representative):
 
 ### `[ESC-7-*]` register (defined once in ER — **no new tags coined here**)
 
-ESC handles are **defined once in [`esc_registry.md`](esc_registry.md)** (gap · interim · channel). This
+ESC handles are **defined once in [`esc_registry.md`](../../../esc_registry.md)** (gap · interim · channel). This
 document cites bare handles only and invents none. Where each lands on a screen:
 
 | Handle (ER) | Affected screens (this doc) |

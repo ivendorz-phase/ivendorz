@@ -1,7 +1,7 @@
 # Team-1 Queue — Public / Shared / Identity
 
 **Owns:** `P-PUB-*` (Doc-7D) · `P-SH-*` (Doc-7C) · `P-AUTH-*` (Doc-7E) · `P-ACC-*` (Doc-7E).
-Titles + bindings are the **source record** in [`page_inventory.md`](../page_inventory.md) — this is
+Titles + bindings are the **source record** in [`page_inventory.md`](../docs/product/ux/page_inventory.md) — this is
 the status layer only. Work highest-priority `Ready` first; skip `Dependency ≠ Ready`.
 
 > **Milestone layer (FE-PM v1.0, 2026-07-02):** pages in this file are grouped into `FE-*`
