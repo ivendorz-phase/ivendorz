@@ -194,15 +194,25 @@ ivendorz/
 ├─ src/
 │  ├─ modules/<module>/              # the 10 bounded modules (one folder, one owner)
 │  ├─ shared/                        # framework-level code only (NOT a domain module)
-│  └─ server/                        # app-layer wiring: auth, org context, authz, guards
-├─ prisma/                           # planned: one schema per module (ratify in Doc-6)
+│  ├─ server/                        # app-layer wiring: auth, org context, authz, guards
+│  └─ frontend/                      # Doc-7 platform kit (shape owned by the frozen Doc-7 series)
+├─ prisma/                           # one schema per module (10-schema multiSchema)
 ├─ inngest/                          # async jobs (consume M0 outbox events)
 ├─ generated-contracts-registry/     # GENERATED, gitignored — never hand-edited
 ├─ tests/  · scripts/ · public/
 ├─ generatedDocs/                    # FROZEN architecture corpus — authoritative, do not edit
 │     ├─ CORPUS_INDEX.md             # navigation index for the corpus (start here)
 │     └─ 00_AUTHORITY_MAP.md         # authority/status/version per document
+├─ governanceReviews/                # PINNED append-only provenance archive (audits, Board records)
+├─ docs/                             # LIVING documentation — README.md (ownership) + INDEX.md (map)
+│     ├─ architecture/ · product/{journeys,ux,navigation,requirements,information-architecture,benchmarks}
+│     └─ frontend/{architecture,components,design-system} · reference/   (backend/testing/governance/adr reserved)
+├─ project-management/               # execution tracking (FE-PM ledger)
+├─ prompts/ · design/ · templates/ · examples/ · prototypes/   # v1.1 P-4 registered areas
 ├─ README.md · IMPLEMENTATION_START_HERE.md · CLAUDE.md · project_details.md · REPOSITORY_STRUCTURE.md
+├─ CONTRIBUTING.md · repo.manifest.json (GENERATED — scripts/build-repo-manifest.mjs)
+└─ pinned root exceptions (frozen-path-referenced): esc_registry.md · ROADMAP.md · 00_PROJECT_STATUS.md ·
+   iVendorz_New_Chat_Primer.md · Wave_Template_v1.0.md · Governance_Freeze_v1.0.md
 ```
 
 **Canonical module shape (nested DDD)** — only `contracts/` is importable cross-module:
@@ -223,10 +233,11 @@ replaceable. **Shape-exception:** canonical shape is the default — M0 is infra
 business `domain`), M9 (AI) uses `domain/` only for regenerable derived-artifact models;
 unused layers need not exist.
 
-`src/`, `prisma/`, `inngest/`, `app/` are **planned implementation structure**, not yet on
-disk. "One Prisma namespace per module" is an implementation choice to be ratified in Doc-6 —
-the frozen mandate is "one schema per module" at the DB level (Doc-2). Outbox ownership and
-the transactional write model are governed by Doc-2/4B/4J/4L (reference, never restate).
+`src/`, `prisma/`, `inngest/`, `app/` are **built** (Waves 0–1). The frozen mandate "one
+schema per module" at the DB level (Doc-2) is realized as a 10-schema Prisma multiSchema
+setup. Outbox ownership and the transactional write model are governed by Doc-2/4B/4J/4L
+(reference, never restate). Directory registry + root-file policy: REPOSITORY_STRUCTURE.md
+**Additive Patch v1.1** (Board-approved 2026-07-06) — new root files require Board approval.
 
 ---
 

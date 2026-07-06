@@ -1,0 +1,12 @@
+{
+  "version": "1.1",
+  "frozenCorpus": "generatedDocs/",
+  "governance": "governanceReviews/",
+  "livingDocs": "docs/",
+  "projectManagement": "project-management/",
+  "designSources": "design/",
+  "prompts": "prompts/",
+  "templates": "templates/",
+  "examples": "examples/",
+  "prototypes": "prototypes/"
+}
