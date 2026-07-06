@@ -6,7 +6,7 @@
 
 **Status:** DRAFT v1.0 — NON-authoritative product companion. **Classification Schema v1.0 /
 Taxonomy Content v1.0 (proposed).**
-**Date:** 2026-07-02 · **Home:** `productSpec/` · **Companions:** `CATEGORY_TAXONOMY_REVIEW.md` ·
+**Date:** 2026-07-02 · **Home:** `docs/product/requirements/` · **Companions:** `CATEGORY_TAXONOMY_REVIEW.md` ·
 `CATEGORY_MIGRATION_PLAN.md` · `CATEGORY_ATTRIBUTE_FRAMEWORK.md` · `CATEGORY_TAXONOMY_DECISION_RECORD.md`
 · terminology per `MASTER-CLASSIFICATION-DICTIONARY.md` (never redefined here).
 

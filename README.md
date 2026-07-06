@@ -94,17 +94,22 @@ not tracked in this file:
 ```
 ivendorz/
 ├─ generatedDocs/            # FROZEN architecture corpus — authoritative, do not edit
-├─ src/modules/<module>/     # PLANNED — 10 bounded modules; only contracts/ importable cross-module
-├─ app/  prisma/  inngest/   # PLANNED implementation structure (not yet on disk)
+├─ governanceReviews/        # append-only governance archive (audits, Board records)
+├─ src/modules/<module>/     # the 10 bounded modules; only contracts/ importable cross-module
+├─ app/  prisma/  inngest/   # Next.js App Router · 10-schema Prisma · async jobs
+├─ docs/                     # LIVING documentation — start at docs/INDEX.md
+├─ project-management/       # execution tracking
 ├─ CLAUDE.md                 # AI-agent guardrails
 ├─ project_details.md        # full project description (non-authoritative)
-└─ REPOSITORY_STRUCTURE.md   # repository constitution: module shape, boundaries, rules
+└─ REPOSITORY_STRUCTURE.md   # repository constitution (v1.1): module shape, boundaries, registry
 ```
 
 ## Documentation
 
+- **[docs/INDEX.md](docs/INDEX.md)** — navigation map for all living documentation.
+- **[IMPLEMENTATION_START_HERE.md](IMPLEMENTATION_START_HERE.md)** — reading order + pre-PR checklist (developer onboarding entry point).
 - **[project_details.md](project_details.md)** — full project description, modules, invariants, lifecycle.
-- **[REPOSITORY_STRUCTURE.md](REPOSITORY_STRUCTURE.md)** — repository constitution (module shape, ownership, forbidden patterns).
+- **[REPOSITORY_STRUCTURE.md](REPOSITORY_STRUCTURE.md)** — repository constitution (module shape, ownership, forbidden patterns, directory registry).
 - **[CLAUDE.md](CLAUDE.md)** — guardrails for AI coding agents.
 - **[generatedDocs/](generatedDocs/)** — the frozen architecture corpus (authoritative source of truth).
 
@@ -115,7 +120,7 @@ ivendorz/
 
 ## Contributing
 
-This is a governed codebase. Before contributing:
+This is a governed codebase — see [CONTRIBUTING.md](CONTRIBUTING.md). Before contributing:
 
 1. Read [CLAUDE.md](CLAUDE.md) and [REPOSITORY_STRUCTURE.md](REPOSITORY_STRUCTURE.md).
 2. Confirm your change sits inside **one module** and respects "one module, one owner."

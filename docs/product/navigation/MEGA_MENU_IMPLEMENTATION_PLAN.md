@@ -17,7 +17,7 @@ slots (render-nothing defaults) and the preload/prefetch ladder; Phase 5 validat
 
 Standing constraints for every phase: presentation-only (no wiring, no coined contracts) ·
 taxonomy consumed verbatim from Taxonomy Content v1.0 (seed generated from
-`productSpec/CATEGORY_MIGRATION_PLAN.md` Appendix C — never hand-copied) · kit conventions
+`docs/product/requirements/CATEGORY_MIGRATION_PLAN.md` Appendix C — never hand-copied) · kit conventions
 (`src/frontend/`, `--iv-*` tokens, forwardRef/className, static gates: `tsc` + eslint + prettier
 green per milestone) · per-milestone adversarial review before advancing (established team practice).
 

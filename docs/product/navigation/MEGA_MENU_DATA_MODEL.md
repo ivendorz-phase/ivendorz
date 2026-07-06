@@ -93,7 +93,7 @@ governance; overlay keys that match no active slug are dead entries (build-time 
 
 **Phase now (pre-contract, `[ESC-7-API-CATNAV]` open):**
 - Build-time static seed generated **from Taxonomy Content v1.0's master table**
-  (`productSpec/CATEGORY_MIGRATION_PLAN.md` Appendix C) by a script — never hand-copied, so the menu
+  (`docs/product/requirements/CATEGORY_MIGRATION_PLAN.md` Appendix C) by a script — never hand-copied, so the menu
   cannot drift from the canonical tree. Emits `taxonomy.v1.json` (flat `CategoryNodeData[]`,
   ~794 rows ≈ 60 KB raw / ~15 KB gzip).
 - Served as a static import in a **server component**; VM forest + overlay merge happen server-side;

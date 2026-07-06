@@ -8,7 +8,7 @@ v1.0 body above is unchanged (additive-only discipline).
 **Date:** 2026-07-02 · **Companions:** `MEGA_MENU_COMPONENT_SPEC.md` · `MEGA_MENU_DATA_MODEL.md` ·
 `MEGA_MENU_UX_FLOW.md` · `MEGA_MENU_IMPLEMENTATION_PLAN.md` · realizes `information_architecture.md`
 §5.3 + `ux_patterns.md` §3.2 (**Industrial Category Explorer**) · consumes **Taxonomy Content v1.0**
-(`productSpec/CATEGORY_TAXONOMY_REVIEW.md` — canonical, not redesigned here).
+(`docs/product/requirements/CATEGORY_TAXONOMY_REVIEW.md` — canonical, not redesigned here).
 
 ---
 

@@ -5,7 +5,7 @@
 > frozen architecture corpus prevails.** (C1)
 
 **Status:** DRAFT v1.0 — NON-authoritative product companion. **Classification Schema v1.0.**
-**Date:** 2026-07-02 · **Home:** `productSpec/` · **Companions:** `CATEGORY_TAXONOMY_REVIEW.md` ·
+**Date:** 2026-07-02 · **Home:** `docs/product/requirements/` · **Companions:** `CATEGORY_TAXONOMY_REVIEW.md` ·
 `CATEGORY_GOVERNANCE_MODEL.md` · terminology per `MASTER-CLASSIFICATION-DICTIONARY.md`.
 **Mechanism status:** the attribute mechanism itself is **NET-NEW** (no attribute schema exists in the
 frozen corpus) — routed as `ESC-CLASS-ATTR` (see `CATEGORY_MIGRATION_PLAN.md` §Escalations). The

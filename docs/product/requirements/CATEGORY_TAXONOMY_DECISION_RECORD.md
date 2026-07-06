@@ -6,7 +6,7 @@
 
 **Status:** DRAFT v1.0 — NON-authoritative product companion (decision record for **Taxonomy Content
 v1.0**; not an ADR — it records *content* decisions under the frozen mechanism, per Authority Order §7).
-**Date:** 2026-07-02 · **Home:** `productSpec/` · **Companions:** `CATEGORY_TAXONOMY_REVIEW.md` ·
+**Date:** 2026-07-02 · **Home:** `docs/product/requirements/` · **Companions:** `CATEGORY_TAXONOMY_REVIEW.md` ·
 `CATEGORY_MIGRATION_PLAN.md` · `CATEGORY_GOVERNANCE_MODEL.md` · `CATEGORY_ATTRIBUTE_FRAMEWORK.md`.
 
 **Purpose.** Six months from now, someone will propose "just add an SS Valves category" or "split

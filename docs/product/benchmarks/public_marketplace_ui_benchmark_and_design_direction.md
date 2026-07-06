@@ -87,7 +87,7 @@ rulings.
 |---|---|
 | Public shell (header/footer, anonymous) | `app/(public)/_components/site-header.tsx`, `site-footer.tsx` (Doc-7C) |
 | Mega menu architecture | `MEGA_MENU_ARCHITECTURE.md` / `_COMPONENT_SPEC.md` / `_DATA_MODEL.md` / `_UX_FLOW.md` / `_IMPLEMENTATION_PLAN.md` — **canonical, not redesigned here** |
-| Category taxonomy | `productSpec/CATEGORY_TAXONOMY_REVIEW.md` — 794 nodes, 13 roots, ≤4 levels (frozen `level CHECK`) |
+| Category taxonomy | `docs/product/requirements/CATEGORY_TAXONOMY_REVIEW.md` — 794 nodes, 13 roots, ≤4 levels (frozen `level CHECK`) |
 | Vendor microsite IA | `vendor_planning_and_design.md` + ADR-022 (multi-page revision) + Doc-7D §10 |
 | Public product detail contract | `Doc-4D_PublicProductDetail_Patch_v1.0.3` / `Doc-5D_PublicProductDetail_Patch_v1.0.1` / `ADR-025` (canonical URL law) |
 | Page inventory | `page_inventory.md` §5 (P-PUB-*) |

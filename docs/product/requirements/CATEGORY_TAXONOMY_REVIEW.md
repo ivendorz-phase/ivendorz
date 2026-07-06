@@ -6,7 +6,7 @@
 
 **Status:** DRAFT v1.0 — NON-authoritative product companion, submitted for owner/Board adjudication
 under CLAUDE.md §13 (Raise ≠ Accept — this review *raises*; the Board *rules*).
-**Date:** 2026-07-02 · **Home:** `productSpec/` · **Proposes:** **Taxonomy Content v1.0** under
+**Date:** 2026-07-02 · **Home:** `docs/product/requirements/` · **Proposes:** **Taxonomy Content v1.0** under
 Classification Schema v1.0.
 **Companions:** `CATEGORY_MIGRATION_PLAN.md` (implementation + full old→new mapping) ·
 `CATEGORY_GOVERNANCE_MODEL.md` (evolution rules) · `CATEGORY_ATTRIBUTE_FRAMEWORK.md` (attributes) ·

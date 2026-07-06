@@ -5,10 +5,10 @@
 > frozen architecture corpus prevails.** (C1)
 
 **Status:** DRAFT v1.0 — NON-authoritative product companion. **Classification Schema v1.0.**
-**Date:** 2026-07-01 · **Home:** `productSpec/` · **Governance source:** `governanceReviews/
+**Date:** 2026-07-01 · **Home:** `docs/product/requirements/` · **Governance source:** `governanceReviews/
 CLASSIFICATION-DECISION-RECONCILIATION_v1.0.md` + `ADR-023` (proposal).
 
-**Purpose.** The single source of business terminology for every `productSpec/` document. Other product
+**Purpose.** The single source of business terminology for every product-requirements document (`docs/product/requirements/`, former `productSpec/`). Other product
 specs **reference terms defined here; none redefine them** (anti-drift, CTO Concern 2). Each term is
 tagged **EXISTS** (already in the frozen corpus — anchor cited), **MAPS** (presentation over a frozen
 primitive), or **NET-NEW** (proposed additively — routed to a governance track/esc; not yet real).

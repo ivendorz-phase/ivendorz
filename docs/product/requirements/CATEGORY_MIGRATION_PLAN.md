@@ -6,7 +6,7 @@
 
 **Status:** DRAFT v1.0 — NON-authoritative product companion; execution gated on Board approval of
 `CATEGORY_TAXONOMY_REVIEW.md` (Taxonomy Content v1.0).
-**Date:** 2026-07-02 · **Home:** `productSpec/` · **Companions:** `CATEGORY_TAXONOMY_REVIEW.md` ·
+**Date:** 2026-07-02 · **Home:** `docs/product/requirements/` · **Companions:** `CATEGORY_TAXONOMY_REVIEW.md` ·
 `CATEGORY_GOVERNANCE_MODEL.md` · `CATEGORY_ATTRIBUTE_FRAMEWORK.md` · `CATEGORY_TAXONOMY_DECISION_RECORD.md`.
 
 **Scope reality check.** There is **no live category data to migrate**. The frozen mechanism exists

@@ -2,7 +2,7 @@
 
 | | |
 | --- | --- |
-| **Document** | `productSpec/COMPARE_SHEET_UX_FREEZE_v0.1.md` |
+| **Document** | `docs/product/requirements/COMPARE_SHEET_UX_FREEZE_v0.1.md` |
 | **Version / status** | v0.1 **DRAFT — owner sign-off required before WP-2 implements anything** (owner ruling 2026-07-06: "This is a product governance decision… Freeze these first. Only then implement.") |
 | **Scope** | The buyer Compare Sheet surface (`/rfqs/[rfqId]/compare`, P-BUY-15) — presentation/UX decisions ONLY. Nothing here touches the frozen `get_comparison_statement` contract, the RFQ machine, or module ownership. |
 | **Frozen constraints this freeze operates UNDER (by pointer)** | Comparison statement is System-generated, read-only decision support; **never re-ranked, never recommends** (R6 / GI-04 / Doc-3 §9.1). First open drives `quotations_received → buyer_reviewing` server-side (Doc-4E §E8.6). Sealed-until-close redaction is server POLICY (Doc-3 §10.1). Export/signatures are **not frozen capabilities** (`rfq-workflow.md` §7/§9). |
