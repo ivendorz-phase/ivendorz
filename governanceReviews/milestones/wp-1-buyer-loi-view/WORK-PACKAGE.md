@@ -6,9 +6,12 @@
 
 - **Lane:** G (contract-grounded document family · R8 money-boundary copy · Inv #11 non-disclosure
   collapse — full Dev → Review-A → Review-B per the journey doc's own "normal Dev→A→B→Board lane")
-- **Reviewed-SHA record:** 🔵A submitted 2026-07-06 at checkpoint `c382d44` (stable target — the
-  commit, not the concurrently-dirty working tree; parallel FE-RFQ-WF commit `2371675` verified
-  disjoint by file list)
+- **Reviewed-SHA record:** 🔵A round 1 2026-07-06 at `c382d44` (REVISION, 10 findings, all
+  dispositioned — see the round-1 table below) · 🔵A round 2 submitted 2026-07-06 at fix
+  checkpoint `6fd1a71` (stable target; concurrent-tree discipline unchanged) · **🔵A round 2:
+  TWO independent concurrent reviews at `6fd1a71` returned CONFLICTING verdicts (PASS vs
+  REVISION) — reconciled on verified facts to REVISION; see "Round-2 reconciliation" below** ·
+  🔵A round 3 submitted 2026-07-06 at fix checkpoint (SHA in the round-3 line below)
 - **In scope (the delta, concretely):**
   1. New route `app/(app)/(buyer)/engagements/[engagementId]/loi/` — `page.tsx` (server page +
      presentation mock keyed on opaque engagement id, `notFound()` collapse), `loi-view.tsx`
@@ -109,6 +112,71 @@ Validate-Findings gate; all ten ACCEPTED (valid + applicable + best + consistent
 
 Re-entry: fixes committed as a second checkpoint; resubmitted to **Review-A round 2** (fresh
 context) per Amendment v1.3 §13.
+
+## Review-A round 2 — verdict **PASS** (2026-07-06, at `6fd1a71`, fresh context · Team-4)
+
+- **All 10 round-1 dispositions verified LANDED** in the committed diff (`2371675..6fd1a71`):
+  five→six comment sweeps (hub view-models/view, detail view-models), file-card fourth-composer
+  enumeration, card corrections (in-scope item 4, 151-universe, inventory row 202), loi-view
+  "mock this milestone; GI-02 PARKED" header, view-model "plus two grounded context fields"
+  precision, vendor-track exception verified **comment-only** in the diff (one reworded comment,
+  zero code), promotion-watchlist `EngagementDocumentDetail` entry present.
+- **Frozen anchors independently re-verified** (fresh context, corpus text not comments):
+  `Doc-4F_PassB_Part2_BC-OPS-2_FROZEN.md` §F5.8 Response Schema projects exactly
+  `document : { document_id, doc_kind, human_ref, version_no, is_active_revision, storage_ref }`
+  + `reference_id` — the view-model carries ONLY these plus the two grounded context fields
+  (`engagementId` route param; `engagementRef` from `get_engagement`'s projected `human_ref`);
+  §F5.4 authorization matrix — `can_create_documents` (issue/revise) with `can_approve_po`
+  "distinct slug; **never collapsed** into `can_create_documents`", PO financial approval only →
+  the LOI view's no-approval divergence is exactly the frozen posture; V4 (scope) `NOT_FOUND |
+  collapse-rule` + "Timing-Uniformity: not-party / not-exist identical" honored by the single
+  mock-lookup → `notFound()` path; §12 notes "LOI/PO issuance/revision emit **no** event" — no
+  event affordance rendered, correct.
+- **Scope**: zero creep vs the card; no LifecycleStrip/stage change (LOI row carries NO
+  `stageKey` — WCC-parity drop-out preserved); no new primitive; no approval affordance; R8
+  record-only callout present; Inv #8 stamps rendered (`versionNo` + `isActiveRevision`; the
+  `eng_02` fixture models the revised path, v2 active). Mock keyed on engagement id is disclosed
+  in-file and mirrors the closed PO-view posture (`ESC-7G-ENG-03` single-doc reach, correctly
+  left ungrounded).
+- **Absence boundary**: unknown/non-party byte-identical within the route by construction (one
+  lookup, one `notFound()`); pattern-parity with the PO sibling's `not-found.tsx` verified (same
+  layout, same sr-only-heading device, kind-specific copy only). Hub label "LOI" matches the
+  established WCC-abbreviation convention and the hub's own pre-existing Document Type facet
+  vocabulary — no finding.
+- **Gates re-run at `6fd1a71`**: `tsc --noEmit` clean · `eslint .` clean ·
+  `verify-fe-wbs-coverage.mjs` **PASS 151/151, 35 milestones** · prettier clean on ALL WP-1
+  files (the repo-wide `prettier --check` RED persists on 6 files OUTSIDE this WP — attributed
+  in review-log RV-0139 finding m9; not WP-1's).
+- **Findings: NONE (0 BLOCKER · 0 MAJOR · 0 MINOR · 0 NIT).** §13 gate B/M/M = 0 **MET** →
+  **PASS — hand-off to Team-5 (Review-B)**. Raise ≠ Accept honored: round-1 dispositions were
+  the author's; this round verifies and raises nothing new.
+
+> **⚠ SUPERSEDED BY THE RECONCILIATION BELOW** — this PASS record was written by a concurrent
+> live session; a second, independently-dispatched fresh-context Review-A round 2 on the SAME
+> SHA returned REVISION with 3 verifiable findings this record's sweep missed. Record preserved
+> unedited (nothing-overwritten); it does not gate.
+
+## Round-2 reconciliation — two concurrent reviews, one verdict (2026-07-06)
+
+Two independent Review-A round-2 examinations of `6fd1a71` ran concurrently (the RV-0125
+live-concurrent-session pattern): the section above (PASS, 0 findings, recorded by a parallel
+live session, cites RV-0139) and this WP's dispatched fresh-context reviewer (**REVISION — 0
+BLOCKER · 0 MAJOR · 3 MINOR**, plus a 10/10 round-1 fix audit that itself caught one fix-introduced
+defect). Per §13, findings are adjudicated on facts, and all three were **verified true in-file
+by the author before actioning**:
+
+| # | Sev | Finding | Fact-check | Disposition |
+|---|---|---|---|---|
+| N1 | MINOR | vendor `documents-hub-view.tsx:23` still said "five fixed per-kind routes" — internally contradicting the corrected "six" at :64 of the same file | CONFIRMED (read in-file) | FIXED — five→six, same scoped comment-only vendor exception as round-1 finding 2 |
+| N2 | MINOR | vendor `documents-hub-view-models.ts:10` same stale "five" claim | CONFIRMED (read in-file) | FIXED — five→six, same exception |
+| N3 | MINOR | the new watchlist row listed "money `Callout`" in the SHARED shape; challan/WCC views have no Callout and explicitly disclaim any money surface — as written the row could steer a future extraction into rendering a DF-6 money notice on non-financial documents | CONFIRMED (challan-view:19 / wcc-view:19 read in-file) | FIXED — money `Callout` moved to the PER-KIND slots alongside the PO approval section, governance note added to the row |
+
+**Effective round-2 verdict: REVISION** — verified-true findings gate regardless of a concurrent
+clean pass (§13: an independent review may override; the gate needs B/M/M = 0 on validated
+findings, and three validated MINORs existed at `6fd1a71`). No fault attaches to either reviewer:
+both records were honestly produced; the conflict is the expected cost of live concurrent
+sessions and is resolved transparently here, RV-0126 style. Re-entering **Review-A round 3** at
+the fix checkpoint per Amendment v1.3 §13.
 
 ## Concurrent-tree disclosure
 

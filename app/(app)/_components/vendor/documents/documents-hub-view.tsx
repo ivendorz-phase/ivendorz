@@ -20,7 +20,7 @@
 // GOVERNANCE (mirrors WP fe-doc-01, applies identically to this vendor leg):
 //  • LifecycleStrip = NAVIGATION, NOT STATE (MAJOR-01) — no per-engagement stage/progress cue.
 //  • §2 rows are PLAIN NAVIGATION to the ONE real engagement detail page (unlike the buyer leg's
-//    five fixed per-kind routes — the vendor `EngagementDocuments` doc-kind tabs are
+//    six fixed per-kind routes — the vendor `EngagementDocuments` doc-kind tabs are
 //    enumeration-build-blocked, `ESC-7G-ENG-03`, and live inside that one page) — no existence
 //    claims, no fabricated per-kind routes.
 //  • No counts/KPI tiles (client-computed counts violate R7).
