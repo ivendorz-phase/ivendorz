@@ -113,8 +113,17 @@ comment/claim-truthfulness class, all accepted, 0 false positives) incl. ONE liv
 concurrent-review conflict at round 2 — two independent reviews of the same SHA returned PASS vs
 REVISION; reconciled on fact-checked findings to REVISION, both records preserved (RV-0125/0126
 transparency style). Checkpoints `c382d44` → `6fd1a71` → `1ce722a`. WP card
-`governanceReviews/milestones/wp-1-buyer-loi-view/WORK-PACKAGE.md`. Next Team-2 pull: WP-2 stays
-🅿 (compare-sheet UX freeze awaits owner D2–D7 sign-off, `docs/product/requirements/COMPARE_SHEET_UX_FREEZE_v0.1.md`).
+`governanceReviews/milestones/wp-1-buyer-loi-view/WORK-PACKAGE.md`. Next Team-2 pull: **WP-2
+Comparative Statement — 🅿 lifted → 🟡 In Progress 2026-07-06** (compare-sheet freeze SIGNED:
+`docs/product/requirements/COMPARE_SHEET_UX_FREEZE_v0.1.md` header **v1.0 FROZEN (product)** —
+owner redefinition ruling: interactive **Compare Workspace** + **Comparative Statement (CS)** A4
+procurement document; plan adjudicated 3 MAJOR/2 MINOR/2 NIT all adopted; **Visual Approval
+passed** [NIT-2 gate — A4 landscape previews, small print margins, content-driven pagination].
+Build = presentation-only under WP-1 rules: CS print view over mock data at the temporary
+`/rfqs/[rfqId]/comparative-statement` route [MAJOR-1], "Draft Reference" no `CS-` coin [MAJOR-2],
+"Buyer Evaluation Summary" naming [MAJOR-3], buyer-authored evaluatives only [R6], browser
+print-to-PDF real / Excel gated stub. Five `ESC-CS-*` handles registered — Board packet
+`governanceReviews/BOARD-PACKET-CS-DOCUMENT_v1.0.md`, agenda #17; none block the build).
 
 **Team-3 (Vendor):**
 ~~FE-VEN-05~~ ✅ **Closed** (RV-0101 @ `e2f8642`) · ~~FE-VEN-06~~ ✅ **Closed** (RV-0103 @
@@ -350,6 +359,15 @@ already updated in the same change.
     same ownership class as agenda #11; fix is a Suspense wrapper or `useSearchParams` removal in
     the two nav components; needs the shell owner, not a Board ruling on substance (listed for
     visibility + ownership assignment).
+
+17. **Comparative Statement (CS) document packet**
+    (`governanceReviews/BOARD-PACKET-CS-DOCUMENT_v1.0.md`, 2026-07-06): rule on the five
+    `ESC-CS-*` handles opened by the owner's CS redefinition — **R1 `ESC-CS-DOCKIND`** (CS as a
+    persisted pre-award document entity + canonical route + M3/M4 ownership — the keystone) ·
+    **R2 `ESC-CS-REF`** (official `CS-` series, Doc-4A prefix patch; "Draft Reference" interim) ·
+    **R3 `ESC-CS-EXPORT`** (platform PDF/Excel generation; browser print interim) ·
+    **R4 `ESC-CS-LINEITEMS`** (dev-doc jsonb schema track — lighter channel) ·
+    **R5 `ESC-CS-LETTERHEAD`** (buyer branding asset). None blocks the WP-2 presentation build.
 
 ## Review pipeline (pointer)
 

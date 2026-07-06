@@ -171,6 +171,25 @@ until individually ratified.**
 | **`ESC-BUY-SAVED-VENDORS`** | No **vendor-saving** read/concept — explicitly distinct from P-BUY-05 Favorites (product/category only, owner ruling FE-BUY-10) and from the buyer-private CRM (Inv #11, a different concept) | `/saved-vendors` reserved via `ImplementationPendingView`; neither existing surface repurposed under a mismatched label | Product decision → additive Doc-5D/5F patch (human Board) |
 | **`ESC-BUY-SPEC-LIB`** | No **buyer-facing specification library** concept — a spec library exists only vendor-side (`/workspace/company/spec-library`, P-VND-09); a buyer sourcing-reference library is absent everywhere in the corpus | `/spec-library` reserved via `ImplementationPendingView`; the vendor page is never repurposed across the workspace boundary | Product decision → module-ownership ruling + additive patch (human Board) |
 
+### Comparative Statement (CS) Document (owner redefinition, 2026-07-06)
+
+Source: owner ruling 2026-07-06 splitting the buyer comparison surface into the interactive
+**Compare Workspace** (frozen-backed) and the **Comparative Statement (CS)** official procurement
+document — canonical standard frozen at `docs/product/requirements/COMPARE_SHEET_UX_FREEZE_v0.1.md`
+(header v1.0). Packet: [`BOARD-PACKET-CS-DOCUMENT_v1.0.md`](governanceReviews/BOARD-PACKET-CS-DOCUMENT_v1.0.md);
+sign-off record: `governanceReviews/COMPARE-SHEET-CS-REDEFINITION_v1.0.md`. Every gap below is
+corpus-verified absent. **Binding while open:** all evaluative CS content is buyer-authored (R6 is
+platform-scoped — Doc-3 §9.1 FIXED); the system computes arithmetic only. Presentation-only build
+proceeds under WP-1 rules; nothing here blocks it.
+
+| Handle | Scope / gap | Interim presentation | Channel |
+|---|---|---|---|
+| **`ESC-CS-DOCKIND`** | CS as a persisted **pre-award document entity** + canonical route + M3/M4 ownership — no pre-award document kind exists (frozen set = `loi\|po\|challan\|wcc`; "Evaluation record" class explicitly NOT modeled, `rfq-workflow.md` §7). *"The Comparative Statement is a generated procurement document derived from the buyer's Workspace selection. It is not an independent business entity until the Board approves ESC-CS-DOCKIND."* | CS = ephemeral print view over the Workspace selection at the **temporary** route `/rfqs/[rfqId]/comparative-statement` (mock-era only; migrates on approval) | Human Architecture Board — packet R1 |
+| **`ESC-CS-REF`** | Official `CS-` human-ref series — prefix registry is fixed (ORG/RFQ/QTN/INV/DOC); "a new prefix requires a Doc-4A patch… never invented here" (Doc-4B) | **"Draft Reference"** derived from the RFQ ref, marked *pending governance*; zero `CS-` strings anywhere; temporary mock-era label only, auto-transitions on approval | Additive Doc-4A prefix patch (Board) — packet R2 |
+| **`ESC-CS-EXPORT`** | Platform PDF/Excel export generation — explicitly NOT modeled (`rfq-workflow.md` §7; ESC-OPS-DOC-* class); frozen doc-gen is M4 engagement docs over the fixed five-format enum only | Browser print / print-to-PDF (user-agent, allowed now); Excel affordance = honest gated stub | Board intake — packet R3 |
+| **`ESC-CS-LINEITEMS`** | Structured line items (desc/spec/unit/qty/per-vendor unit price; brand/origin optional) — RFQ `content_jsonb` + quotation `price_breakdown_jsonb` are opaque; their **internal schemas are dev-doc scope** (Doc-4E PassB-Part4), so this is a dev-doc ratification, not a corpus patch | CS renders mock line items; real data waits on the ratified schema | Dev-doc schema ratification — packet R4 |
+| **`ESC-CS-LETTERHEAD`** | Buyer letterhead/branding asset — buyer profile has no branding fields (branding is vendor-only); "letterhead" exists only as an M4 org-scoped template format | Mock letterhead in the CS render | Board intake (M1/M2 patch or M4 template reuse) — packet R5 |
+
 ### Known non-ESC gaps (recorded, not escalations)
 - **Industry taxonomy** — now tracked as **`ESC-CLASS-INDUSTRY`** above (was: "not modeled"); the
   `Doc-2_IndustryTaxonomy` patch proposal recommends an M2-owned model for Board ratification.

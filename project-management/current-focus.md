@@ -15,10 +15,15 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
 1. **WP-1 APPROVED — finish Team-2 buyer implementation** under the frozen-journey rules: approved
    pages only · mock adapters · no backend logic · no reserved/blocked routes · no new workflow
    states · the frozen journey exactly.
-2. **WP-2 (Quotation Compare) is HELD** until the Compare UX product freeze is signed:
+2. **WP-2 (Quotation Compare) is UN-GATED — the freeze is SIGNED** (owner, 2026-07-06):
    [`COMPARE_SHEET_UX_FREEZE_v0.1.md`](../docs/product/requirements/COMPARE_SHEET_UX_FREEZE_v0.1.md)
-   — D1 already RULED (side-by-side min 2 / max 5); D2–D7 drafted, awaiting owner sign-off. Teams
-   do NOT decide these during implementation.
+   is **v1.0 FROZEN (product)** under the owner's redefinition ruling — the surface split into the
+   interactive **Compare Workspace** (W-1…W-6; buyer sort allowed per Doc-3 §9.1) and the
+   **Comparative Statement (CS)** official A4 procurement document (canonical standard §3; Visual
+   Approval passed). Binding: all evaluative CS content buyer-authored (R6); "Draft Reference"
+   until `ESC-CS-REF`; temporary route until `ESC-CS-DOCKIND`; Excel export = gated stub
+   (`ESC-CS-EXPORT`). Five `ESC-CS-*` handles registered (Board packet
+   `governanceReviews/BOARD-PACKET-CS-DOCUMENT_v1.0.md` — nothing blocks the presentation build).
 3. **Implementation order:** Buyer → Vendor → RFQ spine → Admin, from the approved journeys.
    Single execution map: [`fe-navigation-screen-matrix.md`](fe-navigation-screen-matrix.md)
    (owner-requested deliverable, produced 2026-07-06). Admin dev ownership: UNASSIGNED — Board to
@@ -98,10 +103,11 @@ done; page-loop terminus RV-0100). Teams pull milestones from the execution boar
   breakage** (shell `useSearchParams()` without Suspense — sidebar.tsx:154 / mobile-nav.tsx:146),
   escalated as **Board agenda #16** (blocks the RV-0126 isolated-prod-build lane for every
   milestone; shell owner needed). Checkpoints `c382d44` → `6fd1a71` → `1ce722a`; WP card
-  `governanceReviews/milestones/wp-1-buyer-loi-view/WORK-PACKAGE.md`. **Next pull:** WP-2
-  compare picker stays 🅿 (awaits owner D2–D7 sign-off on
-  `docs/product/requirements/COMPARE_SHEET_UX_FREEZE_v0.1.md`); otherwise awaiting the next owner-approved
-  buyer deliverable.
+  `governanceReviews/milestones/wp-1-buyer-loi-view/WORK-PACKAGE.md`. **Next pull:** **WP-2
+  Comparative Statement — IN BUILD** (freeze signed v1.0 2026-07-06 + Visual Approval passed;
+  presentation-only under WP-1 rules: CS document at the temporary
+  `/rfqs/[rfqId]/comparative-statement` route + Workspace entry points; WP card
+  `governanceReviews/milestones/wp-2-comparative-statement/WORK-PACKAGE.md`).
 - **Prior Milestone:** `FE-BUY-10` Discovery & Favorites — ✅ **APPROVED** (RV-0117, A:PASS ∧
   B:PASS, 0 BLOCKER/MAJOR/MINOR both lanes, checkpoint `6306de4`; **Review Team 5 marked approved in
   `execution-board.md` 2026-07-03** — owning Team-2 to commit [checkpoints/trackers; close record
