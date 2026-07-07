@@ -2,8 +2,10 @@
 
 // P-BUY-RFQ Phase 8 — submit action + FLOATING preview. PRESENTATION-ONLY: clicking "Submit RFQ" does
 // not submit anything (the audit-backed `submit_rfq` write is Wave-4/PARKED, see rfq-create-view.tsx);
-// it instead opens the Review content as a floating dialog with "Edit" (dismiss, back to the form) and
-// "Confirm" (local-only acknowledgement — no write occurs). Reuses the kit `Dialog` primitive.
+// it instead opens a FULL-SCREEN document preview (owner directive 2026-07-07 — same document
+// convention as the vendor's quotation preview, but BUYER content only, no vendor features) with
+// "Edit" (dismiss, back to the form) and "Confirm" (local-only acknowledgement — no write occurs).
+// Reuses the kit `Dialog` primitive; the document itself is `RfqPreviewDocument`.
 
 import * as React from "react";
 import { CheckCircle2, Info, Plus, Save } from "lucide-react";
@@ -16,7 +18,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/frontend/primitives/dialog";
-import { ReviewSection } from "./rfq-sections";
+import { RfqPreviewDocument } from "./rfq-preview-document";
 import type { RfqDraftForm } from "./rfq-form-models";
 
 export function SubmitPreview({ form, submitting }: { form: RfqDraftForm; submitting?: boolean }) {
@@ -51,8 +53,8 @@ export function SubmitPreview({ form, submitting }: { form: RfqDraftForm; submit
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-xl">
-          {confirmed ? (
+        {confirmed ? (
+          <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-xl">
             <div className="flex flex-col items-center gap-3 py-6 text-center">
               <CheckCircle2 aria-hidden className="size-10 text-iv-success-base" />
               <DialogTitle>Request confirmed</DialogTitle>
@@ -64,26 +66,36 @@ export function SubmitPreview({ form, submitting }: { form: RfqDraftForm; submit
                 Close
               </Button>
             </div>
-          ) : (
-            <>
-              <DialogHeader>
-                <DialogTitle>Review before submitting</DialogTitle>
-                <DialogDescription>
-                  Check every section below. You can still edit anything before confirming.
-                </DialogDescription>
-              </DialogHeader>
-              <ReviewSection form={form} />
-              <DialogFooter>
-                <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+          </DialogContent>
+        ) : (
+          <DialogContent className="flex h-[92dvh] w-[96vw] max-w-5xl flex-col gap-0 overflow-hidden p-0">
+            <DialogHeader className="border-b border-border px-6 py-4">
+              <DialogTitle>RFQ preview</DialogTitle>
+              <DialogDescription>
+                Read-only — your RFQ as vendors will receive it. You can still edit anything before
+                confirming.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex-1 overflow-y-auto bg-slate-100 px-4 py-6 sm:px-6">
+              <RfqPreviewDocument form={form} />
+            </div>
+
+            <DialogFooter className="items-center gap-3 border-t border-border px-6 py-4 sm:justify-between">
+              <p className="text-xs text-muted-foreground">
+                Submission connects to the routing engine in the integration phase.
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                   Edit
                 </Button>
                 <Button type="button" onClick={() => setConfirmed(true)}>
                   Confirm
                 </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        )}
       </Dialog>
     </>
   );

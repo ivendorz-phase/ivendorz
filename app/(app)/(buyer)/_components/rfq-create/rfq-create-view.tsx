@@ -69,8 +69,9 @@ export function RfqCreateView({ data }: { data: RfqCreateData }) {
 
   return (
     <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6">
+      {/* Owner directive 2026-07-07: crumb points back to the Buyer Dashboard (was "RFQs"). */}
       <Breadcrumbs
-        items={[{ label: "RFQs", href: "/rfqs" }, { label: "New RFQ" }]}
+        items={[{ label: "Dashboard", href: "/dashboard" }, { label: "New RFQ" }]}
         className="mb-4"
       />
 

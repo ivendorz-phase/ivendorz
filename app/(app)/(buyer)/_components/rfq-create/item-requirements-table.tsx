@@ -1,17 +1,19 @@
 "use client";
 
 // P-BUY-RFQ — Item Requirements List (Request type section). PRESENTATION-ONLY: an inline, repeatable
-// item grid (Sl. No. / Item Name / Size / Qty / Unit / Action) plus a "Paste from Excel" helper that
-// parses tab/comma/semicolon-delimited clipboard text into rows (4 columns: Item Name, Size, Qty, Unit;
-// or 3 columns: Item Name, Qty, Unit) with unit-name normalization against `UNIT_OPTIONS`, and an
-// Append/Replace choice. Rows are LOCAL UI state only — no fetch, no mutation; a client form surface
-// wires these into the dev-doc capture (`content_jsonb`, alongside the existing single item/quantity/unit
-// fields) at integration (Wave 4). Reuses the buyer `Select`/`Textarea` controls; native text/number
-// inputs otherwise (no kit table primitive exists yet).
+// item grid (Sl. No. / Item Name / Size / Qty / Unit / Description / Action) plus a "Paste from Excel"
+// helper that parses tab/comma/semicolon-delimited clipboard text into rows (5 columns: Item Name,
+// Size, Qty, Unit, Description — owner directive 2026-07-07; 4- and 3-column pastes still accepted)
+// with unit-name normalization against `UNIT_OPTIONS`, and an Append/Replace choice. Rows are LOCAL UI
+// state only — no fetch, no mutation; a client form surface wires these into the dev-doc capture
+// (`content_jsonb`, alongside the existing single item/quantity/unit fields) at integration (Wave 4).
+// Reuses the buyer `Select`/`Textarea` controls; native text/number inputs otherwise (no kit table
+// primitive exists yet). Pasted Description text is HTML-escaped before it seeds the rich editor.
 
 import * as React from "react";
 import { ClipboardPaste, Plus, Trash2, AlertCircle } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
+import { RichNoteEditor, RichNoteToolbar } from "@/frontend/components/rich-note-editor";
 import { Select, Textarea } from "../form-controls";
 import { UNIT_OPTIONS } from "./rfq-options";
 import type { RfqItemRow } from "./rfq-form-models";
@@ -26,7 +28,7 @@ function nextRowId() {
 }
 
 function blankRow(): RfqItemRow {
-  return { id: nextRowId(), itemName: "", size: "", quantity: "", unit: "" };
+  return { id: nextRowId(), itemName: "", size: "", quantity: "", unit: "", description: "" };
 }
 
 /** Normalize a pasted unit token against `UNIT_OPTIONS` (value or label match, case-insensitive), falling
@@ -76,8 +78,13 @@ function splitCells(line: string): string[] {
   return [line];
 }
 
-/** Parse pasted tabular text into rows. 4+ columns = Item Name/Size/Qty/Unit; 3 columns =
- *  Item Name/Qty/Unit (no Size). Returns [] when nothing parseable. */
+/** Escape pasted plain text before it seeds the rich Description editor (innerHTML sink). */
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/** Parse pasted tabular text into rows. 5+ columns = Item Name/Size/Qty/Unit/Description; 4 columns =
+ *  Item Name/Size/Qty/Unit; 3 columns = Item Name/Qty/Unit (no Size). Returns [] when nothing parseable. */
 function parsePastedRows(text: string): RfqItemRow[] {
   const lines = text
     .split(/\r\n|\r|\n/)
@@ -91,8 +98,11 @@ function parsePastedRows(text: string): RfqItemRow[] {
     let size = "";
     let quantity = "";
     let unitRaw = "";
+    let description = "";
 
-    if (cells.length >= 4) {
+    if (cells.length >= 5) {
+      [itemName, size, quantity, unitRaw, description] = cells;
+    } else if (cells.length === 4) {
       [itemName, size, quantity, unitRaw] = cells;
     } else if (cells.length === 3) {
       [itemName, quantity, unitRaw] = cells;
@@ -107,6 +117,7 @@ function parsePastedRows(text: string): RfqItemRow[] {
       size: size ?? "",
       quantity: (quantity ?? "").replace(/[^0-9.]/g, ""),
       unit: normalizeUnit(unitRaw ?? ""),
+      description: escapeHtml(description ?? ""),
     });
   }
   return parsed;
@@ -140,7 +151,7 @@ export function ItemRequirementsTable({ rows: initialRows }: { rows?: RfqItemRow
     const parsed = parsePastedRows(pasteValue);
     if (parsed.length === 0) {
       setPasteError(
-        "Could not parse columns. Copy 4 columns (Item Name, Size, Qty, Unit) or 3 columns (Item Name, Qty, Unit) from Excel.",
+        "Could not parse columns. Copy 5 columns (Item Name, Size, Qty, Unit, Description), 4 columns (without Description) or 3 columns (Item Name, Qty, Unit) from Excel.",
       );
       return;
     }
@@ -174,14 +185,15 @@ export function ItemRequirementsTable({ rows: initialRows }: { rows?: RfqItemRow
       {pasteOpen ? (
         <div className="mt-2 rounded-md border border-dashed border-border bg-secondary/40 p-3">
           <p className="text-xs text-muted-foreground">
-            Paste a 4-column table copied from Excel/Sheets — Item Name, Size, Qty, Unit — or 3
-            columns (Item Name, Qty, Unit). Columns are matched by tabs, commas, or semicolons.
+            Paste a 5-column table copied from Excel/Sheets — Item Name, Size, Qty, Unit,
+            Description — or 4 columns (without Description) or 3 (Item Name, Qty, Unit). Columns
+            are matched by tabs, commas, or semicolons.
           </p>
           <Textarea
             rows={4}
             value={pasteValue}
             onChange={(e) => setPasteValue(e.target.value)}
-            placeholder={"MS plate 12mm\t2000x1000mm\t50\tpcs"}
+            placeholder={"MS plate 12mm\t2000x1000mm\t50\tpcs\tMill-certified, no rust pitting"}
             className="mt-2 font-mono text-xs"
           />
           {pasteError ? (
@@ -226,8 +238,13 @@ export function ItemRequirementsTable({ rows: initialRows }: { rows?: RfqItemRow
         </div>
       ) : null}
 
+      {/* Rich Description formatting (kit RichNoteEditor) — applies to the focused Description cell. */}
+      <div className="mt-3">
+        <RichNoteToolbar hint="Select text in a Description cell, then apply. Enter adds a new line." />
+      </div>
+
       <div className="mt-3 max-h-[350px] overflow-y-auto overflow-x-auto rounded-md border border-border">
-        <table className="w-full min-w-[560px] border-collapse text-sm">
+        <table className="w-full min-w-[720px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-border bg-secondary/40 text-left text-xs font-semibold text-muted-foreground">
               <th className="w-12 px-2 py-2">Sl. No.</th>
@@ -239,6 +256,7 @@ export function ItemRequirementsTable({ rows: initialRows }: { rows?: RfqItemRow
                 Qty<span className="ml-0.5 text-destructive">*</span>
               </th>
               <th className="w-36 px-2 py-2">Unit</th>
+              <th className="px-2 py-2">Description</th>
               <th className="w-16 px-2 py-2">Action</th>
             </tr>
           </thead>
@@ -284,6 +302,14 @@ export function ItemRequirementsTable({ rows: initialRows }: { rows?: RfqItemRow
                     placeholder="Unit"
                     value={row.unit}
                     onChange={(e) => updateRow(row.id, { unit: e.target.value })}
+                  />
+                </td>
+                <td className="px-2 py-1.5 align-top">
+                  <RichNoteEditor
+                    key={row.id}
+                    initialHtml={row.description ?? ""}
+                    onChange={(html) => updateRow(row.id, { description: html })}
+                    ariaLabel={`Description (row ${i + 1})`}
                   />
                 </td>
                 <td className="px-2 py-1.5 text-center">
