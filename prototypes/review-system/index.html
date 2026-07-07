@@ -1,0 +1,2769 @@
+<!doctype html>
+<!--
+  iVendorz — Review System · HIGH-FIDELITY CLICKABLE PROTOTYPE (NON-PRODUCTION)
+  ============================================================================
+  Purpose  : Stakeholder Visual Approval BEFORE any production code (mockup-first
+             gate — the CS / Single-Product-Page precedent). Validates IA, visual
+             hierarchy, state coverage, responsive behaviour, and lane separation
+             for all FIVE review surfaces.
+  Realizes : docs/product/requirements/review_system_planning_and_design.md
+             Surfaces 1–5 — bound BY POINTER, coining nothing.
+  Lanes    : PUB (public reviews · M5 BC-TRUST-5) · ADM (admin ratings · M5,
+             staff-only) · CRM (private vendor ratings · M4 BC-OPS-1). Kept
+             visually and structurally separated (never merged — Doc-4G §H.9a).
+  Contracts: submit_review · moderate_review · publish_review · remove_review ·
+             get_review · list_reviews · set_admin_rating · list_admin_ratings
+             (trust.*) + ops.set_private_vendor_rating.v1. Bound, never re-coined.
+  Tokens   : app/globals.css — copied VERBATIM (light theme = primary, DP §3.1).
+  Data     : 100% MOCK. No backend, no API, no Prisma, no persistence, no state
+             machine, no moderation workflow, no permissions, no audit. Mock
+             adapters / static data only (Phase-P guardrails). Buttons fire a
+             toast explaining the concept; nothing transitions or persists.
+  Status   : Non-authoritative, quarantined (prototypes/ registry, RS v1.1 P-4).
+             Coins no route, contract, token, page ID, score, or workflow state.
+             On any conflict the frozen corpus wins (CLAUDE.md §7, §11).
+  NEVER shown (governance): average rating · review count-as-score ·
+             recommendation % · star average · ANY derived review statistic
+             (DP-R1 derived-statistics freeze). Only individual published
+             reviews render. No vendor replies. No new workflow states.
+  Self-contained: zero external requests (no CDN fonts/icons) — renders
+             identically from file:// and under a strict CSP.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>iVendorz · Review System — Hi-Fi Prototype</title>
+    <style>
+      /* =====================================================================
+         01. DESIGN TOKENS — copied verbatim from app/globals.css (--iv-)
+             Light theme is the PRIMARY experience (DP §3.1; Doc-7B §3.4).
+         ===================================================================== */
+      :root {
+        /* Brand — Electric Indigo (INTERACTIVE only: links, focus, selected nav) */
+        --iv-brand-50: #eef2ff;
+        --iv-brand-100: #e0e7ff;
+        --iv-brand-200: #c7d2fe;
+        --iv-brand-300: #a5b4fc;
+        --iv-brand-400: #818cf8;
+        --iv-brand-500: #6366f1;
+        --iv-brand-600: #4f46e5;
+        --iv-brand-700: #4338ca;
+        --iv-brand-800: #3730a3;
+        --iv-brand-900: #312e81;
+        /* Navy — Deep Industrial Navy (DOMINANT · primary fills · sidebar) */
+        --iv-navy-50: #eef2f8;
+        --iv-navy-100: #d9e1ef;
+        --iv-navy-200: #b7c6e0;
+        --iv-navy-300: #8ba0c6;
+        --iv-navy-400: #5a74a3;
+        --iv-navy-500: #375081;
+        --iv-navy-600: #283f6a;
+        --iv-navy-700: #1f3154;
+        --iv-navy-800: #182643;
+        --iv-navy-900: #111c33;
+        --iv-navy-950: #0b1322;
+        /* Premium Gold (token name kept --iv-amber-*) */
+        --iv-amber-50: #fbf7ea;
+        --iv-amber-100: #f5ecca;
+        --iv-amber-200: #ebd99a;
+        --iv-amber-300: #dcc05f;
+        --iv-amber-400: #cda434;
+        --iv-amber-500: #b8860b;
+        --iv-amber-600: #9a6f08;
+        --iv-amber-700: #7c5807;
+        /* Surface — Light Mode (primary) */
+        --iv-light-base: #f8fafc;
+        --iv-light-raised: #ffffff;
+        --iv-light-muted: #f1f5f9;
+        --iv-light-border: #e2e8f0;
+        --iv-light-hover: #f8fafc;
+        --iv-light-selected: #eef2ff;
+        /* Status — base hues (from globals.css); light tints derived below */
+        --iv-success-subtle: rgba(22, 163, 74, 0.08);
+        --iv-success-base: #16a34a;
+        --iv-success-bright: #22c55e;
+        --iv-success-ink: #15803d;
+        --iv-warning-subtle: rgba(202, 138, 4, 0.1);
+        --iv-warning-base: #ca8a04;
+        --iv-warning-ink: #a16207;
+        --iv-danger-subtle: rgba(220, 38, 38, 0.08);
+        --iv-danger-base: #dc2626;
+        --iv-danger-ink: #b91c1c;
+        --iv-info-subtle: rgba(37, 99, 235, 0.08);
+        --iv-info-base: #2563eb;
+        --iv-info-ink: #1d4ed8;
+        --iv-neutral-subtle: rgba(107, 114, 128, 0.08);
+        --iv-neutral-base: #6b7280;
+        --iv-neutral-ink: #475569;
+        /* Typography */
+        --iv-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        --iv-font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+        --iv-text-2xs: 0.625rem;
+        --iv-text-xs: 0.75rem;
+        --iv-text-sm: 0.875rem;
+        --iv-text-base: 1rem;
+        --iv-text-lg: 1.125rem;
+        --iv-text-xl: 1.25rem;
+        --iv-text-2xl: 1.5rem;
+        --iv-text-3xl: 1.875rem;
+        --iv-text-4xl: 2.25rem;
+        /* Radius */
+        --iv-radius-sm: 4px;
+        --iv-radius-md: 8px;
+        --iv-radius-lg: 12px;
+        --iv-radius-xl: 16px;
+        --iv-radius-full: 9999px;
+        /* Shadows (light-tuned, primary) */
+        --iv-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.06);
+        --iv-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.1), 0 1px 2px rgba(15, 23, 42, 0.06);
+        --iv-shadow-md: 0 4px 8px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
+        --iv-shadow-lg: 0 12px 24px rgba(15, 23, 42, 0.1), 0 4px 8px rgba(15, 23, 42, 0.06);
+        --iv-shadow-xl: 0 20px 40px rgba(15, 23, 42, 0.12), 0 8px 16px rgba(15, 23, 42, 0.08);
+        /* Motion */
+        --iv-duration-fast: 100ms;
+        --iv-duration-normal: 200ms;
+        --iv-duration-slow: 300ms;
+        --iv-ease-out: cubic-bezier(0, 0, 0.2, 1);
+        --iv-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+        /* Z-index */
+        --iv-z-raised: 10;
+        --iv-z-sticky: 200;
+        --iv-z-overlay: 300;
+        --iv-z-toast: 500;
+        /* Semantic — the layer components consume (light values) */
+        --iv-bg: var(--iv-light-base);
+        --iv-surface: var(--iv-light-raised);
+        --iv-surface-2: var(--iv-light-muted);
+        --iv-border: var(--iv-light-border);
+        --iv-hover: var(--iv-light-hover);
+        --iv-selected: var(--iv-light-selected);
+        --iv-fg-strong: #0f172a;
+        --iv-fg: #334155;
+        --iv-fg-secondary: #475569;
+        --iv-fg-muted: #5f6f86;
+        --iv-fg-heading: #23438f;
+        --iv-fg-heading-strong: #1e3a8a;
+        --iv-fg-inverse: #ffffff;
+        /* Layout */
+        --iv-content-max: 1120px;
+        --iv-gutter: 24px;
+        /* Primary gradient (premium fills — primary buttons) */
+        --iv-gradient-primary: linear-gradient(135deg, #23438f 0%, #2f5eb8 100%);
+        /* shadcn compatibility aliases */
+        --card: var(--iv-surface);
+        --primary: var(--iv-navy-700);
+        --primary-foreground: var(--iv-fg-inverse);
+        --muted: var(--iv-surface-2);
+        --muted-foreground: var(--iv-fg-muted);
+        --border: var(--iv-border);
+        --ring: var(--iv-brand-500);
+        /* Navy workspace sidebar (mirrors the built AppShell rail) */
+        --iv-nav-bg: #f2f5f9;
+        /* Prototype chrome (pc-*) — REVIEW HARNESS, deliberately OUTSIDE the
+           product palette so it can never be mistaken for product status. */
+        --pc-bar-h: 54px;
+        --pc-bg: #0f172a;
+        --pc-panel: #1e293b;
+        --pc-line: #334155;
+        --pc-fg: #e2e8f0;
+        --pc-muted: #94a3b8;
+        --pc-accent: #7c3aed;
+        --pc-grounded: #16a34a;
+        --pc-proposed: #7c3aed;
+        --pc-gap: #dc2626;
+        --pc-mixed: #d97706;
+        --device-w: 1280px;
+      }
+
+      /* =====================================================================
+         02. RESET + BASE
+         ===================================================================== */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        font-size: 16px;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+      body {
+        font-family: var(--iv-font-sans);
+        background: #1e293b;
+        color: var(--iv-fg);
+        line-height: 1.5;
+        min-height: 100dvh;
+        overflow: hidden;
+      }
+      svg {
+        display: block;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        background: none;
+        border: 0;
+        cursor: pointer;
+      }
+      input,
+      textarea {
+        font: inherit;
+        color: inherit;
+      }
+      a {
+        color: var(--iv-fg-heading);
+        text-decoration: none;
+      }
+      a:hover {
+        color: var(--iv-fg-heading-strong);
+        text-decoration: underline;
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        color: var(--iv-fg-heading);
+        line-height: 1.25;
+      }
+      ul,
+      ol {
+        list-style: none;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      :focus-visible {
+        outline: 2px solid var(--iv-brand-500);
+        outline-offset: 2px;
+        border-radius: 2px;
+      }
+      .mono,
+      [data-type="id"],
+      [data-type="ref"],
+      [data-type="date"] {
+        font-family: var(--iv-font-mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .vh {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+      .skip-link {
+        position: fixed;
+        top: 8px;
+        left: 8px;
+        z-index: 999;
+        background: var(--iv-navy-700);
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: var(--iv-radius-md);
+        font-size: var(--iv-text-sm);
+        font-weight: 600;
+        transform: translateY(-72px);
+        transition: transform var(--iv-duration-fast) var(--iv-ease-out);
+      }
+      .skip-link:focus-visible {
+        transform: translateY(0);
+        color: #fff;
+        text-decoration: none;
+      }
+
+      /* =====================================================================
+         03. KIT-CONVENTION PRIMITIVES (Button / Badge / Card / Chip / Field)
+             Hand-built to the frozen kit's look — NOT the real React kit.
+         ===================================================================== */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: var(--iv-text-sm);
+        font-weight: 600;
+        line-height: 1;
+        min-height: 40px;
+        padding: 0 18px;
+        border-radius: var(--iv-radius-md);
+        border: 1px solid transparent;
+        white-space: nowrap;
+        transition:
+          background var(--iv-duration-fast) var(--iv-ease-out),
+          filter var(--iv-duration-fast) var(--iv-ease-out),
+          border-color var(--iv-duration-fast) var(--iv-ease-out),
+          color var(--iv-duration-fast) var(--iv-ease-out);
+      }
+      .btn:hover {
+        text-decoration: none;
+      }
+      .btn-primary {
+        background: var(--iv-gradient-primary);
+        color: var(--primary-foreground);
+      }
+      .btn-primary:hover {
+        filter: brightness(1.08);
+        color: var(--primary-foreground);
+      }
+      .btn-outline {
+        border-color: var(--iv-border);
+        background: var(--iv-surface);
+        color: var(--iv-fg-strong);
+      }
+      .btn-outline:hover {
+        background: var(--iv-hover);
+        border-color: var(--iv-navy-300);
+      }
+      .btn-ghost {
+        color: var(--iv-fg-secondary);
+      }
+      .btn-ghost:hover {
+        background: var(--iv-surface-2);
+        color: var(--iv-fg-strong);
+      }
+      .btn-success {
+        background: var(--iv-success-base);
+        color: #fff;
+      }
+      .btn-success:hover {
+        filter: brightness(1.06);
+        color: #fff;
+      }
+      .btn-danger {
+        background: var(--iv-surface);
+        border-color: rgba(220, 38, 38, 0.35);
+        color: var(--iv-danger-ink);
+      }
+      .btn-danger:hover {
+        background: var(--iv-danger-subtle);
+        border-color: var(--iv-danger-base);
+      }
+      .btn-sm {
+        min-height: 34px;
+        padding: 0 12px;
+        font-size: var(--iv-text-xs);
+      }
+      .btn-lg {
+        min-height: 46px;
+        padding: 0 24px;
+        font-size: var(--iv-text-base);
+      }
+      .btn-block {
+        width: 100%;
+      }
+      .btn:disabled,
+      .btn[aria-disabled="true"] {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+      .icon {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        stroke-width: 1.75;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex: none;
+      }
+      .icon-sm {
+        width: 16px;
+        height: 16px;
+      }
+      .icon-xs {
+        width: 13px;
+        height: 13px;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: var(--iv-radius-sm);
+        border: 1px solid transparent;
+        padding: 3px 8px;
+        font-size: var(--iv-text-2xs);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        line-height: 1.2;
+        white-space: nowrap;
+      }
+      .badge .icon-xs {
+        width: 11px;
+        height: 11px;
+      }
+      .badge-success {
+        background: var(--iv-success-subtle);
+        border-color: rgba(22, 163, 74, 0.25);
+        color: var(--iv-success-ink);
+      }
+      .badge-warning {
+        background: var(--iv-warning-subtle);
+        border-color: rgba(202, 138, 4, 0.3);
+        color: var(--iv-warning-ink);
+      }
+      .badge-danger {
+        background: var(--iv-danger-subtle);
+        border-color: rgba(220, 38, 38, 0.25);
+        color: var(--iv-danger-ink);
+      }
+      .badge-info {
+        background: var(--iv-info-subtle);
+        border-color: rgba(37, 99, 235, 0.25);
+        color: var(--iv-info-ink);
+      }
+      .badge-neutral {
+        background: var(--iv-neutral-subtle);
+        border-color: var(--iv-border);
+        color: var(--iv-neutral-ink);
+      }
+      .badge-navy {
+        background: var(--iv-navy-50);
+        border-color: var(--iv-navy-100);
+        color: var(--iv-navy-700);
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--iv-radius-lg);
+        box-shadow: var(--iv-shadow-sm);
+      }
+      .card-pad {
+        padding: 20px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid var(--iv-border);
+        border-radius: var(--iv-radius-full);
+        background: var(--iv-surface);
+        color: var(--iv-fg-secondary);
+        font-size: var(--iv-text-xs);
+        font-weight: 500;
+        padding: 5px 11px;
+      }
+      .field-label {
+        display: block;
+        font-size: var(--iv-text-xs);
+        font-weight: 600;
+        color: var(--iv-fg-secondary);
+        margin-bottom: 6px;
+        letter-spacing: 0.01em;
+      }
+      .field-input,
+      .field-textarea {
+        width: 100%;
+        background: var(--iv-surface);
+        border: 1px solid var(--iv-border);
+        border-radius: var(--iv-radius-md);
+        color: var(--iv-fg-strong);
+        font-size: var(--iv-text-sm);
+        padding: 10px 12px;
+        transition:
+          border-color var(--iv-duration-fast) var(--iv-ease-out),
+          box-shadow var(--iv-duration-fast) var(--iv-ease-out);
+        outline: none;
+      }
+      .field-textarea {
+        resize: vertical;
+        min-height: 108px;
+        line-height: 1.6;
+      }
+      .field-input::placeholder,
+      .field-textarea::placeholder {
+        color: var(--iv-fg-muted);
+      }
+      .field-input:focus,
+      .field-textarea:focus {
+        border-color: var(--iv-brand-500);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+      }
+      .field-hint {
+        font-size: var(--iv-text-xs);
+        color: var(--iv-fg-muted);
+        margin-top: 6px;
+      }
+      .field-error {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: var(--iv-text-xs);
+        color: var(--iv-danger-ink);
+        margin-top: 6px;
+      }
+      .eyebrow {
+        font-size: var(--iv-text-2xs);
+        font-weight: 700;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--iv-fg-muted);
+      }
+      .divider {
+        height: 1px;
+        background: var(--iv-border);
+        border: 0;
+      }
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 10px;
+        padding: 38px 24px;
+        color: var(--iv-fg-muted);
+        border: 1px dashed var(--iv-border);
+        border-radius: var(--iv-radius-lg);
+      }
+      .empty-state .icon {
+        width: 30px;
+        height: 30px;
+        color: var(--iv-navy-300);
+      }
+      .empty-state h4 {
+        font-size: var(--iv-text-sm);
+        color: var(--iv-fg-secondary);
+        font-weight: 600;
+      }
+      .empty-state p {
+        font-size: var(--iv-text-xs);
+        max-width: 40ch;
+      }
+
+      /* -------- Star rating (RatingStars — display + input modes) ---------- */
+      .stars {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        color: var(--iv-navy-300);
+      }
+      .stars .icon {
+        width: 18px;
+        height: 18px;
+        stroke-width: 1.5;
+      }
+      .stars [data-on="true"] .icon {
+        fill: var(--iv-navy-600);
+        stroke: var(--iv-navy-600);
+      }
+      .stars-lg .icon {
+        width: 22px;
+        height: 22px;
+      }
+      /* Interactive input variant */
+      .stars-input button {
+        display: inline-flex;
+        padding: 3px;
+        border-radius: var(--iv-radius-sm);
+        color: var(--iv-navy-200);
+        transition: transform var(--iv-duration-fast) var(--iv-ease-out);
+      }
+      .stars-input button .icon {
+        width: 30px;
+        height: 30px;
+        stroke-width: 1.5;
+      }
+      .stars-input button:hover {
+        transform: scale(1.12);
+      }
+      .stars-input button[data-on="true"] .icon {
+        fill: var(--iv-navy-600);
+        stroke: var(--iv-navy-600);
+      }
+      .stars-input[data-gold] button {
+        color: var(--iv-amber-200);
+      }
+      .stars-input[data-gold] button[data-on="true"] .icon {
+        fill: var(--iv-amber-700);
+        stroke: var(--iv-amber-700);
+      }
+      .stars-input[data-violet] button {
+        color: #ddd3fb;
+      }
+      .stars-input[data-violet] button[data-on="true"] .icon {
+        fill: #6d28d9;
+        stroke: #6d28d9;
+      }
+      .stars-value {
+        font-size: var(--iv-text-sm);
+        font-weight: 600;
+        color: var(--iv-fg-secondary);
+        margin-left: 8px;
+        font-variant-numeric: tabular-nums;
+      }
+      /* Private CRM score — GOLD star + numeric, deliberately DISTINCT from the
+         public-review star lane (lane separation; mirrors the built CRM card). */
+      .crm-score {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+        color: var(--iv-fg-strong);
+        font-variant-numeric: tabular-nums;
+      }
+      .crm-score .icon {
+        width: 16px;
+        height: 16px;
+        fill: var(--iv-amber-700);
+        stroke: var(--iv-amber-700);
+      }
+
+      /* =====================================================================
+         04. PROTOTYPE CHROME (pc-*) — review harness, NOT product UI
+         ===================================================================== */
+      .pc-toolbar {
+        position: fixed;
+        inset: 0 0 auto 0;
+        min-height: var(--pc-bar-h);
+        z-index: 900;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px 14px;
+        padding: 8px 16px;
+        background: var(--pc-bg);
+        color: var(--pc-fg);
+        border-bottom: 1px solid var(--pc-line);
+      }
+      .pc-title {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.25;
+        margin-right: 4px;
+      }
+      .pc-title strong {
+        font-size: 12.5px;
+        white-space: nowrap;
+      }
+      .pc-title span {
+        color: var(--pc-muted);
+        font-size: 10px;
+      }
+      .pc-tag {
+        flex: none;
+        background: var(--pc-accent);
+        color: #fff;
+        font-weight: 700;
+        font-size: 9.5px;
+        letter-spacing: 0.08em;
+        padding: 3px 7px;
+        border-radius: 4px;
+        text-transform: uppercase;
+      }
+      .pc-sep {
+        width: 1px;
+        align-self: stretch;
+        background: var(--pc-line);
+        margin: 2px 0;
+      }
+      .pc-cluster {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .pc-cluster > .pc-lab {
+        font-size: 9.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--pc-muted);
+        font-weight: 700;
+      }
+      .pc-group {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        background: var(--pc-panel);
+        border: 1px solid var(--pc-line);
+        border-radius: 8px;
+        padding: 3px;
+      }
+      .pc-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--pc-muted);
+        font-size: 11px;
+        font-weight: 600;
+        padding: 6px 10px;
+        border-radius: 6px;
+        min-height: 28px;
+        white-space: nowrap;
+      }
+      .pc-btn:hover {
+        color: var(--pc-fg);
+        background: var(--pc-line);
+      }
+      .pc-btn[aria-pressed="true"] {
+        background: var(--pc-accent);
+        color: #fff;
+      }
+      .pc-btn .icon {
+        width: 13px;
+        height: 13px;
+      }
+      .pc-btn .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 2px;
+        flex: none;
+      }
+      .pc-spacer {
+        margin-left: auto;
+      }
+      .pc-legend {
+        display: none;
+        align-items: center;
+        gap: 12px;
+        font-size: 10px;
+        color: var(--pc-muted);
+      }
+      body.anno-on .pc-legend {
+        display: flex;
+      }
+      .pc-legend i {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+        margin-right: 4px;
+        vertical-align: middle;
+      }
+
+      /* Stage + device frame */
+      .pc-stage {
+        position: fixed;
+        inset: var(--pc-bar-h) 0 0 0;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        overflow: hidden;
+        padding-top: 26px;
+        background: radial-gradient(circle at 50% 0%, #334155 0%, #1e293b 62%);
+      }
+      .pc-clip {
+        overflow: hidden;
+        flex: none;
+      }
+      .device-frame {
+        container-type: inline-size;
+        container-name: page;
+        width: var(--device-w);
+        height: calc(100dvh - var(--pc-bar-h) - 52px);
+        background: var(--iv-bg);
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transform-origin: top center;
+        box-shadow:
+          0 0 0 1px rgba(148, 163, 184, 0.25),
+          0 24px 64px rgba(2, 6, 23, 0.55);
+      }
+      .frame-scroll {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        overflow-x: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Surface + state visibility routing */
+      .surface {
+        display: none;
+      }
+      .surface.is-active {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+      }
+      .sstate {
+        display: none;
+      }
+      .sstate.is-active {
+        display: block;
+      }
+
+      /* Annotation overlay */
+      [data-anno] {
+        position: relative;
+      }
+      .anno-chip {
+        display: none;
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        z-index: var(--iv-z-raised);
+        align-items: center;
+        gap: 5px;
+        font-size: 9.5px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #fff;
+        padding: 3px 7px;
+        border-radius: 4px;
+        box-shadow: var(--iv-shadow-md);
+        font-family: var(--iv-font-mono);
+        cursor: help;
+      }
+      body.anno-on .anno-chip {
+        display: inline-flex;
+      }
+      body.anno-on [data-anno="grounded"] {
+        outline: 2px dashed var(--pc-grounded);
+        outline-offset: -2px;
+      }
+      body.anno-on [data-anno="proposed"] {
+        outline: 2px dashed var(--pc-proposed);
+        outline-offset: -2px;
+      }
+      body.anno-on [data-anno="gap"] {
+        outline: 2px dashed var(--pc-gap);
+        outline-offset: -2px;
+      }
+      body.anno-on [data-anno="mixed"] {
+        outline: 2px dashed var(--pc-mixed);
+        outline-offset: -2px;
+      }
+      .anno-chip[data-s="grounded"] {
+        background: var(--pc-grounded);
+      }
+      .anno-chip[data-s="proposed"] {
+        background: var(--pc-proposed);
+      }
+      .anno-chip[data-s="gap"] {
+        background: var(--pc-gap);
+      }
+      .anno-chip[data-s="mixed"] {
+        background: var(--pc-mixed);
+      }
+      .pc-tooltip {
+        position: fixed;
+        z-index: 950;
+        max-width: 340px;
+        background: var(--pc-bg);
+        color: var(--pc-fg);
+        font-size: 11px;
+        line-height: 1.55;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--pc-line);
+        box-shadow: var(--iv-shadow-xl);
+        display: none;
+      }
+      .pc-tooltip.open {
+        display: block;
+      }
+      .pc-tooltip strong {
+        color: #fff;
+      }
+      .pc-toasts {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: var(--iv-z-toast);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: min(360px, calc(100vw - 36px));
+      }
+      .pc-toast {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        background: var(--pc-bg);
+        color: var(--pc-fg);
+        border: 1px solid var(--pc-line);
+        border-left: 3px solid var(--iv-info-base);
+        border-radius: 8px;
+        padding: 11px 13px;
+        font-size: 12px;
+        box-shadow: var(--iv-shadow-lg);
+        animation: toast-in var(--iv-duration-normal) var(--iv-ease-out);
+      }
+      .pc-toast .icon {
+        width: 15px;
+        height: 15px;
+        margin-top: 1px;
+        color: var(--pc-muted);
+      }
+      .pc-toast strong {
+        display: block;
+        font-size: 12px;
+        color: #fff;
+      }
+      .pc-toast span {
+        color: var(--pc-muted);
+        font-size: 11px;
+      }
+      @keyframes toast-in {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* =====================================================================
+         05. APP-SHELL CHROME — three distinct lane contexts
+             (buyer workspace · public site · admin console)
+         ===================================================================== */
+
+      /* ---- Workspace / Admin console shell (navy sidebar rail) ------------ */
+      .shell {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        min-height: 100%;
+        flex: 1 1 auto;
+      }
+      .rail {
+        background: var(--iv-navy-800);
+        color: #cbd5e1;
+        display: flex;
+        flex-direction: column;
+        padding: 16px 12px;
+        gap: 4px;
+      }
+      .rail-brand {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 6px 8px 14px;
+        color: #fff;
+        font-weight: 700;
+        font-size: var(--iv-text-base);
+        letter-spacing: -0.01em;
+      }
+      .rail-mark {
+        width: 26px;
+        height: 26px;
+        border-radius: 7px;
+        background: var(--iv-gradient-primary);
+        display: grid;
+        place-items: center;
+        color: #fff;
+        flex: none;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+      }
+      .rail-mark .icon {
+        width: 15px;
+        height: 15px;
+      }
+      .rail-sect {
+        font-size: 9.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #64748b;
+        font-weight: 700;
+        padding: 14px 8px 4px;
+      }
+      .rail-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        border-radius: var(--iv-radius-md);
+        color: #cbd5e1;
+        font-size: var(--iv-text-sm);
+        font-weight: 500;
+      }
+      .rail-item .icon {
+        width: 17px;
+        height: 17px;
+        color: #94a3b8;
+      }
+      .rail-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: #fff;
+        text-decoration: none;
+      }
+      .rail-item.is-current {
+        background: var(--iv-brand-600);
+        color: #fff;
+      }
+      .rail-item.is-current .icon {
+        color: #fff;
+      }
+      .rail-item .count {
+        margin-left: auto;
+        font-size: var(--iv-text-2xs);
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.14);
+        color: #fff;
+        padding: 1px 7px;
+        border-radius: var(--iv-radius-full);
+        font-variant-numeric: tabular-nums;
+      }
+      .rail-foot {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 10px 8px 2px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .rail-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: var(--iv-radius-full);
+        background: var(--iv-navy-500);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-size: var(--iv-text-xs);
+        font-weight: 700;
+        flex: none;
+      }
+      .rail-who {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.3;
+        min-width: 0;
+      }
+      .rail-who strong {
+        font-size: var(--iv-text-xs);
+        color: #fff;
+        font-weight: 600;
+      }
+      .rail-who span {
+        font-size: 10px;
+        color: #94a3b8;
+      }
+      .work {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        background: var(--iv-bg);
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        height: 58px;
+        padding: 0 24px;
+        border-bottom: 1px solid var(--iv-border);
+        background: var(--iv-surface);
+        position: sticky;
+        top: 0;
+        z-index: var(--iv-z-sticky);
+      }
+      .crumbs {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: var(--iv-text-xs);
+        color: var(--iv-fg-muted);
+        min-width: 0;
+      }
+      .crumbs .sep {
+        color: var(--iv-navy-200);
+      }
+      .crumbs b {
+        color: var(--iv-fg-secondary);
+        font-weight: 600;
+      }
+      .topbar .env {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: var(--iv-text-xs);
+        color: var(--iv-fg-muted);
+      }
+      .work-body {
+        padding: 26px 24px 40px;
+      }
+      .page-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 22px;
+      }
+      .page-head h1 {
+        font-size: var(--iv-text-2xl);
+        font-weight: 700;
+        color: var(--iv-fg-heading-strong);
+        letter-spacing: -0.01em;
+      }
+      .page-head p {
+        font-size: var(--iv-text-sm);
+        color: var(--iv-fg-muted);
+        margin-top: 4px;
+        max-width: 62ch;
+      }
+      .content-narrow {
+        max-width: 720px;
+      }
+
+      /* ---- Public site header (mirrors built public SiteHeader) ----------- */
+      .site {
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+        flex: 1 1 auto;
+        background: var(--iv-bg);
+      }
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: var(--iv-z-sticky);
+        background: var(--iv-surface);
+        border-bottom: 1px solid var(--iv-border);
+      }
+      .site-header-in {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 60px;
+        max-width: var(--iv-content-max);
+        margin-inline: auto;
+        padding-inline: var(--iv-gutter);
+      }
+      .site-logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        font-weight: 800;
+        font-size: var(--iv-text-lg);
+        color: var(--iv-navy-800);
+        letter-spacing: -0.02em;
+      }
+      .site-logo .rail-mark {
+        width: 28px;
+        height: 28px;
+      }
+      .site-search {
+        flex: 1 1 auto;
+        max-width: 460px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--iv-border);
+        border-radius: var(--iv-radius-md);
+        background: var(--iv-surface);
+        padding: 0 12px;
+        height: 40px;
+        color: var(--iv-fg-muted);
+        font-size: var(--iv-text-sm);
+      }
+      .site-nav {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+      }
+      .site-nav a {
+        color: var(--iv-fg-secondary);
+        font-size: var(--iv-text-sm);
+        font-weight: 500;
+        padding: 8px 10px;
+        border-radius: var(--iv-radius-md);
+      }
+      .site-nav a:hover {
+        background: var(--iv-surface-2);
+        color: var(--iv-fg-strong);
+        text-decoration: none;
+      }
+      .site-main {
+        max-width: var(--iv-content-max);
+        margin-inline: auto;
+        padding: 24px var(--iv-gutter) 48px;
+        width: 100%;
+      }
+      .site-foot {
+        margin-top: auto;
+        border-top: 1px solid var(--iv-border);
+        background: var(--iv-navy-900);
+        color: #94a3b8;
+        font-size: var(--iv-text-xs);
+        padding: 22px var(--iv-gutter);
+        text-align: center;
+      }
+
+      /* =====================================================================
+         06. SHARED SURFACE PIECES (governance banners, review pieces)
+         ===================================================================== */
+      .lane-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: var(--iv-text-2xs);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 3px 9px;
+        border-radius: var(--iv-radius-full);
+      }
+      .lane-pub {
+        background: var(--iv-navy-50);
+        color: var(--iv-navy-700);
+        border: 1px solid var(--iv-navy-100);
+      }
+      .lane-adm {
+        background: #f1eefe;
+        color: #6d28d9;
+        border: 1px solid #ddd3fb;
+      }
+      .lane-crm {
+        background: var(--iv-amber-50);
+        color: var(--iv-amber-700);
+        border: 1px solid var(--iv-amber-200);
+      }
+      .privacy-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        padding: 12px 14px;
+        border-radius: var(--iv-radius-md);
+        font-size: var(--iv-text-xs);
+        line-height: 1.55;
+      }
+      .privacy-note .icon {
+        width: 16px;
+        height: 16px;
+        margin-top: 1px;
+        flex: none;
+      }
+      .privacy-crm {
+        background: var(--iv-amber-50);
+        border: 1px solid var(--iv-amber-200);
+        color: #79560a;
+      }
+      .privacy-crm .icon {
+        color: var(--iv-amber-700);
+      }
+      .privacy-adm {
+        background: #f6f3fe;
+        border: 1px solid #e3daf9;
+        color: #5b21b6;
+      }
+      .privacy-adm .icon {
+        color: #6d28d9;
+      }
+      .info-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        padding: 12px 14px;
+        border-radius: var(--iv-radius-md);
+        font-size: var(--iv-text-xs);
+        line-height: 1.55;
+        background: var(--iv-info-subtle);
+        border: 1px solid rgba(37, 99, 235, 0.18);
+        color: #1e40af;
+      }
+      .info-note .icon {
+        width: 16px;
+        height: 16px;
+        margin-top: 1px;
+        flex: none;
+        color: var(--iv-info-base);
+      }
+
+      /* Engagement context banner (Surface 1 entry) */
+      .eng-banner {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        border: 1px solid var(--iv-border);
+        border-radius: var(--iv-radius-lg);
+        background: var(--iv-surface);
+      }
+      .eng-ic {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--iv-radius-md);
+        background: var(--iv-navy-50);
+        color: var(--iv-navy-600);
+        display: grid;
+        place-items: center;
+        flex: none;
+      }
+      .eng-meta {
+        min-width: 0;
+      }
+      .eng-meta .name {
+        font-size: var(--iv-text-sm);
+        font-weight: 600;
+        color: var(--iv-fg-strong);
+      }
+      .eng-meta .sub {
+        font-size: var(--iv-text-xs);
+        color: var(--iv-fg-muted);
+        margin-top: 2px;
+      }
+
+      /* Vendor microsite header */
+      .micro-head {
+        margin-bottom: 22px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .micro-avatar {
+        width: 52px;
+        height: 52px;
+        font-size: var(--iv-text-lg);
+        font-weight: 800;
+        color: var(--iv-navy-700);
+        flex: none;
+      }
+      .micro-id {
+        min-width: 0;
+        flex: 1;
+      }
+      .micro-name {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .micro-sub {
+        font-size: var(--iv-text-sm);
+        color: var(--iv-fg-muted);
+        margin-top: 4px;
+      }
+      .micro-tabs {
+        gap: 4px;
+        flex: none;
+      }
+      .micro-tab-active {
+        border-color: var(--iv-navy-200);
+        background: var(--iv-navy-50);
+        color: var(--iv-navy-700);
+        font-weight: 600;
+      }
+
+      /* Public review card (ReviewCard — one PUBLISHED review; NO author id) */
+      .rvw-grid {
+        display: grid;
+        gap: 14px;
+      }
+      .rvw-card {
+        border: 1px solid var(--iv-border);
+        border-radius: var(--iv-radius-lg);
+        background: var(--iv-surface);
+        padding: 18px;
+        box-shadow: var(--iv-shadow-xs);
+      }
+      .rvw-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+      .rvw-date {
+        font-size: var(--iv-text-xs);
+        color: var(--iv-fg-muted);
+      }
+      .rvw-body {
+        font-size: var(--iv-text-sm);
+        color: var(--iv-fg);
+        line-height: 1.65;
+      }
+      .rvw-anon {
+        margin-top: 12px;
+        font-size: var(--iv-text-xs);
+        color: var(--iv-fg-muted);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      /* Skeleton loaders */
+      .sk {
+        background: linear-gradient(90deg, #eef2f6 25%, #e2e8f0 50%, #eef2f6 75%);
+        background-size: 200% 100%;
+        border-radius: var(--iv-radius-sm);
+        animation: sk 1.3s ease-in-out infinite;
+      }
+      @keyframes sk {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+
+      /* Admin queue table (mirrors AdminQueueTable) + split detail */
+      .adm-split {
+        display: grid;
+        grid-template-columns: 1.35fr 1fr;
+        gap: 18px;
+        align-items: start;
+      }
+      .qtable-wrap {
+        overflow-x: auto;
+      }
+      .qtable {
+        width: 100%;
+        min-width: 40rem;
+        font-size: var(--iv-text-sm);
+      }
+      .qtable thead tr {
+        border-bottom: 1px solid var(--iv-border);
+        text-align: left;
+      }
+      .qtable th {
+        padding: 11px 14px;
+        font-size: var(--iv-text-2xs);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--iv-fg-muted);
+      }
+      .qtable td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--iv-border);
+        vertical-align: middle;
+      }
+      .qtable tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      .qtable tbody tr {
+        cursor: pointer;
+        transition: background var(--iv-duration-fast) var(--iv-ease-out);
+      }
+      .qtable tbody tr:hover {
+        background: var(--iv-surface-2);
+      }
+      .qtable tbody tr.is-sel {
+        background: var(--iv-brand-50);
+        box-shadow: inset 3px 0 0 var(--iv-brand-500);
+      }
+      .q-vendor {
+        font-weight: 600;
+        color: var(--iv-fg-strong);
+      }
+      .q-snip {
+        color: var(--iv-fg-muted);
+        font-size: var(--iv-text-xs);
+        max-width: 30ch;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .detail-panel {
+        position: sticky;
+        top: 12px;
+      }
+      .detail-block {
+        padding: 18px;
+      }
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 7px 0;
+        font-size: var(--iv-text-sm);
+      }
+      .detail-row dt {
+        color: var(--iv-fg-muted);
+        font-size: var(--iv-text-xs);
+      }
+      .detail-row dd {
+        color: var(--iv-fg-strong);
+        text-align: right;
+        font-weight: 500;
+      }
+      .detail-review {
+        background: var(--iv-surface-2);
+        border: 1px solid var(--iv-border);
+        border-radius: var(--iv-radius-md);
+        padding: 14px;
+        margin: 12px 0;
+      }
+      .detail-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .mod-note {
+        margin-top: 14px;
+      }
+
+      /* Admin ratings (Surface 5) history rows */
+      .hist-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--iv-border);
+      }
+      .hist-row:last-child {
+        border-bottom: 0;
+      }
+      .hist-dot {
+        width: 28px;
+        height: 28px;
+        border-radius: var(--iv-radius-full);
+        background: #f1eefe;
+        color: #6d28d9;
+        display: grid;
+        place-items: center;
+        flex: none;
+        margin-top: 1px;
+      }
+      .hist-dot .icon {
+        width: 14px;
+        height: 14px;
+      }
+      .hist-meta {
+        min-width: 0;
+        flex: 1;
+      }
+      .hist-meta .line1 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: var(--iv-text-sm);
+        color: var(--iv-fg-strong);
+        font-weight: 600;
+      }
+      .hist-meta .line2 {
+        font-size: var(--iv-text-xs);
+        color: var(--iv-fg-muted);
+        margin-top: 2px;
+      }
+
+      /* success / confirmation panel */
+      .confirm-card {
+        text-align: center;
+        padding: 34px 26px;
+      }
+      .confirm-ic {
+        width: 56px;
+        height: 56px;
+        border-radius: var(--iv-radius-full);
+        display: grid;
+        place-items: center;
+        margin: 0 auto 16px;
+      }
+      .confirm-ic .icon {
+        width: 28px;
+        height: 28px;
+      }
+      .confirm-ok {
+        background: var(--iv-success-subtle);
+        color: var(--iv-success-base);
+      }
+      .confirm-card h3 {
+        font-size: var(--iv-text-lg);
+        color: var(--iv-fg-heading-strong);
+      }
+      .confirm-card p {
+        font-size: var(--iv-text-sm);
+        color: var(--iv-fg-muted);
+        margin-top: 6px;
+        max-width: 46ch;
+        margin-inline: auto;
+      }
+
+      .grid-2 {
+        display: grid;
+        gap: 18px;
+      }
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .stack-sm {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .row-between {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      /* =====================================================================
+         07. RESPONSIVE — container queries on the device frame
+         ===================================================================== */
+      @container page (max-width: 720px) {
+        .shell {
+          grid-template-columns: 1fr;
+        }
+        .rail {
+          display: none;
+        }
+        .adm-split {
+          grid-template-columns: 1fr;
+        }
+        .detail-panel {
+          position: static;
+        }
+        .site-search {
+          display: none;
+        }
+        .page-head {
+          flex-direction: column;
+          gap: 12px;
+        }
+        .work-body {
+          padding: 18px 16px 32px;
+        }
+        .site-main {
+          padding: 18px 16px 36px;
+        }
+        .site-header-in {
+          padding-inline: 16px;
+          gap: 12px;
+        }
+        .micro-head {
+          flex-wrap: wrap;
+        }
+        .micro-tabs {
+          width: 100%;
+          order: 3;
+          overflow-x: auto;
+        }
+        .rvw-top {
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+        .detail-actions .btn {
+          flex: 1 1 auto;
+        }
+      }
+    </style>
+  </head>
+  <body class="anno-on">
+    <a class="skip-link" href="#frame">Skip to prototype</a>
+
+    <!-- ============================ TOOLBAR ============================ -->
+    <div class="pc-toolbar" role="toolbar" aria-label="Prototype review harness">
+      <span class="pc-tag">Prototype</span>
+      <div class="pc-title">
+        <strong>Review System — Visual Approval</strong>
+        <span>Presentation only · mock data · coins nothing</span>
+      </div>
+
+      <div class="pc-sep" aria-hidden="true"></div>
+
+      <div class="pc-cluster">
+        <span class="pc-lab">Surface</span>
+        <div class="pc-group" id="pc-surfaces" role="tablist" aria-label="Review surface"></div>
+      </div>
+
+      <div class="pc-cluster">
+        <span class="pc-lab">State</span>
+        <div class="pc-group" id="pc-states" aria-label="Surface state"></div>
+      </div>
+
+      <div class="pc-spacer"></div>
+
+      <div class="pc-legend" aria-hidden="true">
+        <span><i style="background: var(--pc-grounded)"></i>Grounded</span>
+        <span><i style="background: var(--pc-proposed)"></i>Proposed</span>
+        <span><i style="background: var(--pc-gap)"></i>Gap</span>
+      </div>
+
+      <div class="pc-group" role="group" aria-label="Device width">
+        <button class="pc-btn" data-device="desktop" aria-pressed="true">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" /></svg>Desktop
+        </button>
+        <button class="pc-btn" data-device="mobile" aria-pressed="false">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2" /><path d="M11 18h2" /></svg>Mobile
+        </button>
+      </div>
+
+      <button class="pc-btn pc-group" id="pc-anno" aria-pressed="true" title="Toggle governance annotations">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5Z" /><path d="m2 17 10 5 10-5M2 12l10 5 10-5" /></svg>Annotations
+      </button>
+    </div>
+
+    <!-- ============================= STAGE ============================= -->
+    <main class="pc-stage">
+      <div class="pc-clip" id="pc-clip">
+        <div class="device-frame" id="frame">
+          <div class="frame-scroll" id="scroll">
+            <!-- ===================== ICON SPRITE ===================== -->
+            <svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
+              <defs>
+                <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.6L12 18.5 6.1 20.6l1.2-6.6L2.5 9.4l6.6-.9Z" /></symbol>
+                <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol>
+                <symbol id="i-check-circle" viewBox="0 0 24 24"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1" /><path d="m22 4-10 10.1-3-3" /></symbol>
+                <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></symbol>
+                <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></symbol>
+                <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10.7 5.1A9.9 9.9 0 0 1 12 5c6.5 0 10 7 10 7a13.2 13.2 0 0 1-1.7 2.5M6.6 6.6A13.3 13.3 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6M3 3l18 18M9.9 9.9a3 3 0 0 0 4.2 4.2" /></symbol>
+                <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" /><path d="m9 12 2 2 4-4" /></symbol>
+                <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></symbol>
+                <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></symbol>
+                <symbol id="i-msg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" /></symbol>
+                <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1ZM4 22v-7" /></symbol>
+                <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /></symbol>
+                <symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z" /></symbol>
+                <symbol id="i-edit" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4Z" /></symbol>
+                <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></symbol>
+                <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol>
+                <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></symbol>
+                <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M9 22v-4h6v4M9 6h.01M15 6h.01M9 10h.01M15 10h.01M9 14h.01M15 14h.01" /></symbol>
+                <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0" /><circle cx="12" cy="7" r="4" /></symbol>
+                <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2" /><path d="M5.4 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.4-6.9A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.8 1.1Z" /></symbol>
+                <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18M8 17V9M13 17V5M18 17v-6" /></symbol>
+                <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 2 10 5-10 5L2 7Z" /><path d="m2 17 10 5 10-5M2 12l10 5 10-5" /></symbol>
+                <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.3 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.3a2 2 0 0 0-3.4 0Z" /><path d="M12 9v4M12 17h.01" /></symbol>
+                <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
+                <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18M7 7l-4 6h8ZM17 7l-4 6h8ZM4 21h16" /></symbol>
+                <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></symbol>
+              </defs>
+            </svg>
+
+            <!-- ============================================================
+                 SURFACE 1 — BUYER REVIEW SUBMISSION  (Lane PUB · workspace)
+            ============================================================ -->
+            <section class="surface" data-surface="s1" data-chrome="work" aria-label="Buyer review submission">
+              <div class="shell">
+                <!-- navy workspace rail -->
+                <aside class="rail">
+                  <div class="rail-brand"><span class="rail-mark"><svg class="icon" viewBox="0 0 24 24"><use href="#i-layers" /></svg></span>iVendorz</div>
+                  <div class="rail-sect">Procurement</div>
+                  <a class="rail-item" href="#s1"><svg class="icon" viewBox="0 0 24 24"><use href="#i-inbox" /></svg>RFQs</a>
+                  <a class="rail-item is-current" href="#s1"><svg class="icon" viewBox="0 0 24 24"><use href="#i-check-circle" /></svg>Engagements</a>
+                  <a class="rail-item" href="#s1"><svg class="icon" viewBox="0 0 24 24"><use href="#i-building" /></svg>Vendor CRM</a>
+                  <div class="rail-sect">Account</div>
+                  <a class="rail-item" href="#s1"><svg class="icon" viewBox="0 0 24 24"><use href="#i-user" /></svg>Organization</a>
+                  <div class="rail-foot">
+                    <span class="rail-avatar">MR</span>
+                    <span class="rail-who"><strong>Meghna Refinery</strong><span>Procurement Officer</span></span>
+                  </div>
+                </aside>
+
+                <div class="work">
+                  <div class="topbar">
+                    <nav class="crumbs" aria-label="Breadcrumb">
+                      <span>Engagements</span><span class="sep">/</span>
+                      <span data-type="ref">ENG-2026-000418</span><span class="sep">/</span><b>Review</b>
+                    </nav>
+                    <span class="env"><span class="lane-tag lane-pub">Lane PUB · Public review</span></span>
+                  </div>
+
+                  <div class="work-body">
+                    <div class="content-narrow">
+                      <div class="page-head">
+                        <div>
+                          <h1>Write a review</h1>
+                          <p>Share your experience working with this vendor. Reviews are moderated before they appear on the vendor's public profile.</p>
+                        </div>
+                      </div>
+
+                      <!-- STATE: empty -->
+                      <div class="sstate is-active" data-state="empty" data-state-label="Empty">
+                        <div class="stack">
+                          <div class="eng-banner" data-anno="grounded" data-note="Entry is post-award only: the review is anchored to a completed engagement (engagement_id, service-validated). J-REV entry gate · submit_review stages 7–8.">
+                            <span class="anno-chip" data-s="grounded">Grounded</span>
+                            <span class="eng-ic"><svg class="icon" viewBox="0 0 24 24"><use href="#i-check-circle" /></svg></span>
+                            <div class="eng-meta">
+                              <div class="name">Padma Valve &amp; Fittings Ltd.</div>
+                              <div class="sub">Engagement <span data-type="ref">ENG-2026-000418</span> · Completed 4 Jul 2026 · Gate valves DN100</div>
+                            </div>
+                            <span class="badge badge-success" style="margin-left: auto"><svg class="icon-xs" viewBox="0 0 24 24"><use href="#i-check" /></svg>Completed</span>
+                          </div>
+
+                          <form class="card card-pad" data-anno="grounded" data-note="Fields are exactly the frozen submit_review request shape: rating (1–5, required) + body (optional). author_organization_id + engagement are server-set, never form inputs. No draft state, no local persistence (Phase-P)." onsubmit="return false">
+                            <span class="anno-chip" data-s="grounded">Grounded</span>
+                            <div class="stack-sm">
+                              <div>
+                                <span class="field-label">Your rating <span style="color: var(--iv-danger-ink)">*</span></span>
+                                <div class="stars-input" role="radiogroup" aria-label="Your rating" data-rating="0">
+                                  <button type="button" data-val="1" role="radio" aria-checked="false" aria-label="1 star"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                  <button type="button" data-val="2" role="radio" aria-checked="false" aria-label="2 stars"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                  <button type="button" data-val="3" role="radio" aria-checked="false" aria-label="3 stars"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                  <button type="button" data-val="4" role="radio" aria-checked="false" aria-label="4 stars"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                  <button type="button" data-val="5" role="radio" aria-checked="false" aria-label="5 stars"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                  <span class="stars-value" data-rating-label>Select a rating</span>
+                                </div>
+                              </div>
+                              <div>
+                                <label class="field-label" for="s1-body">Review <span style="font-weight: 500; color: var(--iv-fg-muted); text-transform: none; letter-spacing: 0">(optional)</span></label>
+                                <textarea class="field-textarea" id="s1-body" placeholder="Describe delivery, quality, communication, and whether you'd work with this vendor again…"></textarea>
+                                <p class="field-hint">Your review is public once approved. Do not include prices, contact details, or confidential terms.</p>
+                              </div>
+                              <div class="row-between">
+                                <span class="field-hint" style="margin: 0">One review per engagement.</span>
+                                <button class="btn btn-primary" data-toast="Submit review|Mock only — submit_review.v1 is not wired. Nothing is persisted." data-need-rating>
+                                  <svg class="icon icon-sm" viewBox="0 0 24 24"><use href="#i-send" /></svg>Submit review
+                                </button>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+
+                      <!-- STATE: filled -->
+                      <div class="sstate" data-state="filled" data-state-label="Filled">
+                        <div class="stack">
+                          <div class="eng-banner">
+                            <span class="eng-ic"><svg class="icon" viewBox="0 0 24 24"><use href="#i-check-circle" /></svg></span>
+                            <div class="eng-meta">
+                              <div class="name">Padma Valve &amp; Fittings Ltd.</div>
+                              <div class="sub">Engagement <span data-type="ref">ENG-2026-000418</span> · Completed 4 Jul 2026 · Gate valves DN100</div>
+                            </div>
+                            <span class="badge badge-success" style="margin-left: auto"><svg class="icon-xs" viewBox="0 0 24 24"><use href="#i-check" /></svg>Completed</span>
+                          </div>
+                          <form class="card card-pad" onsubmit="return false">
+                            <div class="stack-sm">
+                              <div>
+                                <span class="field-label">Your rating <span style="color: var(--iv-danger-ink)">*</span></span>
+                                <div class="stars-input" role="radiogroup" aria-label="Your rating" data-rating="4">
+                                  <button type="button" data-val="1" role="radio" aria-checked="false" aria-label="1 star"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                  <button type="button" data-val="2" role="radio" aria-checked="false" aria-label="2 stars"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                  <button type="button" data-val="3" role="radio" aria-checked="false" aria-label="3 stars"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                  <button type="button" data-val="4" role="radio" aria-checked="true" aria-label="4 stars"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                  <button type="button" data-val="5" role="radio" aria-checked="false" aria-label="5 stars"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                  <span class="stars-value" data-rating-label>4 / 5</span>
+                                </div>
+                              </div>
+                              <div>
+                                <label class="field-label" for="s1-body2">Review <span style="font-weight: 500; color: var(--iv-fg-muted); text-transform: none; letter-spacing: 0">(optional)</span></label>
+                                <textarea class="field-textarea" id="s1-body2">Valves arrived two days ahead of schedule and matched the DN100 PN16 spec exactly. Documentation was complete and the mill test certificates checked out. One minor packaging dent, no impact on function. Would invite again for future gate-valve work.</textarea>
+                                <p class="field-hint">Your review is public once approved. Do not include prices, contact details, or confidential terms.</p>
+                              </div>
+                              <div class="row-between">
+                                <span class="field-hint" style="margin: 0">One review per engagement.</span>
+                                <button class="btn btn-primary" data-toast="Submit review|Mock only — submit_review.v1 is not wired. Nothing is persisted.">
+                                  <svg class="icon icon-sm" viewBox="0 0 24 24"><use href="#i-send" /></svg>Submit review
+                                </button>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+
+                      <!-- STATE: success -->
+                      <div class="sstate" data-state="success" data-state-label="Success">
+                        <div class="card" data-anno="gap" data-note="The submitted status shows from the submit_review RESPONSE (status = submitted) as a one-time confirmation. There is NO frozen author-scoped read to re-fetch later moderation status — a 'my reviews' tracker has no backing contract (planning §9(e)).">
+                          <span class="anno-chip" data-s="gap">Gap · §9(e)</span>
+                          <div class="confirm-card">
+                            <span class="confirm-ic confirm-ok"><svg class="icon" viewBox="0 0 24 24"><use href="#i-check-circle" /></svg></span>
+                            <h3>Review submitted</h3>
+                            <p>Thanks — your review of <strong>Padma Valve &amp; Fittings Ltd.</strong> is now with our moderation team and will appear on their public profile once approved.</p>
+                            <div style="display: inline-flex; gap: 8px; margin-top: 16px; align-items: center">
+                              <span class="badge badge-warning"><svg class="icon-xs" viewBox="0 0 24 24"><use href="#i-clock" /></svg>Submitted · awaiting moderation</span>
+                            </div>
+                            <div class="info-note" style="text-align: left; margin-top: 20px">
+                              <svg class="icon" viewBox="0 0 24 24"><use href="#i-info" /></svg>
+                              <span>You'll be notified when it's published. Moderation details (who reviews it, queue position) are never shown to authors.</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- STATE: disabled / not eligible -->
+                      <div class="sstate" data-state="disabled" data-state-label="Not eligible">
+                        <div class="stack">
+                          <div class="eng-banner">
+                            <span class="eng-ic" style="background: var(--iv-surface-2); color: var(--iv-fg-muted)"><svg class="icon" viewBox="0 0 24 24"><use href="#i-clock" /></svg></span>
+                            <div class="eng-meta">
+                              <div class="name">Padma Valve &amp; Fittings Ltd.</div>
+                              <div class="sub">Engagement <span data-type="ref">ENG-2026-000431</span> · In delivery · Gate valves DN80</div>
+                            </div>
+                            <span class="badge badge-info" style="margin-left: auto">In progress</span>
+                          </div>
+                          <div class="card card-pad" data-anno="grounded" data-note="Reviews are post-award only. Before the engagement is completed the submission affordance is not offered — the frozen engagement gate would reject it (BUSINESS).">
+                            <span class="anno-chip" data-s="grounded">Grounded</span>
+                            <div class="empty-state" style="border: 0; padding: 20px 8px">
+                              <svg class="icon" viewBox="0 0 24 24"><use href="#i-lock" /></svg>
+                              <h4>You can review this vendor once the engagement is completed</h4>
+                              <p>Reviews are anchored to a finished engagement. We'll invite you to review as soon as delivery is confirmed and the engagement closes.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- STATE: already reviewed (view-only) -->
+                      <div class="sstate" data-state="reviewed" data-state-label="Already reviewed">
+                        <div class="stack">
+                          <div class="eng-banner">
+                            <span class="eng-ic"><svg class="icon" viewBox="0 0 24 24"><use href="#i-check-circle" /></svg></span>
+                            <div class="eng-meta">
+                              <div class="name">Padma Valve &amp; Fittings Ltd.</div>
+                              <div class="sub">Engagement <span data-type="ref">ENG-2026-000418</span> · Completed 4 Jul 2026 · Gate valves DN100</div>
+                            </div>
+                            <span class="badge badge-success" style="margin-left: auto"><svg class="icon-xs" viewBox="0 0 24 24"><use href="#i-check" /></svg>Completed</span>
+                          </div>
+                          <div class="card card-pad" data-anno="grounded" data-note="One review per engagement (frozen BUSINESS rule). If a review already exists the surface is view-only — no second submission path is rendered. This is the UI honoring the rule, not relying on the error.">
+                            <span class="anno-chip" data-s="grounded">Grounded</span>
+                            <div class="row-between" style="margin-bottom: 14px">
+                              <span class="eyebrow">Your review</span>
+                              <span class="badge badge-success"><svg class="icon-xs" viewBox="0 0 24 24"><use href="#i-check" /></svg>Published</span>
+                            </div>
+                            <span class="stars stars-lg" role="img" aria-label="You rated 4 out of 5">
+                              <span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span>
+                              <span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span>
+                              <span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span>
+                              <span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span>
+                              <span data-on="false"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span>
+                            </span>
+                            <p class="rvw-body" style="margin-top: 12px">Valves arrived two days ahead of schedule and matched the DN100 PN16 spec exactly. Documentation was complete and the mill test certificates checked out. Would invite again for future gate-valve work.</p>
+                            <p class="field-hint" style="margin-top: 12px">Submitted 5 Jul 2026 · Published 6 Jul 2026</p>
+                            <hr class="divider" style="margin: 16px 0" />
+                            <p class="field-hint" style="margin: 0; display: inline-flex; gap: 6px; align-items: center">
+                              <svg class="icon-xs" viewBox="0 0 24 24" style="stroke: var(--iv-fg-muted)"><use href="#i-info" /></svg>
+                              You've already reviewed this engagement. Reviews can't be edited or resubmitted.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ============================================================
+                 SURFACE 2 — PUBLIC REVIEWS  (Lane PUB · public microsite)
+            ============================================================ -->
+            <section class="surface" data-surface="s2" data-chrome="site" aria-label="Public reviews on vendor microsite">
+              <div class="site">
+                <header class="site-header">
+                  <div class="site-header-in">
+                    <span class="site-logo"><span class="rail-mark"><svg class="icon" viewBox="0 0 24 24"><use href="#i-layers" /></svg></span>iVendorz</span>
+                    <span class="site-search"><svg class="icon icon-sm" viewBox="0 0 24 24"><use href="#i-search" /></svg>Search products, vendors, categories…</span>
+                    <nav class="site-nav">
+                      <a href="#s2">Marketplace</a>
+                      <a href="#s2">Categories</a>
+                      <a href="#s2" style="color: var(--iv-fg-strong); font-weight: 600">Vendors</a>
+                    </nav>
+                  </div>
+                </header>
+
+                <div class="site-main">
+                  <nav class="crumbs" aria-label="Breadcrumb" style="margin-bottom: 16px">
+                    <span>Vendors</span><span class="sep">/</span><b>Padma Valve &amp; Fittings Ltd.</b>
+                  </nav>
+
+                  <!-- vendor microsite header (context) -->
+                  <div class="card card-pad micro-head">
+                    <span class="eng-ic micro-avatar">PV</span>
+                    <div class="micro-id">
+                      <div class="micro-name">
+                        <h1 style="font-size: var(--iv-text-xl); margin: 0">Padma Valve &amp; Fittings Ltd.</h1>
+                        <span class="badge badge-success"><svg class="icon-xs" viewBox="0 0 24 24"><use href="#i-shield" /></svg>Verified</span>
+                      </div>
+                      <p class="micro-sub">Industrial valves &amp; fittings · Narayanganj, Bangladesh</p>
+                    </div>
+                    <div class="site-nav micro-tabs">
+                      <a class="chip" href="#s2">Overview</a>
+                      <a class="chip" href="#s2">Products</a>
+                      <a class="chip micro-tab-active" href="#s2">Reviews</a>
+                    </div>
+                  </div>
+
+                  <!-- reviews section -->
+                  <section aria-labelledby="s2-h" data-anno="grounded" data-note="Published reviews only, read via the Marketplace public projection (DG-2) — never Trust tables. Doc-7D binds this public view. Only rating, body and published date render (the frozen public read shape) — no author identity.">
+                    <span class="anno-chip" data-s="grounded" style="top: -6px">Grounded</span>
+                    <div class="row-between" style="margin-bottom: 4px">
+                      <h2 id="s2-h" style="font-size: var(--iv-text-xl)">Customer reviews</h2>
+                    </div>
+
+                    <!-- No-derived-statistics guard (the governance headline of this surface) -->
+                    <div class="info-note" data-anno="grounded" data-note="DP-R1 derived-statistics freeze: no average, no star-average, no review count-as-score, no recommendation %. The corpus defines no aggregation formula, so none is shown. Individual published reviews only." style="margin: 12px 0 20px; background: var(--iv-navy-50); border-color: var(--iv-navy-100); color: var(--iv-navy-700)">
+                      <svg class="icon" viewBox="0 0 24 24" style="color: var(--iv-navy-600)"><use href="#i-info" /></svg>
+                      <span><strong>Individual reviews from verified engagements.</strong> No overall score, average, or recommendation percentage is shown — each review stands on its own.</span>
+                      <span class="anno-chip" data-s="grounded">No derived stats</span>
+                    </div>
+
+                    <!-- STATE: with reviews -->
+                    <div class="sstate is-active" data-state="list" data-state-label="With reviews">
+                      <div class="rvw-grid">
+                        <article class="rvw-card" data-anno="grounded" data-note="ReviewCard = one published review: stars (display) + body + published date. No author name — the frozen public read shape carries none.">
+                          <span class="anno-chip" data-s="grounded">Grounded</span>
+                          <div class="rvw-top">
+                            <span class="stars" role="img" aria-label="Rated 5 out of 5">
+                              <span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span>
+                            </span>
+                            <span class="rvw-date" data-type="date">6 Jul 2026</span>
+                          </div>
+                          <p class="rvw-body">Supplied 40 cast-steel gate valves for our boiler feed line. Every unit matched the datasheet, hydro-test certs were included, and delivery beat the quoted lead time. Communication throughout was prompt and technical.</p>
+                          <span class="rvw-anon"><svg class="icon-xs" viewBox="0 0 24 24"><use href="#i-shield" /></svg>Verified engagement</span>
+                        </article>
+
+                        <article class="rvw-card">
+                          <div class="rvw-top">
+                            <span class="stars" role="img" aria-label="Rated 4 out of 5">
+                              <span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="false"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span>
+                            </span>
+                            <span class="rvw-date" data-type="date">28 Jun 2026</span>
+                          </div>
+                          <p class="rvw-body">Good quality fittings and fair pricing. One line item shipped a few days late but they flagged it early and kept us updated. Would work with them again for standard PN16 stock.</p>
+                          <span class="rvw-anon"><svg class="icon-xs" viewBox="0 0 24 24"><use href="#i-shield" /></svg>Verified engagement</span>
+                        </article>
+
+                        <article class="rvw-card">
+                          <div class="rvw-top">
+                            <span class="stars" role="img" aria-label="Rated 5 out of 5">
+                              <span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span>
+                            </span>
+                            <span class="rvw-date" data-type="date">15 Jun 2026</span>
+                          </div>
+                          <p class="rvw-body">Fabricated a custom flanged spool to drawing with no back-and-forth. Dimensional check was spot on. This is our second engagement with Padma and the consistency is why we keep coming back.</p>
+                          <span class="rvw-anon"><svg class="icon-xs" viewBox="0 0 24 24"><use href="#i-shield" /></svg>Verified engagement</span>
+                        </article>
+                      </div>
+                    </div>
+
+                    <!-- STATE: empty -->
+                    <div class="sstate" data-state="empty" data-state-label="Empty">
+                      <div class="empty-state">
+                        <svg class="icon" viewBox="0 0 24 24"><use href="#i-msg" /></svg>
+                        <h4>No published reviews yet</h4>
+                        <p>This vendor doesn't have any published reviews at the moment. Reviews appear here after a completed engagement is reviewed and approved.</p>
+                      </div>
+                    </div>
+
+                    <!-- STATE: loading -->
+                    <div class="sstate" data-state="loading" data-state-label="Loading" aria-hidden="true">
+                      <div class="rvw-grid">
+                        <div class="rvw-card">
+                          <div class="rvw-top"><span class="sk" style="width: 108px; height: 18px"></span><span class="sk" style="width: 72px; height: 12px"></span></div>
+                          <span class="sk" style="display: block; width: 100%; height: 12px; margin-top: 6px"></span>
+                          <span class="sk" style="display: block; width: 92%; height: 12px; margin-top: 8px"></span>
+                          <span class="sk" style="display: block; width: 60%; height: 12px; margin-top: 8px"></span>
+                        </div>
+                        <div class="rvw-card">
+                          <div class="rvw-top"><span class="sk" style="width: 108px; height: 18px"></span><span class="sk" style="width: 72px; height: 12px"></span></div>
+                          <span class="sk" style="display: block; width: 100%; height: 12px; margin-top: 6px"></span>
+                          <span class="sk" style="display: block; width: 80%; height: 12px; margin-top: 8px"></span>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                <footer class="site-foot">© iVendorz — Industrial Procurement Operating System · Made in Bangladesh · BDT</footer>
+              </div>
+            </section>
+
+            <!-- ============================================================
+                 SURFACE 3 — ADMIN MODERATION  (Lane PUB · staff console)
+            ============================================================ -->
+            <section class="surface" data-surface="s3" data-chrome="admin" aria-label="Admin review moderation">
+              <div class="shell">
+                <aside class="rail">
+                  <div class="rail-brand"><span class="rail-mark"><svg class="icon" viewBox="0 0 24 24"><use href="#i-shield" /></svg></span>iVendorz Admin</div>
+                  <div class="rail-sect">Moderation</div>
+                  <a class="rail-item" href="#s3"><svg class="icon" viewBox="0 0 24 24"><use href="#i-flag" /></svg>Content queue</a>
+                  <a class="rail-item is-current" href="#s3"><svg class="icon" viewBox="0 0 24 24"><use href="#i-msg" /></svg>Reviews<span class="count">7</span></a>
+                  <a class="rail-item" href="#s3"><svg class="icon" viewBox="0 0 24 24"><use href="#i-inbox" /></svg>RFQ moderation</a>
+                  <a class="rail-item" href="#s3"><svg class="icon" viewBox="0 0 24 24"><use href="#i-shield" /></svg>Verification</a>
+                  <div class="rail-sect">Vendors</div>
+                  <a class="rail-item" href="#s3"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg>Admin ratings</a>
+                  <div class="rail-foot">
+                    <span class="rail-avatar">SA</span>
+                    <span class="rail-who"><strong>Staff · Moderation</strong><span>Platform team</span></span>
+                  </div>
+                </aside>
+
+                <div class="work">
+                  <div class="topbar">
+                    <nav class="crumbs" aria-label="Breadcrumb"><span>Moderation</span><span class="sep">/</span><b>Reviews</b></nav>
+                    <span class="env"><span class="lane-tag lane-pub">Lane PUB · Staff moderation</span></span>
+                  </div>
+
+                  <div class="work-body">
+                    <div class="page-head">
+                      <div>
+                        <h1>Review moderation</h1>
+                        <p>Public reviews awaiting a decision. Approve or reject submitted reviews, then publish approved ones to the vendor's profile.</p>
+                      </div>
+                      <span class="badge badge-warning" style="align-self: center"><svg class="icon-xs" viewBox="0 0 24 24"><use href="#i-clock" /></svg>7 pending</span>
+                    </div>
+
+                    <!-- STATE: submitted selected (approve / reject) -->
+                    <div class="sstate is-active" data-state="submitted" data-state-label="Submitted → moderate">
+                      <div class="adm-split">
+                        <div class="card qtable-wrap" data-anno="grounded" data-note="Reuses the shared AdminQueueTable pattern (the Nth consumer). Queue = reviews in `submitted` (moderatable) and `approved` (publishable). The table decides nothing; a row opens the case detail where the command acts (R5).">
+                          <span class="anno-chip" data-s="grounded">Grounded · AdminQueueTable</span>
+                          <table class="qtable">
+                            <caption class="vh">Reviews awaiting moderation</caption>
+                            <thead><tr><th>Vendor</th><th>Review</th><th>Rating</th><th>Status</th><th>Submitted</th></tr></thead>
+                            <tbody>
+                              <tr class="is-sel">
+                                <td><span class="q-vendor">Padma Valve &amp; Fittings</span></td>
+                                <td><div class="q-snip">Valves arrived ahead of schedule and matched…</div></td>
+                                <td><span style="font-weight: 600; color: var(--iv-navy-700)" data-numeric>4/5</span></td>
+                                <td><span class="badge badge-warning">Submitted</span></td>
+                                <td class="mono" style="font-size: var(--iv-text-xs); color: var(--iv-fg-muted)">5 Jul</td>
+                              </tr>
+                              <tr>
+                                <td><span class="q-vendor">Karnaphuli Steel Co.</span></td>
+                                <td><div class="q-snip">Good material but the second shipment was…</div></td>
+                                <td><span style="font-weight: 600; color: var(--iv-navy-700)" data-numeric>3/5</span></td>
+                                <td><span class="badge badge-warning">Submitted</span></td>
+                                <td class="mono" style="font-size: var(--iv-text-xs); color: var(--iv-fg-muted)">5 Jul</td>
+                              </tr>
+                              <tr>
+                                <td><span class="q-vendor">Dhaka Pumps Ltd.</span></td>
+                                <td><div class="q-snip">Excellent service, fabricated to drawing…</div></td>
+                                <td><span style="font-weight: 600; color: var(--iv-navy-700)" data-numeric>5/5</span></td>
+                                <td><span class="badge badge-info">Approved</span></td>
+                                <td class="mono" style="font-size: var(--iv-text-xs); color: var(--iv-fg-muted)">4 Jul</td>
+                              </tr>
+                              <tr>
+                                <td><span class="q-vendor">Meghna Fasteners</span></td>
+                                <td><div class="q-snip">Contact them on 01XXX for a better price…</div></td>
+                                <td><span style="font-weight: 600; color: var(--iv-navy-700)" data-numeric>2/5</span></td>
+                                <td><span class="badge badge-warning">Submitted</span></td>
+                                <td class="mono" style="font-size: var(--iv-text-xs); color: var(--iv-fg-muted)">3 Jul</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div class="card detail-panel detail-block" data-anno="grounded" data-note="moderate_review.v1 acts on `submitted` reviews only → approve or reject. moderation_note is REQUIRED on reject (frozen BUSINESS rule). Staff-only (staff_can_verify / staff_super_admin).">
+                          <span class="anno-chip" data-s="grounded">moderate_review.v1</span>
+                          <div class="row-between" style="margin-bottom: 6px">
+                            <span class="eyebrow">Review · case detail</span>
+                            <span class="badge badge-warning">Submitted</span>
+                          </div>
+                          <div class="detail-review">
+                            <span class="stars" role="img" aria-label="Rated 4 out of 5">
+                              <span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="false"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span>
+                            </span>
+                            <p class="rvw-body" style="margin-top: 10px">Valves arrived two days ahead of schedule and matched the DN100 PN16 spec exactly. Documentation was complete and the mill test certificates checked out. Would invite again.</p>
+                          </div>
+                          <dl style="margin-bottom: 14px">
+                            <div class="detail-row"><dt>Vendor</dt><dd>Padma Valve &amp; Fittings</dd></div>
+                            <div class="detail-row"><dt>Author org</dt><dd>Meghna Refinery Ltd.</dd></div>
+                            <div class="detail-row"><dt>Engagement</dt><dd class="mono" style="font-size: var(--iv-text-xs)">ENG-2026-000418</dd></div>
+                          </dl>
+                          <div class="detail-actions">
+                            <button class="btn btn-success btn-sm" data-toast="Approve|Mock only — moderate_review.v1 (approve) is not wired.">
+                              <svg class="icon icon-sm" viewBox="0 0 24 24"><use href="#i-check" /></svg>Approve
+                            </button>
+                            <button class="btn btn-danger btn-sm" data-goto-state="reject">
+                              <svg class="icon icon-sm" viewBox="0 0 24 24"><use href="#i-x" /></svg>Reject
+                            </button>
+                          </div>
+                          <p class="field-hint" style="margin-top: 12px">Approving moves the review to <em>approved</em>; you then publish it in a second step.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- STATE: reject (note required) -->
+                    <div class="sstate" data-state="reject" data-state-label="Reject (note required)">
+                      <div class="adm-split">
+                        <div class="card qtable-wrap" style="opacity: 0.6; pointer-events: none">
+                          <table class="qtable">
+                            <caption class="vh">Reviews awaiting moderation</caption>
+                            <thead><tr><th>Vendor</th><th>Review</th><th>Rating</th><th>Status</th><th>Submitted</th></tr></thead>
+                            <tbody>
+                              <tr class="is-sel"><td><span class="q-vendor">Padma Valve &amp; Fittings</span></td><td><div class="q-snip">Valves arrived ahead of schedule…</div></td><td><span style="font-weight: 600; color: var(--iv-navy-700)">4/5</span></td><td><span class="badge badge-warning">Submitted</span></td><td class="mono" style="font-size: var(--iv-text-xs); color: var(--iv-fg-muted)">5 Jul</td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <div class="card detail-panel detail-block" data-anno="grounded" data-note="On reject, moderation_note is REQUIRED (frozen BUSINESS rule) — the reject action is disabled until a note is entered.">
+                          <span class="anno-chip" data-s="grounded">Reject · note required</span>
+                          <div class="row-between" style="margin-bottom: 12px">
+                            <span class="eyebrow">Reject review</span>
+                            <span class="badge badge-danger">Rejecting</span>
+                          </div>
+                          <div class="mod-note" style="margin-top: 0">
+                            <label class="field-label" for="s3-note">Moderation note <span style="color: var(--iv-danger-ink)">*</span></label>
+                            <textarea class="field-textarea" id="s3-note" placeholder="Why is this review being rejected? (e.g. contains contact details, off-topic, policy breach)"></textarea>
+                            <p class="field-error"><svg class="icon-xs" viewBox="0 0 24 24"><use href="#i-alert" /></svg>A note is required to reject a review.</p>
+                          </div>
+                          <div class="detail-actions" style="margin-top: 8px">
+                            <button class="btn btn-danger btn-sm" aria-disabled="true"><svg class="icon icon-sm" viewBox="0 0 24 24"><use href="#i-x" /></svg>Reject review</button>
+                            <button class="btn btn-ghost btn-sm" data-goto-state="submitted">Cancel</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- STATE: approved selected (publish / remove) -->
+                    <div class="sstate" data-state="approved" data-state-label="Approved → publish/remove">
+                      <div class="adm-split">
+                        <div class="card qtable-wrap">
+                          <table class="qtable">
+                            <caption class="vh">Reviews awaiting moderation</caption>
+                            <thead><tr><th>Vendor</th><th>Review</th><th>Rating</th><th>Status</th><th>Submitted</th></tr></thead>
+                            <tbody>
+                              <tr><td><span class="q-vendor">Padma Valve &amp; Fittings</span></td><td><div class="q-snip">Valves arrived ahead of schedule…</div></td><td><span style="font-weight: 600; color: var(--iv-navy-700)">4/5</span></td><td><span class="badge badge-warning">Submitted</span></td><td class="mono" style="font-size: var(--iv-text-xs); color: var(--iv-fg-muted)">5 Jul</td></tr>
+                              <tr class="is-sel"><td><span class="q-vendor">Dhaka Pumps Ltd.</span></td><td><div class="q-snip">Excellent service, fabricated to drawing…</div></td><td><span style="font-weight: 600; color: var(--iv-navy-700)">5/5</span></td><td><span class="badge badge-info">Approved</span></td><td class="mono" style="font-size: var(--iv-text-xs); color: var(--iv-fg-muted)">4 Jul</td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <div class="card detail-panel detail-block" data-anno="grounded" data-note="publish_review.v1 acts on `approved` only → published (public). Frozen two-step: publish + audit are atomic; the Buyer-Feedback input ingestion is a separate retryable step — a transient failure shows 'published; input ingestion retrying', never a failed publish.">
+                          <span class="anno-chip" data-s="grounded">publish_review.v1 · remove_review.v1</span>
+                          <div class="row-between" style="margin-bottom: 6px">
+                            <span class="eyebrow">Review · case detail</span>
+                            <span class="badge badge-info">Approved</span>
+                          </div>
+                          <div class="detail-review">
+                            <span class="stars" role="img" aria-label="Rated 5 out of 5">
+                              <span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span><span data-on="true"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></span>
+                            </span>
+                            <p class="rvw-body" style="margin-top: 10px">Excellent service — fabricated a custom flanged spool to drawing with no back-and-forth. Dimensional check was spot on.</p>
+                          </div>
+                          <dl style="margin-bottom: 14px">
+                            <div class="detail-row"><dt>Vendor</dt><dd>Dhaka Pumps Ltd.</dd></div>
+                            <div class="detail-row"><dt>Moderated by</dt><dd>Staff · 4 Jul 2026</dd></div>
+                          </dl>
+                          <div class="detail-actions">
+                            <button class="btn btn-primary btn-sm" data-toast="Publish|Mock only — publish_review.v1 is not wired. Publish feeds Buyer Feedback via BC-TRUST-3 (Path B).">
+                              <svg class="icon icon-sm" viewBox="0 0 24 24"><use href="#i-eye" /></svg>Publish
+                            </button>
+                            <button class="btn btn-danger btn-sm" data-toast="Remove|Mock only — remove_review.v1 hides (soft-delete), never erases.">
+                              <svg class="icon icon-sm" viewBox="0 0 24 24"><use href="#i-trash" /></svg>Remove
+                            </button>
+                          </div>
+                          <div class="info-note" style="margin-top: 14px">
+                            <svg class="icon" viewBox="0 0 24 24"><use href="#i-info" /></svg>
+                            <span>Publishing feeds this vendor's Buyer-Feedback input — it never edits a score directly. Removing hides the review; it is never erased.</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- STATE: empty queue -->
+                    <div class="sstate" data-state="empty" data-state-label="Empty queue">
+                      <div class="card card-pad">
+                        <div class="empty-state" style="border: 0">
+                          <svg class="icon" viewBox="0 0 24 24"><use href="#i-check-circle" /></svg>
+                          <h4>Nothing to moderate</h4>
+                          <p>All submitted reviews have been actioned. New reviews will appear here as buyers submit them.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ============================================================
+                 SURFACE 4 — PRIVATE CRM RATING  (Lane CRM · workspace)
+            ============================================================ -->
+            <section class="surface" data-surface="s4" data-chrome="work" aria-label="Private vendor CRM rating">
+              <div class="shell">
+                <aside class="rail">
+                  <div class="rail-brand"><span class="rail-mark"><svg class="icon" viewBox="0 0 24 24"><use href="#i-layers" /></svg></span>iVendorz</div>
+                  <div class="rail-sect">Procurement</div>
+                  <a class="rail-item" href="#s4"><svg class="icon" viewBox="0 0 24 24"><use href="#i-inbox" /></svg>RFQs</a>
+                  <a class="rail-item" href="#s4"><svg class="icon" viewBox="0 0 24 24"><use href="#i-check-circle" /></svg>Engagements</a>
+                  <a class="rail-item is-current" href="#s4"><svg class="icon" viewBox="0 0 24 24"><use href="#i-building" /></svg>Vendor CRM</a>
+                  <div class="rail-sect">Account</div>
+                  <a class="rail-item" href="#s4"><svg class="icon" viewBox="0 0 24 24"><use href="#i-user" /></svg>Organization</a>
+                  <div class="rail-foot">
+                    <span class="rail-avatar">MR</span>
+                    <span class="rail-who"><strong>Meghna Refinery</strong><span>Procurement Officer</span></span>
+                  </div>
+                </aside>
+
+                <div class="work">
+                  <div class="topbar">
+                    <nav class="crumbs" aria-label="Breadcrumb"><span>Vendor CRM</span><span class="sep">/</span><b>Padma Valve &amp; Fittings</b></nav>
+                    <span class="env"><span class="lane-tag lane-crm"><svg class="icon-xs" viewBox="0 0 24 24" style="stroke: currentColor"><use href="#i-lock" /></svg>Lane CRM · Private to your org</span></span>
+                  </div>
+
+                  <div class="work-body">
+                    <div class="content-narrow">
+                      <div class="page-head">
+                        <div>
+                          <h1>Padma Valve &amp; Fittings</h1>
+                          <p>Your private record for this vendor. Status, notes and ratings here are visible only inside your organization.</p>
+                        </div>
+                        <span class="badge badge-success" style="align-self: center"><svg class="icon-xs" viewBox="0 0 24 24"><use href="#i-check" /></svg>Approved supplier</span>
+                      </div>
+
+                      <!-- Ratings card (activated from the parked build) -->
+                      <!-- STATE: read-only (has ratings) -->
+                      <div class="sstate is-active" data-state="ratings" data-state-label="Saved ratings">
+                        <div class="stack">
+                          <div class="card" data-anno="grounded" data-note="Activates the already-built (parked) CRM Ratings card. ops.set_private_vendor_rating.v1 (BC-OPS-1) — a private score + comment gated on can_manage_private_vendors. A GOLD star + numeric score, deliberately distinct from the public 1–5 review lane.">
+                            <span class="anno-chip" data-s="grounded">ops.set_private_vendor_rating.v1</span>
+                            <div class="row-between" style="padding: 16px; border-bottom: 1px solid var(--iv-border)">
+                              <strong style="font-size: var(--iv-text-sm)">Private ratings</strong>
+                              <button class="btn btn-outline btn-sm" data-goto-state="edit"><svg class="icon icon-sm" viewBox="0 0 24 24"><use href="#i-plus" /></svg>Add rating</button>
+                            </div>
+                            <div style="padding: 6px 16px 14px">
+                              <ul>
+                                <li style="display: flex; flex-direction: column; gap: 3px; padding: 12px 0; border-bottom: 1px solid var(--iv-border)">
+                                  <span class="crm-score"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg>5 / 5</span>
+                                  <span style="font-size: var(--iv-text-sm); color: var(--iv-fg-secondary)">Reliable on repeat gate-valve orders. Preferred for boiler-line work.</span>
+                                  <span class="field-hint" style="margin: 2px 0 0">Added by A. Rahman · 6 Jul 2026</span>
+                                </li>
+                                <li style="display: flex; flex-direction: column; gap: 3px; padding: 12px 0">
+                                  <span class="crm-score"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg>4 / 5</span>
+                                  <span style="font-size: var(--iv-text-sm); color: var(--iv-fg-secondary)">Good quality, occasionally slips on lead time for non-stock items.</span>
+                                  <span class="field-hint" style="margin: 2px 0 0">Added by S. Haque · 12 May 2026</span>
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+                          <div class="privacy-note privacy-crm" data-anno="grounded" data-note="Lane CRM firewall: buyer-private, never feeds any score (DG-4), never disclosed cross-tenant, never exported, never searchable outside your org, never shown to the vendor.">
+                            <span class="anno-chip" data-s="grounded">Firewalled · CRM</span>
+                            <svg class="icon" viewBox="0 0 24 24"><use href="#i-lock" /></svg>
+                            <span>Your vendor CRM — status, notes and ratings — is <strong>private to your organization</strong>, is never shown to vendors, and never affects any platform score or public review.</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- STATE: edit -->
+                      <div class="sstate" data-state="edit" data-state-label="Add / edit rating">
+                        <div class="stack">
+                          <div class="card card-pad" data-anno="grounded" data-note="Private rating input: numeric score + private comment (frozen Doc-4F §F4.4 shape). Presentation-only — mock adapter, no persistence (Phase-P). The [ESC-OPS-POLICY] score bound is unresolved, so no numeric-range claim is asserted.">
+                            <span class="anno-chip" data-s="grounded">Private rating · edit</span>
+                            <div class="row-between" style="margin-bottom: 16px">
+                              <strong style="font-size: var(--iv-text-sm)">Add a private rating</strong>
+                              <span class="lane-tag lane-crm"><svg class="icon-xs" viewBox="0 0 24 24" style="stroke: currentColor"><use href="#i-lock" /></svg>Org-private</span>
+                            </div>
+                            <div class="stack-sm">
+                              <div>
+                                <span class="field-label">Score</span>
+                                <div class="stars-input" role="radiogroup" aria-label="Private score" data-rating="0" data-gold>
+                                  <button type="button" data-val="1" role="radio" aria-checked="false" aria-label="1"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                  <button type="button" data-val="2" role="radio" aria-checked="false" aria-label="2"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                  <button type="button" data-val="3" role="radio" aria-checked="false" aria-label="3"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                  <button type="button" data-val="4" role="radio" aria-checked="false" aria-label="4"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                  <button type="button" data-val="5" role="radio" aria-checked="false" aria-label="5"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                  <span class="stars-value" data-rating-label>No score</span>
+                                </div>
+                              </div>
+                              <div>
+                                <label class="field-label" for="s4-c">Private comment</label>
+                                <textarea class="field-textarea" id="s4-c" placeholder="Notes for your team — reliability, quality, anything worth remembering. Only your organization sees this."></textarea>
+                              </div>
+                              <div class="detail-actions">
+                                <button class="btn btn-primary btn-sm" data-toast="Save private rating|Mock only — ops.set_private_vendor_rating.v1 is not wired.">Save rating</button>
+                                <button class="btn btn-ghost btn-sm" data-goto-state="ratings">Cancel</button>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="privacy-note privacy-crm">
+                            <svg class="icon" viewBox="0 0 24 24"><use href="#i-lock" /></svg>
+                            <span>This rating is <strong>private to your organization</strong> and never leaves it.</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- STATE: empty -->
+                      <div class="sstate" data-state="empty" data-state-label="Empty">
+                        <div class="stack">
+                          <div class="card">
+                            <div class="row-between" style="padding: 16px; border-bottom: 1px solid var(--iv-border)">
+                              <strong style="font-size: var(--iv-text-sm)">Private ratings</strong>
+                              <button class="btn btn-outline btn-sm" data-goto-state="edit"><svg class="icon icon-sm" viewBox="0 0 24 24"><use href="#i-plus" /></svg>Add rating</button>
+                            </div>
+                            <div style="padding: 16px">
+                              <div class="empty-state"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg><h4>No ratings yet</h4><p>Rate this vendor to keep a private, team-only record of how they perform on your orders.</p></div>
+                            </div>
+                          </div>
+                          <div class="privacy-note privacy-crm">
+                            <svg class="icon" viewBox="0 0 24 24"><use href="#i-lock" /></svg>
+                            <span>Your vendor CRM is <strong>private to your organization</strong> and is never shown to vendors.</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ============================================================
+                 SURFACE 5 — ADMIN RATINGS  (Lane ADM · staff console)
+            ============================================================ -->
+            <section class="surface" data-surface="s5" data-chrome="admin" aria-label="Staff-only admin ratings">
+              <div class="shell">
+                <aside class="rail">
+                  <div class="rail-brand"><span class="rail-mark"><svg class="icon" viewBox="0 0 24 24"><use href="#i-shield" /></svg></span>iVendorz Admin</div>
+                  <div class="rail-sect">Moderation</div>
+                  <a class="rail-item" href="#s5"><svg class="icon" viewBox="0 0 24 24"><use href="#i-flag" /></svg>Content queue</a>
+                  <a class="rail-item" href="#s5"><svg class="icon" viewBox="0 0 24 24"><use href="#i-msg" /></svg>Reviews</a>
+                  <a class="rail-item" href="#s5"><svg class="icon" viewBox="0 0 24 24"><use href="#i-shield" /></svg>Verification</a>
+                  <div class="rail-sect">Vendors</div>
+                  <a class="rail-item is-current" href="#s5"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg>Admin ratings</a>
+                  <div class="rail-foot">
+                    <span class="rail-avatar">SA</span>
+                    <span class="rail-who"><strong>Staff · Trust</strong><span>Platform team</span></span>
+                  </div>
+                </aside>
+
+                <div class="work">
+                  <div class="topbar">
+                    <nav class="crumbs" aria-label="Breadcrumb"><span>Vendors</span><span class="sep">/</span><span>Padma Valve &amp; Fittings</span><span class="sep">/</span><b>Admin rating</b></nav>
+                    <span class="env"><span class="lane-tag lane-adm"><svg class="icon-xs" viewBox="0 0 24 24" style="stroke: currentColor"><use href="#i-eye-off" /></svg>Lane ADM · Staff-only</span></span>
+                  </div>
+
+                  <div class="work-body">
+                    <div class="content-narrow">
+                      <div class="page-head">
+                        <div>
+                          <h1>Internal admin rating</h1>
+                          <p>A staff-only internal rating for this vendor. Separate from public reviews — never merged, never a public or vendor-visible signal.</p>
+                        </div>
+                      </div>
+
+                      <div class="privacy-note privacy-adm" data-anno="grounded" data-note="set_admin_rating.v1 / list_admin_ratings.v1 — staff-only. Never tenant-visible, never public, never exposed externally; non-staff access collapses to NOT_FOUND (its existence is a protected fact). 'Display' here = staff-internal rendering only." style="margin-bottom: 20px">
+                        <span class="anno-chip" data-s="grounded">Staff-only · Lane ADM</span>
+                        <svg class="icon" viewBox="0 0 24 24"><use href="#i-eye-off" /></svg>
+                        <span><strong>Staff-only.</strong> This rating is internal — never shown to the vendor, to buyers, or on any public surface. It is a separate instrument from public reviews and never affects any governance score.</span>
+                      </div>
+
+                      <!-- STATE: has history -->
+                      <div class="sstate is-active" data-state="history" data-state-label="With history">
+                        <div class="grid-2">
+                          <div class="card card-pad" data-anno="grounded" data-note="set_admin_rating.v1 is an UPSERT (create/update + soft delete; simple lifecycle, no state machine). rated_by is server-set staff attribution.">
+                            <span class="anno-chip" data-s="grounded">set_admin_rating.v1 · upsert</span>
+                            <div class="row-between" style="margin-bottom: 14px">
+                              <strong style="font-size: var(--iv-text-sm)">Current rating</strong>
+                              <span class="crm-score" style="color: #6d28d9"><svg class="icon" viewBox="0 0 24 24" style="fill: #6d28d9; stroke: #6d28d9"><use href="#i-star" /></svg>4 / 5</span>
+                            </div>
+                            <p style="font-size: var(--iv-text-sm); color: var(--iv-fg-secondary); background: var(--iv-surface-2); border: 1px solid var(--iv-border); border-radius: var(--iv-radius-md); padding: 12px">Consistent verification history and responsive to compliance requests. Watch capacity claims on large fabrication lots.</p>
+                            <p class="field-hint" style="margin-top: 10px">Last updated by Staff · Trust · 2 Jul 2026</p>
+                            <div class="detail-actions" style="margin-top: 14px">
+                              <button class="btn btn-outline btn-sm" data-goto-state="update"><svg class="icon icon-sm" viewBox="0 0 24 24"><use href="#i-edit" /></svg>Update rating</button>
+                            </div>
+                          </div>
+
+                          <div class="card card-pad">
+                            <strong style="font-size: var(--iv-text-sm); display: block; margin-bottom: 6px">Rating history</strong>
+                            <div>
+                              <div class="hist-row">
+                                <span class="hist-dot"><svg class="icon" viewBox="0 0 24 24"><use href="#i-edit" /></svg></span>
+                                <div class="hist-meta">
+                                  <div class="line1">Updated to 4 / 5</div>
+                                  <div class="line2">Staff · Trust · 2 Jul 2026 — "Watch capacity claims on large lots."</div>
+                                </div>
+                              </div>
+                              <div class="hist-row">
+                                <span class="hist-dot"><svg class="icon" viewBox="0 0 24 24"><use href="#i-edit" /></svg></span>
+                                <div class="hist-meta">
+                                  <div class="line1">Updated to 5 / 5</div>
+                                  <div class="line2">Staff · Verification · 18 Apr 2026 — "Clean re-verification."</div>
+                                </div>
+                              </div>
+                              <div class="hist-row">
+                                <span class="hist-dot"><svg class="icon" viewBox="0 0 24 24"><use href="#i-plus" /></svg></span>
+                                <div class="hist-meta">
+                                  <div class="line1">Rating created · 4 / 5</div>
+                                  <div class="line2">Staff · Trust · 2 Feb 2026</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- STATE: update -->
+                      <div class="sstate" data-state="update" data-state-label="Update">
+                        <div class="card card-pad" data-anno="grounded" data-note="Update writes through the same upsert; audit carried under [ESC-TRUST-AUDIT] (admin-rating set has no separately-enumerated Doc-2 §9 action — nearest by pointer, none invented).">
+                          <span class="anno-chip" data-s="grounded">Update · [ESC-TRUST-AUDIT]</span>
+                          <div class="row-between" style="margin-bottom: 16px">
+                            <strong style="font-size: var(--iv-text-sm)">Update admin rating</strong>
+                            <span class="lane-tag lane-adm"><svg class="icon-xs" viewBox="0 0 24 24" style="stroke: currentColor"><use href="#i-eye-off" /></svg>Staff-only</span>
+                          </div>
+                          <div class="stack-sm">
+                            <div>
+                              <span class="field-label">Rating value</span>
+                              <div class="stars-input" role="radiogroup" aria-label="Admin rating" data-rating="4" data-violet>
+                                <button type="button" data-val="1" role="radio" aria-checked="false" aria-label="1"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                <button type="button" data-val="2" role="radio" aria-checked="false" aria-label="2"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                <button type="button" data-val="3" role="radio" aria-checked="false" aria-label="3"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                <button type="button" data-val="4" role="radio" aria-checked="true" aria-label="4"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                <button type="button" data-val="5" role="radio" aria-checked="false" aria-label="5"><svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg></button>
+                                <span class="stars-value" data-rating-label>4 / 5</span>
+                              </div>
+                            </div>
+                            <div>
+                              <label class="field-label" for="s5-note">Internal note</label>
+                              <textarea class="field-textarea" id="s5-note">Consistent verification history and responsive to compliance requests. Watch capacity claims on large fabrication lots.</textarea>
+                            </div>
+                            <div class="detail-actions">
+                              <button class="btn btn-primary btn-sm" data-toast="Save admin rating|Mock only — set_admin_rating.v1 is not wired.">Save rating</button>
+                              <button class="btn btn-ghost btn-sm" data-goto-state="history">Cancel</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- STATE: empty -->
+                      <div class="sstate" data-state="empty" data-state-label="Empty">
+                        <div class="card card-pad">
+                          <div class="empty-state" style="border: 0">
+                            <svg class="icon" viewBox="0 0 24 24"><use href="#i-star" /></svg>
+                            <h4>No admin rating yet</h4>
+                            <p>This vendor doesn't have an internal staff rating. Set one to record the platform's own assessment — kept entirely internal.</p>
+                            <button class="btn btn-primary btn-sm" style="margin-top: 6px" data-goto-state="update"><svg class="icon icon-sm" viewBox="0 0 24 24"><use href="#i-plus" /></svg>Set admin rating</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="pc-tooltip" id="pc-tooltip" role="status"></div>
+    <div class="pc-toasts" id="pc-toasts" aria-live="polite"></div>
+
+    <script>
+      (function () {
+        "use strict";
+        const $ = (s, c) => (c || document).querySelector(s);
+        const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
+
+        const scroll = $("#scroll");
+        const frame = $("#frame");
+        const clip = $("#pc-clip");
+        const stage = $(".pc-stage");
+        const surfaces = $$(".surface");
+
+        const SURF = {
+          s1: { label: "1 · Submit", lane: "pub" },
+          s2: { label: "2 · Public", lane: "pub" },
+          s3: { label: "3 · Moderate", lane: "pub" },
+          s4: { label: "4 · CRM", lane: "crm" },
+          s5: { label: "5 · Admin", lane: "adm" },
+        };
+        const LANE_DOT = { pub: "#8ba0c6", adm: "#a78bfa", crm: "#dcc05f" };
+
+        // ---- Star rendering (input + preset) --------------------------------
+        function paintStars(group) {
+          const val = parseInt(group.getAttribute("data-rating") || "0", 10);
+          $$("button", group).forEach((b) => {
+            const on = parseInt(b.getAttribute("data-val"), 10) <= val;
+            b.setAttribute("data-on", on ? "true" : "false");
+            b.setAttribute("aria-checked", parseInt(b.getAttribute("data-val"), 10) === val ? "true" : "false");
+          });
+          const lab = $("[data-rating-label]", group);
+          if (lab) {
+            lab.textContent = val === 0 ? lab.getAttribute("data-zero") || "Select a rating" : val + " / 5";
+          }
+          // enable a gated submit button in the same form
+          const form = group.closest("form");
+          if (form) {
+            const gated = $("[data-need-rating]", form);
+            if (gated) gated.disabled = val === 0;
+          }
+        }
+        function initStars(root) {
+          $$(".stars-input", root).forEach((group) => {
+            const lab = $("[data-rating-label]", group);
+            if (lab && !lab.hasAttribute("data-zero")) lab.setAttribute("data-zero", lab.textContent.trim());
+            paintStars(group);
+            if (group.__wired) return;
+            group.__wired = true;
+            $$("button", group).forEach((b) => {
+              b.addEventListener("click", () => {
+                group.setAttribute("data-rating", b.getAttribute("data-val"));
+                paintStars(group);
+              });
+            });
+          });
+        }
+
+        // ---- State switcher --------------------------------------------------
+        const stateBar = $("#pc-states");
+        function activeSurface() {
+          return surfaces.find((s) => s.classList.contains("is-active")) || surfaces[0];
+        }
+        function buildStates(surf) {
+          stateBar.innerHTML = "";
+          const states = $$(".sstate", surf);
+          states.forEach((st) => {
+            const btn = document.createElement("button");
+            btn.className = "pc-btn";
+            btn.type = "button";
+            btn.textContent = st.getAttribute("data-state-label") || st.getAttribute("data-state");
+            btn.setAttribute("aria-pressed", st.classList.contains("is-active") ? "true" : "false");
+            btn.addEventListener("click", () => setState(surf, st.getAttribute("data-state")));
+            stateBar.appendChild(btn);
+          });
+        }
+        function setState(surf, name) {
+          $$(".sstate", surf).forEach((st) => st.classList.toggle("is-active", st.getAttribute("data-state") === name));
+          $$("#pc-states .pc-btn").forEach((b, i) => {
+            const st = $$(".sstate", surf)[i];
+            b.setAttribute("aria-pressed", st && st.getAttribute("data-state") === name ? "true" : "false");
+          });
+          initStars(surf);
+          fit();
+          scroll.scrollTop = 0;
+        }
+
+        // ---- Surface switcher ------------------------------------------------
+        const surfBar = $("#pc-surfaces");
+        function setSurface(id) {
+          surfaces.forEach((s) => s.classList.toggle("is-active", s.getAttribute("data-surface") === id));
+          $$("#pc-surfaces .pc-btn").forEach((b) => b.setAttribute("aria-pressed", b.getAttribute("data-s") === id ? "true" : "false"));
+          const surf = $('.surface[data-surface="' + id + '"]');
+          // default first state active if none is
+          if (!$(".sstate.is-active", surf)) {
+            const first = $(".sstate", surf);
+            if (first) first.classList.add("is-active");
+          }
+          buildStates(surf);
+          initStars(surf);
+          fit();
+          scroll.scrollTop = 0;
+        }
+        Object.keys(SURF).forEach((id, i) => {
+          const b = document.createElement("button");
+          b.className = "pc-btn";
+          b.type = "button";
+          b.setAttribute("data-s", id);
+          b.setAttribute("role", "tab");
+          const dot = document.createElement("span");
+          dot.className = "dot";
+          dot.style.background = LANE_DOT[SURF[id].lane];
+          b.appendChild(dot);
+          b.appendChild(document.createTextNode(SURF[id].label));
+          b.addEventListener("click", () => setSurface(id));
+          surfBar.appendChild(b);
+        });
+
+        // ---- goto-state buttons (inside surfaces) ---------------------------
+        scroll.addEventListener("click", (e) => {
+          const g = e.target.closest("[data-goto-state]");
+          if (g) {
+            e.preventDefault();
+            setState(activeSurface(), g.getAttribute("data-goto-state"));
+          }
+        });
+
+        // ---- Device switcher + scale-to-fit ---------------------------------
+        let deviceW = 1280;
+        const toolbar = $(".pc-toolbar");
+        function fit() {
+          // keep the stage clear of the (wrapping) toolbar
+          document.documentElement.style.setProperty("--pc-bar-h", toolbar.offsetHeight + "px");
+          document.documentElement.style.setProperty("--device-w", deviceW + "px");
+          frame.style.transform = "scale(1)";
+          const availW = stage.clientWidth - 44;
+          const availH = stage.clientHeight - 50;
+          const dh = frame.offsetHeight;
+          let s = Math.min(availW / deviceW, availH / dh, 1);
+          if (!isFinite(s) || s <= 0) s = 1;
+          frame.style.transform = "scale(" + s + ")";
+          clip.style.width = deviceW * s + "px";
+          clip.style.height = dh * s + "px";
+        }
+        $$("[data-device]").forEach((b) => {
+          b.addEventListener("click", () => {
+            $$("[data-device]").forEach((x) => x.setAttribute("aria-pressed", "false"));
+            b.setAttribute("aria-pressed", "true");
+            deviceW = b.getAttribute("data-device") === "mobile" ? 390 : 1280;
+            fit();
+          });
+        });
+        window.addEventListener("resize", fit);
+
+        // ---- Annotations toggle ---------------------------------------------
+        const annoBtn = $("#pc-anno");
+        annoBtn.addEventListener("click", () => {
+          const on = document.body.classList.toggle("anno-on");
+          annoBtn.setAttribute("aria-pressed", on ? "true" : "false");
+          if (!on) hideTip();
+          fit();
+        });
+
+        // ---- Annotation tooltip ---------------------------------------------
+        const tip = $("#pc-tooltip");
+        let tipEl = null;
+        function showTip(host) {
+          const note = host.getAttribute("data-note");
+          if (!note || !document.body.classList.contains("anno-on")) return;
+          const chip = $(".anno-chip", host);
+          const label = chip ? chip.textContent.trim() : "Note";
+          tip.innerHTML = "<strong>" + label + "</strong><br>" + note;
+          tip.classList.add("open");
+          const r = (chip || host).getBoundingClientRect();
+          let top = r.bottom + 8;
+          let left = Math.min(r.left, window.innerWidth - tip.offsetWidth - 12);
+          if (top + tip.offsetHeight > window.innerHeight - 8) top = r.top - tip.offsetHeight - 8;
+          tip.style.top = Math.max(8, top) + "px";
+          tip.style.left = Math.max(8, left) + "px";
+          tipEl = host;
+        }
+        function hideTip() {
+          tip.classList.remove("open");
+          tipEl = null;
+        }
+        scroll.addEventListener("mouseover", (e) => {
+          const host = e.target.closest("[data-anno]");
+          if (host && host !== tipEl) showTip(host);
+        });
+        scroll.addEventListener("mouseout", (e) => {
+          const host = e.target.closest("[data-anno]");
+          if (host && !host.contains(e.relatedTarget)) hideTip();
+        });
+        scroll.addEventListener("click", (e) => {
+          const chip = e.target.closest(".anno-chip");
+          if (chip) {
+            const host = chip.closest("[data-anno]");
+            tipEl === host ? hideTip() : showTip(host);
+          }
+        });
+        scroll.addEventListener("scroll", hideTip, { passive: true });
+
+        // ---- Toasts (mock action feedback) ----------------------------------
+        const toasts = $("#pc-toasts");
+        scroll.addEventListener("click", (e) => {
+          const t = e.target.closest("[data-toast]");
+          if (!t) return;
+          e.preventDefault();
+          if (t.getAttribute("aria-disabled") === "true" || t.disabled) return;
+          const [title, body] = t.getAttribute("data-toast").split("|");
+          const el = document.createElement("div");
+          el.className = "pc-toast";
+          el.setAttribute("role", "status");
+          el.innerHTML =
+            '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></svg>' +
+            "<div><strong>" + title + "</strong><span>" + (body || "") + "</span></div>";
+          toasts.appendChild(el);
+          setTimeout(() => {
+            el.style.transition = "opacity .3s, transform .3s";
+            el.style.opacity = "0";
+            el.style.transform = "translateY(8px)";
+            setTimeout(() => el.remove(), 320);
+          }, 3600);
+          while (toasts.children.length > 3) toasts.removeChild(toasts.firstChild);
+        });
+
+        // ---- Init (supports deep-links: ?surface=s3&state=approved) ----------
+        const params = new URLSearchParams(location.search);
+        const startSurf = SURF[params.get("surface")] ? params.get("surface") : "s1";
+        setSurface(startSurf);
+        const startState = params.get("state");
+        if (startState) {
+          const surf = $('.surface[data-surface="' + startSurf + '"]');
+          if ($('.sstate[data-state="' + startState + '"]', surf)) setState(surf, startState);
+        }
+        if (params.get("device") === "mobile") {
+          const mb = $('[data-device="mobile"]');
+          if (mb) mb.click();
+        }
+        requestAnimationFrame(fit);
+        setTimeout(fit, 120);
+      })();
+    </script>
+  </body>
+</html>
