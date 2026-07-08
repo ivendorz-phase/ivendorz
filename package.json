@@ -20,6 +20,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "registry:build": "node scripts/build-registry.mjs",
+    "prototype": "node scripts/serve-prototype.mjs",
     "prepare": "husky",
     "postinstall": "prisma generate"
   },

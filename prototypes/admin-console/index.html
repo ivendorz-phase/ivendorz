@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-review="true">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>iVendorz — Admin Console (Stage-3 Prototype)</title>
+  <link rel="stylesheet" href="_assets/styles.css">
+</head>
+<body>
+  <div class="app" id="app" data-collapsed="false" data-mobilenav="false">
+    <!-- Sidebar (navy, frozen IA groups) -->
+    <aside class="sidebar">
+      <div class="sidebar__brand">
+        <span class="mark">iV</span>
+        <span class="txt">iVendorz<span class="sub">Admin Console</span></span>
+      </div>
+      <nav class="nav" id="nav"></nav>
+      <div class="sidebar__foot">
+        Prototype <code>v1.0</code><br>
+        Planning <code>v0.3</code> · Brief <code>v0.2</code>
+      </div>
+    </aside>
+
+    <div class="main">
+      <!-- Header -->
+      <header class="header">
+        <button class="header__toggle" id="collapse" title="Toggle sidebar" aria-label="Toggle sidebar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="header__search" title="Global search — non-functional placeholder (no frozen search API)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <span>Search…</span>
+          <span class="esc-tag">placeholder</span>
+        </div>
+        <div class="header__spacer"></div>
+        <button class="header__icon reviewmode-btn" id="reviewmode" title="Toggle review annotations (governance strip, ESC tags, legend)">
+          <span class="rm-dot"></span><span id="rm-label">Review mode</span>
+        </button>
+        <button class="header__icon theme-toggle" id="theme" title="Toggle light/dark" aria-label="Toggle theme">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+        </button>
+        <button class="header__icon" title="Notifications (M6 delivery display)" aria-label="Notifications">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+          <span class="dot"></span>
+        </button>
+        <div class="header__user">
+          <span class="avatar">SC</span>
+          <div>
+            <div class="u-name">S. Chowdhury</div>
+            <div class="u-role">Platform staff · no active org</div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content (rendered by app.js) -->
+      <main class="content" id="content"></main>
+    </div>
+
+    <div class="scrim" id="scrim"></div>
+  </div>
+
+  <!-- Interaction legend (Brief §6) -->
+  <div class="legend" id="legend">
+    <button class="close" id="legend-close" title="Hide">×</button>
+    <h4>Interaction legend</h4>
+    <div class="lg"><span class="m">✋</span> hover — affordance</div>
+    <div class="lg"><span class="m">👆</span> click — action → contract</div>
+    <div class="lg"><span class="m">⌨</span> keyboard path</div>
+    <div class="lg"><span class="m">🚫</span> disabled — System-only</div>
+    <div class="lg"><span class="m">⏳</span> loading state</div>
+    <div class="lg"><span class="m">👁</span> permission-hidden</div>
+    <div class="lg" style="margin-top:8px;color:var(--text-3);font-size:10.5px">Hover any action to see its frozen contract binding. Use the state switcher (top-right) to preview loading / empty / error / success.</div>
+  </div>
+  <button class="legend-toggle" id="legend-open" title="Show legend">?</button>
+
+  <script src="_assets/app.js"></script>
+</body>
+</html>

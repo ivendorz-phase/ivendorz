@@ -205,7 +205,19 @@ state variants annotated in-page (not separate files); screenshots `P-ADM-nn-<st
 2. Bans queue (P-ADM-05) → ban detail (P-ADM-06) → issue ban (vendor by ID) → confirmation showing
    `VendorBanned` framing (platform-wide, vendor-visible).
 
+**Running the prototype (the PRIMARY Stage-4 artifact — owner ruling 2026-07-08):**
+```bash
+npm run prototype            # serves prototypes/admin-console → http://localhost:8080
+```
+The **clickable prototype is the product under review** and the primary Stage-4 artifact — the review
+team (human or AI, when possible) navigates it interactively. **Screenshots and recordings are
+audit-trail evidence only, produced *after* approval — never the primary review surface.** Node, not
+python (local-server lesson on this box).
+
 ## 8. Stage-4 approval criteria (the visual-approval gate)
+
+> **Review artifact = the running clickable prototype** (`npm run prototype`). Screenshots + version
+> tag + review notes are the *evidence* captured on approval, not the thing reviewed.
 
 **Prototype review checklist (run before requesting Stage-4 sign-off):**
 - [ ] All 29 surfaces present, reachable via clickable navigation.
