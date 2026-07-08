@@ -135,7 +135,75 @@
     wireMockActions(stage);
     wireLightbox(stage);
     wireLocalNav(stage);
+    startClientMarquee(stage);
+    startHeroCarousels(stage);
   };
+
+  // --- Hero carousel (auto-slide image slides + text) ----------------------
+  function setHero(h, i) {
+    const slides = h.querySelectorAll(".hero-slide");
+    const n = slides.length;
+    if (!n) return;
+    i = ((i % n) + n) % n;
+    h.dataset.i = i;
+    const track = h.querySelector(".hero-track");
+    if (track) track.style.transform = "translateX(-" + i * 100 + "%)";
+    h.querySelectorAll("[data-hero-dot]").forEach((d, di) => d.classList.toggle("on", di === i));
+  }
+  function startHeroCarousels(stage) {
+    if (!stage.__hero) {
+      stage.__hero = true;
+      stage.addEventListener("click", (e) => {
+        const dot = e.target.closest("[data-hero-dot]");
+        const arrow = e.target.closest("[data-hero-arrow]");
+        if (dot) { const h = dot.closest("[data-hero]"); setHero(h, +dot.getAttribute("data-hero-dot")); h.dataset.touched = "1"; }
+        else if (arrow) { const h = arrow.closest("[data-hero]"); setHero(h, (+(h.dataset.i || 0)) + +arrow.getAttribute("data-hero-arrow")); h.dataset.touched = "1"; }
+      });
+      stage.addEventListener("mouseover", (e) => { const h = e.target.closest("[data-hero]"); if (h) h.dataset.paused = "1"; });
+      stage.addEventListener("mouseout", (e) => { const h = e.target.closest("[data-hero]"); if (h) delete h.dataset.paused; });
+    }
+    if (!window.__heroTimer) {
+      // single global auto-advance — picks up any hero rendered on the current page
+      window.__heroTimer = setInterval(() => {
+        document.querySelectorAll("[data-hero]").forEach((h) => {
+          if (h.dataset.paused) return;
+          setHero(h, (+(h.dataset.i || 0)) + 1);
+        });
+      }, 5200);
+    }
+  }
+
+  // --- Clients auto-slide (JS-driven continuous marquee) -------------------
+  let marqueeRunning = false;
+  function trackOf(el) {
+    const m = el && el.closest ? el.closest(".client-marquee") : null;
+    return m ? m.querySelector(".client-track") : null;
+  }
+  function startClientMarquee(stage) {
+    // hover pauses the track under the cursor (delegated, once per stage)
+    if (!stage.__mq) {
+      stage.__mq = true;
+      stage.addEventListener("mouseover", (e) => { const t = trackOf(e.target); if (t) t.dataset.paused = "1"; });
+      stage.addEventListener("mouseout", (e) => { const t = trackOf(e.target); if (t) delete t.dataset.paused; });
+    }
+    if (marqueeRunning) return; // single global loop drives all tracks
+    marqueeRunning = true;
+    const SPEED = 0.45; // px per frame — gentle "slow slide"
+    function frame() {
+      document.querySelectorAll(".client-track").forEach((tr) => {
+        tr.setAttribute("data-js", ""); // disable the CSS fallback animation
+        if (tr.dataset.paused) return;
+        const gap = parseFloat(getComputedStyle(tr).columnGap || getComputedStyle(tr).gap || "14") || 14;
+        const period = (tr.scrollWidth + gap) / 2; // width of ONE duplicated set (seamless loop)
+        let x = parseFloat(tr.dataset.x || "0") - SPEED;
+        if (period > 0 && -x >= period) x += period;
+        tr.dataset.x = x;
+        tr.style.transform = "translateX(" + x + "px)";
+      });
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
 
   // --- Mock CTA toasts -----------------------------------------------------
   function wireMockActions(stage) {

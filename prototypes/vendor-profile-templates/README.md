@@ -11,6 +11,15 @@ new routing conventions. Implementation must preserve the shared data model (Con
 configurable section visibility/order, existing module boundaries, and the frozen design tokens — any
 required visual deviation stops for review first.
 
+**Amendment — pending re-approval (2026-07-08):** owner-directed changes on top of the approved v1.0,
+awaiting sign-off: (1) **Industries page removed**; (2) **Resources merged into About** (certifications
++ gallery + downloads now live on About); (3) **Clients** rendered as a slow auto-slide carousel of
+logo + text on About; (4) **inter-section spacing tightened**. The multi-page nav is now **five** items
+(Home · About · Products · Projects · Contact). ⚠️ **Governance flag:** this five-item nav **diverges
+from frozen Doc-7D §10.2** (the canonical seven, "no additions without Board approval"). The prototype
+is non-authoritative and coins nothing, but **production implementation of this nav requires a Doc-7D
+additive patch + Board sign-off** — recorded here so it is not silently built (§11 Flag-and-Halt).
+
 **Status:** NON-PRODUCTION · quarantined under `prototypes/` (RS v1.1 P-4, excluded from root build
 gates) · non-authoritative · coins no route, contract, token, page ID, score, or workflow state. On
 any conflict the **frozen corpus wins** (CLAUDE.md §7, §11).

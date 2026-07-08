@@ -30,14 +30,12 @@
     <script>
       mountMicrosite({
         home: "home",
-        order: ["home", "about", "products", "projects", "industries", "resources", "contact"],
+        order: ["home", "about", "products", "projects", "contact"],
         pages: {
           home: function () { return C.home("catalogue"); },
           about: C.pageAbout,
           products: function () { return C.pageProducts(true); }, // with sticky filter rail
           projects: C.pageProjects,
-          industries: C.pageIndustries,
-          resources: C.pageResources,
           contact: C.pageContact,
         },
       });

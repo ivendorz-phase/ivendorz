@@ -42,7 +42,9 @@ New here? Read [`README.md`](README.md) (documentation philosophy + ownership), 
 
 ## Backend
 
-- Reserved — materializes on first content (`docs/README.md` §3).
+- [`backend/README.md`](backend/README.md) — Backend Build Office (execution charter) ·
+  [`backend/backend_build_plan.md`](backend/backend_build_plan.md) — wave-by-wave backend build plan
+  (Wave 2 M0 → M1 at work-package granularity; Waves 3–6 sequenced)
 
 ## Frontend
 

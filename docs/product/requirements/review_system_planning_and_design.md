@@ -391,6 +391,15 @@ never fabricate (e.g., absence renders as "Not rated," never as 0).
 > `scripts/verify-fe-wbs-coverage.mjs`; new FE-\* IDs are Board-only per
 > `project-management/fe-program-wbs.md`.)
 
+> **Finalization update (2026-07-08 — `governanceReviews/BOARD-PACKET-REVIEW-SYSTEM-FE-MINTS_v1.0.md`):**
+> reconciled against the now-frozen Admin Console package → **net 0 new page IDs; universe stays
+> 151.** S3 is the **review face of `P-ADM-02/03`** (`J-ADM-01` composes `trust.moderate_review.v1`
+> — D2 resolved by the corpus; new pages foreclosed). S5 is a **face** of the admin console's
+> not-page-pinned trust/vendor-governance context (§12/E6). D3 (Admin ownership) = **`FE-ADM-01` /
+> Team-3** (built, ✅ Complete) — no longer unassigned. All five surfaces are faces/sections of
+> existing pages, so the FE mints requested are **touch-only milestones** (own no page). The
+> illustrative table below is retained as the pre-reconciliation proposal.
+
 | Proposed surface | Illustrative placement | Universe impact |
 |---|---|---|
 | Surface 1 — buyer review submission | a face of the existing engagement detail surface (Doc-7F) **or** a new `P-BUY-*` page — the CS precedent (WP-1 "second face, no new page ID") suggests a face may suffice | 0 or +1 BUY |
@@ -478,9 +487,11 @@ minted by this package — each mints only if adjudicated a genuine gap through 
 | AR-01 §6 matrix + Surface 1 imply an author read of own review's *current* moderation status, but BC-TRUST-5 has no author-scoped read (`get_review`/`list_reviews` are public/`published`-only/authz-none); submit response returns `status=submitted` only | MAJOR | VALID (verified against Doc-4G Part5 §G8.1/§G8.5) | Surface 1 "After submit" + §6 matrix row tightened to the one-time submit-response confirmation; genuine gap surfaced as §9(e) (additive-contract question, no coin) | Review pass → author | FOLDED |
 | AR — Doc-4M-not-review-authority claim (§0.3 note) | OBS | CONFIRMED | verified: Doc-4M_FROZEN_v1.0.md carries no Public Review machine — note stands | Review pass | NO CHANGE |
 | AR — lifecycle string, two-step publish (F4G-PB5-MA2), remove-source-state, `list_reviews` sort-allowlisting, staff-slug, page IDs (P-PUB-13/P-ADM-02/03), universe=151 | OBS | CONFIRMED | all verified verbatim against frozen sources; no defect | Review pass | NO CHANGE |
-| Prototype (all 5 surfaces) — mockup-first Visual Approval gate | — | **APPROVED** | Owner visual approval **2026-07-08** (`prototypes/review-system/`); UX/visual direction confirmed. Design sign-off only — authorizes NO build (backend wave-gated; FE page-IDs Board-only) | owner | APPROVED |
-| Surface 2 card layout — Option A (testimonial) vs Option B (compact feed) | — | **RESOLVED** | Owner selected **Option A — testimonial**; folded into the Surface 2 spec. (Distinct from the still-open §9(d) moderation-queue placement A/B.) | owner | CLOSED |
-| Next gate — FE page-ID + milestone mints | — | IN PROGRESS | Board packet drafted at `governanceReviews/BOARD-PACKET-REVIEW-SYSTEM-FE-MINTS_v1.0.md` (requests the mints; carries the open §9(c)/(d) + Admin-ownership decisions) | package → Board | OPEN (human Board) |
+| Prototype (all 5 surfaces, incl. Round-3 light/dark + interactive widgets) — mockup-first Visual Approval gate | — | **APPROVED & LOCKED** | Owner approved **2026-07-08** and locked as the **Visual Design Baseline (VDB v1.0)** (`prototypes/review-system/`): design / layout / UX / interaction / responsive / component-hierarchy / typography / both-themes accepted. Design sign-off only — authorizes NO build (backend wave-gated; FE mints Board-only). Preserve visual consistency; incremental + justified change only | owner | LOCKED (VDB v1.0) |
+| Surface 2 card layout — Option A (testimonial) vs Option B (compact feed) | — | **RESOLVED** | Owner selected **Option A — testimonial** (canonical); folded into the Surface 2 spec. (Distinct from the moderation-queue placement, now resolved below.) | owner | CLOSED |
+| §9(d) / D2 — moderation-queue placement (new pages vs face of P-ADM-02/03) | — | **RESOLVED** | Corpus-resolved → **face of `P-ADM-02/03`** (`J-ADM-01` composes `trust.moderate_review.v1`); new pages foreclosed (would conflict + expand universe). Recorded in the finalized Board packet | verify pass → Board packet | CLOSED |
+| Finalization reconciliation — Admin Console package (frozen `cfdf4d3`) | OBS | CONFIRMED | `P-ADM-01…29` all owned by Complete `FE-ADM-01`; admin ratings not-page-pinned (§12/E6) ⇒ all 5 review surfaces are faces of existing pages → **0 new pages**, coverage `PASS 151/151`. Supersedes the §7 "new pages" options | verify pass | NO CHANGE (packet updated) |
+| Next gate — FE milestone mints | — | **FINALIZED** | Board packet finalized (`governanceReviews/BOARD-PACKET-REVIEW-SYSTEM-FE-MINTS_v1.0.md`): **net 0 new page IDs; universe stays 151**; requests FE-\* **touch-only** milestones only. D1/D4 confirm (faces); D2/D3 resolved (above) | package → Board | READY (human Board) |
 
 ---
 

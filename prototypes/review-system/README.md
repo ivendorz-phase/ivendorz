@@ -4,13 +4,16 @@
 build gates) · non-authoritative · coins no route, contract, token, page ID, score, or workflow
 state. On any conflict the **frozen corpus wins** (CLAUDE.md §7, §11).
 
-**Visual approval:** ✅ **GRANTED (owner, 2026-07-08)** — the UX/visual direction for Surfaces 1–5
-is signed off. A **Round-3 high-fidelity pass** (light/dark theme toggle, interactive widgets,
-local serving — see *Round 3* below) was added 2026-07-08 and is **awaiting the owner's visual
-sign-off**. This is a **design** approval only; it authorizes no production build. The backend
-stays roadmap-gated (M5 = Wave 3 · M8 moderation = Wave 5; current = Wave 2) and FE page-IDs /
-milestones remain **Board-only** to mint. **Surface 2 card layout: Option A (testimonial)
-selected** by the owner — the shipping spec is `docs/product/requirements/review_system_planning_and_design.md`
+**Visual approval:** ✅ **APPROVED & LOCKED — Visual Design Baseline (VDB v1.0)** (owner,
+2026-07-08). The full high-fidelity prototype — including the Round-3 light/dark theme and
+interactive widgets — is signed off: **design, layout, UX, interaction model, responsive
+behaviour, component hierarchy, typography/spacing, and both themes are accepted.** This is the
+**canonical visual reference for implementation**: preserve visual consistency; do **not** redesign
+layouts unless explicitly requested; any future visual change must be **incremental and justified**;
+keep this prototype available during the build. It remains a **design** approval only — it
+authorizes **no** production build: the backend stays roadmap-gated (M5 = Wave 3 · M8 moderation =
+Wave 5; current = Wave 2) and FE mints remain **Board-only**. **Surface 2 card layout: Option A
+(testimonial) is canonical** — the shipping spec is `docs/product/requirements/review_system_planning_and_design.md`
 Surface 2; Option B stays in this prototype for reference only. Next gate:
 `governanceReviews/BOARD-PACKET-REVIEW-SYSTEM-FE-MINTS_v1.0.md` (FE page-ID + milestone mints).
 

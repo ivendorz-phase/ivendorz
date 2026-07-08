@@ -77,19 +77,6 @@
 
     /* -------- hero variants -------- */
     hero(variant) {
-      const badges = V.verificationBadges.map((b) => `<span class="badge badge-${b.tone}">${I(b.icon, "ic-sm")} ${b.label}</span>`).join("");
-      if (variant === "modern") {
-        return `<section class="hero"><div class="hero-cover"><img src="${V.coverBanner}" alt=""><div class="hero-overlay"></div>
-          <div class="wrap" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:clamp(28px,5cqw,56px)">
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">${C.verified()}<span class="badge badge-gold">${I("award", "ic-sm")} Est. ${V.established}</span></div>
-            <h1 class="hero-title" style="max-width:760px">${V.name}</h1>
-            <p class="hero-tagline" style="margin-top:14px">${V.tagline}</p>
-            <div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap">
-              <a class="btn btn-gold btn-lg" data-cta="Request quote → sign-in (M3 RFQ engine).">${I("send")} Request a quote</a>
-              <a class="btn btn-white btn-lg" data-cta="Company profile PDF — mock download.">${I("download")} Company profile</a>
-            </div>
-          </div></div></section>`;
-      }
       if (variant === "landing") {
         return `<section class="hero"><div class="hero-cover"><img src="${V.coverBanner}" alt=""><div class="hero-overlay"></div></div>
           <div class="wrap" style="text-align:center;margin-top:-52px;position:relative">
@@ -103,25 +90,46 @@
             </div>
           </div></section>`;
       }
-      if (variant === "catalogue") {
-        return `<section class="hero"><div class="hero-cover"><img src="${V.coverBanner}" alt=""><div class="hero-overlay"></div>
-          <div class="wrap" style="position:absolute;inset:0;display:flex;align-items:flex-end;padding-bottom:26px;gap:18px">
-            <img class="hero-logo" style="width:76px;height:76px" src="${V.logo}" alt="">
-            <div><h1 class="hero-title" style="font-size:clamp(20px,3cqw,30px)">${V.name.replace(" Ltd.", "")}</h1>
-            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">${C.verified()}<span class="badge badge-navy">${I("layers", "ic-sm")} ${V.products.length}+ SKUs listed</span></div></div>
-          </div></div></section>`;
-      }
-      // classic (default)
-      return `<section class="hero"><div class="hero-cover"><img src="${V.coverBanner}" alt=""><div class="hero-overlay"></div></div>
-        <div class="wrap"><div style="display:flex;gap:22px;align-items:flex-end;margin-top:-48px;position:relative;flex-wrap:wrap">
+      // Carousel hero (classic · modern · catalogue): auto-sliding image slides,
+      // each carrying its own text, inside a minimally-bordered frame. Slide motion
+      // is driven by prototype.js (auto-advance + dots + arrows, pause on hover).
+      const quote = "Request quote → routes to sign-in (RFQ engine M3). Anonymous intent, no money on-platform.";
+      const slides = V.heroSlides
+        .map(
+          (s) => `<div class="hero-slide"><img src="${s.img}" alt=""><div class="hero-slide-overlay"></div>
+            <div class="wrap"><div class="hero-slide-content">
+              <span class="hero-eyebrow">${s.eyebrow}</span>
+              <h1 class="hero-title">${s.title}</h1>
+              <p class="hero-tagline">${s.text}</p>
+              <div class="hero-actions">
+                <a class="btn btn-gold btn-lg" data-cta="${quote}">${I("send")} ${s.cta}</a>
+                <a class="btn btn-white btn-lg" data-cta="Company profile PDF — mock download (nothing persists).">${I("download")} Company profile</a>
+              </div>
+            </div></div></div>`,
+        )
+        .join("");
+      const dots = V.heroSlides.map((s, i) => `<button class="hero-dot ${i === 0 ? "on" : ""}" data-hero-dot="${i}" aria-label="Go to slide ${i + 1}"></button>`).join("");
+      const extra =
+        variant === "catalogue"
+          ? `<span class="badge badge-navy">${I("layers", "ic-sm")} ${V.products.length}+ SKUs listed</span>`
+          : `<span class="badge badge-navy">Est. ${V.established}</span>`;
+      return `<section class="hero hero-${variant}"><div class="wrap hero-wrap">
+        <div class="hero-carousel" data-hero data-i="0">
+          <div class="hero-track">${slides}</div>
+          <button class="hero-arrow prev" data-hero-arrow="-1" aria-label="Previous slide">${I("chevron-left")}</button>
+          <button class="hero-arrow next" data-hero-arrow="1" aria-label="Next slide">${I("chevron-right")}</button>
+          <div class="hero-dots">${dots}</div>
+        </div>
+        <div class="hero-brandbar">
           <img class="hero-logo" src="${V.logo}" alt="">
-          <div style="flex:1;min-width:240px;padding-bottom:6px">
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">${C.verified()}<span class="badge badge-navy">Est. ${V.established}</span><span class="badge badge-neutral">${I("map-pin", "ic-sm")} Narayanganj</span></div>
-            <h1 style="font-size:clamp(22px,3.6cqw,34px)">${V.name}</h1>
-            <p style="color:var(--iv-fg-secondary);margin-top:8px;max-width:640px;line-height:1.55">${V.tagline}</p>
+          <div style="flex:1;min-width:220px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="brand-name" style="font-size:18px">${V.name.replace(" Ltd.", "")}</span>${C.verified()}${extra}
+            </div>
+            <div style="margin-top:10px">${C.capMatrix()}</div>
           </div>
         </div>
-        <div style="margin-top:20px">${C.capMatrix()}</div></div></section>`;
+      </div></section>`;
     },
 
     /* -------- content sections -------- */
@@ -249,9 +257,16 @@
       );
     },
     clients(alt) {
+      // Slow, continuous auto-slide carousel — each slide is a client logo + text.
+      // The track is duplicated so the loop is seamless; paused on hover; a
+      // reduced-motion fallback turns it into a static scrollable row.
+      const slide = (c) =>
+        `<div class="client-slide"><img src="${c.logo}" alt="${c.name} logo"><div><div class="client-name">${c.name}</div><div class="client-note">${c.note}</div></div></div>`;
+      const track = V.clients.map(slide).join("") + V.clients.map(slide).join("");
       return sec(
         "clients",
-        `${head("Trusted by", "Clients", "")}<div class="client-row">${V.clients.map((c) => `<div class="client-tile">${c}</div>`).join("")}</div>`,
+        `${head("Trusted by", "Clients", "Delivering to Bangladesh's leading industrial buyers.")}
+        <div class="client-marquee" role="group" aria-label="Client logos"><div class="client-track">${track}</div></div>`,
         alt ? "section-alt" : "",
       );
     },
@@ -371,13 +386,15 @@
      via "View all"; each other item is a distinct page with its own ?page= URL.
   ====================================================================== */
   const SHORT = V.name.replace(" Ltd.", "");
+  // Owner-directed prototype amendment (2026-07-08): Industries page removed;
+  // Resources merged into About. NAV is now 5 items — a DELIBERATE divergence
+  // from frozen Doc-7D §10.2 (canonical seven), flagged for a Board additive
+  // patch before production implementation. Prototype is non-authoritative.
   C.NAV = [
     ["home", "Home"],
     ["about", "About"],
     ["products", "Products"],
     ["projects", "Projects"],
-    ["industries", "Industries"],
-    ["resources", "Resources"],
     ["contact", "Contact"],
   ];
 
@@ -451,7 +468,19 @@
     return withRail ? `<div class="catalogue-layout">${rail}${main}</div>` : main;
   };
 
+  // Downloads block (was the Resources page; now merged into About).
+  C.downloads = function () {
+    return `<section class="section" data-section="resources"><div class="wrap">${head("Resources", "Documents & downloads", "")}
+      <div class="dl-grid">
+        <a class="dl-card" data-cta="Company profile PDF — mock download.">${I("file-text", "ic-lg")}<div><div class="dl-name">Company profile (PDF)</div><div class="dl-meta">6.2 MB · updated Jun 2026</div></div>${I("download")}</a>
+        <a class="dl-card" data-cta="Product catalogue PDF — mock download.">${I("file-text", "ic-lg")}<div><div class="dl-name">Product catalogue (PDF)</div><div class="dl-meta">18 MB · 180 SKUs</div></div>${I("download")}</a>
+        <a class="dl-card" data-cta="Line card — mock download.">${I("file-text", "ic-lg")}<div><div class="dl-name">Line card & standards sheet</div><div class="dl-meta">1.1 MB</div></div>${I("download")}</a>
+      </div></div></section>`;
+  };
+
   // ---- interior PAGES (return page body; the shell owns header/footer) ----
+  // About now ABSORBS the former Resources page (certifications · gallery · downloads),
+  // per the 2026-07-08 owner amendment.
   C.pageAbout = function () {
     return (
       C.pageHead("About " + SHORT, V.businessSummary) +
@@ -461,7 +490,10 @@
       C.businessInfo() +
       C.team(true) +
       C.factory() +
-      C.clients(true)
+      C.clients(true) +
+      C.certifications() +
+      C.gallery(true) +
+      C.downloads()
     );
   };
   C.pageProducts = function (withRail) {
@@ -473,23 +505,6 @@
   };
   C.pageProjects = function () {
     return C.pageHead("Projects & track record", "Selected delivered work — a curated slice, never a computed ranking.") + C.projects("cards") + C.projects("timeline", true) + C.gallery();
-  };
-  C.pageIndustries = function () {
-    return (
-      C.pageHead("Industries served", "The sectors " + SHORT + " supplies, fabricates and services across Bangladesh and South Asia.") +
-      C.industries() +
-      C.capabilities(true) +
-      C.related()
-    );
-  };
-  C.pageResources = function () {
-    const dl = `<section class="section" data-section="resources"><div class="wrap">${head("Downloads", "Documents & downloads", "")}
-      <div class="dl-grid">
-        <a class="dl-card" data-cta="Company profile PDF — mock download.">${I("file-text", "ic-lg")}<div><div class="dl-name">Company profile (PDF)</div><div class="dl-meta">6.2 MB · updated Jun 2026</div></div>${I("download")}</a>
-        <a class="dl-card" data-cta="Product catalogue PDF — mock download.">${I("file-text", "ic-lg")}<div><div class="dl-name">Product catalogue (PDF)</div><div class="dl-meta">18 MB · 180 SKUs</div></div>${I("download")}</a>
-        <a class="dl-card" data-cta="Line card — mock download.">${I("file-text", "ic-lg")}<div><div class="dl-name">Line card & standards sheet</div><div class="dl-meta">1.1 MB</div></div>${I("download")}</a>
-      </div></div></section>`;
-    return C.pageHead("Resources", "Certifications, plant gallery and downloadable documents.") + C.certifications() + C.gallery(true) + dl;
   };
   C.pageContact = function () {
     return C.pageHead("Contact " + SHORT, "Send a quote request or reach the team directly.") + C.contact() + C.related(true);
@@ -522,8 +537,7 @@
       ${head("Track record", "Featured projects", "A curated slice of delivered work.")}${projCardsN(2)}
       ${C.viewAll("projects", "See all projects")}</div></section>`;
     const indPrev = `<section class="section section-alt" data-section="industries"><div class="wrap">
-      ${head("Sectors", "Industries served", "")}<div class="industry-grid">${V.industries.map((n) => `<div class="industry-chip">${I(n.icon)} ${n.label}</div>`).join("")}</div>
-      ${C.viewAll("industries", "Explore industries")}</div></section>`;
+      ${head("Sectors", "Industries served", "")}<div class="industry-grid">${V.industries.map((n) => `<div class="industry-chip">${I(n.icon)} ${n.label}</div>`).join("")}</div></div></section>`;
     return [
       C.hero(variant),
       C.stats(),

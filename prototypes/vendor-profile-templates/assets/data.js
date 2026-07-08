@@ -70,6 +70,31 @@ const IV_VENDOR = {
   logo: ivPlaceholder("logo", "MIV", ""),
   coverBanner: ivPlaceholder("cover", "Meghna Industrial", "Narayanganj · Bangladesh"),
 
+  /* --- Hero slides (image + text) — rendered as an auto-sliding carousel --- */
+  heroSlides: [
+    {
+      img: ivPlaceholder("cover", "Meghna Industrial", "Narayanganj · Bangladesh"),
+      eyebrow: "Industrial fluid-control",
+      title: "Engineered valves & piping, built in Bangladesh",
+      text: "API 6D / ANSI / DIN-grade manufacturing from our ISO-certified plant in Narayanganj.",
+      cta: "Request a quote",
+    },
+    {
+      img: ivPlaceholder("factory", "45,000 m² Plant", "Forging · CNC · Hydro-test"),
+      eyebrow: "Manufacturing",
+      title: "A 45,000 m² integrated facility",
+      text: "Forging, CNC machining, assembly and a fully instrumented hydro-test laboratory under one roof.",
+      cta: "Tour the plant",
+    },
+    {
+      img: ivPlaceholder("project", "1,800+ Projects", "Power · Water · Petrochemical"),
+      eyebrow: "Proven track record",
+      title: "Trusted on 1,800+ industrial projects",
+      text: "From 400 MW power plants to national water networks across Bangladesh and South Asia.",
+      cta: "See our projects",
+    },
+  ],
+
   /* --- Trust & verification (governance-scoped) ------------------------- */
   verified: true, // BINARY — verified engagement / KYB complete
   verificationBadges: [
@@ -221,16 +246,16 @@ const IV_VENDOR = {
     { name: "BSTI Certified", body: "Bangladesh Standards & Testing", year: 2020, icon: "stamp" },
   ],
 
-  /* --- Clients (logos = neutral wordmark tiles) ------------------------ */
+  /* --- Clients (logo + text — rendered as a slow auto-slide carousel) --- */
   clients: [
-    "Bangladesh PDB",
-    "Meghna Group",
-    "Dhaka WASA",
-    "Bashundhara",
-    "Summit Power",
-    "Walton",
-    "Akij Group",
-    "PRAN-RFL",
+    { name: "Bangladesh PDB", note: "Power sector · since 2019", logo: ivPlaceholder("client", "PDB", "") },
+    { name: "Meghna Group", note: "Petrochemical · 12 projects", logo: ivPlaceholder("client", "MGI", "") },
+    { name: "Dhaka WASA", note: "Water & wastewater", logo: ivPlaceholder("client", "WASA", "") },
+    { name: "Bashundhara", note: "Cement & building materials", logo: ivPlaceholder("client", "BIC", "") },
+    { name: "Summit Power", note: "Independent power producer", logo: ivPlaceholder("client", "SPL", "") },
+    { name: "Walton", note: "Manufacturing · since 2021", logo: ivPlaceholder("client", "WLT", "") },
+    { name: "Akij Group", note: "Diversified industrial", logo: ivPlaceholder("client", "AKIJ", "") },
+    { name: "PRAN-RFL", note: "Food & beverage processing", logo: ivPlaceholder("client", "PRAN", "") },
   ],
 
   /* --- Factory information --------------------------------------------- */
