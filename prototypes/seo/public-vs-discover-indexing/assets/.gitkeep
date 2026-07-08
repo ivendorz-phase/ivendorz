@@ -1,0 +1,2 @@
+# Intentionally empty. This prototype is fully self-contained (all CSS inline in index.html);
+# no external assets are used, per the Artifact CSP model. Folder kept for structural parity.
