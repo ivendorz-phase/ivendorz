@@ -1,0 +1,52 @@
+<!doctype html>
+<!--
+  iVendorz — Vendor Profile · LAYOUT 01 "Corporate Classic" — HI-FI CLICKABLE PROTOTYPE (NON-PRODUCTION)
+  ====================================================================================================
+  MULTI-PAGE microsite mirroring the frozen canonical 7 (Doc-7D §10.2):
+  Home · About · Products · Projects · Industries · Resources · Contact. Home is a curated landing that
+  links out; every other nav item is a distinct page (own ?page= URL). Target: manufacturers &
+  engineering firms. Focus: credibility · products · contact.
+  Data: 100% MOCK from assets/data.js — the SAME object all layouts consume (Content ≠ Presentation).
+  Non-authoritative · quarantined. Verified=binary · trust band+numeric only · 4-flag matrix ·
+  featured=editorial (never a ranking, GI-04) · no money on-platform.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>iVendorz · Layout 01 — Corporate Classic</title>
+    <link rel="stylesheet" href="assets/tokens.css" />
+    <link rel="stylesheet" href="assets/kit.css" />
+  </head>
+  <body>
+    <div class="pc-frame">
+      <div class="pc-stage" id="stage">
+        <div class="iv-site tpl-corporate" id="site"></div>
+      </div>
+    </div>
+
+    <script src="assets/data.js"></script>
+    <script src="assets/icons.js"></script>
+    <script src="assets/render.js"></script>
+    <script src="assets/router.js"></script>
+    <script>
+      mountMicrosite({
+        home: "home",
+        order: ["home", "about", "products", "projects", "industries", "resources", "contact"],
+        pages: {
+          home: function () { return C.home("classic"); },
+          about: C.pageAbout,
+          products: function () { return C.pageProducts(false); },
+          projects: C.pageProjects,
+          industries: C.pageIndustries,
+          resources: C.pageResources,
+          contact: C.pageContact,
+        },
+      });
+    </script>
+    <script src="assets/prototype.js"></script>
+    <script>
+      initPrototype({ name: "Layout 01 · Corporate Classic", tag: "Manufacturers · multi-page · trust-first" });
+    </script>
+  </body>
+</html>

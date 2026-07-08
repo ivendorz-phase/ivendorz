@@ -1,0 +1,48 @@
+<!doctype html>
+<!--
+  iVendorz — Vendor Profile · LAYOUT 02 "Modern Industrial" — HI-FI CLICKABLE PROTOTYPE (NON-PRODUCTION)
+  MULTI-PAGE microsite (frozen canonical 7 — Doc-7D §10.2). Target: premium vendors · large orgs ·
+  national brands. Focus: branding · scale · capability. Large cinematic hero, bold statistics.
+  Data: 100% MOCK from assets/data.js — the SAME object all layouts consume (Content ≠ Presentation).
+  Governance: verified=binary · trust band+numeric only · 4-flag matrix · featured=editorial · no on-platform money.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>iVendorz · Layout 02 — Modern Industrial</title>
+    <link rel="stylesheet" href="assets/tokens.css" />
+    <link rel="stylesheet" href="assets/kit.css" />
+  </head>
+  <body>
+    <div class="pc-frame">
+      <div class="pc-stage" id="stage">
+        <div class="iv-site tpl-modern" id="site"></div>
+      </div>
+    </div>
+
+    <script src="assets/data.js"></script>
+    <script src="assets/icons.js"></script>
+    <script src="assets/render.js"></script>
+    <script src="assets/router.js"></script>
+    <script>
+      mountMicrosite({
+        home: "home",
+        order: ["home", "about", "products", "projects", "industries", "resources", "contact"],
+        pages: {
+          home: function () { return C.home("modern"); },
+          about: C.pageAbout,
+          products: function () { return C.pageProducts(false); },
+          projects: C.pageProjects,
+          industries: C.pageIndustries,
+          resources: C.pageResources,
+          contact: C.pageContact,
+        },
+      });
+    </script>
+    <script src="assets/prototype.js"></script>
+    <script>
+      initPrototype({ name: "Layout 02 · Modern Industrial", tag: "Premium brands · multi-page · scale" });
+    </script>
+  </body>
+</html>

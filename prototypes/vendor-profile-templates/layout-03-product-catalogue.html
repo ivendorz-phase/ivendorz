@@ -1,0 +1,50 @@
+<!doctype html>
+<!--
+  iVendorz — Vendor Profile · LAYOUT 03 "Product Catalogue" — HI-FI CLICKABLE PROTOTYPE (NON-PRODUCTION)
+  MULTI-PAGE microsite (frozen canonical 7 — Doc-7D §10.2). Target: importers · distributors ·
+  equipment suppliers. Focus: products · specifications · inquiry. The Products page carries a sticky
+  filter rail + category/spec facets; Home leads with the catalogue.
+  Data: 100% MOCK from assets/data.js — the SAME object all layouts consume (Content ≠ Presentation).
+  Governance: NO price & no order — every "Inquire" routes to sign-in (M3 RFQ). Filters are mock.
+              verified=binary · trust band+numeric only · 4-flag matrix.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>iVendorz · Layout 03 — Product Catalogue</title>
+    <link rel="stylesheet" href="assets/tokens.css" />
+    <link rel="stylesheet" href="assets/kit.css" />
+  </head>
+  <body>
+    <div class="pc-frame">
+      <div class="pc-stage" id="stage">
+        <div class="iv-site tpl-catalogue" id="site"></div>
+      </div>
+    </div>
+
+    <script src="assets/data.js"></script>
+    <script src="assets/icons.js"></script>
+    <script src="assets/render.js"></script>
+    <script src="assets/router.js"></script>
+    <script>
+      mountMicrosite({
+        home: "home",
+        order: ["home", "about", "products", "projects", "industries", "resources", "contact"],
+        pages: {
+          home: function () { return C.home("catalogue"); },
+          about: C.pageAbout,
+          products: function () { return C.pageProducts(true); }, // with sticky filter rail
+          projects: C.pageProjects,
+          industries: C.pageIndustries,
+          resources: C.pageResources,
+          contact: C.pageContact,
+        },
+      });
+    </script>
+    <script src="assets/prototype.js"></script>
+    <script>
+      initPrototype({ name: "Layout 03 · Product Catalogue", tag: "Distributors · multi-page · product-first" });
+    </script>
+  </body>
+</html>
