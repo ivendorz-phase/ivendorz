@@ -140,8 +140,10 @@ to every review finding; dispositions are recorded in §13.
 
 - **DP-A1 — Admin-decides / owning-module-owns (HR9, R5; Red Flag #8).** Every mutating surface
   invokes a wired Admin command; the **owning module owns the data/decision/effect**. The frontend
-  never writes another module's data (contracts-only). M8's Admin→owning-module effects (e.g.
-  ban → Marketplace reflect DD-3) are M8's in-process service calls, never the frontend's.
+  never writes another module's data (contracts-only). Downstream effects are **the owning module's**
+  in-process work, never the frontend's — e.g. the ban→Marketplace reflect is **Marketplace's (M2)**
+  `VendorBanned` System consumer (`reflect_vendor_ban`, DD-3 — Doc-4J §H.7 / Doc-5D §3.3); **M8 emits
+  the event only and never writes vendor-profile status** (consistent with §6.2 / §7).
 - **DP-A2 — Platform-scoped, no active-org (HR1, HR11).** No `Iv-Active-Organization`. Every command
   takes its target **by ID**; no surface exposes an org switcher or implies acting AS an org.
   `CHK-7-010` N/A; `CHK-7-012` + `CHK-7-011` APPLY.
