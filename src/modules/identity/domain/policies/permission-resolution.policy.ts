@@ -199,7 +199,9 @@ export function resolveDelegatedAccess(input: DelegatedAccessInput): PermissionR
   // Condition 4 — scope resolves against the vendor profile NAMED BY THE GRANT (never another profile).
   if (grant.vendorProfileId !== targetVendorProfileId) return deny("delegation_denied");
   // Condition 5 — the target vendor profile's own state permits the operation (a grant never overrides it).
-  if (!profileStatePermits) return deny("delegation_denied");
+  // Strict `=== true` (T6-OBS-4 hardening): the port is TYPED `boolean`, but a type-abused truthy
+  // non-boolean must never leak as permit — a genuine `true` behaves identically, anything else denies.
+  if (profileStatePermits !== true) return deny("delegation_denied");
 
   return allow("delegation");
 }

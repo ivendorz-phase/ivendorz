@@ -17,9 +17,6 @@ import {
   resolveDelegatedAccess,
   resolveMembershipPath,
   resolveResourceScopeUnsupported,
-  type ActiveMembershipFact,
-  type DelegationGrantFact,
-  type PermissionCatalogEntry,
   type PermissionResolution,
 } from "../../domain/policies/permission-resolution.policy";
 import type { CheckPermissionInput, VendorProfileStateReader } from "../../contracts/types";
@@ -68,15 +65,13 @@ export async function checkPermission(
   }
 
   // Catalog lookup — an unknown slug is a §6.4 conformance gap, resolved by the policy (never a grant).
-  const permRow = await findPermissionBySlug(permissionSlug, db);
-  const permission: PermissionCatalogEntry | null = permRow;
+  const permission = await findPermissionBySlug(permissionSlug, db);
 
   // Resolve the acting user's ACTIVE membership in the (active/representative) org — Doc-4A §6.1 layer 1
   // (also §6B.2 condition 1). Skipped only when the slug is unknown/staff (the policy short-circuits
   // those before membership can matter) — but resolving it unconditionally keeps the query simple and
   // the policy the sole decider.
-  const membershipRow = await findActiveMembership(userId, organizationId, db);
-  const membership: ActiveMembershipFact | null = membershipRow;
+  const membership = await findActiveMembership(userId, organizationId, db);
 
   // The ORG-ANCHORED granted-slug set (RV-0146) — resolved ONLY when there is an active membership
   // (no membership ⇒ no role ⇒ empty set). Anchored on (role_id ∧ (org = active_org ∨ NULL)) ∧ tenant.
@@ -94,8 +89,7 @@ export async function checkPermission(
   // Delegated act-as path (§6B.2). Resolve the representative org's active, in-window grant on the
   // target profile (condition 3), and the target profile's own state (condition 5, via the injected
   // port — fail-closed to `false` when no reader is provided).
-  const grantRow = await findActiveDelegationGrant(organizationId, vendorProfileId, now, db);
-  const grant: DelegationGrantFact | null = grantRow;
+  const grant = await findActiveDelegationGrant(organizationId, vendorProfileId, now, db);
   const profileStatePermits =
     deps.vendorProfileStateReader === undefined
       ? false // condition 5 cannot be affirmed without the M2 reader ⇒ fail closed.

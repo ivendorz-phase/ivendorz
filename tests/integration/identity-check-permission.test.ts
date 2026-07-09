@@ -6,6 +6,7 @@ import {
   getMembership,
   getOrganization,
   getUser,
+  type VendorProfileStateReader,
 } from "../../src/modules/identity/contracts";
 import { authorize, hasPermission } from "../../src/server/authz";
 
@@ -32,12 +33,23 @@ const USER_A = "01920000-0000-7000-8000-0000000c3a09"; // active member of ORG_A
 const USER_B = "01920000-0000-7000-8000-0000000c3b09"; // active member of ORG_B (ROLE_B)
 const USER_D = "01920000-0000-7000-8000-0000000c3d09"; // active member of ORG_A on the SYSTEM Owner bundle
 const USER_NOMEM = "01920000-0000-7000-8000-0000000c3009"; // exists, but no membership anywhere
+const USER_S = "01920000-0000-7000-8000-0000000c3509"; // member of ORG_A on ROLE_A but state=SUSPENDED (live row)
 const VENDOR_PROFILE_X = "01920000-0000-7000-8000-0000000c30f1"; // M2 bare UUID — the delegated target
 const VENDOR_PROFILE_Y = "01920000-0000-7000-8000-0000000c30f2"; // a DIFFERENT profile (condition 4)
+const VENDOR_PROFILE_Z = "01920000-0000-7000-8000-0000000c30f3"; // target of a DRAFT grant (condition-3 status leg)
+const VENDOR_PROFILE_W = "01920000-0000-7000-8000-0000000c30f4"; // target of an EXPIRED grant (condition-3 window leg)
 const DELEG_1 = "01920000-0000-7000-8000-0000000c3001";
+const DELEG_DRAFT = "01920000-0000-7000-8000-0000000c3002"; // status=draft (schema DEFAULT) — never active
+const DELEG_EXPIRED = "01920000-0000-7000-8000-0000000c3003"; // status=active but valid_to in the past
 const MEM_A = "01920000-0000-7000-8000-0000000c3a11";
 const MEM_B = "01920000-0000-7000-8000-0000000c3b11";
 const MEM_D = "01920000-0000-7000-8000-0000000c3d11";
+const MEM_S = "01920000-0000-7000-8000-0000000c3511";
+
+// Deterministic clock for the EXPIRED-grant window probe (B-3b): a fixed `now` strictly AFTER valid_to.
+const GRANT_EXPIRED_FROM = new Date("2020-01-01T00:00:00.000Z");
+const GRANT_EXPIRED_TO = new Date("2020-06-01T00:00:00.000Z");
+const NOW_AFTER_EXPIRY = new Date("2021-01-01T00:00:00.000Z");
 
 // Real seeded catalog slugs (Doc-2 §7; seeded by `identity_catalog_seed`). Resolved to ids in `beforeAll`.
 let permCreateRfq: string; // tenant — granted to ROLE_A
@@ -61,6 +73,7 @@ async function seedFixture(): Promise<void> {
   await prisma.user.create({ data: { id: USER_B, status: "active" } });
   await prisma.user.create({ data: { id: USER_D, status: "active" } });
   await prisma.user.create({ data: { id: USER_NOMEM, status: "active" } });
+  await prisma.user.create({ data: { id: USER_S, status: "active" } });
   await prisma.role.create({
     data: { id: ROLE_A, organizationId: ORG_A, name: "CHK Role A", isSystemBundle: false },
   });
@@ -100,6 +113,12 @@ async function seedFixture(): Promise<void> {
       state: "active",
     },
   });
+  // B-2 negative — a LIVE (not soft-deleted) membership in state=suspended. It binds ROLE_A (which holds
+  // can_create_rfq), so an impl filtering only `deletedAt` (not `state='active'`) would resolve it and
+  // ALLOW; the correct layer-1 filter requires state='active' ⇒ deny/no_active_membership.
+  await prisma.membership.create({
+    data: { id: MEM_S, organizationId: ORG_A, userId: USER_S, roleId: ROLE_A, state: "suspended" },
+  });
 
   // Legit org-anchored composition: ROLE_A → can_create_rfq @ ORG_A.
   await prisma.rolePermission.create({
@@ -125,16 +144,51 @@ async function seedFixture(): Promise<void> {
     data: { roleId: ROLE_A, permissionId: permStaffBan, organizationId: ORG_A },
   });
 
-  // Delegation: ORG_A (controlling) grants ORG_B (representative) can_submit_quote on VENDOR_PROFILE_X.
+  // Delegation: ORG_A (controlling) grants ORG_B (representative) [can_submit_quote, can_view_rfq] on
+  // VENDOR_PROFILE_X. B-1: `can_view_rfq` is in the grant's permission_set (condition 3 PASSES for it) but
+  // USER_B does NOT hold `can_view_rfq` in ROLE_B — so the condition-2 test isolates C2 as the ONLY failing
+  // condition (C1/C3/C4/C5 all hold), proving the no-inheritance guarantee independently of C3.
   await prisma.delegationGrant.create({
     data: {
       id: DELEG_1,
       controllingOrganizationId: ORG_A,
       representativeOrganizationId: ORG_B,
       vendorProfileId: VENDOR_PROFILE_X,
+      permissionSetJsonb: ["can_submit_quote", "can_view_rfq"],
+      grantedBy: USER_A,
+      status: "active",
+    },
+  });
+
+  // B-3a — a DRAFT grant (the schema DEFAULT status) on VENDOR_PROFILE_Z whose permission_set includes
+  // can_submit_quote (which USER_B holds). Only the STATUS leg of condition 3 fails: an impl not filtering
+  // `status='active'` would find it and ALLOW; the active-only filter ⇒ delegation_denied.
+  await prisma.delegationGrant.create({
+    data: {
+      id: DELEG_DRAFT,
+      controllingOrganizationId: ORG_A,
+      representativeOrganizationId: ORG_B,
+      vendorProfileId: VENDOR_PROFILE_Z,
+      permissionSetJsonb: ["can_submit_quote"],
+      grantedBy: USER_A,
+      status: "draft",
+    },
+  });
+
+  // B-3b — an ACTIVE grant on VENDOR_PROFILE_W whose validity window is entirely in the past. Only the
+  // WINDOW leg of condition 3 fails (evaluated against the injected `NOW_AFTER_EXPIRY`): an impl not
+  // checking the window would find it and ALLOW; the window filter ⇒ delegation_denied.
+  await prisma.delegationGrant.create({
+    data: {
+      id: DELEG_EXPIRED,
+      controllingOrganizationId: ORG_A,
+      representativeOrganizationId: ORG_B,
+      vendorProfileId: VENDOR_PROFILE_W,
       permissionSetJsonb: ["can_submit_quote"],
       grantedBy: USER_A,
       status: "active",
+      validFrom: GRANT_EXPIRED_FROM,
+      validTo: GRANT_EXPIRED_TO,
     },
   });
 }
@@ -142,11 +196,17 @@ async function seedFixture(): Promise<void> {
 async function cleanupFixture(): Promise<void> {
   // Only the rows THIS suite created: role_permissions on the two org-custom roles (NEVER the shared
   // seeded Owner/NULL-bundle composition, which USER_D merely READS).
-  await prisma.delegationGrant.deleteMany({ where: { id: DELEG_1 } });
+  await prisma.delegationGrant.deleteMany({
+    where: { id: { in: [DELEG_1, DELEG_DRAFT, DELEG_EXPIRED] } },
+  });
   await prisma.rolePermission.deleteMany({ where: { roleId: { in: [ROLE_A, ROLE_B] } } });
-  await prisma.membership.deleteMany({ where: { userId: { in: [USER_A, USER_B, USER_D] } } });
+  await prisma.membership.deleteMany({
+    where: { userId: { in: [USER_A, USER_B, USER_D, USER_S] } },
+  });
   await prisma.role.deleteMany({ where: { id: { in: [ROLE_A, ROLE_B] } } });
-  await prisma.user.deleteMany({ where: { id: { in: [USER_A, USER_B, USER_D, USER_NOMEM] } } });
+  await prisma.user.deleteMany({
+    where: { id: { in: [USER_A, USER_B, USER_D, USER_NOMEM, USER_S] } },
+  });
   await prisma.organization.deleteMany({ where: { id: { in: [ORG_A, ORG_B] } } });
 }
 
@@ -206,6 +266,22 @@ describe("identity.check_permission — three-layer membership path (Doc-4A §6.
       denyReason: "no_active_membership",
     });
   });
+
+  it("[B-2] denies a LIVE suspended membership (state≠active) — not just a soft-deleted one", async () => {
+    // USER_S has a live (deletedAt=null) membership in ORG_A bound to ROLE_A (which HOLDS can_create_rfq).
+    // Discriminator: an impl filtering only `deletedAt` would resolve ROLE_A and ALLOW; the frozen layer-1
+    // filter requires state='active', so a suspended member is NOT active ⇒ deny/no_active_membership.
+    const r = await checkPermission({
+      userId: USER_S,
+      organizationId: ORG_A,
+      permissionSlug: "can_create_rfq",
+    });
+    expect(r).toEqual({
+      decision: "deny",
+      satisfiedBy: "none",
+      denyReason: "no_active_membership",
+    });
+  });
 });
 
 describe("[RV-0146] org-anchored resolution — a forged cross-org role_permissions row grants NOTHING", () => {
@@ -218,7 +294,6 @@ describe("[RV-0146] org-anchored resolution — a forged cross-org role_permissi
       permissionSlug: "can_award_rfq",
     });
     expect(r).toEqual({ decision: "deny", satisfiedBy: "none", denyReason: "slug_not_held" });
-    void permAwardRfq;
   });
 
   it("denies the forging org's member: USER_B's membership binds ROLE_B, not the forged ROLE_A", async () => {
@@ -245,7 +320,6 @@ describe("[RV-0147] staff-space firewall — a staff_* slug never resolves throu
       satisfiedBy: "none",
       denyReason: "staff_space_firewall",
     });
-    void permStaffBan;
   });
 });
 
@@ -289,8 +363,12 @@ describe("identity.check_permission — §6B delegated-access path (Doc-4A §6B.
     expect(r).toEqual({ decision: "deny", satisfiedBy: "none", denyReason: "delegation_denied" });
   });
 
-  it("condition 2 — denies a slug the representative user does NOT hold in their own org", async () => {
-    // can_view_rfq is neither in ROLE_B nor relevant; the user lacks it in ORG_B ⇒ no inheritance.
+  it("condition 2 — denies a slug the representative user does NOT hold in their own org (C2 ISOLATED)", async () => {
+    // B-1 isolation: can_view_rfq IS in DELEG_1's permission_set (C3 passes), the target IS VENDOR_PROFILE_X
+    // (C4 passes), the profile permits (C5 passes), and USER_B has an active ORG_B membership (C1 passes) —
+    // but USER_B does NOT hold can_view_rfq in ROLE_B, so C2 is the SOLE failing condition. This proves the
+    // frozen no-inheritance guarantee (§6B.2: nothing is inherited from the grant) as the single variable:
+    // deleting the condition-2 check in the policy would flip THIS test to allow.
     const r = await checkPermission(
       {
         userId: USER_B,
@@ -359,6 +437,55 @@ describe("identity.check_permission — §6B delegated-access path (Doc-4A §6B.
       satisfiedBy: "none",
       denyReason: "staff_space_firewall",
     });
+  });
+
+  it("[B-3a] condition 3 STATUS leg — a DRAFT grant (not active) denies even when its set includes the slug", async () => {
+    // The DELEG_DRAFT grant on VENDOR_PROFILE_Z has permission_set ['can_submit_quote'] (which USER_B holds
+    // — C1/C2 pass) and names the target profile (C4) with C5 permitting; ONLY its status=draft fails.
+    // Discriminator: an impl not filtering `status='active'` would find it and ALLOW ⇒ delegation_denied.
+    const r = await checkPermission(
+      {
+        userId: USER_B,
+        organizationId: ORG_B,
+        permissionSlug: "can_submit_quote",
+        vendorProfileId: VENDOR_PROFILE_Z,
+      },
+      permits,
+    );
+    expect(r).toEqual({ decision: "deny", satisfiedBy: "none", denyReason: "delegation_denied" });
+  });
+
+  it("[B-3b] condition 3 WINDOW leg — an EXPIRED grant (valid_to in the past) denies at the injected now", async () => {
+    // The DELEG_EXPIRED grant on VENDOR_PROFILE_W is status=active with a wholly-past window; evaluated at
+    // the injected NOW_AFTER_EXPIRY (strictly after valid_to), C1/C2/C4/C5 hold and ONLY the window fails.
+    // Discriminator: an impl not checking the validity window would find it and ALLOW ⇒ delegation_denied.
+    const r = await checkPermission(
+      {
+        userId: USER_B,
+        organizationId: ORG_B,
+        permissionSlug: "can_submit_quote",
+        vendorProfileId: VENDOR_PROFILE_W,
+      },
+      { vendorProfileStateReader: async () => true, now: () => NOW_AFTER_EXPIRY },
+    );
+    expect(r).toEqual({ decision: "deny", satisfiedBy: "none", denyReason: "delegation_denied" });
+  });
+
+  it("[T6-OBS-4] condition 5 — a TRUTHY NON-boolean port result cannot leak as permit (strict === true)", async () => {
+    // The port is typed `boolean`, but a type-abused truthy string must not authorize. With the strict
+    // `=== true` coercion a genuine `true` still allows; anything else (here a non-empty string) denies.
+    // Discriminator: the pre-hardening `!profileStatePermits` would treat "yes" as truthy ⇒ ALLOW (leak).
+    const abusivePort = (async () => "yes") as unknown as VendorProfileStateReader;
+    const r = await checkPermission(
+      {
+        userId: USER_B,
+        organizationId: ORG_B,
+        permissionSlug: "can_submit_quote",
+        vendorProfileId: VENDOR_PROFILE_X,
+      },
+      { vendorProfileStateReader: abusivePort },
+    );
+    expect(r).toEqual({ decision: "deny", satisfiedBy: "none", denyReason: "delegation_denied" });
   });
 });
 
