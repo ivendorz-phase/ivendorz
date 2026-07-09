@@ -145,16 +145,17 @@ model FeatureFlag {
 // ─────────────────────────────────────────────────────────────────────────────
 // M1 — Identity & Organization (`identity`) — Doc-6C (FROZEN)
 //
-// WP-1.2 realizes the 5-table minimal-valid subset of Doc-2 §10.2 (9 tables total):
-// users, organizations, roles, memberships, buyer_profiles. The other 4
-// (permissions, role_permissions, organization_workflow_settings, delegation_grants)
-// are Wave 2 and are intentionally NOT modeled here.
+// WP-1.2 (`identity_init`) realized the 5-table minimal-valid subset of Doc-2 §10.2:
+// users, organizations, roles, memberships, buyer_profiles. W2-IDN-1 (`identity_authz`)
+// realizes the remaining 4 — permissions, role_permissions, organization_workflow_settings,
+// delegation_grants — bringing all 9 `identity` tables (Doc-2 §10.2) to explicit existence.
 //
 // Columns are [Doc-2 binding] (verbatim Doc-2 §10.2); physical types/names are
-// [§2.5] realization choices, tagged in Doc-6C Content Pass-1/Pass-2. Enums,
+// [§2.5] realization choices, tagged in Doc-6C Content Pass-1/2/3. Enums,
 // partial-unique-live indexes, RLS, the inline FKs, and the system-bundle role
-// seed are realized as raw SQL in the `identity_init` migration (Doc-6C §6;
-// tables/columns managed by Prisma).
+// seed are realized as raw SQL in the `identity_init` + `identity_authz` migrations
+// (Doc-6C §6; tables/columns managed by Prisma). The 45-slug/4-bundle-composition seed
+// (W2-IDN-2) is a separate data migration — NOT part of the structural realization here.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // §3.1 — identity.users (platform-owned; the person record + auth boundary; DC-CR3)
@@ -208,9 +209,12 @@ model Organization {
   deletedBy         String?           @map("deleted_by") @db.Uuid
   deleteReason      String?           @map("delete_reason")
 
-  memberships   Membership[]
-  roles         Role[]
-  buyerProfiles BuyerProfile[]
+  memberships                    Membership[]
+  roles                          Role[]
+  buyerProfiles                  BuyerProfile[]
+  organizationWorkflowSettings   OrganizationWorkflowSettings[]
+  delegationGrantsControlling    DelegationGrant[]              @relation("DelegationGrantsControlling")
+  delegationGrantsRepresentative DelegationGrant[]              @relation("DelegationGrantsRepresentative")
 
   @@unique([humanRef], map: "organizations_human_ref_uq")
   @@map("organizations")
@@ -249,8 +253,9 @@ model Role {
   deletedBy      String?   @map("deleted_by") @db.Uuid
   deleteReason   String?   @map("delete_reason")
 
-  organization Organization? @relation(fields: [organizationId], references: [id], map: "roles_org_fk")
-  memberships  Membership[]
+  organization    Organization?    @relation(fields: [organizationId], references: [id], map: "roles_org_fk")
+  memberships     Membership[]
+  rolePermissions RolePermission[]
 
   @@map("roles")
   @@schema("identity")
@@ -311,5 +316,120 @@ model BuyerProfile {
   organization Organization @relation(fields: [organizationId], references: [id], map: "buyer_profiles_org_fk")
 
   @@map("buyer_profiles")
+  @@schema("identity")
+}
+
+// §3.5 — identity.permissions (platform catalog; reference data; no org anchor; SD=NO)
+model Permission {
+  id          String          @id @db.Uuid
+  slug        String
+  description String?
+  space       PermissionSpace
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy   String?         @map("created_by") @db.Uuid
+  updatedBy   String?         @map("updated_by") @db.Uuid
+
+  rolePermissions RolePermission[]
+
+  @@unique([slug], map: "permissions_slug_uq")
+  @@map("permissions")
+  @@schema("identity")
+}
+
+enum PermissionSpace {
+  tenant
+  staff
+
+  @@map("permission_space")
+  @@schema("identity")
+}
+
+// §3.6 — identity.role_permissions (bundle composition, N:N; PK (role_id, permission_id); SD=NO —
+// row removal = revoke, audited). `organizationId` [Doc-2 §10.2 binding] — not coined, §10.2 lists
+// it; NULL for system-bundle composition (mirrors roles seed); no FK on organizationId (Doc-6C §3.6).
+model RolePermission {
+  roleId         String   @map("role_id") @db.Uuid
+  permissionId   String   @map("permission_id") @db.Uuid
+  organizationId String?  @map("organization_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy      String?  @map("created_by") @db.Uuid
+  updatedBy      String?  @map("updated_by") @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id], map: "role_permissions_role_fk")
+  permission Permission @relation(fields: [permissionId], references: [id], map: "role_permissions_perm_fk")
+
+  @@id([roleId, permissionId], map: "role_permissions_pkey")
+  @@map("role_permissions")
+  @@schema("identity")
+}
+
+// §3.7 — identity.organization_workflow_settings (tenant-owned; SD=YES; FK → organizations)
+model OrganizationWorkflowSettings {
+  id                        String          @id @db.Uuid
+  organizationId            String          @map("organization_id") @db.Uuid
+  rfqApprovalMode           RfqApprovalMode @default(none) @map("rfq_approval_mode")
+  approvalChainJsonb        Json?           @map("approval_chain_jsonb") @db.JsonB
+  financialPermissionsJsonb Json?           @map("financial_permissions_jsonb") @db.JsonB
+  notificationRulesJsonb    Json?           @map("notification_rules_jsonb") @db.JsonB
+  createdAt                 DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                 DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy                 String?         @map("created_by") @db.Uuid
+  updatedBy                 String?         @map("updated_by") @db.Uuid
+  deletedAt                 DateTime?       @map("deleted_at") @db.Timestamptz
+  deletedBy                 String?         @map("deleted_by") @db.Uuid
+  deleteReason              String?         @map("delete_reason")
+
+  organization Organization @relation(fields: [organizationId], references: [id], map: "ows_org_fk")
+
+  @@map("organization_workflow_settings")
+  @@schema("identity")
+}
+
+enum RfqApprovalMode {
+  none
+  single
+  multi_step
+
+  @@map("rfq_approval_mode")
+  @@schema("identity")
+}
+
+// §3.9 — identity.delegation_grants (the dual-party aggregate; SD=YES; the only table with a
+// cross-module ref — `vendorProfileId` → M2, bare UUID, NO FK — DC-CR10)
+model DelegationGrant {
+  id                           String                @id @db.Uuid
+  controllingOrganizationId    String                @map("controlling_organization_id") @db.Uuid
+  representativeOrganizationId String                @map("representative_organization_id") @db.Uuid
+  vendorProfileId              String                @map("vendor_profile_id") @db.Uuid
+  permissionSetJsonb           Json                  @map("permission_set_jsonb") @db.JsonB
+  validFrom                    DateTime              @default(now()) @map("valid_from") @db.Timestamptz
+  validTo                      DateTime?             @map("valid_to") @db.Timestamptz
+  grantedBy                    String                @map("granted_by") @db.Uuid
+  status                       DelegationGrantStatus @default(draft)
+  createdAt                    DateTime              @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                    DateTime              @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy                    String?               @map("created_by") @db.Uuid
+  updatedBy                    String?               @map("updated_by") @db.Uuid
+  deletedAt                    DateTime?             @map("deleted_at") @db.Timestamptz
+  deletedBy                    String?               @map("deleted_by") @db.Uuid
+  deleteReason                 String?               @map("delete_reason")
+
+  controllingOrganization    Organization @relation("DelegationGrantsControlling", fields: [controllingOrganizationId], references: [id], map: "delegation_grants_controlling_fk")
+  representativeOrganization Organization @relation("DelegationGrantsRepresentative", fields: [representativeOrganizationId], references: [id], map: "delegation_grants_representative_fk")
+
+  @@map("delegation_grants")
+  @@schema("identity")
+}
+
+enum DelegationGrantStatus {
+  draft
+  active
+  suspended
+  revoked
+  expired
+
+  @@map("delegation_grant_status")
   @@schema("identity")
 }

@@ -75,6 +75,13 @@ export async function ensureRestrictedRlsRole(): Promise<void> {
   await prisma.$executeRawUnsafe(
     `GRANT SELECT, INSERT ON identity.organizations, identity.buyer_profiles TO ${RESTRICTED_RLS_ROLE}`,
   );
+  // W2-IDN-1 — the 4 identity_authz tables (Doc-6C §3.5/§3.6/§3.7/§3.9). Full CRUD grants so the
+  // CHK-8-024 gate can prove EACH policy's behavior at the DB level (incl. `role_permissions`'
+  // deliberate absence-of-UPDATE-policy — proving fail-closed-0-rows requires the UPDATE grant, not
+  // a bare permission-denied) rather than being short-circuited by a missing table privilege.
+  await prisma.$executeRawUnsafe(
+    `GRANT SELECT, INSERT, UPDATE, DELETE ON identity.permissions, identity.role_permissions, identity.organization_workflow_settings, identity.delegation_grants TO ${RESTRICTED_RLS_ROLE}`,
+  );
   // core.audit_records (Doc-6B) — the audit-append RLS conformance gate (ESC-W2-AUDIT-RLS §7 = R-b /
   // ADR-021). SELECT + INSERT so the gate proves the RLS POLICY (staff-only read fail-closes to 0 rows;
   // the context-bound `WITH CHECK` admits/rejects the INSERT) rather than a missing grant. Grant on the
@@ -86,12 +93,16 @@ export async function ensureRestrictedRlsRole(): Promise<void> {
 }
 
 /**
- * A minimal transaction surface the restricted-role callback runs raw read queries against. The harness
- * uses raw SQL here deliberately: this is the Doc-8B §5 RLS seam (act as a tenant DB role, app layer
- * bypassed), NOT a cross-module table access — it is how the gate proves the DB-level backstop enforces.
+ * A minimal transaction surface the restricted-role callback runs raw read/write queries against. The
+ * harness uses raw SQL here deliberately: this is the Doc-8B §5 RLS seam (act as a tenant DB role, app
+ * layer bypassed), NOT a cross-module table access — it is how the gate proves the DB-level backstop
+ * enforces. `$executeRawUnsafe` (W2-IDN-1) lets a caller assert an exact affected-row COUNT for
+ * INSERT/UPDATE/DELETE probes — e.g. proving a missing RLS policy for a command yields 0 affected rows
+ * (fail-closed) rather than a thrown error, distinct from a WITH CHECK rejection (which throws).
  */
 export interface RestrictedRoleTx {
   $queryRawUnsafe<T = unknown>(query: string, ...values: unknown[]): Promise<T>;
+  $executeRawUnsafe(query: string, ...values: unknown[]): Promise<number>;
 }
 
 const BASE_DB_URL = (): string => {
