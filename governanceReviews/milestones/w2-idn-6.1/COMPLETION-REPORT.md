@@ -341,3 +341,108 @@ Before execution, the assignee confirms:
 ☑ Any uncertainty results in Flag-and-Halt. (None reached the halt bar: every needed audit action
   had a Doc-4C-authored §9 near-pointer; the one genuine corpus gap — the `recovery_method` enum —
   is realized fail-closed and escalated in §8/§12 rather than resolved locally.)
+
+---
+
+## RV-0152 fix-forward amendment (2026-07-10 — additive; the original report above is unmodified)
+
+*Reactivation per the coordinator's RV-0152 dispatch (Review-A 🟠 REVISION: 0 BLOCKER · 1 MAJOR ·
+1 MINOR · 1 NIT · 5 OBS; 11/11 judgment calls upheld; F1 + F2 accepted at the Validate-Findings
+gate). This amendment rides the F1/F2 patch commit
+(`fix(identity): W2-IDN-6.1 preferences fail-closed + 409 ETag carriage (RV-0152 F1/F2)
+[checkpoint]` — the commit carrying this amendment; SHA recorded in the reactivation return + the
+tracker row).*
+
+### (a) Judgment call 12 — `preferences`, now REMEDIED FAIL-CLOSED (RV-0152 F1, MAJOR)
+
+- **The call as originally (and wrongly) made:** `preferences : object : optional :
+  schema-validated keys only` (Doc-4C §C4 PassB:176; Validation Matrix "keys allowlisted" :179;
+  AI-note "a bounded schema, not arbitrary JSON" :186) was realized as an OPAQUE plain-object
+  carriage because no frozen preference-key catalog exists — fail-OPEN, inconsistent with this
+  WP's own `recovery_method` doctrine (call 3), UN-logged in §8, and the code comment claimed a
+  report carry that was never written (the F1 aggravators — both conceded).
+- **Frozen authority re-read:** §C4 PassB:176/:179/:186 verbatim (above) + Doc-4A §9.4
+  (needed-but-missing value set ⇒ escalate, never coin/widen) + Doc-5C §0.4 (missing authority ⇒
+  flag, never locally fix). Review-A independently confirmed no corpus source registers the key
+  schema (same gap class as `ESC-IDN-2FA-RECOVERY`).
+- **Remedy (the RV-0152 accepted disposition):** any SUPPLIED `preferences` → VALIDATION reject
+  (`identity_user_invalid_input`, 400) until an additive Doc-4C patch registers the key schema —
+  the escalation handle **`ESC-IDN-PREF-KEYS`** (registered in `esc_registry.md`; the owner MAY
+  alternatively ratify opaque carriage on that handle). The phantom-carry code comment is replaced
+  with the handle citation; `UserProfilePatch` no longer carries a `preferences` member, so NO code
+  path can write `preferences_jsonb` from this wire (fail-closed by construction, not just by
+  validation). Discriminating test added: a well-formed-object `preferences` → 400 + row unwritten
+  (fails under the fail-open realization); a preferences-free PATCH on the same row still 200; the
+  zero-audit probe stands unchanged.
+- **Why not Flag-and-Halt:** the fail-closed posture realizes the frozen constraint conservatively
+  and the Board channel is open (`ESC-IDN-PREF-KEYS`); nothing is resolved locally.
+
+### (b) NIT-1 — `ADMIN_REASON_MAX_LENGTH = 500` logged (call-6 sibling)
+
+`reason : string : required : structured admin reason` (Doc-4C §C4 PassB:219) names no corpus
+bound and no POLICY key; the realized bound `ADMIN_REASON_MAX_LENGTH = 500`
+(`set-user-account-status.command.ts`, exported named constant) is a **[realization convention]**
+per Doc-5C §0.4 — exactly the class of call 6 (`DISPLAY_NAME_MAX_LENGTH = 120`). Contradicts
+nothing upstream; a future additive/POLICY key may supersede. Logged here for Review-A
+adjudication (Raise ≠ Accept).
+
+### (c) OBS-3 — call 9 provenance corrected
+
+Call 9 attributed the "§B.6 Idempotency-Key replay-cache is a 6.5 obligation, not 6.1's"
+adjudication to the 6.1 packet's "No further carries" sentence. **Correction:** the adjudication
+INSTRUMENT is the **RV-0149 close carry** (recorded on the tracker's `W2-IDN-4` row: "IDN-6.5 ←
+… §B.6 dedup"); the 6.1 packet sentence merely REFLECTS that prior adjudication. The call's
+substance is unchanged (upheld at RV-0152); only its provenance citation is corrected.
+
+### (d) Patch summary (F1 + F2)
+
+- **F2 realization (Doc-5A §9.5, re-read verbatim at Pass6:53–59):** every stale-precondition /
+  losing-concurrent-write `409 CONFLICT` now carries the entity's CURRENT `updated_at` on the
+  standard **`ETag`** response header (strong-validator quoted ISO-8601; `parseIfMatchTimestamp`
+  round-trips it, closing the §9.6 re-read-retry loop). Plumbing: repository CAS-conflict outcomes
+  re-read and return the current token (`CasConflict`) → `UserAccountError.currentUpdatedAt`
+  (populated ONLY on precondition-mismatch legs) → the shared §C4 error mapper
+  (`userAccountErrorResponse`) emits `ETag` via the new `concurrencyEtag` helper →
+  `WireResponse.headers` → the thin routes carry it onto the transport.
+- **F2 leg decision (LOGGED judgment call — 13):** `ETag` rides the four
+  **token-mismatch/losing-write** CONFLICT legs (profile stale · 2FA stale · deactivate CAS-stale ·
+  set-status CAS-stale/losing-write — the last per Doc-5A §9.4's "the losing request receives
+  CONFLICT … handled by the concurrency model (§9.5)"). `ETag` does NOT ride the
+  **machine-illegal-edge** `identity_user_status_conflict` (e.g. the same-state suspend replay) nor
+  the deactivate state-legality CONFLICT: Doc-5A §9.5 (Pass6:56, verbatim) attaches the
+  current-token carriage to "a **token mismatch** (a stale precondition)", and §9.6's re-read-retry
+  flow cannot make an illegal edge retriable — a fresh token changes nothing. Discriminating tests
+  pin BOTH sides (stale legs: `ETag` = current token + a successful round-trip retry; illegal-edge
+  leg: `ETag` absent).
+- **Files changed (this patch):**
+  - `src/shared/http/index.ts` (`WireResponse.headers` · `errorResponse(headers?)` ·
+    `concurrencyEtag`)
+  - `src/modules/identity/contracts/types.ts` (`UserAccountError.currentUpdatedAt` · the
+    `preferences` field doc → fail-closed/`ESC-IDN-PREF-KEYS`)
+  - `src/modules/identity/infrastructure/data/user-account.repository.ts` (`CasConflict` +
+    current-token re-read on every CAS conflict; `UserProfilePatch` loses `preferences`)
+  - `src/modules/identity/application/commands/update-user-profile.command.ts` (F1 fail-closed +
+    F2 token plumb)
+  - `src/modules/identity/application/commands/update-user-2fa-settings.command.ts` (F2)
+  - `src/modules/identity/application/commands/deactivate-own-account.command.ts` (F2 + the
+    no-token state-legality leg comment)
+  - `src/modules/identity/application/commands/set-user-account-status.command.ts` (F2 + the
+    call-13 leg decision comment)
+  - `src/modules/identity/api/update-user-profile.handler.ts` (shared `userAccountErrorResponse`
+    + `concurrencyEtag` emission)
+  - `src/modules/identity/api/update-user-2fa-settings.handler.ts` ·
+    `…/deactivate-own-account.handler.ts` · `…/set-user-account-status.handler.ts` (use the shared
+    error mapper)
+  - `app/api/identity/users/[id]/route.ts` + the 3 named-command routes (carry
+    `WireResponse.headers` onto the transport)
+  - `tests/integration/user-account-slice.test.ts` (F1 fail-closed discrimination · F2 ETag
+    equality + round-trip retry · F2 illegal-edge no-ETag discrimination)
+  - this report (the amendment)
+  Contracts facade (`services.ts`), migration, Prisma schema, domain, `src/server` compositions:
+  **unchanged** by this patch.
+- **Tests/gates:** slice 16 tests (count unchanged — assertions extended in place: +2 F1 legs, +4
+  F2 ETag assertions incl. the round-trip and the no-ETag leg) · full suite **278 tests / 25 files
+  ALL PASS** — identical counts to the pre-patch baseline (delta: 0 added/0 removed; intended
+  in-place assertion changes only) · tsc / ESLint / Prettier green.
+- **Coordinator-owned working-tree files (tracker/registry/review-log/playbook) and the external
+  `framer-motion` package.json/lock change: untouched, unstaged.**

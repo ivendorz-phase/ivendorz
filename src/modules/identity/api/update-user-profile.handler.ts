@@ -10,10 +10,11 @@
 // absent target (§C4: "self-only — never accept a target `user_id` ≠ session user"; another user's
 // existence is never the caller's to know). The code is the frozen §C4 user-domain register code.
 
-import { errorResponse, successResponse, type WireResponse } from "@/shared/http";
+import { concurrencyEtag, errorResponse, successResponse, type WireResponse } from "@/shared/http";
 import type {
   UpdateUserProfileOutcome,
   UpdateUserProfileResult,
+  UserAccountError,
 } from "@/modules/identity/contracts";
 
 // The frozen §C4 user-domain NOT_FOUND code (authored on `get_user`/`set_user_account_status`),
@@ -35,6 +36,24 @@ export function userAccountInvalidInput(message: string): WireResponse<never> {
   });
 }
 
+/** The ONE §C4 error→wire mapping (all four user-account mappers share it): §6.1 envelope, §6.2
+ *  status, and — when the error carries the current concurrency token (a §9.5 stale-precondition
+ *  CONFLICT) — the `ETag` response header (Doc-5A §9.5 Pass6:56–57; RV-0152 F2) enabling the §9.6
+ *  re-read-retry flow. Non-precondition legs carry no token, hence no header. */
+export function userAccountErrorResponse(error: UserAccountError): WireResponse<never> {
+  return errorResponse(
+    {
+      error_class: error.errorClass,
+      error_code: error.errorCode,
+      message: error.message,
+      retryable: false,
+    },
+    error.currentUpdatedAt !== undefined
+      ? { ETag: concurrencyEtag(error.currentUpdatedAt) }
+      : undefined,
+  );
+}
+
 /**
  * Map a resolved `identity.update_user_profile.v1` outcome to its Doc-5A wire response. `null` ⇒
  * the self-scope/no-subject collapse (`404`, non-disclosure).
@@ -54,10 +73,5 @@ export function mapUpdateUserProfile(
     // Doc-5C §4.1 row 1: update → `200` + the §5.6 envelope.
     return successResponse(outcome.result, 200);
   }
-  return errorResponse({
-    error_class: outcome.error.errorClass,
-    error_code: outcome.error.errorCode,
-    message: outcome.error.message,
-    retryable: false,
-  });
+  return userAccountErrorResponse(outcome.error);
 }

@@ -11,12 +11,14 @@ import type {
   DeactivateOwnAccountOutcome,
   DeactivateOwnAccountResult,
 } from "@/modules/identity/contracts";
+import { userAccountErrorResponse } from "./update-user-profile.handler";
 
 const USER_NOT_FOUND_CODE = "identity_user_not_found";
 
 /**
  * Map a resolved `identity.deactivate_own_account.v1` outcome to its Doc-5A wire response.
- * `null` ⇒ the self-scope/no-subject collapse (`404`, non-disclosure).
+ * `null` ⇒ the self-scope/no-subject collapse (`404`, non-disclosure). A stale-precondition
+ * CONFLICT carries the §9.5 `ETag` current token (via the shared §C4 error mapper — RV-0152 F2).
  */
 export function mapDeactivateOwnAccount(
   outcome: DeactivateOwnAccountOutcome | null,
@@ -32,10 +34,5 @@ export function mapDeactivateOwnAccount(
   if (outcome.ok) {
     return successResponse(outcome.result, 200);
   }
-  return errorResponse({
-    error_class: outcome.error.errorClass,
-    error_code: outcome.error.errorCode,
-    message: outcome.error.message,
-    retryable: false,
-  });
+  return userAccountErrorResponse(outcome.error);
 }

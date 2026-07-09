@@ -85,11 +85,14 @@ export interface AuthChallengeEnvelope {
 /**
  * A realized wire response: the HTTP status + the JSON-object-root body. The body is the Doc-5A §5.6
  * success envelope, the §6.1 error envelope, or the DC-4 auth-boundary envelope (transport-level 401,
- * outside the Doc-5A contract error model).
+ * outside the Doc-5A contract error model). `headers` carries STANDARD HTTP infrastructure headers
+ * only (the Doc-5A §4.0 class — `ETag`/`Location`/`Retry-After`), never a Doc-5A application header;
+ * the thin route entry copies them onto the transport verbatim.
  */
 export interface WireResponse<T> {
   status: number;
   body: SuccessEnvelope<T> | ErrorEnvelope | AuthChallengeEnvelope;
+  headers?: Record<string, string>;
 }
 
 /**
@@ -111,12 +114,33 @@ export function successResponse<T>(result: T, status = 200): WireResponse<T> {
 /**
  * Build a Doc-5A §6.1 error response: `{ error, reference_id }` with the HTTP status fixed by the
  * §6.2 class→status mapping. `reference_id` is top-level (Doc-4A §22.1 C-05), never nested in `error`.
+ *
+ * @param headers optional STANDARD HTTP infrastructure headers (Doc-5A §4.0 class — e.g. the §9.5
+ *                `ETag` current-token carriage on a stale-precondition `409`); never an application
+ *                header, never protected enrichment (Doc-5A §6.3).
  */
-export function errorResponse(error: WireError): WireResponse<never> {
+export function errorResponse(
+  error: WireError,
+  headers?: Record<string, string>,
+): WireResponse<never> {
   return {
     status: ERROR_STATUS[error.error_class],
     body: { error, reference_id: newReferenceId() },
+    ...(headers !== undefined ? { headers } : {}),
   };
+}
+
+/**
+ * Format the entity's current `updated_at` concurrency token as the `ETag` response-header value —
+ * the Doc-5A §9.5 [realization convention]: "the one canonical, platform-wide location of the
+ * current concurrency token on a `409 CONFLICT` response is the standard HTTP `ETag` response
+ * header, carrying the entity's current `updated_at` token" (Pass6:57), enabling the §9.6
+ * re-read-retry flow. Strong-validator quoted form (HTTP-standard ETag syntax); the value is the
+ * ISO-8601 UTC `updated_at`, which `parseIfMatchTimestamp` round-trips (quotes stripped) so a
+ * caller may retry with the returned token directly in `If-Match`.
+ */
+export function concurrencyEtag(currentUpdatedAt: Date): string {
+  return `"${currentUpdatedAt.toISOString()}"`;
 }
 
 /**

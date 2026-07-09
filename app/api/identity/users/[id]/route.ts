@@ -57,11 +57,19 @@ export async function PATCH(
     body = {};
   }
 
-  const { status, body: responseBody } = await handleUpdateUserProfile(toInput(id, body, request), {
+  const {
+    status,
+    body: responseBody,
+    headers: wireHeaders,
+  } = await handleUpdateUserProfile(toInput(id, body, request), {
     resolveSession: resolveSupabaseSession,
     ensureProvisioned,
   });
 
-  const headers = status === 401 ? { "WWW-Authenticate": "Bearer" } : undefined;
+  // Carry the core-decided standard HTTP headers (e.g. the Doc-5A §9.5 `ETag` current token on a stale-precondition 409) + the 401 challenge.
+  const headers = {
+    ...(wireHeaders ?? {}),
+    ...(status === 401 ? { "WWW-Authenticate": "Bearer" } : {}),
+  };
   return NextResponse.json(responseBody, { status, headers });
 }

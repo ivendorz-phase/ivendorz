@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "../../src/shared/db";
 import { uuidv7 } from "../../src/shared/ids";
 import { appendAuditRecord } from "../../src/modules/core/contracts";
+import { concurrencyEtag } from "../../src/shared/http";
 import type { ensureProvisioned } from "../../src/server/auth";
 import {
   handleDeactivateOwnAccount,
@@ -240,7 +241,7 @@ describe("W2-IDN-6.1 §C4 user/account wired surface — 8C (real PostgreSQL)", 
     expect((await reloadUser(u.id)).displayName).toBe(atBound); // unchanged by the rejected calls.
   });
 
-  it("PROFILE: phone must be E.164; preferences must be a plain object; stale If-Match → 409; absent If-Match → 400", async () => {
+  it("PROFILE: phone must be E.164; preferences FAIL-CLOSED 400 (no frozen key schema — ESC-IDN-PREF-KEYS, RV-0152 F1); stale If-Match → 409 + §9.5 ETag round-trip; absent If-Match → 400", async () => {
     const u = await trackedUser();
     const deps = {
       resolveSession: async () => ({ authUserId: u.authUserId }),
@@ -253,24 +254,32 @@ describe("W2-IDN-6.1 §C4 user/account wired surface — 8C (real PostgreSQL)", 
     );
     expect(badPhone.status).toBe(400);
 
-    const badPrefs = await handleUpdateUserProfile(
+    // FAIL-CLOSED discrimination (RV-0152 F1): the frozen `schema-validated keys only` constraint
+    // (§C4 PassB:176/:179/:186) has NO registered key schema (`ESC-IDN-PREF-KEYS`) — ANY supplied
+    // `preferences` (well-formed object OR not) is VALIDATION-rejected and NOTHING is written.
+    // This test FAILS under the fail-open realization (an admitted arbitrary object).
+    const objectPrefs = await handleUpdateUserProfile(
+      { targetUserId: u.id, preferences: { locale: "bn-BD" }, updatedAt: u.updatedAt },
+      deps,
+    );
+    expect(objectPrefs.status).toBe(400);
+    const arrayPrefs = await handleUpdateUserProfile(
       { targetUserId: u.id, preferences: ["not", "an", "object"], updatedAt: u.updatedAt },
       deps,
     );
-    expect(badPrefs.status).toBe(400);
+    expect(arrayPrefs.status).toBe(400);
+    expect((await reloadUser(u.id)).preferencesJsonb).toBeNull(); // no wire path wrote it.
 
+    // A preferences-free PATCH on the same row still succeeds (the fail-closed field does not
+    // poison the contract's other declared fields).
     const good = await handleUpdateUserProfile(
-      {
-        targetUserId: u.id,
-        phone: "+8801712345678",
-        preferences: { locale: "bn-BD" },
-        updatedAt: u.updatedAt,
-      },
+      { targetUserId: u.id, phone: "+8801712345678", updatedAt: u.updatedAt },
       deps,
     );
     expect(good.status).toBe(200);
 
-    // Stale optimistic token (the pre-update `updated_at`) → CONFLICT 409 (frozen code).
+    // Stale optimistic token (the pre-update `updated_at`) → CONFLICT 409 (frozen code) carrying
+    // the CURRENT token on the `ETag` response header (Doc-5A §9.5 Pass6:56–57 — RV-0152 F2).
     const stale = await handleUpdateUserProfile(
       { targetUserId: u.id, displayName: "Late Writer", updatedAt: u.updatedAt },
       deps,
@@ -279,13 +288,26 @@ describe("W2-IDN-6.1 §C4 user/account wired surface — 8C (real PostgreSQL)", 
     expect((stale.body as { error: { error_code: string } }).error.error_code).toBe(
       "identity_user_update_conflict",
     );
+    const currentRow = await reloadUser(u.id);
+    expect(stale.headers?.ETag).toBe(concurrencyEtag(currentRow.updatedAt));
 
-    // Absent/unparseable If-Match → the required `updated_at` SYNTAX failure → 400.
+    // §9.6 re-read-retry ROUND-TRIP: the returned ETag token, replayed as If-Match (the parser
+    // strips the quoted form), makes the retry succeed — the header is a USABLE current token.
+    const retryToken = new Date(stale.headers!.ETag!.replace(/^"(.*)"$/, "$1"));
+    const retried = await handleUpdateUserProfile(
+      { targetUserId: u.id, displayName: "Late Writer", updatedAt: retryToken },
+      deps,
+    );
+    expect(retried.status).toBe(200);
+
+    // Absent/unparseable If-Match → the required `updated_at` SYNTAX failure → 400 (no ETag —
+    // a SYNTAX failure is not a precondition mismatch).
     const noToken = await handleUpdateUserProfile(
       { targetUserId: u.id, displayName: "No Token", updatedAt: new Date(Number.NaN) },
       deps,
     );
     expect(noToken.status).toBe(400);
+    expect(noToken.headers?.ETag).toBeUndefined();
   });
 
   it("PROFILE actor-scope: foreign `{id}` → 404 BYTE-IDENTICAL to absent-target 404 (non-disclosure); malformed id → 400; unauthenticated → 401 (no error_class)", async () => {
@@ -389,6 +411,8 @@ describe("W2-IDN-6.1 §C4 user/account wired surface — 8C (real PostgreSQL)", 
       deps,
     );
     expect(stale.status).toBe(409);
+    // §9.5 (RV-0152 F2): the stale-precondition 409 carries the CURRENT token on `ETag`.
+    expect(stale.headers?.ETag).toBe(concurrencyEtag((await reloadUser(u.id)).updatedAt));
 
     const foreign = await handleUpdateUser2faSettings(
       { targetUserId: uuidv7(), twoFaEnabled: true, updatedAt: u.updatedAt },
@@ -767,8 +791,13 @@ describe("W2-IDN-6.1 §C4 user/account wired surface — 8C (real PostgreSQL)", 
       "identity_user_status_conflict",
     );
     expect(await userAudits(target.id)).toHaveLength(1);
+    // F2 LEG DISCRIMINATION (RV-0152 judgment call): a machine-ILLEGAL-edge 409 is a STATE-legality
+    // rejection, NOT a stale precondition — Doc-5A §9.5 (Pass6:56) attaches the ETag current-token
+    // carriage to "a token mismatch (a stale precondition)" only, so NO ETag rides this leg.
+    expect(replay.headers?.ETag).toBeUndefined();
 
-    // Stale optimistic token on a LEGAL edge → 409 (CAS on status × updated_at).
+    // Stale optimistic token on a LEGAL edge → 409 (CAS on status × updated_at) CARRYING the §9.5
+    // ETag current token (the losing-write / stale-precondition leg — Doc-5A §9.4→§9.5; RV-0152 F2).
     const stale = await handleSetUserAccountStatus(
       {
         targetUserId: target.id,
@@ -779,6 +808,7 @@ describe("W2-IDN-6.1 §C4 user/account wired surface — 8C (real PostgreSQL)", 
       staffDeps,
     );
     expect(stale.status).toBe(409);
+    expect(stale.headers?.ETag).toBe(concurrencyEtag((await reloadUser(target.id)).updatedAt));
   });
 
   it("ADMIN-STATE rollback direction (D7 invariant 1): a sabotaged audit append rolls the WHOLE transaction back — no status change, no audit row", async () => {

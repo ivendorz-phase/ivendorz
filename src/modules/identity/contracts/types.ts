@@ -356,6 +356,14 @@ export interface UserAccountError {
   errorCode: string;
   /** Human-safe, non-leaking message. */
   message: string;
+  /**
+   * The entity's CURRENT `updated_at` concurrency token — populated ONLY on the Doc-5A §9.5
+   * stale-precondition / losing-concurrent-write CONFLICT legs (Pass6:56: "the error response
+   * carries the current concurrency token and nothing about the competing actor"), so the wire
+   * mapper emits the §9.5 `ETag` response header and the caller can re-read-retry (§9.6). Absent
+   * on every non-precondition failure (a machine-illegal edge is NOT a token mismatch — RV-0152 F2).
+   */
+  currentUpdatedAt?: Date;
 }
 
 /**
@@ -375,9 +383,11 @@ export interface UpdateUserProfileInput {
   /** `phone : string : optional : E.164` (§C4 — uniqueness not enforced here; auth-managed
    *  identifiers are infra, DC-4). */
   phone?: string;
-  /** `preferences : object : optional` — `preferences_jsonb` (Doc-2 §10.2). The internal shape is
-   *  owned upstream and carried opaque (no frozen preference-key catalog exists to allowlist —
-   *  the D7 jsonb posture); must be a plain JSON object. */
+  /** `preferences : object : optional : schema-validated keys only` (§C4 PassB:176; "keys
+   *  allowlisted" :179; "a bounded schema, not arbitrary JSON" :186). **FAIL-CLOSED** — NO frozen
+   *  preference-key catalog exists to allowlist against (`ESC-IDN-PREF-KEYS`, raised RV-0152 F1),
+   *  so a SUPPLIED value is VALIDATION-rejected until an additive Doc-4C patch registers the key
+   *  schema (the `recovery_method` escalate-never-widen posture; Doc-4A §9.4 / Doc-5C §0.4). */
   preferences?: unknown;
   /** `updated_at : timestamp : required` — optimistic-concurrency token (§B.2), from `If-Match`. */
   updatedAt: Date;

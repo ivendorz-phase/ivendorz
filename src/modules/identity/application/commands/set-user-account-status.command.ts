@@ -161,7 +161,11 @@ export async function setUserAccountStatusCommand(
 
     // (4) STATE — the IDN-5 user machine (CONSUMED): `active ⇄ suspended` only. A same-state
     //     replay (suspend→suspended) or a terminal source is an illegal edge ⇒ the frozen
-    //     `identity_user_status_conflict` (CONFLICT → 409).
+    //     `identity_user_status_conflict` (CONFLICT → 409). NO §9.5 `ETag` on this leg (RV-0152 F2
+    //     judgment call): a machine-illegal edge is a STATE-legality rejection, not a
+    //     stale-PRECONDITION mismatch — Doc-5A §9.5 (Pass6:56) attaches the current-token carriage
+    //     to "a token mismatch (a stale precondition)"; a fresh token would not make this request
+    //     retriable (§9.6's re-read-retry flow does not apply to an illegal edge).
     if (!canTransitionUser(row.status, input.targetStatus)) {
       return {
         ok: false as const,
@@ -173,7 +177,9 @@ export async function setUserAccountStatusCommand(
       };
     }
 
-    // (5) WRITE — CAS on (source status × updated_at); a stale token or concurrent move ⇒ CONFLICT.
+    // (5) WRITE — CAS on (source status × updated_at); a stale token or a losing concurrent write ⇒
+    //     CONFLICT carrying the CURRENT token (Doc-5A §9.4 "the losing request receives CONFLICT" →
+    //     §9.5 current-token carriage → wire `ETag`; §9.6 re-read-retry).
     const write = await setUserStatus(
       {
         userId: input.targetUserId,
@@ -191,6 +197,9 @@ export async function setUserAccountStatusCommand(
           errorClass: "CONFLICT" as const,
           errorCode: STATUS_CONFLICT_CODE,
           message: "The user record was modified concurrently; reload and retry.",
+          ...(write.currentUpdatedAt !== undefined
+            ? { currentUpdatedAt: write.currentUpdatedAt }
+            : {}),
         },
       };
     }

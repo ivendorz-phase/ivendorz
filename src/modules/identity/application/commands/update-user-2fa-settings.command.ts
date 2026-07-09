@@ -132,12 +132,16 @@ export async function updateUser2faSettingsCommand(
         error: { errorClass: "NOT_FOUND", errorCode: NOT_FOUND_CODE, message: "Not found." },
       };
     }
+    // Stale precondition → CONFLICT carrying the CURRENT token (Doc-5A §9.5 → wire `ETag`, §9.6).
     return {
       ok: false,
       error: {
         errorClass: "CONFLICT",
         errorCode: UPDATE_CONFLICT_CODE,
         message: "The user record was modified concurrently; reload and retry.",
+        ...(write.currentUpdatedAt !== undefined
+          ? { currentUpdatedAt: write.currentUpdatedAt }
+          : {}),
       },
     };
   }

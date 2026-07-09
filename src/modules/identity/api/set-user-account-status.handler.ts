@@ -13,6 +13,7 @@ import type {
   SetUserAccountStatusOutcome,
   SetUserAccountStatusResult,
 } from "@/modules/identity/contracts";
+import { userAccountErrorResponse } from "./update-user-profile.handler";
 
 const FORBIDDEN_CODE = "identity_user_forbidden";
 
@@ -26,17 +27,14 @@ export function forbiddenSetUserAccountStatus(): WireResponse<SetUserAccountStat
   });
 }
 
-/** Map a resolved `identity.set_user_account_status.v1` outcome to its Doc-5A wire response. */
+/** Map a resolved `identity.set_user_account_status.v1` outcome to its Doc-5A wire response. The
+ *  losing-write CONFLICT carries the §9.5 `ETag` current token (RV-0152 F2); the
+ *  machine-illegal-edge CONFLICT does not (not a precondition mismatch — decided in the command). */
 export function mapSetUserAccountStatus(
   outcome: SetUserAccountStatusOutcome,
 ): WireResponse<SetUserAccountStatusResult> {
   if (outcome.ok) {
     return successResponse(outcome.result, 200);
   }
-  return errorResponse({
-    error_class: outcome.error.errorClass,
-    error_code: outcome.error.errorCode,
-    message: outcome.error.message,
-    retryable: false,
-  });
+  return userAccountErrorResponse(outcome.error);
 }

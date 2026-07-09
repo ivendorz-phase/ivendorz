@@ -48,16 +48,21 @@ export async function POST(
     body = {};
   }
 
-  const { status, body: responseBody } = await handleUpdateUser2faSettings(
-    toInput(id, body, request),
-    {
-      resolveSession: resolveSupabaseSession,
-      ensureProvisioned,
-      ipAddress: request.headers.get("x-forwarded-for"),
-      userAgent: request.headers.get("user-agent"),
-    },
-  );
+  const {
+    status,
+    body: responseBody,
+    headers: wireHeaders,
+  } = await handleUpdateUser2faSettings(toInput(id, body, request), {
+    resolveSession: resolveSupabaseSession,
+    ensureProvisioned,
+    ipAddress: request.headers.get("x-forwarded-for"),
+    userAgent: request.headers.get("user-agent"),
+  });
 
-  const headers = status === 401 ? { "WWW-Authenticate": "Bearer" } : undefined;
+  // Carry the core-decided standard HTTP headers (e.g. the §9.5 `ETag` on a stale 409) + the 401 challenge.
+  const headers = {
+    ...(wireHeaders ?? {}),
+    ...(status === 401 ? { "WWW-Authenticate": "Bearer" } : {}),
+  };
   return NextResponse.json(responseBody, { status, headers });
 }

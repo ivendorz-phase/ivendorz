@@ -219,12 +219,18 @@ export async function deactivateOwnAccountCommand(
           },
         };
       }
+      // Stale precondition → CONFLICT carrying the CURRENT token (Doc-5A §9.5 → wire `ETag`, §9.6).
+      // (The step-4 machine-legality CONFLICT above carries NO token — it is not a precondition
+      // mismatch; §9.5 governs the stale-token leg only. RV-0152 F2 judgment call.)
       return {
         ok: false as const,
         error: {
           errorClass: "CONFLICT" as const,
           errorCode: UPDATE_CONFLICT_CODE,
           message: "The user record was modified concurrently; reload and retry.",
+          ...(write.currentUpdatedAt !== undefined
+            ? { currentUpdatedAt: write.currentUpdatedAt }
+            : {}),
         },
       };
     }

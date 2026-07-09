@@ -12,10 +12,31 @@
 //
 // CONCURRENCY: every mutation is a WRITE-TIME compare-and-set on `updated_at` (the Doc-4C §C4
 // optimistic token) — a stale token matches zero rows and the command surfaces CONFLICT. The
-// IDN-5 `transitionMembershipState` CAS precedent.
+// IDN-5 `transitionMembershipState` CAS precedent. Every CAS-conflict outcome re-reads and returns
+// the row's CURRENT `updated_at` (Doc-5A §9.5 Pass6:56 — "the error response carries the current
+// concurrency token", realized on the wire as the `ETag` header; RV-0152 F2) so the caller can
+// re-read-retry (§9.6). The token is the row's own `updated_at` — never a competing-actor fact.
 
 import { prisma, Prisma, type DbExecutor } from "../../../../shared/db";
 import type { UserStatus } from "../../domain/state-machines/user.state-machine";
+
+/** A CAS-conflict outcome carrying the row's CURRENT concurrency token (Doc-5A §9.5); the token is
+ *  absent only when the live row vanished mid-flight (then the caller's 409 simply omits `ETag`). */
+export interface CasConflict {
+  outcome: "conflict";
+  currentUpdatedAt?: Date;
+}
+
+/** Re-read the live row's current `updated_at` for a §9.5 conflict response. */
+async function currentToken(userId: string, db: DbExecutor): Promise<CasConflict> {
+  const row = await db.user.findFirst({
+    where: { id: userId, deletedAt: null },
+    select: { updatedAt: true },
+  });
+  return row === null
+    ? { outcome: "conflict" }
+    : { outcome: "conflict", currentUpdatedAt: row.updatedAt };
+}
 
 /** A live `identity.users` row loaded for a §C4 mutation (personal-data fields NEVER returned —
  *  only what the commands need: identity, lifecycle, the concurrency token, current 2FA settings). */
@@ -50,23 +71,25 @@ export async function loadUserAccountRow(
 }
 
 /** The profile fields `update_user_profile` may write (Doc-4C §C4 PassB:174). `undefined` = leave
- *  unchanged (Doc-4A §9.2 update-command absence semantics). */
+ *  unchanged (Doc-4A §9.2 update-command absence semantics). NOTE: `preferences` is NOT a writable
+ *  patch field — the frozen `schema-validated keys only` constraint has no registered key schema
+ *  (`ESC-IDN-PREF-KEYS`, RV-0152 F1), so the command fail-closes it at SYNTAX and NO code path can
+ *  write `preferences_jsonb` until the additive Doc-4C patch lands. */
 export interface UserProfilePatch {
   displayName?: string;
   phone?: string;
-  preferences?: unknown;
 }
 
 /**
  * Apply the `update_user_profile` partial write under a CAS on `updated_at`. Returns the new
- * `updated_at` on success; `"conflict"` when the token is stale (zero rows matched); `"not_found"`
- * when no live row exists. Only the three declared §C4 fields are writable — no protected /
- * auth-managed field can pass through this surface (DC-4; Doc-4A §9.7).
+ * `updated_at` on success; `"conflict"` (+ the current token, §9.5) when the token is stale;
+ * `"not_found"` when no live row exists. Only the writable §C4 fields are on the patch surface —
+ * no protected / auth-managed field can pass through (DC-4; Doc-4A §9.7).
  */
 export async function updateUserProfileFields(
   params: { userId: string; expectedUpdatedAt: Date; patch: UserProfilePatch },
   db: DbExecutor = prisma,
-): Promise<{ outcome: "updated"; updatedAt: Date } | { outcome: "conflict" | "not_found" }> {
+): Promise<{ outcome: "updated"; updatedAt: Date } | CasConflict | { outcome: "not_found" }> {
   const exists = await db.user.findFirst({
     where: { id: params.userId, deletedAt: null },
     select: { id: true },
@@ -76,13 +99,12 @@ export async function updateUserProfileFields(
   const data: Record<string, unknown> = { updatedBy: params.userId };
   if (params.patch.displayName !== undefined) data.displayName = params.patch.displayName;
   if (params.patch.phone !== undefined) data.phone = params.patch.phone;
-  if (params.patch.preferences !== undefined) data.preferencesJsonb = params.patch.preferences;
 
   const written = await db.user.updateMany({
     where: { id: params.userId, deletedAt: null, updatedAt: params.expectedUpdatedAt },
     data,
   });
-  if (written.count !== 1) return { outcome: "conflict" };
+  if (written.count !== 1) return currentToken(params.userId, db);
 
   const after = await db.user.findFirst({
     where: { id: params.userId },
@@ -103,7 +125,8 @@ export async function updateUser2faSettings(
   db: DbExecutor = prisma,
 ): Promise<
   | { outcome: "updated"; updatedAt: Date; oldSettings: unknown; newSettings: unknown }
-  | { outcome: "conflict" | "not_found" }
+  | CasConflict
+  | { outcome: "not_found" }
 > {
   const current = await db.user.findFirst({
     where: { id: params.userId, deletedAt: null },
@@ -119,7 +142,7 @@ export async function updateUser2faSettings(
       updatedBy: params.userId,
     },
   });
-  if (written.count !== 1) return { outcome: "conflict" };
+  if (written.count !== 1) return currentToken(params.userId, db);
 
   const after = await db.user.findFirst({
     where: { id: params.userId },
@@ -164,7 +187,8 @@ export async function anonymizeAndSoftDeleteUser(
   db: DbExecutor = prisma,
 ): Promise<
   | { outcome: "deactivated"; previousStatus: UserStatus; updatedAt: Date }
-  | { outcome: "conflict" | "not_found" }
+  | CasConflict
+  | { outcome: "not_found" }
 > {
   const current = await db.user.findFirst({
     where: { id: params.userId, deletedAt: null },
@@ -191,7 +215,7 @@ export async function anonymizeAndSoftDeleteUser(
       updatedBy: params.userId,
     },
   });
-  if (written.count !== 1) return { outcome: "conflict" };
+  if (written.count !== 1) return currentToken(params.userId, db);
 
   const after = await db.user.findFirst({
     where: { id: params.userId },
@@ -219,7 +243,7 @@ export async function setUserStatus(
     actorUserId: string | null;
   },
   db: DbExecutor = prisma,
-): Promise<{ outcome: "updated"; updatedAt: Date } | { outcome: "conflict" }> {
+): Promise<{ outcome: "updated"; updatedAt: Date } | CasConflict> {
   const written = await db.user.updateMany({
     where: {
       id: params.userId,
@@ -229,7 +253,10 @@ export async function setUserStatus(
     },
     data: { status: params.to, updatedBy: params.actorUserId },
   });
-  if (written.count !== 1) return { outcome: "conflict" };
+  // A zero-row CAS here is a stale token OR a lost concurrent write — both are the Doc-5A §9.4
+  // "losing request receives CONFLICT" case, handled by the §9.5 concurrency model ⇒ carry the
+  // current token so the caller can re-read-retry (§9.6).
+  if (written.count !== 1) return currentToken(params.userId, db);
 
   const after = await db.user.findFirst({
     where: { id: params.userId },

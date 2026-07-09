@@ -19,6 +19,15 @@
 // [realization convention] per Doc-5C §0.4 (a transport-level detail on which Doc-4A/Doc-5A are
 // silent) — fixed below as a named constant, never a magic literal. Contradicts nothing upstream;
 // a future additive may register a POLICY key and supersede it.
+//
+// PREFERENCES — FAIL-CLOSED (`ESC-IDN-PREF-KEYS`, RV-0152 F1 accepted remedy): the frozen field is
+// `preferences : object : optional : schema-validated keys only` (§C4 PassB:176), Validation Matrix
+// "`preferences` keys allowlisted" (:179), AI-note "a bounded schema, not arbitrary JSON" (:186) —
+// but NO corpus source registers the preference key schema (Review-A verified; same gap class as
+// `recovery_method`). Per Doc-4A §9.4 / Doc-5C §0.4 (escalate, never widen), a SUPPLIED
+// `preferences` value is VALIDATION-rejected until an additive Doc-4C patch registers the schema
+// (or the owner rules opaque carriage on the `ESC-IDN-PREF-KEYS` handle). No code path writes
+// `preferences_jsonb` from this wire until then.
 
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import {
@@ -78,16 +87,11 @@ function validateInput(input: UpdateUserProfileInput): string | null {
     }
   }
   if (input.preferences !== undefined) {
-    // `preferences : object` (§C4) — a plain JSON object; arrays/scalars/null are not the declared
-    // shape. Keys ride opaque (`preferences_jsonb`, Doc-2 §10.2 — shape owned upstream; no frozen
-    // preference-key catalog exists to allowlist, carried in the Completion Report).
-    if (
-      typeof input.preferences !== "object" ||
-      input.preferences === null ||
-      Array.isArray(input.preferences)
-    ) {
-      return "preferences must be an object.";
-    }
+    // FAIL-CLOSED (Doc-4A §9.4; `ESC-IDN-PREF-KEYS` — RV-0152 F1): the frozen `schema-validated
+    // keys only` constraint (§C4 PassB:176/:179/:186) has NO registered preference-key schema to
+    // validate against, so ANY supplied value is rejected until the additive Doc-4C patch lands —
+    // never an opaque/arbitrary-JSON widening (the `recovery_method` precedent).
+    return "preferences is not accepted: its key schema is not yet registered (ESC-IDN-PREF-KEYS).";
   }
   if (!(input.updatedAt instanceof Date) || Number.isNaN(input.updatedAt.getTime())) {
     return "updated_at is required (If-Match) and must be a timestamp.";
@@ -129,12 +133,11 @@ export async function updateUserProfileCommand(
   }
 
   // (3) BUSINESS — "no protected/auth-managed field mutated here" (DC-4) holds by construction:
-  //     only the three declared fields exist on the patch surface (Doc-4A §9.7 prohibited inputs
-  //     cannot reach the repository).
+  //     only the writable declared fields exist on the patch surface (Doc-4A §9.7 prohibited inputs
+  //     cannot reach the repository; `preferences` is SYNTAX-rejected above — ESC-IDN-PREF-KEYS).
   const patch: UserProfilePatch = {};
   if (input.displayName !== undefined) patch.displayName = input.displayName;
   if (input.phone !== undefined) patch.phone = input.phone;
-  if (input.preferences !== undefined) patch.preferences = input.preferences;
 
   // (4) WRITE — CAS on `updated_at`; the repository owns the SQL (self-anchored; RLS backstop).
   const write = await updateUserProfileFields(
@@ -149,12 +152,17 @@ export async function updateUserProfileCommand(
         error: { errorClass: "NOT_FOUND", errorCode: NOT_FOUND_CODE, message: "Not found." },
       };
     }
+    // Stale precondition → CONFLICT carrying the CURRENT token (Doc-5A §9.5; the mapper emits it
+    // as the `ETag` response header so the caller can re-read-retry, §9.6).
     return {
       ok: false,
       error: {
         errorClass: "CONFLICT",
         errorCode: UPDATE_CONFLICT_CODE,
         message: "The user record was modified concurrently; reload and retry.",
+        ...(write.currentUpdatedAt !== undefined
+          ? { currentUpdatedAt: write.currentUpdatedAt }
+          : {}),
       },
     };
   }
