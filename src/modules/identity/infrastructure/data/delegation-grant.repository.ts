@@ -129,13 +129,25 @@ export async function isActiveOrganization(
   return row !== null;
 }
 
-/** Load a live delegation grant for a lifecycle mutation (suspend/revoke). `null` ⇒ not found / soft-deleted. */
+/**
+ * Load a live delegation grant for a lifecycle mutation (suspend/revoke), PARTY-SCOPED to the caller's org.
+ * The load matches only when `partyOrgId` is a party to the grant (its controlling OR representative org) —
+ * the Doc-4C §C9 SCOPE non-disclosure collapse (§B.4 SCOPE→NOT_FOUND; §7.5 protected-fact rule) realized in
+ * the APP layer (Doc-6C §6.2a primary), independent of the executor's RLS posture. A non-party caller (any
+ * third org) gets `null` — BYTE-INDISTINGUISHABLE from a nonexistent grant (no existence oracle over other
+ * tenants' delegation relationships). `null` ⇒ not found / not a party / soft-deleted.
+ */
 export async function findDelegationGrantById(
   delegationGrantId: string,
+  partyOrgId: string,
   db: DbExecutor = prisma,
 ): Promise<DelegationGrantRow | null> {
   const row = await db.delegationGrant.findFirst({
-    where: { id: delegationGrantId, deletedAt: null },
+    where: {
+      id: delegationGrantId,
+      deletedAt: null,
+      OR: [{ controllingOrganizationId: partyOrgId }, { representativeOrganizationId: partyOrgId }],
+    },
     select: {
       id: true,
       controllingOrganizationId: true,

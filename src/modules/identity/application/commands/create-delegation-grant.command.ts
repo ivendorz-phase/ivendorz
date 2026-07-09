@@ -136,14 +136,6 @@ export async function createDelegationGrantCommand(
       "permission_set must be an array of slug strings.",
     );
   }
-  if (input.representativeOrganizationId === ctx.activeOrgId) {
-    // A delegation is between DISTINCT orgs (§6B — representative is a distinct active org).
-    return err(
-      "VALIDATION",
-      CODE.INVALID_INPUT,
-      "representative org must differ from the controlling org.",
-    );
-  }
   const validFrom = input.validFrom ?? new Date();
   const suppliedValidTo = input.validTo ?? null;
   if (!isValidityWindowSane(validFrom, suppliedValidTo)) {
@@ -178,7 +170,18 @@ export async function createDelegationGrantCommand(
     );
   }
 
-  // (5) REFERENCE (representative org) — must be a live, active organization.
+  // (5a) DELEGATION (§6B eligibility) — the representative is a DISTINCT active org (Doc-4C §C9 matrix
+  //      PassB:581 places this at DELEGATION, after AUTHZ/SCOPE). In-register VALIDATION code (the class
+  //      question is carried to the wire-face WP per RV-0149 NIT-5); only the STAGE ORDER is aligned here.
+  if (input.representativeOrganizationId === ctx.activeOrgId) {
+    return err(
+      "VALIDATION",
+      CODE.INVALID_INPUT,
+      "representative org must differ from the controlling org.",
+    );
+  }
+
+  // (5b) REFERENCE (representative org) — must be a live, active organization.
   if (!(await isActiveOrganization(input.representativeOrganizationId, db))) {
     return err("REFERENCE", CODE.ORG_NOT_FOUND, "representative organization not found.");
   }

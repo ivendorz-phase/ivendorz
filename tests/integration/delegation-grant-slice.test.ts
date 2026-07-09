@@ -41,10 +41,24 @@ const VENDOR_PROFILE = "01920000-0000-7000-8000-0000000d40f1"; // M2 bare UUID �
 const VP_OTHER = "01920000-0000-7000-8000-0000000d40f2"; // controlled by a DIFFERENT org (not_controller)
 const VP_MISSING = "01920000-0000-7000-8000-0000000d40f3"; // no such profile (not_found)
 
+// A THIRD org — neither controlling nor representative party to any seeded grant. Its member holds
+// can_manage_delegations (so it PASSES AUTHZ and reaches the party-scoped load) — the worst-case existence
+// prober for the §C9 SCOPE non-disclosure collapse (RV-0149 F2).
+const THIRD_ORG = "01920000-0000-7000-8000-0000000d4c01";
+const THIRD_ROLE = "01920000-0000-7000-8000-0000000d4c02"; // holds can_manage_delegations
+const THIRD_USER = "01920000-0000-7000-8000-0000000d4c09"; // active member of THIRD_ORG on THIRD_ROLE
+
 const FUTURE = new Date("2999-01-01T00:00:00.000Z");
 const PAST_FROM = new Date("2020-01-01T00:00:00.000Z");
 const PAST_TO = new Date("2020-06-01T00:00:00.000Z");
 const NOW_AFTER_EXPIRY = new Date("2021-01-01T00:00:00.000Z");
+
+// The `system_configuration` STORE key (natural key = `<domain>.<key_name>`; the reader strips the fixed
+// `core.system_configuration.` reference prefix) for the delegation validity default — RV-0149 F4. Bound by
+// pointer to Doc-3 v1.9 / Doc-4C §C9 (`identity.delegation_validity_default`); seeded test-scoped only.
+const DELEGATION_VALIDITY_DEFAULT_KEY = "identity.delegation_validity_default";
+const DAY_MS = 86_400_000;
+const HOUR_MS = 3_600_000;
 
 // The M2 Vendor Service port stub (read-validation only): CTRL_ORG controls VENDOR_PROFILE; VP_OTHER is
 // controlled by someone else; VP_MISSING does not exist.
@@ -60,6 +74,12 @@ const permits: { vendorProfileStateReader: VendorProfileStateReader } = {
 const ctrlCtx = { userId: CTRL_USER, activeOrgId: CTRL_ORG } as const;
 const ctrlContext = { userId: CTRL_USER, activeOrgId: CTRL_ORG, isPlatformStaff: false } as const;
 const repContext = { userId: REP_USER, activeOrgId: REP_ORG, isPlatformStaff: false } as const;
+const thirdContext = {
+  userId: THIRD_USER,
+  activeOrgId: THIRD_ORG,
+  isPlatformStaff: false,
+} as const;
+const thirdCtx = { userId: THIRD_USER, activeOrgId: THIRD_ORG } as const;
 
 async function slugId(s: string): Promise<string> {
   return (await prisma.permission.findFirstOrThrow({ where: { slug: s } })).id;
@@ -113,12 +133,13 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
     for (const [id, name] of [
       [CTRL_ORG, "IDN4 Controlling"],
       [REP_ORG, "IDN4 Representative"],
+      [THIRD_ORG, "IDN4 Third"],
     ] as const) {
       await prisma.organization.create({
         data: { id, humanRef: `ORG-D4-${id.slice(-6)}`, name, slug: `idn4-${id.slice(-6)}` },
       });
     }
-    for (const id of [CTRL_USER, REP_USER, NONADMIN_USER]) {
+    for (const id of [CTRL_USER, REP_USER, NONADMIN_USER, THIRD_USER]) {
       await prisma.user.create({ data: { id, status: "active" } });
     }
     await prisma.role.create({
@@ -132,6 +153,14 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
         id: NONADMIN_ROLE,
         organizationId: CTRL_ORG,
         name: "IDN4 NonAdmin",
+        isSystemBundle: false,
+      },
+    });
+    await prisma.role.create({
+      data: {
+        id: THIRD_ROLE,
+        organizationId: THIRD_ORG,
+        name: "IDN4 Third",
         isSystemBundle: false,
       },
     });
@@ -162,6 +191,15 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
         state: "active",
       },
     });
+    await prisma.membership.create({
+      data: {
+        id: "01920000-0000-7000-8000-0000000d4c91",
+        organizationId: THIRD_ORG,
+        userId: THIRD_USER,
+        roleId: THIRD_ROLE,
+        state: "active",
+      },
+    });
 
     // CTRL_ROLE holds can_manage_delegations + can_submit_quote + can_respond_to_rfq (the CTRL_ORG held set).
     for (const s of ["can_manage_delegations", "can_submit_quote", "can_respond_to_rfq"]) {
@@ -184,6 +222,15 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
         organizationId: CTRL_ORG,
       },
     });
+    // THIRD_ROLE holds can_manage_delegations so THIRD_USER passes AUTHZ and reaches the party-scoped load
+    // (the existence-oracle prober for RV-0149 F2).
+    await prisma.rolePermission.create({
+      data: {
+        roleId: THIRD_ROLE,
+        permissionId: await slugId("can_manage_delegations"),
+        organizationId: THIRD_ORG,
+      },
+    });
   });
 
   beforeEach(async () => {
@@ -194,17 +241,27 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
 
   afterAll(async () => {
     await prisma.delegationGrant.deleteMany({
-      where: { controllingOrganizationId: { in: [CTRL_ORG, REP_ORG] } },
+      where: { controllingOrganizationId: { in: [CTRL_ORG, REP_ORG, THIRD_ORG] } },
     });
     await prisma.rolePermission.deleteMany({
-      where: { roleId: { in: [CTRL_ROLE, REP_ROLE, NONADMIN_ROLE] } },
+      where: { roleId: { in: [CTRL_ROLE, REP_ROLE, NONADMIN_ROLE, THIRD_ROLE] } },
     });
     await prisma.membership.deleteMany({
-      where: { userId: { in: [CTRL_USER, REP_USER, NONADMIN_USER] } },
+      where: { userId: { in: [CTRL_USER, REP_USER, NONADMIN_USER, THIRD_USER] } },
     });
-    await prisma.role.deleteMany({ where: { id: { in: [CTRL_ROLE, REP_ROLE, NONADMIN_ROLE] } } });
-    await prisma.user.deleteMany({ where: { id: { in: [CTRL_USER, REP_USER, NONADMIN_USER] } } });
-    await prisma.organization.deleteMany({ where: { id: { in: [CTRL_ORG, REP_ORG] } } });
+    await prisma.role.deleteMany({
+      where: { id: { in: [CTRL_ROLE, REP_ROLE, NONADMIN_ROLE, THIRD_ROLE] } },
+    });
+    await prisma.user.deleteMany({
+      where: { id: { in: [CTRL_USER, REP_USER, NONADMIN_USER, THIRD_USER] } },
+    });
+    await prisma.organization.deleteMany({ where: { id: { in: [CTRL_ORG, REP_ORG, THIRD_ORG] } } });
+    // RV-0149 F4: the test-scoped `identity.delegation_validity_default` POLICY row (unseeded until
+    // W2-IDN-7; `system_configuration` is CHK-6-030 mutable-config — created + swept test-scoped, never
+    // pre-empting the IDN-7 seed).
+    await prisma.systemConfiguration.deleteMany({
+      where: { key: DELEGATION_VALIDITY_DEFAULT_KEY },
+    });
     await prisma.$disconnect();
   });
 
@@ -270,6 +327,10 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
 
   it("CREATE guards: not_controller · vendor not_found · org_not_found · window · rep==controlling", async () => {
     const base = { appendAuditRecord, configValueQuery, vendorProfileControlReader: control };
+    // RV-0149 F3 (atomicity direction 2): NO create-guard failure appends an audit row.
+    const auditBefore = await prisma.auditRecord.count({
+      where: { entityType: "delegation_grant" },
+    });
     const run = (input: Parameters<typeof createDelegationGrant>[0]) =>
       inCtrlOrg((tx) => createDelegationGrant(input, ctrlCtx, base, tx));
 
@@ -337,6 +398,10 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
     expect(
       await prisma.delegationGrant.count({ where: { controllingOrganizationId: CTRL_ORG } }),
     ).toBe(0);
+    // F3: the whole failed-create block added ZERO audit rows (no write ⇒ no audit).
+    expect(await prisma.auditRecord.count({ where: { entityType: "delegation_grant" } })).toBe(
+      auditBefore,
+    );
   });
 
   it("CREATE permission_set guards: unknown · staff-space · ownership-class · not-held", async () => {
@@ -406,6 +471,105 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
     ).toBe(0);
   });
 
+  // ── default valid_to POLICY branch (RV-0149 F4) ───────────────────────────────
+  it("CREATE default valid_to (F4): an omitted valid_to derives from the identity.delegation_validity_default POLICY", async () => {
+    const validFrom = new Date("2500-01-01T00:00:00.000Z");
+    // Seed the POLICY row test-scoped (unseeded until W2-IDN-7; system_configuration = CHK-6-030
+    // mutable-config; swept in afterAll — never pre-empting the IDN-7 seed).
+    await prisma.systemConfiguration.deleteMany({
+      where: { key: DELEGATION_VALIDITY_DEFAULT_KEY },
+    });
+    await prisma.systemConfiguration.create({
+      data: {
+        id: uuidv7(),
+        key: DELEGATION_VALIDITY_DEFAULT_KEY,
+        valueJsonb: "365d",
+        valueType: "duration",
+      },
+    });
+
+    // `valid_to` OMITTED → the command reads the POLICY via the REAL configValueQuery + durationToMs.
+    const outcome = await inCtrlOrg((tx) =>
+      createDelegationGrant(
+        {
+          representativeOrganizationId: REP_ORG,
+          vendorProfileId: VENDOR_PROFILE,
+          permissionSet: ["can_submit_quote"],
+          validFrom,
+        },
+        ctrlCtx,
+        { appendAuditRecord, configValueQuery, vendorProfileControlReader: control },
+        tx,
+      ),
+    );
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) throw new Error("unreachable");
+    const row = await prisma.delegationGrant.findFirstOrThrow({
+      where: { id: outcome.result.delegationGrantId },
+    });
+    // validFrom + 365d, computed from the seeded POLICY value — never a literal window.
+    expect(row.validTo?.getTime()).toBe(validFrom.getTime() + 365 * DAY_MS);
+  });
+
+  it("CREATE default valid_to (F4): durationToMs interprets the registered notation + rejects an unparseable value", async () => {
+    const validFrom = new Date("2500-06-01T00:00:00.000Z");
+    // Each notation arm of durationToMs, exercised via an injected configValueQuery stub (the omitted-
+    // valid_to branch): d/h/m/s units + the plain-integer-seconds arm.
+    const cases: ReadonlyArray<readonly [unknown, number]> = [
+      ["365d", 365 * DAY_MS],
+      ["24h", 24 * HOUR_MS],
+      ["1h", HOUR_MS],
+      ["30m", 30 * 60_000],
+      ["45s", 45 * 1000],
+      [3600, 3600 * 1000], // a plain finite integer is interpreted as seconds
+    ];
+    for (const [value, ms] of cases) {
+      const stub: typeof configValueQuery = async () => ({ value, valueType: "duration" });
+      const outcome = await inCtrlOrg((tx) =>
+        createDelegationGrant(
+          {
+            representativeOrganizationId: REP_ORG,
+            vendorProfileId: VENDOR_PROFILE,
+            permissionSet: ["can_submit_quote"],
+            validFrom,
+          },
+          ctrlCtx,
+          { appendAuditRecord, configValueQuery: stub, vendorProfileControlReader: control },
+          tx,
+        ),
+      );
+      expect(outcome.ok, `notation ${String(value)} should resolve`).toBe(true);
+      if (!outcome.ok) throw new Error("unreachable");
+      const row = await prisma.delegationGrant.findFirstOrThrow({
+        where: { id: outcome.result.delegationGrantId },
+      });
+      expect(row.validTo?.getTime(), `notation ${String(value)}`).toBe(validFrom.getTime() + ms);
+      await prisma.delegationGrant.deleteMany({ where: { id: outcome.result.delegationGrantId } });
+    }
+
+    // An unparseable POLICY value → durationToMs THROWS (never invents a fallback window) → the command
+    // rejects rather than writing an arbitrary window.
+    const badStub: typeof configValueQuery = async () => ({
+      value: "not-a-duration",
+      valueType: "duration",
+    });
+    await expect(
+      inCtrlOrg((tx) =>
+        createDelegationGrant(
+          {
+            representativeOrganizationId: REP_ORG,
+            vendorProfileId: VENDOR_PROFILE,
+            permissionSet: ["can_submit_quote"],
+            validFrom,
+          },
+          ctrlCtx,
+          { appendAuditRecord, configValueQuery: badStub, vendorProfileControlReader: control },
+          tx,
+        ),
+      ),
+    ).rejects.toThrow(/not an interpretable duration/);
+  });
+
   // ── suspend / revoke ────────────────────────────────────────────────────────
   it("SUSPEND: active → suspended + a `delegation_grant_suspended` audit row (atomic)", async () => {
     const g = await seedGrant({ status: "active" });
@@ -427,9 +591,12 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
     expect(audit[0]!.newValue).toMatchObject({ status: "suspended" });
   });
 
-  it("SUSPEND not_controller: a representative-org caller (not the controller) → deny", async () => {
+  it("SUSPEND forbidden: a representative-PARTY caller (can see the grant, not the controller) → forbidden", async () => {
     const g = await seedGrant({ status: "active" });
-    // REP_USER holds can_manage_delegations in REP_ORG (passes AUTHZ) but REP_ORG is NOT the controller.
+    // REP_USER holds can_manage_delegations in REP_ORG (passes AUTHZ) and REP_ORG IS a party (representative)
+    // so the party-scoped load resolves the grant — but REP_ORG is NOT the controller. Per Doc-4C §C9 the
+    // suspend register (PassB:595) carries NO `not_controller` code: the DELEGATION-stage controller failure
+    // maps to `identity_delegation_forbidden` (AUTHORIZATION), NOT the create-only `..._not_controller`.
     const outcome = await withActiveOrgContext(repContext, (tx) =>
       suspendDelegationGrant(
         { delegationGrantId: g.id, updatedAt: g.updatedAt },
@@ -440,7 +607,7 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
     );
     expect(outcome).toMatchObject({
       ok: false,
-      error: { errorClass: "AUTHORIZATION", errorCode: "identity_delegation_not_controller" },
+      error: { errorClass: "AUTHORIZATION", errorCode: "identity_delegation_forbidden" },
     });
     expect((await prisma.delegationGrant.findFirst({ where: { id: g.id } }))?.status).toBe(
       "active",
@@ -495,6 +662,94 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
       ok: false,
       error: { errorClass: "NOT_FOUND", errorCode: "identity_delegation_not_found" },
     });
+  });
+
+  it("SUSPEND non-party collapse (F2): a THIRD-org caller gets an IDENTICAL NOT_FOUND for a real grant id and a random uuid", async () => {
+    // A real grant between CTRL_ORG (controller) and REP_ORG (representative). THIRD_ORG is neither party.
+    const g = await seedGrant({ status: "active" });
+    const RANDOM_ID = "01920000-0000-7000-8000-0000000d4dee"; // no such grant
+
+    // THIRD_USER holds can_manage_delegations in THIRD_ORG → passes AUTHZ → reaches the party-scoped load.
+    const probeExisting = await withActiveOrgContext(thirdContext, (tx) =>
+      suspendDelegationGrant(
+        { delegationGrantId: g.id, updatedAt: g.updatedAt },
+        thirdCtx,
+        { appendAuditRecord },
+        tx,
+      ),
+    );
+    const probeRandom = await withActiveOrgContext(thirdContext, (tx) =>
+      suspendDelegationGrant(
+        { delegationGrantId: RANDOM_ID, updatedAt: g.updatedAt },
+        thirdCtx,
+        { appendAuditRecord },
+        tx,
+      ),
+    );
+
+    // BYTE-INDISTINGUISHABLE: probing an EXISTING grant a third org is not party to yields the identical
+    // outcome (ok · errorClass · errorCode · message) as probing a nonexistent id — no existence oracle
+    // over other tenants' delegation relationships (§C9 SCOPE collapse; §7.5 protected-fact rule).
+    expect(probeExisting).toEqual(probeRandom);
+    expect(probeExisting).toMatchObject({
+      ok: false,
+      error: { errorClass: "NOT_FOUND", errorCode: "identity_delegation_not_found" },
+    });
+    // The real grant is untouched and unaudited (no write, no leak).
+    expect((await prisma.delegationGrant.findFirst({ where: { id: g.id } }))?.status).toBe(
+      "active",
+    );
+    expect(await auditFor(g.id)).toHaveLength(0);
+  });
+
+  it("ATOMICITY direction 2 (REFERENCE §4.10): every failed lifecycle write leaves NO audit row", async () => {
+    // stale token → VALIDATION; no write, no audit.
+    const g1 = await seedGrant({ status: "active" });
+    await inCtrlOrg((tx) =>
+      suspendDelegationGrant(
+        { delegationGrantId: g1.id, updatedAt: new Date(0) },
+        ctrlCtx,
+        { appendAuditRecord },
+        tx,
+      ),
+    );
+    expect(await auditFor(g1.id)).toHaveLength(0);
+
+    // illegal state (already-suspended → suspend) → STATE; no write, no audit.
+    const g2 = await seedGrant({ status: "suspended" });
+    await inCtrlOrg((tx) =>
+      suspendDelegationGrant(
+        { delegationGrantId: g2.id, updatedAt: g2.updatedAt },
+        ctrlCtx,
+        { appendAuditRecord },
+        tx,
+      ),
+    );
+    expect(await auditFor(g2.id)).toHaveLength(0);
+
+    // representative-party (forbidden) → AUTHORIZATION; no write, no audit.
+    const g3 = await seedGrant({ status: "active" });
+    await withActiveOrgContext(repContext, (tx) =>
+      suspendDelegationGrant(
+        { delegationGrantId: g3.id, updatedAt: g3.updatedAt },
+        { userId: REP_USER, activeOrgId: REP_ORG },
+        { appendAuditRecord },
+        tx,
+      ),
+    );
+    expect(await auditFor(g3.id)).toHaveLength(0);
+
+    // revoke from a terminal state → STATE; no write, no audit.
+    const g4 = await seedGrant({ status: "revoked" });
+    await inCtrlOrg((tx) =>
+      revokeDelegationGrant(
+        { delegationGrantId: g4.id, updatedAt: g4.updatedAt },
+        ctrlCtx,
+        { appendAuditRecord },
+        tx,
+      ),
+    );
+    expect(await auditFor(g4.id)).toHaveLength(0);
   });
 
   it("REVOKE: active → revoked + audit + fires the refresh-on-revocation seam", async () => {

@@ -12,9 +12,11 @@
 // `active|suspended → revoked`); the machine rejects any illegal edge → STATE `identity_delegation_state_invalid`.
 //
 // REFRESH-ON-REVOCATION (revoke only): on `→ revoked`, the injected `DelegationRefreshPort` is invoked
-// AFTER commit (the M3 `rfq_invitation_grantees`/visibility teardown seam). The DEFAULT port is a genuine
-// NO-OP — it calls no M3 and emits no event ([DC-1] / Doc-4C §C9 "do not synthesize an event or call M3");
-// the real teardown lands via service/event when [DC-1] resolves. NEVER a cross-schema write from identity.
+// INSIDE the caller-supplied transaction (after the audited write, before commit) — the M3
+// `rfq_invitation_grantees`/visibility teardown seam. The DEFAULT port is a genuine NO-OP — it calls no M3
+// and emits no event ([DC-1] / Doc-4C §C9 "do not synthesize an event or call M3"); the real teardown lands
+// via service/event when [DC-1] resolves, at which point its invocation point (post-commit vs
+// idempotent-consumer) is reconciled with the real semantics. NEVER a cross-schema write from identity.
 
 import { prisma, type DbExecutor } from "@/shared/db";
 import type { AppendAuditRecord } from "@/modules/core/contracts";
@@ -45,10 +47,15 @@ import type {
 
 const CAN_MANAGE_DELEGATIONS = "can_manage_delegations" as const;
 
+// Doc-4C §C9 suspend/revoke error registers (PassB:595 / :621) — EXACTLY these four codes. Unlike CREATE
+// (PassB:582), `identity_delegation_not_controller` is NOT in the suspend/revoke registers: on a lifecycle
+// command the caller probes a grant ID, so the SCOPE non-disclosure collapse (§7.5) forecloses a distinct
+// "exists but not yours" code. A representative-party caller (can read the grant, isn't the controller) →
+// `identity_delegation_forbidden` (AUTHORIZATION, the DELEGATION-stage mapping); a non-party caller collapses
+// to `identity_delegation_not_found` (the SCOPE stage, via the party-scoped load).
 const CODE = {
   INVALID_INPUT: "identity_delegation_invalid_input",
   FORBIDDEN: "identity_delegation_forbidden",
-  NOT_CONTROLLER: "identity_delegation_not_controller",
   NOT_FOUND: "identity_delegation_not_found",
   STATE_INVALID: "identity_delegation_state_invalid",
 } as const;
@@ -117,22 +124,23 @@ async function transitionCommand(
     return err("AUTHORIZATION", CODE.FORBIDDEN, "Not permitted to manage delegations.");
   }
 
-  // Load the grant (dual-party read; RLS backstop). Not found ⇒ NOT_FOUND (non-disclosure collapse §7.5).
-  const grant = await findDelegationGrantById(input.delegationGrantId, db);
+  // (4) SCOPE — PARTY-SCOPED load: the grant resolves only when the active org is a party (controlling OR
+  //     representative). A non-party caller gets `null` ⇒ NOT_FOUND, byte-indistinguishable from a
+  //     nonexistent grant (§B.4 SCOPE→NOT_FOUND disclosure collapse; §7.5 protected-fact rule). App-layer
+  //     primary (Doc-6C §6.2a) — the collapse does NOT depend on the executor's RLS posture.
+  const grant = await findDelegationGrantById(input.delegationGrantId, ctx.activeOrgId, db);
   if (grant === null) {
     return err("NOT_FOUND", CODE.NOT_FOUND, "delegation grant not found.");
   }
 
-  // (4) SCOPE — only the CONTROLLING org may manage (representative → deny). App-layer primary; RLS backstop.
+  // (5) DELEGATION — only the CONTROLLING org may manage (§6B controller check). The grant is a party grant
+  //     (loaded), so a representative-party caller can legitimately SEE it (dual-party read) but lacks write
+  //     authority ⇒ `identity_delegation_forbidden` (AUTHORIZATION — the register's SCOPE-failure mapping).
   if (grant.controllingOrganizationId !== ctx.activeOrgId) {
-    return err(
-      "AUTHORIZATION",
-      CODE.NOT_CONTROLLER,
-      "only the controlling org may manage this grant.",
-    );
+    return err("AUTHORIZATION", CODE.FORBIDDEN, "only the controlling org may manage this grant.");
   }
 
-  // (5) Optimistic concurrency — the caller's `updated_at` must match the live row (else stale view).
+  // (6) Optimistic concurrency — the caller's `updated_at` must match the live row (else stale view).
   if (grant.updatedAt.getTime() !== input.updatedAt.getTime()) {
     return err(
       "VALIDATION",
@@ -141,13 +149,13 @@ async function transitionCommand(
     );
   }
 
-  // (6) STATE — reject an illegal Doc-2 §5.10 edge with a clean STATE error (before touching the DB write).
+  // (7) STATE — reject an illegal Doc-2 §5.10 edge with a clean STATE error (before touching the DB write).
   if (!canTransition(grant.status, spec.to)) {
     return err("STATE", CODE.STATE_INVALID, `illegal transition ${grant.status} → ${spec.to}.`);
   }
   assertTransition(grant.status, spec.to); // defensive — the machine is the single authority.
 
-  // (7) WRITE — compare-and-set on the source status. A lost race (0 rows) ⇒ STATE (already transitioned).
+  // (8) WRITE — compare-and-set on the source status. A lost race (0 rows) ⇒ STATE (already transitioned).
   const write = await transitionDelegationGrantStatus(
     { id: grant.id, from: grant.status, to: spec.to, actorUserId: ctx.userId },
     db,
@@ -160,7 +168,7 @@ async function transitionCommand(
     );
   }
 
-  // (8) AUDIT — atomic with the write (SAME tx `db`), via the M0 facade ONLY. A throw rolls the write back.
+  // (9) AUDIT — atomic with the write (SAME tx `db`), via the M0 facade ONLY. A throw rolls the write back.
   await deps.appendAuditRecord(
     {
       actorId: ctx.userId,
@@ -216,12 +224,14 @@ export async function revokeDelegationGrantCommand(
     db,
   );
 
-  // Refresh-on-revocation seam — invoked AFTER the audited write. The default is a no-op ([DC-1]); the real
-  // M3 teardown lands via service/event when [DC-1] resolves. Needs the grant's rep-org + profile: re-read
-  // (post-transition, still resolvable) to pass the seam its inputs.
+  // Refresh-on-revocation seam — invoked after the audited write, INSIDE the caller-supplied transaction
+  // (before commit). The default is a no-op ([DC-1]); the real M3 teardown lands via service/event when
+  // [DC-1] resolves (its invocation point reconciled then). Needs the grant's rep-org + profile: re-read
+  // (party-scoped to the controlling active org, post-transition, still resolvable) to pass the seam its
+  // inputs.
   if (outcome.ok) {
     const refresh = deps.refreshPort ?? NOOP_REFRESH;
-    const grant = await findDelegationGrantById(input.delegationGrantId, db);
+    const grant = await findDelegationGrantById(input.delegationGrantId, ctx.activeOrgId, db);
     if (grant !== null) {
       await refresh({
         delegationGrantId: grant.id,
