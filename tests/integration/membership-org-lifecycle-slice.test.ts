@@ -2,7 +2,11 @@ import "../_harness/env"; // load the ephemeral test-DB env per worker (Doc-8B �
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "../../src/shared/db";
 import { uuidv7 } from "../../src/shared/ids";
-import { appendAuditRecord, configValueQuery } from "../../src/modules/core/contracts";
+import {
+  appendAuditRecord,
+  configValueQuery,
+  CoreServiceError,
+} from "../../src/modules/core/contracts";
 import {
   activateMembership,
   assertMembershipTransition,
@@ -55,6 +59,10 @@ const FRESH_CREATED = new Date("2400-05-30T00:00:00.000Z"); // 2 days before NOW
 const INVITE_WINDOW_KEY = "identity.membership_invite_expiry_window";
 
 let ownerRoleId: string;
+
+/** A plain timer sleep — the interleave window the concurrency race test uses so both transactions read
+ *  Last-Owner facts before either commits (the discriminator for the FOR UPDATE serialization). */
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** Mint a fresh active user (fresh UUIDv7) — avoids the `(user_id, organization_id)` partial-unique collision
  *  when a test seeds several memberships in one org. */
@@ -325,6 +333,91 @@ describe("W2-IDN-5 org/membership/user lifecycle machines, guards + System timer
     expect(evaluateLastOwnerProtection(facts).blocked).toBe(false);
   });
 
+  // ── Guard: Last-Owner count-query legs are individually discriminated (RV-0150 F-B1 + OBS-B3) ─
+  it("GUARD last-owner (repo) discriminating: confounders don't count — sole live active Owner still blocks", async () => {
+    // The ONE live active Owner in ORG_ACTIVE — the target; must resolve as the SOLE active Owner (other = 0).
+    const soleOwner = await seedMembership({
+      organizationId: ORG_ACTIVE,
+      roleId: ownerRoleId,
+      state: "active",
+    });
+    // (a) A SUSPENDED Owner in the SAME org — not `active`; dropping `state:"active"` from the count would
+    //     count it (other → 1) and flip sole-Owner block to permit (fail OPEN → ownerless org, §5.5).
+    await seedMembership({ organizationId: ORG_ACTIVE, roleId: ownerRoleId, state: "suspended" });
+    // (b) An ACTIVE Owner in a DIFFERENT org (ORG_SUSPENDED) — dropping `organizationId` would count it.
+    await seedMembership({ organizationId: ORG_SUSPENDED, roleId: ownerRoleId, state: "active" });
+    // (c) A SOFT-DELETED active Owner row in the SAME org — dropping `deletedAt` would count it (OBS-B3 fold).
+    const softDeletedOwner = await seedMembership({
+      organizationId: ORG_ACTIVE,
+      roleId: ownerRoleId,
+      state: "active",
+    });
+    await prisma.membership.update({
+      where: { id: softDeletedOwner.id },
+      data: { deletedAt: FIXED_NOW },
+    });
+    // (d) An ACTIVE NON-Owner (custom-role) member in the SAME org — dropping `roleId` would count it.
+    await seedMembership({ organizationId: ORG_ACTIVE, roleId: CUSTOM_ROLE, state: "active" });
+
+    // With all four where-clause legs intact, none of the confounders counts: the target is still the SOLE
+    // active Owner → blocked. Removing ANY of roleId / state:"active" / organizationId / deletedAt from the
+    // count query lifts `otherActiveOwnerCount` to ≥ 1 and flips this assertion (a lockout-surface fail-open).
+    const facts = await resolveOwnerRemovalFacts(ORG_ACTIVE, soleOwner.id);
+    expect(facts).toEqual({ targetIsActiveOwner: true, otherActiveOwnerCount: 0 });
+    expect(evaluateLastOwnerProtection(facts).blocked).toBe(true);
+  });
+
+  // ── Guard: Last-Owner resolver SERIALIZES concurrent Owner-disabling txs (RV-0150 T6-F1) ──────
+  it("GUARD last-owner (repo) serialization: two concurrent owner-removals on a 2-Owner org — exactly one succeeds, org keeps ≥1 Owner", async () => {
+    // A 2-active-Owner org — Team-6's race shape: two overlapping transactions each resolve Last-Owner facts
+    // then CAS-remove a DIFFERENT owner. The resolver's `SELECT … FOR UPDATE` serializes them (the second tx
+    // blocks inside the resolver until the first commits, then re-reads `otherActiveOwnerCount = 0` → blocked).
+    const owner1 = await seedMembership({
+      organizationId: ORG_ACTIVE,
+      roleId: ownerRoleId,
+      state: "active",
+    });
+    const owner2 = await seedMembership({
+      organizationId: ORG_ACTIVE,
+      roleId: ownerRoleId,
+      state: "active",
+    });
+
+    // One check-then-act attempt: resolve facts, pause (so a sibling tx WITHOUT the lock would also read
+    // facts before either commits — that is the fail-open path this test rejects), then — if the guard
+    // permits — CAS-remove the target (the `active → removed` edge a W2-IDN-6.2 command performs). Returns
+    // whether this attempt removed its owner. Both attempts run in real interactive transactions racing via
+    // Promise.all. WITHOUT the FOR UPDATE lock both attempts read `otherActiveOwnerCount = 1`, both permit,
+    // both CAS on DISTINCT rows succeed → 0 active Owners and TWO successes → this test fails on both asserts.
+    const attemptOwnerRemoval = (targetId: string): Promise<boolean> =>
+      prisma.$transaction(
+        async (tx) => {
+          const facts = await resolveOwnerRemovalFacts(ORG_ACTIVE, targetId, tx);
+          await sleep(500);
+          if (evaluateLastOwnerProtection(facts).blocked) return false;
+          const removed = await tx.membership.updateMany({
+            where: { id: targetId, state: "active", deletedAt: null },
+            data: { state: "removed" },
+          });
+          return removed.count === 1;
+        },
+        { timeout: 20_000, maxWait: 20_000 },
+      );
+
+    const results = await Promise.all([
+      attemptOwnerRemoval(owner1.id),
+      attemptOwnerRemoval(owner2.id),
+    ]);
+
+    // Exactly one removal is permitted; the other resolver re-reads the committed removal and is blocked.
+    expect(results.filter(Boolean)).toHaveLength(1);
+    // The org is NEVER left ownerless (Master Architecture §5.5) — exactly one active Owner remains.
+    const activeOwners = await prisma.membership.count({
+      where: { organizationId: ORG_ACTIVE, roleId: ownerRoleId, state: "active", deletedAt: null },
+    });
+    expect(activeOwners).toBe(1);
+  });
+
   // ── Guard: Last-Owner resolver fail-CLOSED on a corrupt prerequisite (RV-0150 F2) ────────────
   it("GUARD last-owner (repo) fail-closed: an unresolvable seeded Owner role THROWS (never fabricates never-block facts)", async () => {
     // A real sole active Owner so the ONLY thing that can make the resolver misbehave is the missing role seed.
@@ -418,17 +511,24 @@ describe("W2-IDN-5 org/membership/user lifecycle machines, guards + System timer
 
   it("EXPIRE_INVITATION window is POLICY-derived: an absent window key aborts the sweep (never a literal)", async () => {
     await prisma.systemConfiguration.deleteMany({ where: { key: INVITE_WINDOW_KEY } });
-    await seedMembership({
+    const lapsed = await seedMembership({
       organizationId: ORG_ACTIVE,
       roleId: CUSTOM_ROLE,
       state: "invited",
       createdAt: LAPSED_CREATED,
     });
-    // With NO window seeded, the config read yields no value → durationToMs throws → the sweep aborts rather
-    // than expiring on an invented window (the "never a literal fallback" precedent).
-    await expect(
-      expireInvitations({ appendAuditRecord, configValueQuery, now: () => FIXED_NOW }),
-    ).rejects.toThrow();
+    // With NO window seeded, the config READ aborts the sweep at `configValueQuery` — it throws the typed
+    // `CoreServiceError` with code `core_config_key_not_found` (Doc-4B §B8), BEFORE `durationToMs` is ever
+    // reached — rather than expiring on an invented window (the "never a literal fallback" precedent). Pin the
+    // exact class + code so a silent fallback (or any other error) can never pass this assertion.
+    const abort = expireInvitations({ appendAuditRecord, configValueQuery, now: () => FIXED_NOW });
+    await expect(abort).rejects.toThrow(CoreServiceError);
+    await expect(abort).rejects.toMatchObject({ code: "core_config_key_not_found" });
+    // The sweep aborted before any write — the lapsed invitation is untouched (still `invited`, no audit).
+    expect((await prisma.membership.findFirst({ where: { id: lapsed.id } }))?.state).toBe(
+      "invited",
+    );
+    expect(await auditFor(lapsed.id)).toHaveLength(0);
   });
 
   it("EXPIRE_INVITATION atomicity (dir 1): a failing audit append rolls back the state write (unchanged, unaudited)", async () => {
@@ -531,6 +631,8 @@ describe("W2-IDN-5 org/membership/user lifecycle machines, guards + System timer
     expect(
       (await prisma.membership.findFirst({ where: { id: suspendedUserMembership.id } }))?.state,
     ).toBe("pending");
+    // No write ⇒ no audit — parity with the suspended-ORG twin above (dir-2: a blocked path audits nothing).
+    expect(await auditFor(suspendedUserMembership.id)).toHaveLength(0);
   });
 
   it("ACTIVATE_MEMBERSHIP not_found: an unknown membership id → not_found (no write)", async () => {

@@ -191,8 +191,17 @@ export async function transitionMembershipState(
  * the seeded Owner system-bundle role. Returns `targetIsActiveOwner` + the count of OTHER active Owners
  * (excluding the target). When the Owner system-bundle role is unresolvable, fail CLOSED by throwing
  * `UnresolvableOwnerRoleError` — NEVER fabricate never-block facts, which would let the sole real Owner be
- * disabled (fail-open on a lockout surface). The W2-IDN-6.2 commands call this, hand the facts to
- * `evaluateLastOwnerProtection`, and enforce the verdict (an unresolvable prerequisite aborts the mutation).
+ * disabled (fail-open on a lockout surface).
+ *
+ * SERIALIZATION CONTRACT (RV-0150 T6-F1): the facts MUST be resolved AND the guarded write applied within
+ * ONE transaction. The resolver LOCKS the org's active-Owner membership rows (`SELECT … FOR UPDATE`) before
+ * counting, so concurrent Owner-disabling mutations against the same org SERIALIZE — the second transaction
+ * blocks until the first commits, then re-reads and cannot race a check-then-act to an ownerless org (per-row
+ * compare-and-set alone cannot help when two removals target DISTINCT owner rows). The lock is a no-op
+ * outside an interactive transaction, so the W2-IDN-6.2 commands MUST pass their OWN `tx` as `db` and hand
+ * the facts to `evaluateLastOwnerProtection` (and, for a transfer, `evaluateOwnershipSuccession`, whose
+ * `resultingActiveOwnerCount` inherits the same class) inside that SAME transaction; an unresolvable
+ * prerequisite aborts the mutation.
  */
 export async function resolveOwnerRemovalFacts(
   orgId: string,
@@ -211,6 +220,22 @@ export async function resolveOwnerRemovalFacts(
   if (ownerRole === null) {
     throw new UnresolvableOwnerRoleError();
   }
+
+  // SERIALIZATION (RV-0150 T6-F1) — lock the org's active-Owner membership rows FOR UPDATE inside the
+  // caller-supplied transaction BEFORE counting. Without this, two concurrent Owner-disabling mutations on
+  // the same org each read `otherActiveOwnerCount = 1` and both proceed → ownerless org; distinct target rows
+  // defeat per-row compare-and-set, so a SET-level lock on the org's active Owners is what serializes them
+  // (the second tx blocks here until the first commits, then observes the committed removal). Same-schema,
+  // module-own table — the sole raw statement in this repo; values bound as params, never interpolated.
+  await db.$queryRaw`
+    SELECT id
+    FROM identity.memberships
+    WHERE organization_id = ${orgId}::uuid
+      AND role_id = ${ownerRole.id}::uuid
+      AND state = 'active'
+      AND deleted_at IS NULL
+    FOR UPDATE
+  `;
 
   const target = await db.membership.findFirst({
     where: {

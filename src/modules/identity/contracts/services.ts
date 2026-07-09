@@ -344,6 +344,12 @@ export {
 // W2-IDN-6.2 commands resolve owner facts through the M1 contracts face and hand them to the pure policy.
 // `UnresolvableOwnerRoleError` is the loud fail-closed signal when the seeded Owner role is missing — the
 // guard's prerequisite is corrupt, so the resolver refuses rather than fabricating never-block facts.
+//
+// SERIALIZATION CONTRACT (RV-0150 T6-F1): the facts MUST be resolved AND the guarded write applied within ONE
+// transaction. `resolveOwnerRemovalFacts` locks the org's active-Owner rows (`SELECT … FOR UPDATE`) so
+// concurrent Owner-disabling mutations serialize (the second sees the first's committed write) — a
+// check-then-act cannot race two removals to an ownerless org. `evaluateOwnershipSuccession`'s
+// `resultingActiveOwnerCount` inherits the same class; a transfer MUST resolve it in that same locking tx.
 export {
   resolveOwnerRemovalFacts,
   UnresolvableOwnerRoleError,
