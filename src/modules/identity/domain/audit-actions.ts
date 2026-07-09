@@ -28,3 +28,37 @@ export const BuyerProfileAuditAction = {
 
 export type BuyerProfileAuditActionToken =
   (typeof BuyerProfileAuditAction)[keyof typeof BuyerProfileAuditAction];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Delegation-grant audit actions (W2-IDN-4). BUSINESS actions are already enumerated in Doc-2 §9 (the
+// "Vendor profile" domain row: "delegation grant issue/suspend/revoke") — so, UNLIKE the buyer-profile
+// tokens, NO Doc-2 §9 patch is authored; these tokens bind BY POINTER to the existing §9 actions (Doc-4C
+// §C9 "Audit … by pointer"). The token STRINGS are the Doc-4C-class serialization (like `buyer_profile_
+// created`); a future rename touches Doc-4C + this constant, never Doc-2. Imported as NAMED CONSTANTS —
+// never a hardcoded literal (Board ruling 2026-06-30).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The audit `entity_type` for `identity.delegation_grants` rows (Doc-4C §C9 Mutation-Scope). */
+export const DELEGATION_GRANT_ENTITY_TYPE = "delegation_grant" as const;
+
+/**
+ * Canonical delegation-grant audit actions — each bound BY POINTER to Doc-2 §9 "Vendor profile" domain:
+ *   ISSUED    → "delegation grant issue"  (Doc-4C §C9 `create_delegation_grant` Audit).
+ *   SUSPENDED → "delegation grant suspend" (Doc-4C §C9 `suspend_delegation_grant` Audit).
+ *   REVOKED   → "delegation grant revoke"  (Doc-4C §C9 `revoke_delegation_grant` Audit).
+ *   EXPIRED   → the "delegation revoke/expiry family" by pointer — carried on `[ESC-IDN-AUDIT]`
+ *               (delegation expiry is NOT separately enumerated in §9; Doc-4C §C9 `expire_delegation_grant`
+ *               Audit / Patch v1.0.1 PA-02). Attribution is System (§17.3). This is a bound-by-pointer
+ *               serialization of the §9 delegation-terminal family — NOT a newly-invented business action.
+ * Distinct tokens so the immutable ledger records what actually happened (issue ≠ suspend ≠ revoke ≠ expire).
+ */
+export const DelegationGrantAuditAction = {
+  ISSUED: "delegation_grant_issued",
+  SUSPENDED: "delegation_grant_suspended",
+  REVOKED: "delegation_grant_revoked",
+  /** `[ESC-IDN-AUDIT]` — bound by pointer to the §9 delegation revoke/expiry family (System attribution). */
+  EXPIRED: "delegation_grant_expired",
+} as const;
+
+export type DelegationGrantAuditActionToken =
+  (typeof DelegationGrantAuditAction)[keyof typeof DelegationGrantAuditAction];

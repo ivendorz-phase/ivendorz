@@ -14,11 +14,14 @@ import { prisma } from "../../src/shared/db";
 // asserts the RESULTING catalog state against Doc-2 §7's enumeration, then proves idempotency by
 // re-executing the seed's own SQL statements a second time and asserting byte-identical counts
 // (Doc-6A §11.3 — re-run safe). Runs on the elevated connection (RLS not the concern here — see
-// the separate `rls-identity-authz-tables` suite for the RLS gate); order-independent w.r.t. the RLS
-// suite's temp Owner-bundle rows (B-OBS-2) — every predicate below scopes to
-// `role_permissions.organization_id IS NULL` (the system-bundle composition), never to a bare count
-// of `role_permissions` overall, so a transient tenant-scoped row inserted/rolled-back by another
-// suite cannot perturb these assertions.
+// the separate `rls-identity-authz-tables` suite for the RLS gate).
+//
+// ORDER-INDEPENDENCE (RV-0147 B-NIT-1, re-attributed): files run sequentially — `fileParallelism: false`
+// (`vitest.config.ts`) serializes DB-backed suites over the ONE shared Postgres, and every DB-mutating
+// suite (RLS backstop, W2-IDN-3/4) cleans up its own fixtures in teardown. So no sibling suite's rows are
+// live while this suite runs. As belt-and-suspenders the predicates below ALSO scope to
+// `role_permissions.organization_id IS NULL` (the system-bundle composition), never a bare count of
+// `role_permissions` overall — but the primary guarantee is the sequential-run + teardown discipline.
 
 // The 36 tenant slugs, verbatim from Doc-2 §7 (table order), NONE coined/renamed.
 const TENANT_SLUGS = [

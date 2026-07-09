@@ -203,6 +203,117 @@ export type CheckPermissionResult =
  */
 export type VendorProfileStateReader = (vendorProfileId: string) => Promise<boolean>;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// §C9 — Delegation Grant write surface (W2-IDN-4). The dual-party `delegation_grants` aggregate: both
+// party orgs read; ONLY the controlling org creates/suspends/revokes (Doc-2 §10.2 / §5.10). Field
+// names/semantics owned by Doc-2 §10.2 + Doc-4C §C9 (identifiers verbatim); bound by pointer, never
+// re-authored. `vendor_profile_id` is a BARE UUID cross-module ref (→ M2, NO FK).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The `delegation_grant_status` value set (Doc-2 §5.10). */
+export type DelegationGrantStatusValue = "draft" | "active" | "suspended" | "revoked" | "expired";
+
+/** Error outcome of a delegation-grant command (Doc-4C §C9 error registers; classes per Doc-5A §6.2). */
+export interface DelegationGrantError {
+  /** Doc-5A §6.2 class → HTTP status. `BUSINESS` is the frozen §C9 ownership-class-block class. */
+  errorClass: "VALIDATION" | "AUTHORIZATION" | "REFERENCE" | "NOT_FOUND" | "STATE" | "BUSINESS";
+  /** The Doc-4C §C9 `identity_delegation_*` / `identity_org_not_found` / `identity_permission_slug_unknown`
+   *  register code (frozen; never coined here). */
+  errorCode: string;
+  /** Human-safe, non-leaking message. */
+  message: string;
+}
+
+/**
+ * Input to `identity.create_delegation_grant.v1` (Doc-4C §C9). The active org is the SERVER-RESOLVED
+ * controlling org (Invariant #5 — never client input) and is NOT part of this input.
+ */
+export interface CreateDelegationGrantInput {
+  /** The grantee org (Doc-4C §C9). */
+  representativeOrganizationId: string;
+  /** The controlled vendor profile (bare UUID ref; validated via the injected Vendor Service port). */
+  vendorProfileId: string;
+  /** PermissionSet (Doc-2 §2) — each slug MUST exist in the §7 catalog; never ownership-class / staff. */
+  permissionSet: string[];
+  /** Window start (Doc-4C §C9; default now). */
+  validFrom?: Date;
+  /** Window end (Doc-4C §C9; default per `identity.delegation_validity_default` POLICY when omitted). */
+  validTo?: Date;
+}
+
+/** Result of a successful `create_delegation_grant` (Doc-4C §C9 response). */
+export interface CreateDelegationGrantResult {
+  delegationGrantId: string;
+  /** Always `active` on success (Doc-4C §C9). */
+  status: DelegationGrantStatusValue;
+}
+
+/** Outcome of `identity.create_delegation_grant.v1`. */
+export type CreateDelegationGrantOutcome =
+  { ok: true; result: CreateDelegationGrantResult } | { ok: false; error: DelegationGrantError };
+
+/** Input to `identity.suspend_delegation_grant.v1` / `revoke_delegation_grant.v1` (Doc-4C §C9). `updatedAt`
+ *  is the required optimistic-concurrency token (the caller's last-seen `updated_at`). */
+export interface DelegationGrantLifecycleInput {
+  delegationGrantId: string;
+  /** Optional operator reason (Doc-4C §C9); recorded, not required. */
+  reason?: string;
+  /** Required optimistic-concurrency token (Doc-4C §C9 `updated_at : required`). */
+  updatedAt: Date;
+}
+
+/** Result of a successful suspend/revoke (Doc-4C §C9 response). */
+export interface DelegationGrantLifecycleResult {
+  delegationGrantId: string;
+  status: DelegationGrantStatusValue;
+  updatedAt: Date;
+}
+
+/** Outcome of a delegation-grant lifecycle command (suspend/revoke). */
+export type DelegationGrantLifecycleOutcome =
+  { ok: true; result: DelegationGrantLifecycleResult } | { ok: false; error: DelegationGrantError };
+
+/** Input to the SCAFFOLD `identity.reinstate_delegation_grant.v1` (Doc-4C §C9 — gated on
+ *  `[ESC-IDN-DELEG-EXPIRY]`). */
+export interface ReinstateDelegationGrantInput {
+  delegationGrantId: string;
+  updatedAt: Date;
+}
+
+/** Result of the System `identity.expire_delegation_grant.v1` sweep (Doc-4C §C9 — mechanical counter). */
+export interface ExpireDelegationGrantsResult {
+  /** Grants advanced `active → expired` this pass. */
+  expired: number;
+}
+
+/**
+ * A port that answers "does `controllingOrgId` control the vendor profile `vendorProfileId`?" — Doc-4C §C9
+ * SCOPE (caller is the controlling org of the profile) + REFERENCE (the profile exists). The vendor profile
+ * is M2-owned, so this is INJECTED at the app edge (the M2 Vendor Service, read-validation only — Doc-4C
+ * §C1/§C9) — never an M2 import from M1. Fail-closed: the default reader answers `not_found`.
+ *   • `controls`       — the profile exists and the org controls it (proceed).
+ *   • `not_controller` — the profile exists but a DIFFERENT org controls it (`identity_delegation_not_controller`).
+ *   • `not_found`      — no such profile (`identity_delegation_vendor_ref_invalid`).
+ */
+export type VendorProfileControlReader = (
+  vendorProfileId: string,
+  controllingOrgId: string,
+) => Promise<"controls" | "not_controller" | "not_found">;
+
+/**
+ * The refresh-on-revocation SEAM (Doc-2 §5.10 / Doc-4C §C9). On `→ revoked` / `→ expired`, the derived M3
+ * `rfq_invitation_grantees` + visibility rows for the representative would be torn down — but that is a
+ * CROSS-MODULE effect with NO §8 identity emitter ([DC-1]) and M3 does not exist in Wave 2. So it is an
+ * INJECTED PORT (the `VendorProfileStateReader` precedent): the DEFAULT is a genuine NO-OP (it calls no
+ * M3, emits no event — honoring [DC-1]); the seam exists so revocation/expiry INVOKES it (tested), and the
+ * real teardown lands via service/event when [DC-1] resolves. NEVER a cross-schema write from identity.
+ */
+export type DelegationRefreshPort = (input: {
+  delegationGrantId: string;
+  vendorProfileId: string;
+  representativeOrganizationId: string;
+}) => Promise<void>;
+
 /**
  * Input to lazy first-login identity provisioning (WP-1.3) — the authenticated Supabase subject.
  *

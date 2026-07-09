@@ -395,8 +395,9 @@ describe("identity.check_permission — §6B delegated-access path (Doc-4A §6B.
   });
 
   it("condition 3 — denies a slug the user HOLDS but the grant's permission_set does NOT include", async () => {
-    // USER_B holds can_respond_to_rfq in ORG_B (condition 2 passes), but the grant's permission_set is
-    // ['can_submit_quote'] only ⇒ condition 3 fails (no inheritance beyond the granted slug set).
+    // USER_B holds can_respond_to_rfq in ORG_B (condition 2 passes), but DELEG_1's permission_set is
+    // ['can_submit_quote', 'can_view_rfq'] — it does NOT include can_respond_to_rfq ⇒ condition 3 fails
+    // (no inheritance beyond the granted slug set).
     const r = await checkPermission(
       {
         userId: USER_B,

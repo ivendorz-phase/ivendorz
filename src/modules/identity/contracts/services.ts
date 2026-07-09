@@ -12,6 +12,22 @@
 
 import type { AllocateHumanReference } from "@/modules/core/contracts";
 import type { DbExecutor } from "@/shared/db";
+import {
+  createDelegationGrantCommand,
+  type CreateDelegationGrantContext,
+  type CreateDelegationGrantDeps,
+} from "../application/commands/create-delegation-grant.command";
+import {
+  revokeDelegationGrantCommand,
+  suspendDelegationGrantCommand,
+  type DelegationGrantLifecycleContext,
+  type DelegationGrantLifecycleDeps,
+} from "../application/commands/suspend-revoke-delegation-grant.command";
+import { reinstateDelegationGrantCommand } from "../application/commands/reinstate-delegation-grant.command";
+import {
+  expireDelegationGrantsCommand,
+  type ExpireDelegationGrantsDeps,
+} from "../application/commands/expire-delegation-grants.command";
 import { provisionIdentityForAuthUser } from "../application/commands/provision-identity.command";
 import { getBuyerProfile as getBuyerProfileQuery } from "../application/queries/get-buyer-profile.query";
 import {
@@ -29,12 +45,18 @@ import {
 import type {
   CheckPermissionInput,
   CheckPermissionResult,
+  CreateDelegationGrantInput,
+  CreateDelegationGrantOutcome,
+  DelegationGrantLifecycleInput,
+  DelegationGrantLifecycleOutcome,
+  ExpireDelegationGrantsResult,
   GetBuyerProfileResult,
   GetMembershipResult,
   GetOrganizationResult,
   GetUserResult,
   ProvisionIdentityInput,
   ProvisionIdentityResult,
+  ReinstateDelegationGrantInput,
   UpsertBuyerProfileInput,
   UpsertBuyerProfileOutcome,
 } from "./types";
@@ -175,3 +197,68 @@ export type CheckPermission = (
 ) => Promise<CheckPermissionResult>;
 export const checkPermission: CheckPermission = (input, deps, db) =>
   checkPermissionQuery(input, deps, db);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §C9 — Delegation Grant write surface (W2-IDN-4). The controlling-org create/suspend/revoke commands +
+// the scaffold reinstate + the out-of-wire System expiry sweep. Every mutation is an AUDITED, ATOMIC write
+// (the D7 pattern): the M0 `appendAuditRecord` is INJECTED by contract TYPE; the audit is atomic with the
+// write (same tx). The User commands MUST be invoked INSIDE `withActiveOrgContext` with the CONTROLLING org
+// as the active org. Zero §8 events ([DC-1]). Re-export the command context/deps shapes so the app-layer
+// composition edge builds them via `@/modules/identity/contracts` (contracts-only).
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type {
+  CreateDelegationGrantContext,
+  CreateDelegationGrantDeps,
+  DelegationGrantLifecycleContext,
+  DelegationGrantLifecycleDeps,
+  ExpireDelegationGrantsDeps,
+};
+
+/** `identity.create_delegation_grant.v1` (Doc-4C §C9) — issue a grant (controlling org → representative
+ *  org over a controlled vendor profile). Audited (`delegation_grant_issued`) atomically with the insert. */
+export type CreateDelegationGrant = (
+  input: CreateDelegationGrantInput,
+  ctx: CreateDelegationGrantContext,
+  deps: CreateDelegationGrantDeps,
+  db?: DbExecutor,
+) => Promise<CreateDelegationGrantOutcome>;
+export const createDelegationGrant: CreateDelegationGrant = (input, ctx, deps, db) =>
+  createDelegationGrantCommand(input, ctx, deps, db);
+
+/** `identity.suspend_delegation_grant.v1` (Doc-4C §C9) — `active → suspended`. Audited atomically. */
+export type SuspendDelegationGrant = (
+  input: DelegationGrantLifecycleInput,
+  ctx: DelegationGrantLifecycleContext,
+  deps: DelegationGrantLifecycleDeps,
+  db?: DbExecutor,
+) => Promise<DelegationGrantLifecycleOutcome>;
+export const suspendDelegationGrant: SuspendDelegationGrant = (input, ctx, deps, db) =>
+  suspendDelegationGrantCommand(input, ctx, deps, db);
+
+/** `identity.revoke_delegation_grant.v1` (Doc-4C §C9) — `active|suspended → revoked` (terminal); fires the
+ *  refresh-on-revocation seam after commit. Audited (`delegation_grant_revoked`) atomically. */
+export type RevokeDelegationGrant = (
+  input: DelegationGrantLifecycleInput,
+  ctx: DelegationGrantLifecycleContext,
+  deps: DelegationGrantLifecycleDeps,
+  db?: DbExecutor,
+) => Promise<DelegationGrantLifecycleOutcome>;
+export const revokeDelegationGrant: RevokeDelegationGrant = (input, ctx, deps, db) =>
+  revokeDelegationGrantCommand(input, ctx, deps, db);
+
+/** `identity.reinstate_delegation_grant.v1` (Doc-4C §C9 #25) — SCAFFOLD; rejects with an
+ *  `[ESC-IDN-DELEG-EXPIRY]`-citing internal error (`DelegationReinstateGatedError`). No write, no audit. */
+export type ReinstateDelegationGrant = (input: ReinstateDelegationGrantInput) => Promise<never>;
+export const reinstateDelegationGrant: ReinstateDelegationGrant = (input) =>
+  reinstateDelegationGrantCommand(input);
+
+export { DelegationReinstateGatedError } from "../application/commands/reinstate-delegation-grant.command";
+
+/** `identity.expire_delegation_grant.v1` (Doc-4C §C9 · System) — the out-of-wire sweep expiring `active`
+ *  grants whose `valid_to` has lapsed (`active → expired` ONLY). Audited per grant (System actor). */
+export type ExpireDelegationGrants = (
+  deps: ExpireDelegationGrantsDeps,
+) => Promise<ExpireDelegationGrantsResult>;
+export const expireDelegationGrants: ExpireDelegationGrants = (deps) =>
+  expireDelegationGrantsCommand(deps);
