@@ -43,7 +43,7 @@
 
 | WP | Scope | Depends | Status | A | B | PR | Commit | Suites | ESC | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|
-| **W2-CORE-1** | Config (POLICY) + feature-flag read services on `contracts/` | — (M0 tables done) | ⬜ | — | — | — | — | 8D · 8B | — | First Wave-2 WP; DoR satisfied |
+| **W2-CORE-1** | Config (POLICY) + feature-flag read services on `contracts/` | — (M0 tables done) | ✅ | **PASS** (RV-0143) | **PASS** (post-patch, delta-verified) | (checkpoint commits on wave branch) | `6a2cae6` | 8B ✅ (90/90; leak probes 0/0) | — | **✅ FIRST FULL LIFECYCLE under org v1.0 — proof run COMPLETE** (clean-gate close 2026-07-09; T6 Security PASS 0/0/0, first live charter run); contracts `core.config_value_query.v1` + `core.feature_flag_evaluate.v1`; trail: RV-0143 (3 builder + 5 review activations, 2 accepted MINORs fixed+re-verified, 0 false positives); Board PENDING (non-gating): B-1 severity · OBS a/b · convention · executor-type backlog |
 | **W2-CORE-2** | Outbox dispatch hardening + Inngest wiring (`pending→dispatched→archived`) | CORE-1 | ⬜ | — | — | — | — | 8B · 8F | — | Real event pump for downstream |
 | **W2-CORE-3** | M0 conformance gate (CR4′ immutability + outbox observer green) | CORE-2 | ⬜ | — | — | — | — | 8D · 8B | — | 18 `core.*` POLICY keys already seeded |
 
