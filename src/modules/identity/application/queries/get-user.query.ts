@@ -2,6 +2,13 @@
 // NO state. The canonical user read — consumers MUST call this (via the contracts facade), never read
 // `identity.users` directly, and never receive auth-mechanism fields (DC-4). Reads are unaudited
 // (Doc-4C §C3: `Audit-Required: no`) and emit no events.
+//
+// DISPLAY_NAME OMISSION (RV-0148 MINOR-4): the frozen §C3 projection (PassB line 117) lists
+// `display_name`, but no realized column carries it — Doc-2 §10.2 and Doc-6C `identity.users` both lack
+// it, so there is nothing to project (honest omission, not a coined column). This intra-corpus
+// divergence is registered as `[ESC-IDN-DISPLAYNAME]` (`esc_registry.md`), which GATES W2-IDN-6.1
+// (the `update_user_profile` wire that carries `display_name` as a request field). Resolution is
+// Board-owned (realize the column, or editorially drop the field from §C3/§C4) — never resolved here.
 
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import { getUserRow } from "../../infrastructure/data/authz.repository";

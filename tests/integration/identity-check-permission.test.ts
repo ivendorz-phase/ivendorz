@@ -362,6 +362,46 @@ describe("identity.check_permission — §6B delegated-access path (Doc-4A §6B.
   });
 });
 
+describe("[RV-0148 MAJOR-2] resource-scoped requests FAIL CLOSED (Doc-4A §6.1 layer 3 not realized this wave)", () => {
+  it("denies (resource_scope_unsupported) when resource_scope is supplied — never a silent org-level allow", async () => {
+    // Discriminator: USER_A HOLDS can_create_rfq at org level (see the unscoped test below). If
+    // resource_scope were silently ignored — the pre-patch behavior, §6.1 layer 3 dropped — this WOULD
+    // return { allow, membership }. Failing closed to deny proves the input is neither ignored nor allowed.
+    const r = await checkPermission({
+      userId: USER_A,
+      organizationId: ORG_A,
+      permissionSlug: "can_create_rfq",
+      resourceScope: { rfqId: "01920000-0000-7000-8000-0000000c3f01" },
+    });
+    expect(r).toEqual({
+      decision: "deny",
+      satisfiedBy: "none",
+      denyReason: "resource_scope_unsupported",
+    });
+  });
+
+  it("resolves NORMALLY on the unscoped path (no resource_scope) — prior verified behavior preserved", async () => {
+    const r = await checkPermission({
+      userId: USER_A,
+      organizationId: ORG_A,
+      permissionSlug: "can_create_rfq",
+    });
+    expect(r).toEqual({ decision: "allow", satisfiedBy: "membership" });
+  });
+
+  it("treats an EMPTY resource_scope object as org-level (no identifiers to evaluate) — allow preserved", async () => {
+    // Frozen §C3: "resource identifiers … absent → org-level check". An empty object carries no
+    // identifiers, so it is org-level (not a scoped request) — this discriminates over-eager fail-closing.
+    const r = await checkPermission({
+      userId: USER_A,
+      organizationId: ORG_A,
+      permissionSlug: "can_create_rfq",
+      resourceScope: {},
+    });
+    expect(r).toEqual({ decision: "allow", satisfiedBy: "membership" });
+  });
+});
+
 describe("[Inv #5] Users act; Organizations own — a grant does not travel with the user across orgs", () => {
   it("USER_A holds can_create_rfq in ORG_A but resolving the SAME user against ORG_B denies (no membership there)", async () => {
     // The permission is a property of (org, role), not the user personally: USER_A's ORG_A grant does not
@@ -417,20 +457,56 @@ describe("identity §C3 auth-root reads (get_user / get_organization / get_membe
     expect(await getUser("01920000-0000-7000-8000-0000000cffff")).toEqual({ found: false });
   });
 
-  it("get_organization returns the org projection", async () => {
+  it("get_organization returns the FROZEN §C3 projection (incl. verification_level + participation_flags)", async () => {
+    // RV-0148 MAJOR-1: the frozen §C3 projection (PassB line 128) is
+    // { organization_id, human_ref, name, slug, org_status, verification_level, participation_flags } —
+    // BOTH verification_level and participation_flags are REQUIRED and realized. Under the pre-patch
+    // omission this shape assertion FAILS (the two fields were absent from the DTO).
     const r = await getOrganization(ORG_A);
     expect(r).toMatchObject({
       found: true,
-      organization: { organizationId: ORG_A, orgStatus: "active" },
+      organization: {
+        organizationId: ORG_A,
+        orgStatus: "active",
+        verificationLevel: "unverified",
+        participationFlags: { hasBuyerProfile: false, hasVendorProfile: false },
+      },
     });
+    if (r.found) {
+      expect(Object.keys(r.organization).sort()).toEqual(
+        [
+          "humanRef",
+          "name",
+          "organizationId",
+          "orgStatus",
+          "participationFlags",
+          "slug",
+          "verificationLevel",
+        ].sort(),
+      );
+    }
   });
 
-  it("get_membership returns the link with its state (the access-formula input)", async () => {
+  it("get_membership returns the FROZEN §C3 projection incl. state (access-formula input) + department", async () => {
+    // RV-0148 MINOR-3: the frozen §C3 projection (PassB line 139) is
+    // { membership_id, user_id, organization_id, state, role_id, department } — `department` is REQUIRED
+    // and realized (nullable). Under the pre-patch omission this key set FAILS.
     const r = await getMembership(USER_A, ORG_A);
     expect(r).toMatchObject({
       found: true,
-      membership: { userId: USER_A, organizationId: ORG_A, roleId: ROLE_A, state: "active" },
+      membership: {
+        userId: USER_A,
+        organizationId: ORG_A,
+        roleId: ROLE_A,
+        state: "active",
+        department: null,
+      },
     });
+    if (r.found) {
+      expect(Object.keys(r.membership).sort()).toEqual(
+        ["department", "membershipId", "organizationId", "roleId", "state", "userId"].sort(),
+      );
+    }
   });
 
   it("get_membership collapses a non-link to found:false", async () => {

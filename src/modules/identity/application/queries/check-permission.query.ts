@@ -16,6 +16,7 @@ import {
 import {
   resolveDelegatedAccess,
   resolveMembershipPath,
+  resolveResourceScopeUnsupported,
   type ActiveMembershipFact,
   type DelegationGrantFact,
   type PermissionCatalogEntry,
@@ -54,8 +55,17 @@ export async function checkPermission(
   deps: CheckPermissionDeps = {},
   db: DbExecutor = prisma,
 ): Promise<PermissionResolution> {
-  const { userId, organizationId, permissionSlug, vendorProfileId } = input;
+  const { userId, organizationId, permissionSlug, resourceScope, vendorProfileId } = input;
   const now = deps.now?.() ?? new Date();
+
+  // Doc-4A §6.1 LAYER 3 — Resource Ownership / Scope. When the caller supplies resource identifiers, the
+  // resource's ownership/grant relationship to the active org MUST be evaluated; that evaluator is NOT
+  // realized in this wave. So a resource-scoped request FAILS CLOSED (deny) rather than resolving at the
+  // org level and silently dropping layer 3 (RV-0148 MAJOR-2 accepted disposition — never ignore, never
+  // allow). An EMPTY object carries no identifiers ⇒ treated as absent ("absent → org-level check", §C3).
+  if (resourceScope !== undefined && Object.keys(resourceScope).length > 0) {
+    return resolveResourceScopeUnsupported();
+  }
 
   // Catalog lookup — an unknown slug is a §6.4 conformance gap, resolved by the policy (never a grant).
   const permRow = await findPermissionBySlug(permissionSlug, db);

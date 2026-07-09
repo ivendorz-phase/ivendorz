@@ -27,7 +27,8 @@ export type DenyReason =
   | "staff_space_firewall" // RV-0147: a staff-space slug never resolves through org-role membership.
   | "no_active_membership" // §6.1 layer-1: no ACTIVE membership in the active organization.
   | "slug_not_held" // §6.1 layer-2: the org-anchored role composition does not grant the slug.
-  | "delegation_denied"; // §6B.2: one or more of the five delegated-access conditions failed.
+  | "delegation_denied" // §6B.2: one or more of the five delegated-access conditions failed.
+  | "resource_scope_unsupported"; // RV-0148 MAJOR-2: §6.1 layer-3 resource-scoped evaluation not realized this wave — fail closed.
 
 export type PermissionResolution =
   | { decision: "allow"; satisfiedBy: "membership" | "delegation" }
@@ -115,6 +116,19 @@ export function resolveMembershipPath(input: MembershipPathInput): PermissionRes
   if (membership === null) return deny("no_active_membership");
 
   return grantedSlugs.has(permission.slug) ? allow("membership") : deny("slug_not_held");
+}
+
+/**
+ * Fail-closed resolution for a resource-scoped request this wave cannot evaluate — Doc-4A §6.1 LAYER 3
+ * VERBATIM: "Resource Ownership / Scope (the resource belongs to, or is granted to, that organization)".
+ * When the caller supplies `resource_scope` identifiers, layer-3 per-resource ownership MUST be
+ * evaluated. No resource-scope evaluator is realized in W2-IDN-3, so the request is DENIED rather than
+ * silently down-scoped to an org-level check (RV-0148 MAJOR-2 accepted disposition: never silently
+ * ignore the input, never allow). The UNSCOPED path (no `resource_scope`) is unaffected — it resolves
+ * layer 3 through the org anchor, exactly as Review-A verified. Realizing the evaluator is a later WP.
+ */
+export function resolveResourceScopeUnsupported(): PermissionResolution {
+  return deny("resource_scope_unsupported");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -94,7 +94,9 @@ export type UpsertBuyerProfileOutcome =
 
 /** `identity.get_user.v1` projection (Doc-4C §C3) — personal-data-minimized (Doc-2 §3.2); never an
  *  auth-mechanism field (DC-4). `preferencesSummary` is the opaque `preferences_jsonb` (shape owned
- *  upstream). Doc-6C's realized `users` table has no `display_name` column, so none is projected. */
+ *  upstream). The frozen §C3 projection lists `display_name`, but no realized column carries it
+ *  (Doc-2 §10.2 / Doc-6C `identity.users` have none) — omitted here under handle `[ESC-IDN-DISPLAYNAME]`
+ *  (RV-0148 MINOR-4; `esc_registry.md`), which GATES the W2-IDN-6.1 `update_user_profile` wire. */
 export interface UserView {
   userId: string;
   /** User lifecycle status (Doc-2 §5 / `user_status`): `active` | `suspended` | `soft_deleted`. */
@@ -105,9 +107,12 @@ export interface UserView {
 /** Outcome of `identity.get_user.v1` — `found: false` collapses not-found / not-disclosable (Doc-4C §C3). */
 export type GetUserResult = { found: true; user: UserView } | { found: false };
 
-/** `identity.get_organization.v1` projection (Doc-2 §10.2 / Doc-4C §C3). `verificationLevel` is the org's
- *  own derived attribute, NOT a Trust `verification_records` projection (DC-2) — omitted here to avoid any
- *  governance-signal surface on this authorization-root read. */
+/** `identity.get_organization.v1` projection (Doc-2 §10.2 / Doc-4C §C3 PassB line 128):
+ *  `{ organization_id, human_ref, name, slug, org_status, verification_level, participation_flags }`.
+ *  `verificationLevel` is the org's OWN derived attribute (read-through), NOT a Trust
+ *  `verification_records` projection (DC-2, pre-adjudicated at §C3 — not one of the five firewalled
+ *  signals); `participationFlags` realizes the frozen `participation_flags` as the two Doc-2 §10.2
+ *  boolean columns (`has_buyer_profile` / `has_vendor_profile`). Both frozen-REQUIRED (RV-0148 MAJOR-1). */
 export interface OrganizationView {
   organizationId: string;
   humanRef: string;
@@ -115,6 +120,14 @@ export interface OrganizationView {
   slug: string;
   /** Org lifecycle status (Doc-2 §5.1 / `org_status`): `active` | `suspended` | `soft_deleted`. */
   orgStatus: string;
+  /** The org's own derived verification level (Doc-2 §10.2 / `verification_level`): `unverified` |
+   *  `verified` | `enhanced_verified` — read-through, not a Trust contract (DC-2). */
+  verificationLevel: string;
+  /** Participation flags (Doc-2 §10.2) — the org's realized `has_buyer_profile` / `has_vendor_profile`. */
+  participationFlags: {
+    hasBuyerProfile: boolean;
+    hasVendorProfile: boolean;
+  };
 }
 
 /** Outcome of `identity.get_organization.v1` — `found: false` collapses not-found / not-disclosable. */
@@ -131,6 +144,9 @@ export interface MembershipView {
   roleId: string;
   /** Membership state (Doc-2 §5.2 / `membership_state`): `invited`|`pending`|`active`|`suspended`|`removed`. */
   state: string;
+  /** The member's department within the org (Doc-2 §10.2 / `department`); nullable. Frozen in the §C3
+   *  projection (PassB line 139) — RV-0148 MINOR-3. */
+  department: string | null;
 }
 
 /** Outcome of `identity.get_membership.v1` — `found: false` collapses no-link / beyond-tenant-scope. */
@@ -167,7 +183,10 @@ export type CheckPermissionDenyReason =
   | "staff_space_firewall"
   | "no_active_membership"
   | "slug_not_held"
-  | "delegation_denied";
+  | "delegation_denied"
+  // RV-0148 MAJOR-2: a `resource_scope` was supplied but Doc-4A §6.1 layer-3 per-resource evaluation is
+  // not realized in this wave — the request FAILS CLOSED (never a silent org-level allow). See the policy.
+  | "resource_scope_unsupported";
 
 /** Outcome of `identity.check_permission.v1` (Doc-4C §C3 response). `allow` carries the granting path;
  *  `deny` carries the internal `denyReason` (uniform on the wire). */
