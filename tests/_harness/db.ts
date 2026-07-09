@@ -59,9 +59,15 @@ export interface RlsGucs {
  * ONLY elevated use is provisioning/seeding; assertions run as the restricted role.
  *
  * The role is created `NOBYPASSRLS` and is never made an owner: RLS therefore enforces against it. Grants
- * are `USAGE` on the `identity` schema + `SELECT`/`INSERT` on the two tenant tables the gate exercises
- * (`organizations`, `buyer_profiles`). No `UPDATE`/`DELETE`/`TRUNCATE` — the gate only reads (and the seed
- * runs elevated), keeping the role least-privilege.
+ * are `USAGE` on the `identity` schema + `SELECT`/`INSERT` on the two original tenant tables
+ * (`organizations`, `buyer_profiles`), plus (W2-IDN-1) full `SELECT`/`INSERT`/`UPDATE`/`DELETE` on the 4
+ * `identity_authz` tables (`permissions`/`role_permissions`/`organization_workflow_settings`/
+ * `delegation_grants`). The full-CRUD grant on those 4 tables is deliberate, not a least-privilege
+ * regression: proving a table has NO RLS UPDATE policy (e.g. `role_permissions`) requires the restricted
+ * role to actually HOLD the `UPDATE` privilege — otherwise an attempted UPDATE fails on a missing grant
+ * (`permission denied for table`) rather than the RLS gate's genuine fail-closed 0-rows-affected, and the
+ * test would false-pass for the wrong reason. The role stays non-owner/`NOBYPASSRLS` throughout, so RLS
+ * still enforces against every grant regardless of statement type.
  */
 export async function ensureRestrictedRlsRole(): Promise<void> {
   // CREATE ROLE is not transactional-safe to repeat; guard with a catalog check. NOBYPASSRLS + NOLOGIN.
