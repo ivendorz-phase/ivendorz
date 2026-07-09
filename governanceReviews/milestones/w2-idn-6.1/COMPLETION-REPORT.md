@@ -446,3 +446,85 @@ substance is unchanged (upheld at RV-0152); only its provenance citation is corr
   in-place assertion changes only) · tsc / ESLint / Prettier green.
 - **Coordinator-owned working-tree files (tracker/registry/review-log/playbook) and the external
   `framer-motion` package.json/lock change: untouched, unstaged.**
+
+---
+
+## RV-0152 Review-B fold (2026-07-10 — second additive amendment; everything above is unmodified)
+
+*Reactivation per the coordinator's consolidated B-lens dispatch (Review-B 🟠: 0 BLOCKER · 0 MAJOR ·
+1 MINOR · 3 NIT · 3 OBS; Team-6 ✅ PASS 0/0/0 with no code findings). Comments/tests/report/
+face-export ONLY — zero behavior change (verified: no runtime statement altered; the
+`authorize(...)` call, its argument set, and every return path are byte-identical in behavior).*
+
+### F-B1 (MINOR) — the B8 claim, made truthful
+
+- **Concession:** the original §6 discrimination claim — the forged-row test "flips to allow under
+  a space-blind resolution" — was **FALSE as written**, and the two code comments claiming
+  "check_permission remains the single decider" on the negative leg were false against the code.
+  Review-B proved it empirically (sabotage P5 removed the staff-space firewall from
+  `permission-resolution.policy.ts`; the slice stayed green) because
+  `set-user-account-status.route-handler.ts` calls `authorize(...)` and **discards the decision**,
+  returning 403 unconditionally. The BEHAVIOR was and is fail-closed and correct (unconditional
+  deny ≥ branching) and is unchanged by this patch; the defect was the record.
+- **What the wire-level forged-row test ACTUALLY pins:** the DC-3 production staff resolver
+  fail-closed (`null`-unconditional) · the unconditional 403 `identity_user_forbidden` for every
+  non-staff caller (forged org-role composition or none) · nothing-written/nothing-audited on the
+  deny · the self-target-via-admin-endpoint deny. The staff-space firewall itself is
+  `check_permission`'s contract-level guarantee (discriminated in `identity-check-permission.test.ts`)
+  — and is now ALSO pinned **in this slice** (below).
+- **Remedies landed:**
+  - (a) Both comment blocks corrected (`set-user-account-status.command.ts` header AUTHORIZATION
+    section; the route-handler header + negative-leg inline comment): the negative leg is an
+    **unconditional deny-by-construction**; the `authorize(...)` decision is **intentionally
+    unused** (observability/consistency, not the decision source); explicit **⚠ DC-3 WP maintainer
+    warning** added in both files — converting the discarded result into a branch would introduce
+    fail-open risk (the staff basis is §3.2 actor-type determination, never an org-context
+    permission resolution).
+  - (b) **In-slice direct decision-pin added** (the forged-row test): while the forged
+    `role_permissions` row is live, `checkPermission({callerId, ORG_A, staff_super_admin})` is
+    asserted at the QUERY level to yield exactly
+    `{ decision: "deny", satisfiedBy: "none", denyReason: "staff_space_firewall" }` — THIS
+    assertion flips under a space-blind resolution (the P5 shape), making the slice
+    self-discriminating going forward. Test title updated to state precisely what is pinned.
+  - (c) This amendment (the report-side concession + corrected claim).
+
+### NIT-B2 — placebo test 16: choice = STRENGTHEN (source-verified composition pin)
+
+Replaced `typeof appendAuditRecord === "function"` with a **source-verified wiring pin** (the
+RV-0150 F-B2 house shape): the test reads the three audited compositions' source and asserts each
+(1) imports `appendAuditRecord` from `"@/modules/core/contracts"` — the only boundary-legal
+audit-write surface (D7 rule 4), (2) injects that same binding (`{ appendAuditRecord }`), and
+(3) contains no parallel audit-write construct in code (comment lines stripped — they legitimately
+cite the ADR-021 policy name). **Why strengthen rather than delete:** runtime admission through the
+real facade is already proven by the audit-row assertions in the success tests, but nothing pinned
+the WIRING (that the injected concrete is the M0 facade, not a shadow) — this pin fails on an
+import swap, an internal-layer import, or a local audit implementation, which is exactly the
+"no shadow audit surface" claim the old placebo pretended to make.
+
+### NIT-B3 — `ADMIN_REASON_MAX_LENGTH` face-exported + bound-discriminated
+
+Exported on `contracts/services.ts` (additive, symmetric with `DISPLAY_NAME_MAX_LENGTH`; the
+call-6-sibling [realization convention] logged in amendment §(b) above). Slice assertions added:
+reason at `ADMIN_REASON_MAX_LENGTH + 1` → 400 with nothing written/audited; reason AT the bound →
+200 with the full at-bound reason recorded in the audit `new_value`.
+
+### NIT-B4 — facade docstring corrected
+
+`contracts/services.ts` `updateUserProfile` docstring no longer implies `preferences` is writable:
+it now states display_name · phone writable, `preferences` FAIL-CLOSED (VALIDATION reject pending
+`ESC-IDN-PREF-KEYS`, RV-0152 F1).
+
+### Patch summary
+
+- **Files:** `src/modules/identity/application/commands/set-user-account-status.command.ts`
+  (comments only) · `src/server/identity/set-user-account-status.route-handler.ts` (comments only)
+  · `src/modules/identity/contracts/services.ts` (NIT-B3 export + NIT-B4 docstring — additive face,
+  existing exports unbroken) · `tests/integration/user-account-slice.test.ts` (decision-pin ·
+  test-16 replacement · reason-bound assertions · truthful test title) · this report (the
+  amendment). **Zero behavior change** — no command/repository/mapper/route logic altered.
+- **Tests/gates:** slice 16 tests (count unchanged; assertions extended in place: +1 query-level
+  firewall decision-pin · +2 reason bound/bound+1 legs + the at-bound audit pin · test 16 replaced
+  by the 3-file source-verified composition pin) · full suite **278 tests / 25 files ALL PASS**
+  (delta vs pre-patch: 0 added / 0 removed) · tsc / ESLint / Prettier green.
+- **Untouched:** coordinator governance files (tracker/registry/review-log/playbook), the external
+  frontend/motion working-tree changes, all frozen docs.

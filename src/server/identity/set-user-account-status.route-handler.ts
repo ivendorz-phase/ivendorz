@@ -6,13 +6,20 @@
 //     `resolveStaffContext` port (Doc-5C §3.2 actor-type determination). The PRODUCTION default is
 //     the DC-3 fail-closed resolver (no staff roster exists in Wave 2 — no principal ever
 //     resolves); tests inject a staff context to exercise the allow leg.
-//   • NEGATIVE (every non-staff caller): the deny is DELEGATED to `identity.check_permission`
-//     through the wired `src/server/authz` seam (ZERO shadow authorization): the caller's own
-//     active-org context + the frozen `staff_super_admin` slug run through the authorization root,
-//     whose staff-space firewall denies REGARDLESS of org-role composition (a forged
-//     `role_permissions` row grants nothing — the RV-0147 B8 discrimination). Any deny — or no
-//     resolvable org context at all — maps to the FROZEN §C4 `identity_user_forbidden` (403).
+//   • NEGATIVE (every non-staff caller): an UNCONDITIONAL 403 DENY-BY-CONSTRUCTION — no resolution
+//     result is branched on. The `authorize(...)` call below runs the caller's org context + the
+//     frozen `staff_super_admin` slug through the authorization root and its decision is
+//     INTENTIONALLY UNUSED (RV-0152 F-B1): the deny holds regardless of what it returns, which is
+//     strictly fail-closed (an unconditional deny ≥ branching on a resolver output). The
+//     staff-space firewall ("a forged `role_permissions` row grants nothing") is check_permission's
+//     OWN contract-level guarantee — discriminated at the query level in its suites and pinned in
+//     the 6.1 slice — not something this composition re-derives or depends on. Any non-staff
+//     caller — org context or none — maps to the FROZEN §C4 `identity_user_forbidden` (403).
 //     No target fact is disclosed (the target is resolved only AFTER the staff gate).
+//   ⚠ DC-3 WP MAINTAINER WARNING: when the real staff channel lands, replace ONLY the
+//     `resolveStaffContext` production resolver. Do NOT convert the discarded `authorize(...)`
+//     result into a branch — the staff basis is actor-type determination (§3.2), never an
+//     org-context permission resolution; branching here would introduce FAIL-OPEN risk.
 
 import { ensureProvisioned, type AuthSession } from "@/server/auth";
 import { resolveActiveOrg, resolveStaffContext, type ResolveStaffContext } from "@/server/context";
@@ -85,11 +92,13 @@ export async function handleSetUserAccountStatus(
     return mapSetUserAccountStatus(outcome);
   }
 
-  // ── NEGATIVE leg: delegate the deny to the authorization root (no shadow authz). The caller's
-  //    own org context is resolved server-side; the staff slug can NEVER be satisfied through it
-  //    (staff-space firewall) — the call exists so check_permission REMAINS the single decider.
-  //    No resolvable org context is the same uniform deny (the caller's own fact; nothing about
-  //    the target is disclosed either way). ──
+  // ── NEGATIVE leg: UNCONDITIONAL 403 deny-by-construction (RV-0152 F-B1 — see header). The
+  //    `authorize(...)` decision below is INTENTIONALLY UNUSED: it exercises the authorization
+  //    root for observability/consistency, but the deny does NOT depend on it — every non-staff
+  //    caller falls through to the same uniform 403 whatever the resolution returns (fail-closed
+  //    by construction; §7.5 — the wire never discloses why beyond the caller's own lack of
+  //    authority; nothing about the target is disclosed either way).
+  //    ⚠ Do NOT branch on this result (fail-open risk — see the header's DC-3 maintainer warning). ──
   const orgContext = await resolveActiveOrg(session);
   if (orgContext.resolved) {
     await authorize({
@@ -97,8 +106,6 @@ export async function handleSetUserAccountStatus(
       activeOrgId: orgContext.context.activeOrgId,
       permissionSlug: SET_USER_ACCOUNT_STATUS_SLUG,
     });
-    // The decision is deny BY CONSTRUCTION (staff space); uniform 403 regardless of deny reason
-    // (§7.5 — the wire never discloses why beyond the caller's own lack of authority).
   }
   return forbiddenSetUserAccountStatus();
 }

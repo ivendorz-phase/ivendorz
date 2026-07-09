@@ -11,12 +11,20 @@
 //     determination): only a composition-edge-resolved staff principal reaches this command with
 //     `isPlatformStaff = true`. The production staff-principal resolver is DC-3-gated and FAILS
 //     CLOSED (see `src/server/context/staff-context.ts`) — no staff roster exists in Wave 2.
-//   • The NEGATIVE leg is DELEGATED to `identity.check_permission` (the single authorization-
-//     resolution source — no shadow authz): a NON-staff caller's `staff_super_admin` check runs
-//     through the wired root, whose staff-space firewall denies it REGARDLESS of org-role rows
-//     (`resolveMembershipPath` denies `space === 'staff'` BEFORE membership; the tenant-space
-//     filter excludes forged `role_permissions` rows besides). That deny leg lives at the
-//     composition edge (`src/server/identity`) because it needs the caller's org context.
+//   • The NEGATIVE leg is an UNCONDITIONAL 403 DENY-BY-CONSTRUCTION at the composition edge
+//     (`src/server/identity`): every non-staff caller is denied WITHOUT branching on any
+//     resolution result. The composition additionally invokes `check_permission` with the frozen
+//     slug and INTENTIONALLY DISCARDS the decision — that call is observability/consistency of the
+//     authorization root, NOT the deny's decision source (an unconditional deny is fail-closed ≥ a
+//     branch on a resolver output — RV-0152 F-B1). The staff-space-firewall property itself
+//     ("`staff_*` never resolves through org roles", `resolveMembershipPath` denies
+//     `space === 'staff'` BEFORE membership) is check_permission's own contract-level guarantee,
+//     discriminated at the QUERY level in its suites AND pinned in the 6.1 slice.
+//   ⚠ DC-3 WP MAINTAINER WARNING: do NOT "complete" the negative leg by converting the discarded
+//     `authorize(...)` result into a branch (e.g. `if (decision === "allow") proceed`). The staff
+//     channel is Doc-5C §3.2 actor-type determination (`resolveStaffContext`) — NEVER an org-context
+//     permission resolution; branching on the org-path result here would introduce FAIL-OPEN risk
+//     (a future space-blind resolution bug would silently mint admin authority from org roles).
 //   The slug is the frozen Doc-2 §7 catalog token (DC-3 interim: "bind to `staff_super_admin`
 //   until a least-privilege slug is registered — do not invent").
 //

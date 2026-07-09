@@ -55,6 +55,7 @@ import {
 import {
   setUserAccountStatusCommand,
   validateSetUserAccountStatusInput,
+  ADMIN_REASON_MAX_LENGTH,
   SET_USER_ACCOUNT_STATUS_SLUG,
   type SetUserAccountStatusContext,
   type SetUserAccountStatusDeps,
@@ -350,16 +351,24 @@ export type {
   SetUserAccountStatusDeps,
 };
 
-// The realized `display_name` wire bound ([realization convention] — Doc-4C §C4 `bounded`,
-// Doc-2_Patch_v1.0.6 §2) + the frozen DC-3 admin slug binding + the exported SYNTAX validator
-// (composition-edge category ordering), on the public face so the composition edge and tests bind
-// the SAME values (never re-declared literals).
-export { DISPLAY_NAME_MAX_LENGTH, SET_USER_ACCOUNT_STATUS_SLUG, validateSetUserAccountStatusInput };
+// The realized wire bounds ([realization convention]s — Doc-4C §C4 `bounded` display_name per
+// Doc-2_Patch_v1.0.6 §2 + the `structured admin reason` bound, RV-0152 NIT-B3 symmetric export) +
+// the frozen DC-3 admin slug binding + the exported SYNTAX validator (composition-edge category
+// ordering), on the public face so the composition edge and tests bind the SAME values (never
+// re-declared literals).
+export {
+  ADMIN_REASON_MAX_LENGTH,
+  DISPLAY_NAME_MAX_LENGTH,
+  SET_USER_ACCOUNT_STATUS_SLUG,
+  validateSetUserAccountStatusInput,
+};
 
 /** `identity.update_user_profile.v1` (Doc-4C §C4; Doc-5C §4.1 row 1 — `PATCH /identity/users/{id}`).
- *  Self-scope partial update (display_name · phone · preferences); optimistic on `updated_at`
- *  (If-Match). UNAUDITED — frozen §C4 `Audit: no`. Invoke with the self-context executor
- *  (`withUserSelfContext` — `app.user_id` pinned). */
+ *  Self-scope partial update: display_name · phone (writable) — `preferences` is FAIL-CLOSED
+ *  (any supplied value → VALIDATION reject pending `ESC-IDN-PREF-KEYS`; RV-0152 F1 — the frozen
+ *  `schema-validated keys only` constraint has no registered key schema). Optimistic on
+ *  `updated_at` (If-Match). UNAUDITED — frozen §C4 `Audit: no`. Invoke with the self-context
+ *  executor (`withUserSelfContext` — `app.user_id` pinned). */
 export type UpdateUserProfile = (
   input: UpdateUserProfileInput,
   ctx: UpdateUserProfileContext,

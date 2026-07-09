@@ -1,8 +1,9 @@
 import "../_harness/env"; // load the ephemeral test-DB env per worker (Doc-8B §3) before Prisma connects.
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "../../src/shared/db";
 import { uuidv7 } from "../../src/shared/ids";
-import { appendAuditRecord } from "../../src/modules/core/contracts";
 import { concurrencyEtag } from "../../src/shared/http";
 import type { ensureProvisioned } from "../../src/server/auth";
 import {
@@ -12,6 +13,8 @@ import {
   handleUpdateUserProfile,
 } from "../../src/server/identity";
 import {
+  ADMIN_REASON_MAX_LENGTH,
+  checkPermission,
   DISPLAY_NAME_MAX_LENGTH,
   getUser,
   SET_USER_ACCOUNT_STATUS_SLUG,
@@ -645,7 +648,7 @@ describe("W2-IDN-6.1 §C4 user/account wired surface — 8C (real PostgreSQL)", 
     );
   });
 
-  it("ADMIN-STATE actor-scope: staff-space NEVER via org roles (RV-0147 B8) — tenant Owner + FORGED staff role_permissions row still 403 via check_permission; production resolver fail-closed (DC-3)", async () => {
+  it("ADMIN-STATE actor-scope: staff-space NEVER via org roles (RV-0147 B8) — forged-row caller pinned deny(staff_space_firewall) at the check_permission QUERY level + unconditional wire 403 (DC-3 fail-closed resolver)", async () => {
     const caller = await trackedUser();
     const target = await trackedUser();
     // The caller is an ACTIVE member of ORG_A on the custom role, and we FORGE the org-role
@@ -665,8 +668,25 @@ describe("W2-IDN-6.1 §C4 user/account wired surface — 8C (real PostgreSQL)", 
     });
 
     try {
-      // NO staff resolver injected ⇒ the PRODUCTION DC-3 fail-closed resolver runs; the deny leg is
-      // delegated to the wired check_permission, whose staff-space firewall ignores the forged row.
+      // THE DIRECT DECISION-PIN (RV-0152 F-B1(b)) — the staff-space-firewall property asserted at
+      // the `check_permission` QUERY level, in-slice, WHILE the forged row is live: the forged
+      // caller's `staff_super_admin` resolution is deny(staff_space_firewall). THIS assertion is
+      // the one that flips under a space-blind resolution (Review-B's P5 sabotage) — the wire-level
+      // 403 below is deny-BY-CONSTRUCTION and deliberately does not depend on it.
+      const pinned = await checkPermission({
+        userId: caller.id,
+        organizationId: ORG_A,
+        permissionSlug: SET_USER_ACCOUNT_STATUS_SLUG,
+      });
+      expect(pinned).toEqual({
+        decision: "deny",
+        satisfiedBy: "none",
+        denyReason: "staff_space_firewall",
+      });
+
+      // NO staff resolver injected ⇒ the PRODUCTION DC-3 fail-closed resolver runs; the wire deny
+      // is UNCONDITIONAL 403 by construction (the composition's authorize() call is intentionally
+      // decision-unused — see the route-handler header + the F-B1 record).
       const res = await handleSetUserAccountStatus(
         {
           targetUserId: target.id,
@@ -765,18 +785,37 @@ describe("W2-IDN-6.1 §C4 user/account wired surface — 8C (real PostgreSQL)", 
     );
     expect(emptyReason.status).toBe(400);
 
-    // Legal suspend, then the SAME-state replay: `suspended → suspended` is NOT a Doc-4C §C4 edge
-    // (`active ⇄ suspended` only) ⇒ the frozen `identity_user_status_conflict` 409; ONE audit row.
+    // ADMIN_REASON_MAX_LENGTH bound discrimination (RV-0152 NIT-B3 — the call-6-sibling
+    // [realization convention], face-exported): bound+1 rejected 400 …
+    const overReason = await handleSetUserAccountStatus(
+      {
+        targetUserId: target.id,
+        targetStatus: "suspended",
+        reason: "x".repeat(ADMIN_REASON_MAX_LENGTH + 1),
+        updatedAt: target.updatedAt,
+      },
+      staffDeps,
+    );
+    expect(overReason.status).toBe(400);
+    expect(await userAudits(target.id)).toHaveLength(0); // nothing written/audited by any 400 leg.
+
+    // … and a reason AT the bound is accepted (it is the legal suspend below). Then the SAME-state
+    // replay: `suspended → suspended` is NOT a Doc-4C §C4 edge (`active ⇄ suspended` only) ⇒ the
+    // frozen `identity_user_status_conflict` 409; ONE audit row.
+    const atBoundReason = "x".repeat(ADMIN_REASON_MAX_LENGTH);
     const first = await handleSetUserAccountStatus(
       {
         targetUserId: target.id,
         targetStatus: "suspended",
-        reason: "r1",
+        reason: atBoundReason,
         updatedAt: target.updatedAt,
       },
       staffDeps,
     );
     expect(first.status).toBe(200);
+    expect((await userAudits(target.id))[0]!.newValue).toEqual(
+      expect.objectContaining({ reason: atBoundReason }),
+    );
     const replay = await handleSetUserAccountStatus(
       {
         targetUserId: target.id,
@@ -869,10 +908,31 @@ describe("W2-IDN-6.1 §C4 user/account wired surface — 8C (real PostgreSQL)", 
     expect(await userAudits(u.id)).toHaveLength(0);
   });
 
-  it("ENVELOPE + AUDIT-FACADE: appendAuditRecord concrete is the injected M0 surface (sanity — the real facade admits the tenant-leg row it wrote in the 2FA test)", async () => {
-    // The 2FA success test above already proved the REAL `appendAuditRecord` admitted a row through
-    // the ADR-021 context-append policy path. This probe pins the injected concrete IS the M0
-    // contract facade (no shadow audit surface exists in the compositions).
-    expect(typeof appendAuditRecord).toBe("function");
+  it("AUDIT-FACADE composition pin (SOURCE-VERIFIED, RV-0150 F-B2 shape): every audited §C4 composition imports appendAuditRecord from @/modules/core/contracts and injects THAT binding — no shadow audit surface", () => {
+    // RV-0152 NIT-B2 remedy (strengthen, not delete): the old `typeof === "function"` probe
+    // discriminated nothing. This pin reads the three audited compositions' SOURCE and asserts
+    // (1) the audit dependency is imported from the M0 contracts facade path — the ONLY
+    // boundary-legal audit-write surface (D7 rule 4) — and (2) that binding is what gets injected
+    // (`{ appendAuditRecord }`). It FAILS if a composition swaps the import to a local/shadow
+    // implementation, another module's internals, or injects a different concrete. (Runtime
+    // admission through the real facade is separately proven by the 2FA/deactivate/set-status
+    // audit-row assertions above — this pins the WIRING.)
+    const auditedCompositions = [
+      "src/server/identity/update-user-2fa-settings.route-handler.ts",
+      "src/server/identity/deactivate-own-account.route-handler.ts",
+      "src/server/identity/set-user-account-status.route-handler.ts",
+    ];
+    for (const file of auditedCompositions) {
+      const source = readFileSync(resolve(process.cwd(), file), "utf8");
+      expect(source).toContain('import { appendAuditRecord } from "@/modules/core/contracts";');
+      expect(source).toContain("{ appendAuditRecord }"); // the same binding is the injected dep.
+      // No parallel audit-write surface in CODE (comment lines stripped — they legitimately cite
+      // the ADR-021 policy name): the composition never touches the audit table directly.
+      const codeOnly = source
+        .split("\n")
+        .filter((line) => !line.trimStart().startsWith("//"))
+        .join("\n");
+      expect(codeOnly).not.toMatch(/auditRecord\.create|audit_records/);
+    }
   });
 });
