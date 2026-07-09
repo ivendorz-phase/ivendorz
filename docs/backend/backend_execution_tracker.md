@@ -25,6 +25,14 @@
 | ✅ | Merged into `wave/2-core-platform` |
 | ⛔ | Blocked (open dependency or `[ESC-*]`) |
 
+> **Additive amendment — execution-organization sync (2026-07-09).** Rows advance under the
+> **AI Engineering Organization v1.0** (`project-management/ai-engineering-organization-plan.md` ·
+> `governanceReviews/BOARD-DECISION-AI-ENG-ORG_v1.0.md`). **Team-6 (Security Review) activates per
+> the ratified runtime policy** on any security-surfaced WP — it may run **alongside** 🔵B on the
+> same SHA; its verdict is required before 🟣 for those rows and is logged in the same RV entry; non-surfaced rows record "N/A" without
+> activation (charter: `governanceReviews/TEAM-6-Security-Review-Charter.md`). Legend unchanged;
+> governance not restated here.
+
 **Wave-2 gate on close of all rows:** Wave Integration Audit GREEN → one PR `wave/2-core-platform → main` → *Core Platform gated* (Build_Roadmap §9 milestone 3).
 
 ---

@@ -34,6 +34,15 @@ Master → ADR → Doc-2/3 → Doc-4A…4M → Doc-5A…5K → Doc-7A → {7B,7C
   `../governanceReviews/TEAM-4-QCT-CHARTER_v1.0.md` + `TEAM-4-QCT-CHARTER_AMENDMENT_v1.1.md` ·
   commit policy `../governanceReviews/BOARD-DECISION-FE-COMMIT-POLICY_v1.0.md`.
 
+> **Additive amendment (Board-ratified 2026-07-08):** this office now operates within the
+> program-wide **AI Engineering Organization**
+> ([`ai-engineering-organization-plan.md`](ai-engineering-organization-plan.md), **v1.0 —
+> Ratified Execution Governance**; decision record
+> `../governanceReviews/BOARD-DECISION-AI-ENG-ORG_v1.0.md`). Team numbers, charters, lanes, and
+> review mechanics here are **unchanged**; the org plan adds Teams 6–9, the Team-7 Backend
+> Module-Agent model, and the runtime activation/concurrency policy. The "FE Program Manager"
+> below and the plan's **AI Engineering Orchestrator** are the same single long-lived role.
+
 ## Organization
 
 ```

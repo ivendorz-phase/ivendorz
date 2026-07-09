@@ -185,6 +185,19 @@ implement → self-verify → Review-A (architecture/governance, fresh context)
 - **Definition of Done (§9.5):** required Doc-8 bands green · CI/local suite green · zero unresolved `[ESC-*]` · zero `TODO` in the merged path · migrations apply clean forward-only · Build Artifact Checklist + pre-PR checklist (`IMPLEMENTATION_START_HERE.md`) satisfied.
 - **PR scope:** one module scope per PR; multiple WP PRs per module; a PR never spans two modules. Generated paths (Prisma client, `generated-contracts-registry/`) are regenerated, never hand-merged.
 
+> **Additive amendment — execution-organization sync (2026-07-09).** Backend execution now runs
+> under the **AI Engineering Organization v1.0 — Ratified Execution Governance**
+> (`project-management/ai-engineering-organization-plan.md`; decision record
+> `governanceReviews/BOARD-DECISION-AI-ENG-ORG_v1.0.md`). The lifecycle above is unchanged; in
+> addition, **Team-6 (Security Review) activates per the ratified runtime policy** — it fires as a
+> blocking gate on any WP whose scope touches a security surface (auth/authz/roles/org-context/
+> RLS/private-data/external-input/secrets/firewalled signal; charter:
+> `governanceReviews/TEAM-6-Security-Review-Charter.md`) and is recorded "N/A — no security
+> surface" without activation otherwise. Backend roles are activated as the organization's
+> **Team-7 Module Agents** using the ratified packet/report/handoff templates (`governanceReviews/
+> AI-Activation-Packet-Template.md` and companions). Governance is **not restated here** — the
+> organization plan and Board decision own it; this note only binds the reference.
+
 ---
 
 ## 7. Risk register (engineering only — architecture is frozen)

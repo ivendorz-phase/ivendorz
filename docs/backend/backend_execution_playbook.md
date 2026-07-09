@@ -12,6 +12,16 @@
 > verbatim from the frozen corpus (Doc-5C, Doc-6C, Doc-2 §8, Doc-4B/4C). Where the corpus is
 > silent or gated, it is marked — never filled by invention.
 
+> **Additive amendment — execution-organization sync (2026-07-09).** WPs in this playbook are
+> executed by **Team-7 Module Agents** under the **AI Engineering Organization v1.0** (`project-
+> management/ai-engineering-organization-plan.md`; ratified per `governanceReviews/
+> BOARD-DECISION-AI-ENG-ORG_v1.0.md`): one activation per WP task, briefed by an Activation
+> Packet, returning a Completion Report, suspending via a Handoff Note (templates in
+> `governanceReviews/`). **Team-6 (Security Review) activates per the ratified runtime policy** on
+> any security-surfaced WP (charter: `governanceReviews/TEAM-6-Security-Review-Charter.md`) — note
+> that nearly every M1 WP touches authz/org-context/RLS and should be pre-flagged at dispatch.
+> Governance is not restated here; the organization plan and Board decision own it.
+
 ---
 
 ## §1 — Load-bearing corpus facts (Wave 2 — verified, non-negotiable)
