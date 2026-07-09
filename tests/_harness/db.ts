@@ -39,7 +39,13 @@ export const ISOLATION_STRATEGY = "transaction-rollback" as const;
  * The dedicated NON-privileged tenant DB role for RLS assertions. NOLOGIN (entered via `SET LOCAL ROLE`
  * inside the superuser session), NOBYPASSRLS, and NOT a table owner — so RLS policies actually apply to
  * it (a superuser / `rolbypassrls` / table-owner role would silently bypass and false-pass the gate).
- * Granted only the minimal `USAGE`/`SELECT`/`INSERT` the gate needs on `identity` (Doc-8B §5).
+ * Granted exactly the privileges each RLS gate needs to prove fail-closed behavior at the DB level —
+ * never a blanket grant: `SELECT`/`INSERT` on `identity.organizations`/`buyer_profiles`; full
+ * `SELECT`/`INSERT`/`UPDATE`/`DELETE` on the 4 `identity_authz` tables (W2-IDN-1 — UPDATE/DELETE
+ * privilege is required even where no RLS policy exists, so a missing-policy gate observes the
+ * genuine 0-rows-affected fail-closed rather than a `permission denied for table` false-pass); and
+ * `SELECT`/`INSERT` on `core.audit_records` (+ its default partition, ESC-W2-AUDIT-RLS §7 = R-b /
+ * ADR-021). See `ensureRestrictedRlsRole` below for the authoritative grant set (Doc-8B §5).
  */
 export const RESTRICTED_RLS_ROLE = "ivendorz_test_rls" as const;
 
