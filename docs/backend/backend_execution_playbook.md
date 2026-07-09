@@ -142,7 +142,7 @@ M0 tables/triggers/allocator/audit-writer are realized (Wave 0/1). Wave-2 M0 = t
 - **Doc-8:** 8E Doc-4M edge coverage (`CHK-8-040…042`).
 
 ### `W2-IDN-6` — Doc-5C wired management API (35 caller-facing, split into 8 sub-domain PRs)
-Method conventions (frozen): create→`POST` collection (`201`+`Location`); field update→`PATCH` item; ADR-012 soft-delete→`DELETE` item; state/domain command→`POST` named sub-resource; read→`GET`; **never `PUT`**. All commands audited via `core.append_audit_record.v1`; all `Events: none`.
+Method conventions (frozen): create→`POST` collection (`201`+`Location`); field update→`PATCH` item; ADR-012 soft-delete→`DELETE` item; state/domain command→`POST` named sub-resource; read→`GET`; **never `PUT`**. Commands audited via `core.append_audit_record.v1` **per each contract's frozen Doc-4C Audit declaration — NOT a blanket** (`update_user_profile` = `Audit: no`, PassB:183; corrected at RV-0152 call-1 — the prior "All commands audited" was a paraphrase the frozen text overrides); all `Events: none`.
 
 | Sub-WP | §C | Contracts (verbatim id · route · C/Q) | Notes |
 |---|---|---|---|
