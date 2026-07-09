@@ -19,8 +19,20 @@ import {
   type UpsertBuyerProfileContext,
   type UpsertBuyerProfileDeps,
 } from "../application/commands/upsert-buyer-profile.command";
+import { getUser as getUserQuery } from "../application/queries/get-user.query";
+import { getOrganization as getOrganizationQuery } from "../application/queries/get-organization.query";
+import { getMembership as getMembershipQuery } from "../application/queries/get-membership.query";
+import {
+  checkPermission as checkPermissionQuery,
+  type CheckPermissionDeps,
+} from "../application/queries/check-permission.query";
 import type {
+  CheckPermissionInput,
+  CheckPermissionResult,
   GetBuyerProfileResult,
+  GetMembershipResult,
+  GetOrganizationResult,
+  GetUserResult,
   ProvisionIdentityInput,
   ProvisionIdentityResult,
   UpsertBuyerProfileInput,
@@ -30,6 +42,10 @@ import type {
 // Re-export the write-command's context/deps shapes on the contracts surface so the app-layer composition
 // edge (`src/server/identity`) can build them via `@/modules/identity/contracts` (contracts-only).
 export type { UpsertBuyerProfileContext, UpsertBuyerProfileDeps };
+
+// Re-export the check_permission deps shape (the injectable ports — vendor-profile-state reader + clock)
+// so the app-layer authz seam (`src/server/authz`) can supply them via `@/modules/identity/contracts`.
+export type { CheckPermissionDeps };
 
 /** Dependencies a caller injects into provisioning — the Module 0 contract service(s). */
 export interface ProvisionIdentityDeps {
@@ -109,3 +125,53 @@ export const upsertBuyerProfile: UpsertBuyerProfile = (input, ctx, deps, db) =>
 // The M1 WIRE FACE for the buyer-profile WRITE (outcome → Doc-5A envelope + §6.2 status). Same One-Owner
 // placement as the read mapper — M1 owns how its write becomes HTTP.
 export { mapUpsertBuyerProfile } from "../api/upsert-buyer-profile.handler";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §C3 — Shared Identity Services (OUT-OF-WIRE, internal-service). The four auth-root reads — the
+// SINGLE authorization-resolution source (Doc-4C §C3). Doc-5C §7.1: these carry NO HTTP method/path;
+// proposing a wire = an architecture change (§7.5). Every consuming module (and `src/server/authz`)
+// consumes THESE, never `identity.*` tables directly and never a shadow authorization check (§B.11).
+// All are reads: unaudited (§17.1), zero events. The `db` executor may carry the RLS-scoped active-org
+// context (defense-in-depth); resolution correctness does not depend on RLS (each read is org-anchored).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** `identity.get_user.v1` (Doc-4C §C3) — canonical user read (personal-data minimized; never an
+ *  auth-mechanism field, DC-4). Consumers MUST call this, never read `identity.users` directly. */
+export type GetUser = (userId: string, db?: DbExecutor) => Promise<GetUserResult>;
+export const getUser: GetUser = (userId, db) => getUserQuery(userId, db);
+
+/** `identity.get_organization.v1` (Doc-4C §C3) — canonical org read. Consumers MUST call this, never
+ *  read `identity.organizations` cross-module. */
+export type GetOrganization = (
+  organizationId: string,
+  db?: DbExecutor,
+) => Promise<GetOrganizationResult>;
+export const getOrganization: GetOrganization = (organizationId, db) =>
+  getOrganizationQuery(organizationId, db);
+
+/** `identity.get_membership.v1` (Doc-4C §C3) — the (user × org) link + its `state` (the access-formula
+ *  input, §6.1). Consumers read `state`, never re-derive the role→permission mapping (use `checkPermission`). */
+export type GetMembership = (
+  userId: string,
+  organizationId: string,
+  db?: DbExecutor,
+) => Promise<GetMembershipResult>;
+export const getMembership: GetMembership = (userId, organizationId, db) =>
+  getMembershipQuery(userId, organizationId, db);
+
+/**
+ * `identity.check_permission.v1` (Doc-4C §C3) — THE platform authorization root. Implements (never
+ * redefines) the Doc-4A §6.1 three-layer check + §6B.2 five-condition delegated-access check. This is
+ * the SINGLE authorization-resolution source: every consuming module MUST call this (or the §C3 reads it
+ * composes) and MUST NOT implement a parallel/shadow check. Slugs only (never a role or plan); no
+ * plan/entitlement influences the decision (firewall). `organizationId` is the SERVER-VALIDATED active
+ * org (never client-asserted). `deps.vendorProfileStateReader` (the M2 Vendor Service port) is required
+ * to affirm §6B.2 condition 5 on a delegated path — absent ⇒ the delegated path fails closed.
+ */
+export type CheckPermission = (
+  input: CheckPermissionInput,
+  deps?: CheckPermissionDeps,
+  db?: DbExecutor,
+) => Promise<CheckPermissionResult>;
+export const checkPermission: CheckPermission = (input, deps, db) =>
+  checkPermissionQuery(input, deps, db);

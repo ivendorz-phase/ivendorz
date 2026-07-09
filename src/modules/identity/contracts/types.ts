@@ -85,6 +85,105 @@ export type UpsertBuyerProfileOutcome =
   | { ok: true; created: boolean; result: UpsertBuyerProfileResult }
   | { ok: false; error: UpsertBuyerProfileError };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// §C3 — Shared Identity Services (the OUT-OF-WIRE auth-root reads). Doc-5C §7.1: these carry NO HTTP
+// method/path — they are internal-service, in-process composition surfaces (proposing a wire = an
+// architecture change per Doc-5C §7.5). Every consuming module (and `src/server/authz`) calls these,
+// never `identity.*` tables directly and never a shadow authorization check (Doc-4C §C3 / §B.11).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** `identity.get_user.v1` projection (Doc-4C §C3) — personal-data-minimized (Doc-2 §3.2); never an
+ *  auth-mechanism field (DC-4). `preferencesSummary` is the opaque `preferences_jsonb` (shape owned
+ *  upstream). Doc-6C's realized `users` table has no `display_name` column, so none is projected. */
+export interface UserView {
+  userId: string;
+  /** User lifecycle status (Doc-2 §5 / `user_status`): `active` | `suspended` | `soft_deleted`. */
+  status: string;
+  preferencesSummary: unknown;
+}
+
+/** Outcome of `identity.get_user.v1` — `found: false` collapses not-found / not-disclosable (Doc-4C §C3). */
+export type GetUserResult = { found: true; user: UserView } | { found: false };
+
+/** `identity.get_organization.v1` projection (Doc-2 §10.2 / Doc-4C §C3). `verificationLevel` is the org's
+ *  own derived attribute, NOT a Trust `verification_records` projection (DC-2) — omitted here to avoid any
+ *  governance-signal surface on this authorization-root read. */
+export interface OrganizationView {
+  organizationId: string;
+  humanRef: string;
+  name: string;
+  slug: string;
+  /** Org lifecycle status (Doc-2 §5.1 / `org_status`): `active` | `suspended` | `soft_deleted`. */
+  orgStatus: string;
+}
+
+/** Outcome of `identity.get_organization.v1` — `found: false` collapses not-found / not-disclosable. */
+export type GetOrganizationResult =
+  { found: true; organization: OrganizationView } | { found: false };
+
+/** `identity.get_membership.v1` projection (Doc-2 §10.2 / Doc-4C §C3). `state` is the access-formula input
+ *  (§6.1) — only `active` participates in the gate; the caller reads it, never re-derives the
+ *  role→permission mapping (that is `check_permission`). */
+export interface MembershipView {
+  membershipId: string;
+  userId: string;
+  organizationId: string;
+  roleId: string;
+  /** Membership state (Doc-2 §5.2 / `membership_state`): `invited`|`pending`|`active`|`suspended`|`removed`. */
+  state: string;
+}
+
+/** Outcome of `identity.get_membership.v1` — `found: false` collapses no-link / beyond-tenant-scope. */
+export type GetMembershipResult = { found: true; membership: MembershipView } | { found: false };
+
+/**
+ * Input to `identity.check_permission.v1` (Doc-4C §C3 request contract). `organizationId` is the
+ * SERVER-VALIDATED active-org context (Doc-4A §5.3) — never a client-asserted org. `permissionSlug`
+ * MUST exist in the Doc-2 §7 catalog (never a role/plan name, §6.2). `vendorProfileId` is present ONLY
+ * when evaluating a delegated act-as path (§6B) — a bare UUID ref (not owned). `resourceScope` carries
+ * optional resource identifiers for scope evaluation; absent ⇒ an org-level check.
+ */
+export interface CheckPermissionInput {
+  userId: string;
+  organizationId: string;
+  permissionSlug: string;
+  resourceScope?: Record<string, string>;
+  vendorProfileId?: string;
+}
+
+/** `identity.check_permission.v1` decision (Doc-4C §C3 response — `decision`). */
+export type PermissionDecision = "allow" | "deny";
+
+/** `identity.check_permission.v1` granting path (Doc-4C §C3 response — `satisfied_by`), for auditability. */
+export type PermissionSatisfiedBy = "membership" | "delegation" | "none";
+
+/**
+ * Diagnostic cause of a `deny` — INTERNAL-SERVICE audience only. The wire face (W2-IDN-6) collapses this
+ * to the uniform non-disclosure shape (§7.5) and maps `unknown_slug` → `identity_permission_slug_unknown`
+ * (REFERENCE, §6.4). Out-of-wire consumers may branch on it (e.g. audit), never leak it to a tenant.
+ */
+export type CheckPermissionDenyReason =
+  | "unknown_slug"
+  | "staff_space_firewall"
+  | "no_active_membership"
+  | "slug_not_held"
+  | "delegation_denied";
+
+/** Outcome of `identity.check_permission.v1` (Doc-4C §C3 response). `allow` carries the granting path;
+ *  `deny` carries the internal `denyReason` (uniform on the wire). */
+export type CheckPermissionResult =
+  | { decision: "allow"; satisfiedBy: "membership" | "delegation" }
+  | { decision: "deny"; satisfiedBy: "none"; denyReason: CheckPermissionDenyReason };
+
+/**
+ * A port that resolves whether a target vendor profile's OWN lifecycle state permits a delegated
+ * operation — Doc-4A §6B.2 condition 5 ("the target vendor profile is itself in a state permitting the
+ * operation … a delegation grant never overrides profile state"). The vendor profile is M2-owned, so
+ * this is INJECTED at the app edge (the M2 Vendor Service, read-validation only) — never an M2 import
+ * from M1. Returns `true` only when the profile's state affirmatively permits the operation.
+ */
+export type VendorProfileStateReader = (vendorProfileId: string) => Promise<boolean>;
+
 /**
  * Input to lazy first-login identity provisioning (WP-1.3) — the authenticated Supabase subject.
  *
