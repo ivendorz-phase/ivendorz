@@ -43,18 +43,27 @@ export const DELEGATION_GRANT_ENTITY_TYPE = "delegation_grant" as const;
 
 /**
  * Canonical delegation-grant audit actions — each bound BY POINTER to Doc-2 §9 "Vendor profile" domain:
- *   ISSUED    → "delegation grant issue"  (Doc-4C §C9 `create_delegation_grant` Audit).
- *   SUSPENDED → "delegation grant suspend" (Doc-4C §C9 `suspend_delegation_grant` Audit).
- *   REVOKED   → "delegation grant revoke"  (Doc-4C §C9 `revoke_delegation_grant` Audit).
- *   EXPIRED   → the "delegation revoke/expiry family" by pointer — carried on `[ESC-IDN-AUDIT]`
+ *   ISSUED     → "delegation grant issue"  (Doc-4C §C9 `create_delegation_grant` Audit).
+ *   SUSPENDED  → "delegation grant suspend" (Doc-4C §C9 `suspend_delegation_grant` Audit).
+ *   REINSTATED → the "delegation suspend/reinstate pair" by pointer — the frozen §C9 reinstate Audit
+ *               declaration AUTHORS the binding ("Domain Vendor profile (delegation suspend/reinstate
+ *               pair) by pointer — reinstate covered-by-suspend (Patch v1.0.1 PA-02)"): the §9
+ *               "delegation grant suspend" family covers the pair; a distinct token records what
+ *               actually happened (the user-account SUSPENDED/REINSTATED precedent). W2-IDN-6.5 —
+ *               realized with the real reinstate command (`Doc-2_Patch_v1.0.7`).
+ *   REVOKED    → "delegation grant revoke"  (Doc-4C §C9 `revoke_delegation_grant` Audit).
+ *   EXPIRED    → the "delegation revoke/expiry family" by pointer — carried on `[ESC-IDN-AUDIT]`
  *               (delegation expiry is NOT separately enumerated in §9; Doc-4C §C9 `expire_delegation_grant`
  *               Audit / Patch v1.0.1 PA-02). Attribution is System (§17.3). This is a bound-by-pointer
  *               serialization of the §9 delegation-terminal family — NOT a newly-invented business action.
- * Distinct tokens so the immutable ledger records what actually happened (issue ≠ suspend ≠ revoke ≠ expire).
+ * Distinct tokens so the immutable ledger records what actually happened (issue ≠ suspend ≠ reinstate ≠
+ * revoke ≠ expire).
  */
 export const DelegationGrantAuditAction = {
   ISSUED: "delegation_grant_issued",
   SUSPENDED: "delegation_grant_suspended",
+  /** Frozen §C9-authored pointer — §9 suspend/reinstate pair, covered-by-suspend (PA-02). */
+  REINSTATED: "delegation_grant_reinstated",
   REVOKED: "delegation_grant_revoked",
   /** `[ESC-IDN-AUDIT]` — bound by pointer to the §9 delegation revoke/expiry family (System attribution). */
   EXPIRED: "delegation_grant_expired",

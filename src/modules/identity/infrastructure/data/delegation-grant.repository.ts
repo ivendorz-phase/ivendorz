@@ -287,11 +287,75 @@ export async function transitionDelegationGrantStatus(
 }
 
 /**
- * Find grants the System sweep must expire (Doc-4C §C9 `expire_delegation_grant`): `status = 'active'`
- * AND a non-NULL `valid_to` at/PAST `now` (open-ended grants — `valid_to IS NULL` — never expire). Serves
- * the `delegation_grants_expiry_idx(status, valid_to)` index. The `active`-only filter IS the idempotency
- * guard (a terminal grant is never re-expired). `suspended` grants are deliberately EXCLUDED — the
- * `suspended`-at-`valid_to`-lapse disposition is carried on `[ESC-IDN-DELEG-EXPIRY]` (Doc-2 §5.10 silent).
+ * The dual-party LIST read (Doc-4C §C9 `list_delegation_grants`; Doc-5C §5.1 row `GET
+ * /identity/delegation_grants`). PARTY-SCOPED: only grants where `partyOrgId` is the controlling OR
+ * representative org are visible (§7 — "grants where the active org is a party only"; a third party's
+ * grants are simply absent — no existence oracle, §7.5). Filters are the frozen §C9 request fields
+ * (`role_filter` / `status_filter` / `vendor_profile_id`); sort is the frozen `valid_from` order with
+ * the `delegation_grant_id` tiebreaker (total order — Doc-4A §9.6). NO page slice here: the identity
+ * page-size POLICY key is UNREGISTERED (Doc-3 v1.9 §Notes: "No `identity.list_page_size_max` … a
+ * separate escalation — not coined here"), so the pagination dimension is FAIL-CLOSED at the wire
+ * face (see the list handler; handle `ESC-IDN-LIST-PAGESIZE` proposed) — never a literal bound here.
+ */
+export async function listDelegationGrantsForParty(
+  params: {
+    partyOrgId: string;
+    roleFilter: "as_controlling" | "as_representative" | "any";
+    statusFilter?: DelegationGrantStatus;
+    vendorProfileId?: string;
+  },
+  db: DbExecutor = prisma,
+): Promise<DelegationGrantRow[]> {
+  const partyScope =
+    params.roleFilter === "as_controlling"
+      ? [{ controllingOrganizationId: params.partyOrgId }]
+      : params.roleFilter === "as_representative"
+        ? [{ representativeOrganizationId: params.partyOrgId }]
+        : [
+            { controllingOrganizationId: params.partyOrgId },
+            { representativeOrganizationId: params.partyOrgId },
+          ];
+
+  const rows = await db.delegationGrant.findMany({
+    where: {
+      deletedAt: null,
+      OR: partyScope,
+      ...(params.statusFilter !== undefined ? { status: params.statusFilter } : {}),
+      ...(params.vendorProfileId !== undefined ? { vendorProfileId: params.vendorProfileId } : {}),
+    },
+    // Frozen sort: `valid_from` (tiebreaker `delegation_grant_id`) — a deterministic total order.
+    orderBy: [{ validFrom: "asc" }, { id: "asc" }],
+    select: {
+      id: true,
+      controllingOrganizationId: true,
+      representativeOrganizationId: true,
+      vendorProfileId: true,
+      status: true,
+      updatedAt: true,
+      permissionSetJsonb: true,
+      validFrom: true,
+      validTo: true,
+    },
+  });
+  return rows.map((row) => ({
+    id: row.id,
+    controllingOrganizationId: row.controllingOrganizationId,
+    representativeOrganizationId: row.representativeOrganizationId,
+    vendorProfileId: row.vendorProfileId,
+    status: row.status as DelegationGrantStatus,
+    updatedAt: row.updatedAt,
+    fieldSet: fieldSetOf({ ...row, status: row.status as DelegationGrantStatus }),
+  }));
+}
+
+/**
+ * Find grants the System sweep must expire (Doc-4C §C9 `expire_delegation_grant`; boundary per
+ * `Doc-2_Patch_v1.0.7` rule 1): `status IN ('active','suspended')` AND a non-NULL `valid_to` at/PAST
+ * `now` (open-ended grants — `valid_to IS NULL` — never expire). Serves the
+ * `delegation_grants_expiry_idx(status, valid_to)` index. The non-terminal source filter IS the
+ * idempotency guard (a terminal grant is never re-expired). `suspended` grants are INCLUDED — the
+ * former `[ESC-IDN-DELEG-EXPIRY]` carry is RESOLVED (owner ruling 2026-07-09; the sweep covers both
+ * states, realized W2-IDN-6.5).
  */
 export async function findExpirableDelegationGrants(
   now: Date,
@@ -299,7 +363,11 @@ export async function findExpirableDelegationGrants(
   db: DbExecutor = prisma,
 ): Promise<ExpirableDelegationGrantRow[]> {
   const rows = await db.delegationGrant.findMany({
-    where: { status: "active", deletedAt: null, validTo: { not: null, lte: now } },
+    where: {
+      status: { in: ["active", "suspended"] },
+      deletedAt: null,
+      validTo: { not: null, lte: now },
+    },
     orderBy: { validTo: "asc" },
     take: batchSize,
     select: {

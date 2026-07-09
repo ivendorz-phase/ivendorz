@@ -14,7 +14,7 @@ import { NextResponse } from "next/server";
 import { ensureProvisioned, resolveSupabaseSession } from "@/server/auth";
 import { handleUpdateUserProfile } from "@/server/identity";
 import type { UpdateUserProfileInput } from "@/modules/identity/contracts";
-import { parseIfMatchTimestamp } from "@/shared/http";
+import { parseIdempotencyKey, parseIfMatchTimestamp } from "@/shared/http";
 
 /** Shape of the JSON request body (Doc-4C §C4 — snake_case wire field names). */
 interface UpdateUserProfileBody {
@@ -64,6 +64,8 @@ export async function PATCH(
   } = await handleUpdateUserProfile(toInput(id, body, request), {
     resolveSession: resolveSupabaseSession,
     ensureProvisioned,
+    // §B.6 retro-fit (W2-IDN-6.5): the Idempotency-Key header is MANDATORY (Doc-5C §4.3).
+    idempotencyKey: parseIdempotencyKey(request),
   });
 
   // Carry the core-decided standard HTTP headers (e.g. the Doc-5A §9.5 `ETag` current token on a stale-precondition 409) + the 401 challenge.

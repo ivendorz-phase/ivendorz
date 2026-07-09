@@ -22,10 +22,16 @@
 //     org-context permission resolution; branching here would introduce FAIL-OPEN risk.
 
 import { ensureProvisioned, type AuthSession } from "@/server/auth";
-import { resolveActiveOrg, resolveStaffContext, type ResolveStaffContext } from "@/server/context";
+import {
+  resolveActiveOrg,
+  resolveStaffContext,
+  withUserSelfContext,
+  type ResolveStaffContext,
+} from "@/server/context";
 import { authorize } from "@/server/authz";
 import { appendAuditRecord } from "@/modules/core/contracts";
 import {
+  COMMAND_DEDUP_WINDOW_KEY,
   forbiddenSetUserAccountStatus,
   mapSetUserAccountStatus,
   SET_USER_ACCOUNT_STATUS_SLUG,
@@ -36,9 +42,17 @@ import {
   type SetUserAccountStatusResult,
 } from "@/modules/identity/contracts";
 import { authChallengeResponse, type WireResponse } from "@/shared/http";
+import {
+  dedupScope,
+  findStoredReplay,
+  persistWireReplay,
+  type WireIdempotencyKey,
+} from "./command-dedup";
 
 /** Resolve the authenticated Supabase subject, or `null` when unauthenticated (injectable). */
 export type ResolveSession = () => Promise<AuthSession | null>;
+
+const CONTRACT_ID = "identity.set_user_account_status.v1" as const;
 
 /** Dependencies for the Admin status composition. All injectable (defaults bind production wiring). */
 export interface SetUserAccountStatusHandlerDeps {
@@ -46,6 +60,9 @@ export interface SetUserAccountStatusHandlerDeps {
   ensureProvisioned: typeof ensureProvisioned;
   /** The server-side staff-principal resolution port (default: the DC-3 FAIL-CLOSED resolver). */
   resolveStaffContext?: ResolveStaffContext;
+  /** The wire `Idempotency-Key` (tri-state — `command-dedup.ts`): routes always pass string|null;
+   *  omitted (undefined) = off-wire caller, dedup inactive. §B.6 retro-fit, W2-IDN-6.5. */
+  idempotencyKey?: WireIdempotencyKey;
   /** Caller IP for the audit (Doc-2 §9; redaction-aware). Optional. */
   ipAddress?: string | null;
   /** Caller user-agent for the audit (Doc-2 §9; redaction-aware). Optional. */
@@ -74,11 +91,33 @@ export async function handleSetUserAccountStatus(
     return userAccountInvalidInput(syntaxFailure);
   }
 
+  // §B.6 mandatory-key SYNTAX leg (Doc-5C §4.3; W2-IDN-6.5 retro-fit) — rides the same category-1
+  // position as the validator above: a syntactically incomplete request is `400` for EVERY caller.
+  if (deps.idempotencyKey === null) {
+    return userAccountInvalidInput("Idempotency-Key header is required.");
+  }
+  const key = deps.idempotencyKey;
+
   await deps.ensureProvisioned(session);
 
   // ── AFFIRMATIVE leg: the server-derived platform-staff basis (never client-asserted). ──
   const staff = await (deps.resolveStaffContext ?? resolveStaffContext)(session);
   if (staff !== null) {
+    // §B.6 replay lookup — PRE-command (the command owns its own staff-GUC tx); scoped to the
+    // ADMIN principal (org-less — 21.6 carries no org context). Actor-GUC tx = the RLS backstop.
+    if (key !== undefined) {
+      const replay = await withUserSelfContext(staff.userId, (tx) =>
+        findStoredReplay<SetUserAccountStatusResult>(
+          dedupScope(CONTRACT_ID, staff.userId, null, key),
+          COMMAND_DEDUP_WINDOW_KEY,
+          tx,
+        ),
+      );
+      if (replay !== null) {
+        return replay;
+      }
+    }
+
     const outcome = await setUserAccountStatus(
       input,
       {
@@ -89,7 +128,17 @@ export async function handleSetUserAccountStatus(
       },
       { appendAuditRecord },
     );
-    return mapSetUserAccountStatus(outcome);
+    const wire = mapSetUserAccountStatus(outcome);
+
+    // §B.6 persist — SUCCESS-ONLY, post-commit (own-tx command; the `active ⇄ suspended` machine +
+    // CAS make a lost cache write duplicate-safe: re-execution is a same-state 409, never a second
+    // side effect — logged judgment call).
+    if (outcome.ok && key !== undefined) {
+      await withUserSelfContext(staff.userId, (tx) =>
+        persistWireReplay(dedupScope(CONTRACT_ID, staff.userId, null, key), wire, tx),
+      );
+    }
+    return wire;
   }
 
   // ── NEGATIVE leg: UNCONDITIONAL 403 deny-by-construction (RV-0152 F-B1 — see header). The

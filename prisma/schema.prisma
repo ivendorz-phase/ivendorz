@@ -436,3 +436,27 @@ enum DelegationGrantStatus {
   @@map("delegation_grant_status")
   @@schema("identity")
 }
+
+// W2-IDN-6.5 — the M1 §B.6 command-dedup / Idempotency-Key replay store (Doc-4C §B.6; vehicle =
+// the Doc-6A §10.3 dedicated dedup table per the owning-module design, Doc-6C §6.1; stored-result
+// column set per Doc-5A §9.3). OPERATIONAL replay cache, NOT a domain aggregate (Doc-6A R2) — no
+// FK (inert rows survive actor anonymization), no soft delete. The replay scope key
+// (`command_dedup_scope_key_uq`, UNIQUE NULLS NOT DISTINCT over contract/actor/org/key — the
+// poisoning guard) + RLS live raw-SQL-only in the `identity_command_dedup` migration (the house
+// pattern for constraints Prisma cannot express — cf. the partial-unique-live indexes).
+model CommandDedup {
+  id              String   @id @db.Uuid
+  contractId      String   @map("contract_id")
+  actorUserId     String   @map("actor_user_id") @db.Uuid
+  organizationId  String?  @map("organization_id") @db.Uuid
+  idempotencyKey  String   @map("idempotency_key")
+  responseStatus  Int      @map("response_status")
+  responseBody    Json     @map("response_body") @db.JsonB
+  responseHeaders Json?    @map("response_headers") @db.JsonB
+  executedAt      DateTime @default(now()) @map("executed_at") @db.Timestamptz
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("command_dedup")
+  @@schema("identity")
+}

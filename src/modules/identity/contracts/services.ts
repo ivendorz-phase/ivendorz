@@ -23,7 +23,18 @@ import {
   type DelegationGrantLifecycleContext,
   type DelegationGrantLifecycleDeps,
 } from "../application/commands/suspend-revoke-delegation-grant.command";
-import { reinstateDelegationGrantCommand } from "../application/commands/reinstate-delegation-grant.command";
+import {
+  reinstateDelegationGrantCommand,
+  type ReinstateDelegationGrantContext,
+  type ReinstateDelegationGrantDeps,
+} from "../application/commands/reinstate-delegation-grant.command";
+import { getDelegationGrant as getDelegationGrantQuery } from "../application/queries/get-delegation-grant.query";
+import { listDelegationGrants as listDelegationGrantsQuery } from "../application/queries/list-delegation-grants.query";
+import {
+  findCommandDedupRecord as findCommandDedupRecordImpl,
+  persistCommandDedupRecord as persistCommandDedupRecordImpl,
+  type FindCommandDedupDeps,
+} from "../infrastructure/data/command-dedup.repository";
 import {
   expireDelegationGrantsCommand,
   type ExpireDelegationGrantsDeps,
@@ -78,6 +89,7 @@ import type {
   ActivateMembershipResult,
   CheckPermissionInput,
   CheckPermissionResult,
+  CommandDedupScope,
   CreateDelegationGrantInput,
   CreateDelegationGrantOutcome,
   DeactivateOwnAccountInput,
@@ -87,14 +99,18 @@ import type {
   ExpireDelegationGrantsResult,
   ExpireInvitationsResult,
   GetBuyerProfileResult,
+  GetDelegationGrantResult,
   GetMembershipResult,
   GetOrganizationResult,
   GetUserResult,
+  ListDelegationGrantsInput,
+  ListDelegationGrantsResult,
   ProvisionIdentityInput,
   ProvisionIdentityResult,
   ReinstateDelegationGrantInput,
   SetUserAccountStatusInput,
   SetUserAccountStatusOutcome,
+  StoredCommandResponse,
   UpdateUser2faSettingsInput,
   UpdateUser2faSettingsOutcome,
   UpdateUserProfileInput,
@@ -241,11 +257,12 @@ export const checkPermission: CheckPermission = (input, deps, db) =>
   checkPermissionQuery(input, deps, db);
 
 // ─────────────────────────────────────────────────────────────────────────────
-// §C9 — Delegation Grant write surface (W2-IDN-4). The controlling-org create/suspend/revoke commands +
-// the scaffold reinstate + the out-of-wire System expiry sweep. Every mutation is an AUDITED, ATOMIC write
-// (the D7 pattern): the M0 `appendAuditRecord` is INJECTED by contract TYPE; the audit is atomic with the
-// write (same tx). The User commands MUST be invoked INSIDE `withActiveOrgContext` with the CONTROLLING org
-// as the active org. Zero §8 events ([DC-1]). Re-export the command context/deps shapes so the app-layer
+// §C9 — Delegation Grant surface (W2-IDN-4 write side; W2-IDN-6.5 real reinstate + dual-party reads).
+// The controlling-org create/suspend/reinstate/revoke commands + the party-scoped get/list reads +
+// the out-of-wire System expiry sweep. Every mutation is an AUDITED, ATOMIC write (the D7 pattern):
+// the M0 `appendAuditRecord` is INJECTED by contract TYPE; the audit is atomic with the write (same
+// tx). The User commands MUST be invoked INSIDE `withActiveOrgContext` with the CONTROLLING org as
+// the active org. Zero §8 events ([DC-1]). Re-export the command context/deps shapes so the app-layer
 // composition edge builds them via `@/modules/identity/contracts` (contracts-only).
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -289,21 +306,111 @@ export type RevokeDelegationGrant = (
 export const revokeDelegationGrant: RevokeDelegationGrant = (input, ctx, deps, db) =>
   revokeDelegationGrantCommand(input, ctx, deps, db);
 
-/** `identity.reinstate_delegation_grant.v1` (Doc-4C §C9 #25) — SCAFFOLD; rejects with an
- *  `[ESC-IDN-DELEG-EXPIRY]`-citing internal error (`DelegationReinstateGatedError`). No write, no audit. */
-export type ReinstateDelegationGrant = (input: ReinstateDelegationGrantInput) => Promise<never>;
-export const reinstateDelegationGrant: ReinstateDelegationGrant = (input) =>
-  reinstateDelegationGrantCommand(input);
+// The reinstate context/deps shapes for the app-layer composition edge (contracts-only).
+export type { ReinstateDelegationGrantContext, ReinstateDelegationGrantDeps };
 
-export { DelegationReinstateGatedError } from "../application/commands/reinstate-delegation-grant.command";
+/** `identity.reinstate_delegation_grant.v1` (Doc-4C §C9 #25 — REAL since W2-IDN-6.5, per
+ *  `Doc-2_Patch_v1.0.7` / the 2026-07-09 owner ruling; the former `[ESC-IDN-DELEG-EXPIRY]` scaffold
+ *  and its `DelegationReinstateGatedError` are REPLACED per the Board decision instrument (c)) —
+ *  `suspended → active`, valid ONLY while the validity window is open (patch rule 3; an expired
+ *  grant is terminal — rules 2/4). Audited (`delegation_grant_reinstated`) atomically. Must run
+ *  INSIDE `withActiveOrgContext` with the CONTROLLING org as the active org. */
+export type ReinstateDelegationGrant = (
+  input: ReinstateDelegationGrantInput,
+  ctx: ReinstateDelegationGrantContext,
+  deps: ReinstateDelegationGrantDeps,
+  db?: DbExecutor,
+) => Promise<DelegationGrantLifecycleOutcome>;
+export const reinstateDelegationGrant: ReinstateDelegationGrant = (input, ctx, deps, db) =>
+  reinstateDelegationGrantCommand(input, ctx, deps, db);
 
-/** `identity.expire_delegation_grant.v1` (Doc-4C §C9 · System) — the out-of-wire sweep expiring `active`
- *  grants whose `valid_to` has lapsed (`active → expired` ONLY). Audited per grant (System actor). */
+/** `identity.get_delegation_grant.v1` (Doc-4C §C9) — the dual-party single-grant read (both party
+ *  orgs; non-party collapses to `found: false` — §7.5). `partyOrgId` = the SERVER-RESOLVED active org. */
+export type GetDelegationGrant = (
+  delegationGrantId: string,
+  partyOrgId: string,
+  db?: DbExecutor,
+) => Promise<GetDelegationGrantResult>;
+export const getDelegationGrant: GetDelegationGrant = (delegationGrantId, partyOrgId, db) =>
+  getDelegationGrantQuery(delegationGrantId, partyOrgId, db);
+
+/** `identity.list_delegation_grants.v1` (Doc-4C §C9) — the party-scoped list (frozen filters +
+ *  `valid_from`/`delegation_grant_id` order). Pagination is FAIL-CLOSED at the wire pending
+ *  `ESC-IDN-LIST-PAGESIZE` (no registered identity page-size POLICY key — Doc-3 v1.9 §Notes). */
+export type ListDelegationGrants = (
+  input: ListDelegationGrantsInput,
+  partyOrgId: string,
+  db?: DbExecutor,
+) => Promise<ListDelegationGrantsResult>;
+export const listDelegationGrants: ListDelegationGrants = (input, partyOrgId, db) =>
+  listDelegationGrantsQuery(input, partyOrgId, db);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §B.6 — the command-dedup / Idempotency-Key replay store (W2-IDN-6.5). M1 owns the store
+// (`identity.command_dedup` — Doc-6A §10.3 dedicated-table vehicle per the owning-module design,
+// Doc-6C §6.1); the app-layer wire compositions consume these two primitives around each governed
+// mutation: lookup BEFORE execution (a within-window hit is the §9.3 safe replay — stored result,
+// same status, same ORIGINAL reference_id, NO re-execution), persist AFTER a successful execution
+// (on the SAME transaction executor as the business write wherever the composition owns the tx —
+// the §14.3 joint no-duplicate rule). Success-only caching; window = `[DC-5]` POLICY key.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type { FindCommandDedupDeps };
+
+/** The two `[DC-5]` dedup-window POLICY keys the §B.6 legs read (Doc-3 v1.9 REGISTERED — names
+ *  verbatim; reference form per Doc-4A §18.2; UNSEEDED until W2-IDN-7 — read, never a literal). */
+export const COMMAND_DEDUP_WINDOW_KEY =
+  "core.system_configuration.identity.command_dedup_window" as const;
+export const USER_UPDATE_DEDUP_WINDOW_KEY =
+  "core.system_configuration.identity.user_update_dedup_window" as const;
+
+/** §B.6 replay lookup — the stored response for (contract, actor, org, key) within the POLICY
+ *  window, or `null` (execute fresh). */
+export type FindCommandDedupRecord = (
+  scope: CommandDedupScope,
+  windowPolicyKey: string,
+  deps: FindCommandDedupDeps,
+  db?: DbExecutor,
+) => Promise<StoredCommandResponse | null>;
+export const findCommandDedupRecord: FindCommandDedupRecord = (scope, windowPolicyKey, deps, db) =>
+  findCommandDedupRecordImpl(scope, windowPolicyKey, deps, db);
+
+/** §B.6 replay persist — store a SUCCESSFUL execution's wire response (upsert on the scope key). */
+export type PersistCommandDedupRecord = (
+  scope: CommandDedupScope,
+  stored: StoredCommandResponse,
+  db?: DbExecutor,
+) => Promise<void>;
+export const persistCommandDedupRecord: PersistCommandDedupRecord = (scope, stored, db) =>
+  persistCommandDedupRecordImpl(scope, stored, db);
+
+/** `identity.expire_delegation_grant.v1` (Doc-4C §C9 · System) — the out-of-wire sweep expiring
+ *  `active` AND `suspended` grants whose `valid_to` has lapsed (`Doc-2_Patch_v1.0.7` rule 1 — the
+ *  sweep covers both states; realized W2-IDN-6.5). Audited per grant (System actor). */
 export type ExpireDelegationGrants = (
   deps: ExpireDelegationGrantsDeps,
 ) => Promise<ExpireDelegationGrantsResult>;
 export const expireDelegationGrants: ExpireDelegationGrants = (deps) =>
   expireDelegationGrantsCommand(deps);
+
+// The M1 WIRE FACES for the §C9 delegation surface (outcome → Doc-5A envelope + §6.2 status) — the
+// One-Owner placement (M1 owns how its writes/reads become HTTP); the app-layer composition edge
+// consumes them via `@/modules/identity/contracts` (contracts-only).
+export {
+  delegationGrantErrorResponse,
+  delegationInvalidInput,
+  mapCreateDelegationGrant,
+} from "../api/create-delegation-grant.handler";
+export {
+  mapDelegationGrantLifecycle,
+  mapRevokeDelegationGrant,
+  type RevokeDelegationGrantWireResult,
+} from "../api/delegation-grant-lifecycle.handler";
+export { mapGetDelegationGrant } from "../api/get-delegation-grant.handler";
+export {
+  mapListDelegationGrants,
+  type ListDelegationGrantsWireResult,
+} from "../api/list-delegation-grants.handler";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // §C4/§C5/§C6 — User · Organization · Membership lifecycle (W2-IDN-5). The two out-of-wire System timers +

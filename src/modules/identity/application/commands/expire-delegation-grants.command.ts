@@ -6,10 +6,11 @@
 // `_controlling_update` RLS (`… OR staff`) admits the write AND the audit `WITH CHECK` System/staff leg
 // (`… OR is_platform_staff IS TRUE`) admits the append. The GUC never leaks past the transaction.
 //
-// EDGE: Doc-2 §5.10 `active → expired` ONLY (literal edge). `suspended`-at-`valid_to`-lapse is UNSPECIFIED
-// and carried on `[ESC-IDN-DELEG-EXPIRY]` — the sweep NEVER touches `suspended` grants (the repository
-// `active`-only filter enforces it, and the state machine has NO `suspended → expired` edge). IDEMPOTENT:
-// the `active`-only source filter is the guard — a terminal grant is never re-expired.
+// EDGES: Doc-2 §5.10 AS PATCHED by `Doc-2_Patch_v1.0.7` (rule 1 — the patch governs): a grant expires
+// when its validity window lapses REGARDLESS of whether it is `active` or `suspended`; the sweep covers
+// BOTH states (`active → expired` + `suspended → expired`). The former `[ESC-IDN-DELEG-EXPIRY]` carry is
+// RESOLVED (owner ruling 2026-07-09; realized W2-IDN-6.5). IDEMPOTENT: the non-terminal source filter +
+// the per-grant compare-and-set are the guard — a terminal grant is never re-expired.
 //
 // AUDIT: `delegation_grant_expired`, actor_type `system`, bound BY POINTER to the Doc-2 §9 delegation
 // revoke/expiry family via `[ESC-IDN-AUDIT]` (delegation expiry not separately enumerated). One audit row
@@ -54,8 +55,9 @@ export interface ExpireDelegationGrantsDeps {
 }
 
 /**
- * The System expiry sweep pass. Expires every `active` grant whose `valid_to` has lapsed, each write +
- * audit atomic; invokes the refresh seam per expired grant after commit. Returns the count expired.
+ * The System expiry sweep pass. Expires every `active` OR `suspended` grant whose `valid_to` has
+ * lapsed (Doc-2 §5.10 v1.0.7 rule 1), each write + audit atomic; invokes the refresh seam per expired
+ * grant after commit. Returns the count expired.
  */
 export async function expireDelegationGrantsCommand(
   deps: ExpireDelegationGrantsDeps,
@@ -71,12 +73,13 @@ export async function expireDelegationGrantsCommand(
     const expired: ExpirableDelegationGrantRow[] = [];
 
     for (const grant of candidates) {
-      // STATE — assert the literal `active → expired` edge on the machine before the write.
-      assertTransition("active", "expired");
+      // STATE — assert the grant's OWN `→ expired` edge on the machine before the write (the patched
+      // matrix legalizes BOTH `active → expired` and `suspended → expired` — Patch v1.0.7 rule 1).
+      assertTransition(grant.status, "expired");
 
-      // WRITE — compare-and-set on `active`; a concurrent transition ⇒ 0 rows ⇒ skip (idempotent).
+      // WRITE — compare-and-set on the source status; a concurrent transition ⇒ 0 rows ⇒ skip (idempotent).
       const write = await transitionDelegationGrantStatus(
-        { id: grant.id, from: "active", to: "expired", actorUserId: null },
+        { id: grant.id, from: grant.status, to: "expired", actorUserId: null },
         tx,
       );
       if (write === null) continue;

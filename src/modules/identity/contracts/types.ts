@@ -225,6 +225,13 @@ export interface DelegationGrantError {
   errorCode: string;
   /** Human-safe, non-leaking message. */
   message: string;
+  /**
+   * The grant's CURRENT `updated_at` token — populated ONLY on the LOSING-WRITE leg (the CAS lost a
+   * race on a legal edge) so the wire mapper emits the Doc-5A §9.5 `ETag` current-token header and
+   * the caller can re-read-retry (§9.6). NEVER populated on a machine-illegal-edge STATE rejection
+   * (the call-13 leg discipline, RV-0152 — a token there would be a false retry signal). W2-IDN-6.5.
+   */
+  currentUpdatedAt?: Date;
 }
 
 /**
@@ -276,11 +283,86 @@ export interface DelegationGrantLifecycleResult {
 export type DelegationGrantLifecycleOutcome =
   { ok: true; result: DelegationGrantLifecycleResult } | { ok: false; error: DelegationGrantError };
 
-/** Input to the SCAFFOLD `identity.reinstate_delegation_grant.v1` (Doc-4C §C9 — gated on
- *  `[ESC-IDN-DELEG-EXPIRY]`). */
+/** Input to `identity.reinstate_delegation_grant.v1` (Doc-4C §C9 #25 — REAL since W2-IDN-6.5; the
+ *  business boundary is `Doc-2_Patch_v1.0.7` rule 3: valid only for a currently `suspended`,
+ *  NON-expired grant). `updatedAt` is the caller's last-seen token (required — §C9). */
 export interface ReinstateDelegationGrantInput {
   delegationGrantId: string;
   updatedAt: Date;
+}
+
+/**
+ * The FROZEN §C9 `get_delegation_grant` / `list_delegation_grants` item projection (PassB:648) —
+ * EXACTLY `{ delegation_grant_id, controlling_organization_id, representative_organization_id,
+ * vendor_profile_id, permission_set, valid_from, valid_to, status }`. Nothing added or removed
+ * (notably NO `updated_at` — the frozen projection omits it; realized verbatim).
+ */
+export interface DelegationGrantView {
+  delegationGrantId: string;
+  controllingOrganizationId: string;
+  representativeOrganizationId: string;
+  vendorProfileId: string;
+  /** PermissionSet (Doc-2 §2 — JSONB array of slugs). */
+  permissionSet: string[];
+  validFrom: Date;
+  validTo: Date | null;
+  status: DelegationGrantStatusValue;
+}
+
+/** Outcome of `identity.get_delegation_grant.v1` — `found: false` collapses absent AND non-party
+ *  (§C9 SCOPE `NOT_FOUND` collapse beyond parties, §7.5 — one indistinguishable shape). */
+export type GetDelegationGrantResult =
+  { found: true; grant: DelegationGrantView } | { found: false };
+
+/**
+ * Input to `identity.list_delegation_grants.v1` (Doc-4C §C9 request contract — the frozen filter
+ * fields). The party org is SERVER-RESOLVED (never an input). The `page_size`/`cursor` dimension is
+ * FAIL-CLOSED at the wire face pending `ESC-IDN-LIST-PAGESIZE` (no registered identity page-size
+ * POLICY key — Doc-3 v1.9 §Notes) and is deliberately NOT part of this input.
+ */
+export interface ListDelegationGrantsInput {
+  /** `role_filter : enum(as_controlling|as_representative|any) : optional : default any`. */
+  roleFilter?: "as_controlling" | "as_representative" | "any";
+  /** `status_filter : enum : optional` (`delegation_grant_status`, Doc-2 §5.10). */
+  statusFilter?: DelegationGrantStatusValue;
+  /** `vendor_profile_id : uuid : optional : filter` (bare M2 ref). */
+  vendorProfileId?: string;
+}
+
+/** Result of `identity.list_delegation_grants.v1` — the Doc-5A §8.6 list shape (items + page_info;
+ *  `next_cursor` present iff more results exist — never issued while pagination is handle-gated). */
+export interface ListDelegationGrantsResult {
+  items: DelegationGrantView[];
+  pageInfo: { hasMore: boolean; nextCursor?: string };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §B.6 — the command-dedup / Idempotency-Key replay store (W2-IDN-6.5). Doc-4C §B.6 semantics
+// (replay → cached response; no duplicate audit/side effect — the §14.3 joint rule), realized as the
+// Doc-6A §10.3 dedicated dedup table per the owning-module design (Doc-6C §6.1); the stored-result
+// shape is Doc-5A §9.3's (status + body incl. the ORIGINAL reference_id + standard infra headers).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The replay scope key — a stored response is replayable ONLY to the same (contract, actor, org
+ *  context, key) that produced it (§7.5 — the replay-cache poisoning guard). */
+export interface CommandDedupScope {
+  /** The frozen Doc-4C contract id (e.g. `identity.create_delegation_grant.v1`). */
+  contractId: string;
+  /** The SERVER-RESOLVED acting principal (never client input). */
+  actorUserId: string;
+  /** The server-resolved org context; `null` for self/Admin-scope contracts. */
+  organizationId: string | null;
+  /** The client-generated opaque Idempotency-Key (Doc-5A §9.2; bounded at the wire). */
+  idempotencyKey: string;
+}
+
+/** A stored wire response (Doc-5A §9.3 — same result, same status, same original `reference_id`). */
+export interface StoredCommandResponse {
+  status: number;
+  /** The stored §5.6/§6.1 envelope, verbatim (incl. the original `reference_id`). */
+  body: unknown;
+  /** Stored standard HTTP infrastructure headers (e.g. the create `Location`), when any. */
+  headers?: Record<string, string>;
 }
 
 /** Result of the System `identity.expire_delegation_grant.v1` sweep (Doc-4C §C9 — mechanical counter). */

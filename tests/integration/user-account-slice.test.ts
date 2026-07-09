@@ -598,6 +598,41 @@ describe("W2-IDN-6.1 §C4 user/account wired surface — 8C (real PostgreSQL)", 
     ).toHaveLength(1);
   });
 
+  it("DEACTIVATE stale CAS (NIT-Δ1 fold, RV-0152): a stale If-Match token on a legal departure → 409 identity_user_update_conflict CARRYING the §9.5 ETag current token; nothing written, nothing audited", async () => {
+    // The one §C4 stale leg the base 6.1 suite left untested (RV-0152 delta NIT-Δ1; empirically
+    // confirmed by Review-B's P3 probe staying silent here). Same shared plumbing as the other
+    // three contracts — this pins the deactivate leg itself.
+    const u = await trackedUser({ withPersonalData: true });
+    await seedMembership({
+      organizationId: ORG_A,
+      roleId: CUSTOM_ROLE,
+      userId: u.id,
+      state: "active",
+    });
+
+    const stale = await handleDeactivateOwnAccount(
+      { targetUserId: u.id, confirmation: true, updatedAt: new Date(0) },
+      {
+        resolveSession: async () => ({ authUserId: u.authUserId }),
+        ensureProvisioned: noProvision,
+      },
+    );
+    expect(stale.status).toBe(409);
+    const body = stale.body as { error: { error_class: string; error_code: string } };
+    expect(body.error.error_class).toBe("CONFLICT");
+    expect(body.error.error_code).toBe("identity_user_update_conflict");
+    // Doc-5A §9.5 (RV-0152 F2 / call-13): the stale-precondition 409 carries the CURRENT token on
+    // `ETag` so the caller can re-read-retry (§9.6).
+    expect(stale.headers?.ETag).toBe(concurrencyEtag((await reloadUser(u.id)).updatedAt));
+
+    // No partial departure: the user is untouched (still active, personal data intact) and the
+    // failed attempt appended NO audit row (validation is not a workflow — Doc-4A §11.3).
+    const row = await reloadUser(u.id);
+    expect(row.status).toBe("active");
+    expect(row.email).not.toBeNull();
+    expect(await userAudits(u.id)).toHaveLength(0);
+  });
+
   // ════ D. `set_user_account_status` — POST named command (Admin 21.6; staff-space firewall) ════
 
   it("ADMIN-STATE: injected staff principal suspends + reinstates → 200/200; audits ADMIN-attributed (never System), org NULL, structured reason recorded, distinct tokens", async () => {
@@ -925,7 +960,14 @@ describe("W2-IDN-6.1 §C4 user/account wired surface — 8C (real PostgreSQL)", 
     for (const file of auditedCompositions) {
       const source = readFileSync(resolve(process.cwd(), file), "utf8");
       expect(source).toContain('import { appendAuditRecord } from "@/modules/core/contracts";');
-      expect(source).toContain("{ appendAuditRecord }"); // the same binding is the injected dep.
+      // NIT-Δ2 fold (RV-0152 Review-B delta): a GENUINE injection-site pin — the bare-substring
+      // assertion was subsumed by the import line itself. The binding must appear AGAIN outside
+      // the import statement (the `{ appendAuditRecord }` deps-position injection), so ≥2 exact
+      // occurrences discriminate an import-only file from one that actually injects the binding.
+      const occurrences = source.match(/\{ appendAuditRecord \}/g) ?? [];
+      expect(occurrences.length, `${file} must inject the imported binding`).toBeGreaterThanOrEqual(
+        2,
+      );
       // No parallel audit-write surface in CODE (comment lines stripped — they legitimately cite
       // the ADR-021 policy name): the composition never touches the audit table directly.
       const codeOnly = source

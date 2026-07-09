@@ -8,9 +8,10 @@ import { inngest } from "../client";
 // (`@/modules/identity/contracts`) — strictly contracts/-only cross-module access. The M0
 // `appendAuditRecord` concrete is injected via `@/modules/core/contracts` (the boundary-legal audit path).
 //
-// EDGE: `active → expired` ONLY (Doc-2 §5.10 literal edge). `suspended`-at-`valid_to`-lapse is carried on
-// `[ESC-IDN-DELEG-EXPIRY]` and never swept. IDEMPOTENT (the sweep's `active`-only filter is the guard);
-// each expiry is an AUDITED, ATOMIC write (System actor). Zero §8 events ([DC-1]).
+// EDGES: `active → expired` AND `suspended → expired` (Doc-2 §5.10 as patched by `Doc-2_Patch_v1.0.7`
+// rule 1 — the sweep covers BOTH states; the former `[ESC-IDN-DELEG-EXPIRY]` carry is RESOLVED, owner
+// ruling 2026-07-09, realized W2-IDN-6.5). IDEMPOTENT (the non-terminal source filter + per-grant CAS
+// are the guard); each expiry is an AUDITED, ATOMIC write (System actor). Zero §8 events ([DC-1]).
 //
 // CADENCE: the BUSINESS sweep cadence is the POLICY key `identity.delegation_expiry_sweep_cadence`
 // (Doc-3 v1.9; seeded W2-IDN-7). Inngest's cron is fixed at registration, so — exactly as the M0 outbox
@@ -26,7 +27,7 @@ const DELEGATION_EXPIRY_CRON = "*/5 * * * *" as const; // every 5 minutes
 export const expireDelegationGrantsPump = inngest.createFunction(
   {
     id: "identity-expire-delegation-grants",
-    name: "M1 delegation-grant expiry sweep (active → expired)",
+    name: "M1 delegation-grant expiry sweep (active|suspended → expired)",
     concurrency: { limit: 1 },
   },
   [{ cron: DELEGATION_EXPIRY_CRON }],

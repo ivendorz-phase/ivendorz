@@ -80,7 +80,16 @@ const err = (
   errorClass: DelegationGrantError["errorClass"],
   errorCode: string,
   message: string,
-): DelegationGrantLifecycleOutcome => ({ ok: false, error: { errorClass, errorCode, message } });
+  currentUpdatedAt?: Date,
+): DelegationGrantLifecycleOutcome => ({
+  ok: false,
+  error: {
+    errorClass,
+    errorCode,
+    message,
+    ...(currentUpdatedAt !== undefined ? { currentUpdatedAt } : {}),
+  },
+});
 
 /** The no-op default refresh port — calls no M3, emits no event ([DC-1]); the seam exists to be invoked. */
 const NOOP_REFRESH: DelegationRefreshPort = async () => {};
@@ -110,7 +119,7 @@ async function transitionCommand(
   if (!UUID_RE.test(input.delegationGrantId)) {
     return err("VALIDATION", CODE.INVALID_INPUT, "delegation_grant_id must be a uuid.");
   }
-  if (!(input.updatedAt instanceof Date)) {
+  if (!(input.updatedAt instanceof Date) || Number.isNaN(input.updatedAt.getTime())) {
     return err("VALIDATION", CODE.INVALID_INPUT, "updated_at is required.");
   }
 
@@ -155,16 +164,22 @@ async function transitionCommand(
   }
   assertTransition(grant.status, spec.to); // defensive — the machine is the single authority.
 
-  // (8) WRITE — compare-and-set on the source status. A lost race (0 rows) ⇒ STATE (already transitioned).
+  // (8) WRITE — compare-and-set on the source status. A lost race (0 rows) ⇒ a LOSING WRITE: STATE
+  //     (the in-register 409) CARRYING the current `updated_at` token so the wire face emits the
+  //     Doc-5A §9.5 `ETag` and the caller can re-read-retry (§9.6). The call-13 leg discipline
+  //     (RV-0152): token rides losing-write legs ONLY — the machine-illegal-edge STATE leg above
+  //     carries none (a token there would be a false retry signal).
   const write = await transitionDelegationGrantStatus(
     { id: grant.id, from: grant.status, to: spec.to, actorUserId: ctx.userId },
     db,
   );
   if (write === null) {
+    const current = await findDelegationGrantById(input.delegationGrantId, ctx.activeOrgId, db);
     return err(
       "STATE",
       CODE.STATE_INVALID,
       "the grant was already transitioned; reload and retry.",
+      current?.updatedAt,
     );
   }
 

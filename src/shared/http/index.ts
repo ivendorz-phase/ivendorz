@@ -155,6 +155,33 @@ export function authChallengeResponse(): WireResponse<never> {
 }
 
 /**
+ * The realized upper bound on a client-supplied `Idempotency-Key` [realization convention —
+ * W2-IDN-6.5, disclosed]. Doc-5A §9.2 (Pass6:31): the key's "format, character set, and length are
+ * development-document concerns" — i.e. OURS to fix; an unbounded client string would be a storage-
+ * abuse surface on the §B.6 replay store. Face-exported so compositions and tests bind the SAME
+ * value (the `ADMIN_REASON_MAX_LENGTH` precedent, RV-0152 NIT-B3).
+ */
+export const IDEMPOTENCY_KEY_MAX_LENGTH = 200;
+
+/**
+ * Parse the `Idempotency-Key` request header (Doc-5A §9.2: where a contract declares
+ * `Idempotency: required`, the key is carried in the REGISTERED `Idempotency-Key` header slot —
+ * never body/path/query; it is replay-safety metadata, not a business input). Doc-5C §4.3 makes the
+ * header MANDATORY on every `identity` mutation.
+ *
+ * Returns the trimmed key, or `null` when the header is absent, empty, or over the realized bound —
+ * the owning composition maps `null` to its domain's SYNTAX `VALIDATION` → `400` (Doc-4A §11.2
+ * category 1: field presence); no parallel error shape is minted at the transport edge.
+ */
+export function parseIdempotencyKey(request: Request): string | null {
+  const raw = request.headers.get("idempotency-key");
+  if (raw === null) return null;
+  const trimmed = raw.trim();
+  if (trimmed.length === 0 || trimmed.length > IDEMPOTENCY_KEY_MAX_LENGTH) return null;
+  return trimmed;
+}
+
+/**
  * Parse the `If-Match` optimistic-concurrency token (Doc-5C §4.3 realization of Doc-5A §9:
  * "Updates declaring `Concurrency: optimistic` carry `If-Match` with `updated_at`; a stale token is
  * CONFLICT → 409"). The token VALUE is the entity's `updated_at` timestamp (ISO-8601); surrounding

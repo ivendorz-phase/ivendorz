@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
 import { ensureProvisioned, resolveSupabaseSession } from "@/server/auth";
 import { handleUpdateUser2faSettings } from "@/server/identity";
 import type { UpdateUser2faSettingsInput } from "@/modules/identity/contracts";
-import { parseIfMatchTimestamp } from "@/shared/http";
+import { parseIdempotencyKey, parseIfMatchTimestamp } from "@/shared/http";
 
 /** Shape of the JSON request body (Doc-4C §C4 — snake_case wire field names). */
 interface UpdateUser2faSettingsBody {
@@ -55,6 +55,8 @@ export async function POST(
   } = await handleUpdateUser2faSettings(toInput(id, body, request), {
     resolveSession: resolveSupabaseSession,
     ensureProvisioned,
+    // §B.6 retro-fit (W2-IDN-6.5): the Idempotency-Key header is MANDATORY (Doc-5C §4.3).
+    idempotencyKey: parseIdempotencyKey(request),
     ipAddress: request.headers.get("x-forwarded-for"),
     userAgent: request.headers.get("user-agent"),
   });

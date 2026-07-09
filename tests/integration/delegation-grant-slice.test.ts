@@ -7,7 +7,6 @@ import { appendAuditRecord, configValueQuery } from "../../src/modules/core/cont
 import {
   checkPermission,
   createDelegationGrant,
-  DelegationReinstateGatedError,
   expireDelegationGrants,
   reinstateDelegationGrant,
   revokeDelegationGrant,
@@ -18,15 +17,22 @@ import {
   type VendorProfileStateReader,
 } from "../../src/modules/identity/contracts";
 
-// W2-IDN-4 — the delegation-grant WRITE side: the Doc-2 §5.10 state machine, dual-party authority guards,
-// the `permission_set` guards (⊆-held / staff-space / ownership-class), the audited-atomic writes (D7
-// pattern), the System expiry sweep (`active → expired` ONLY), refresh-on-revocation, and the 8E delegated-
-// authz round trip. Proven against REAL PostgreSQL through the M1 CONTRACT surface ONLY (the frozen
-// boundary rule — tests never import module internals; the state machine + permission-set policy are
-// exercised via the commands, mirroring how `check_permission` proves the permission-resolution policy).
-// App-layer authz is PRIMARY (Doc-4C §C9; Doc-6C §6.2a) — the local `postgres` connection is RLS-BYPASSED,
-// so a pass proves the app-layer guards (not RLS) enforce; the dual-party RLS backstop is proven at IDN-1
-// (`rls-identity-authz-tables`).
+// W2-IDN-4 (+ W2-IDN-6.5 §5.10 boundary realization) — the delegation-grant WRITE side: the Doc-2
+// §5.10 state machine AS PATCHED by `Doc-2_Patch_v1.0.7` (the `suspended → expired` edge · the real
+// reinstate with the window-open boundary · no-resurrection), dual-party authority guards, the
+// `permission_set` guards (⊆-held / staff-space / ownership-class), the audited-atomic writes (D7
+// pattern), the System expiry sweep (BOTH non-terminal states — patch rule 1), refresh-on-revocation,
+// and the 8E delegated-authz round trip. Proven against REAL PostgreSQL through the M1 CONTRACT
+// surface ONLY (the frozen boundary rule — tests never import module internals; the state machine +
+// permission-set policy are exercised via the commands, mirroring how `check_permission` proves the
+// permission-resolution policy). App-layer authz is PRIMARY (Doc-4C §C9; Doc-6C §6.2a) — the local
+// `postgres` connection is RLS-BYPASSED, so a pass proves the app-layer guards (not RLS) enforce; the
+// dual-party RLS backstop is proven at IDN-1 (`rls-identity-authz-tables`).
+//
+// PIN-UPDATE PROVENANCE (ruling-realization, NOT regression — the RV-0148→6.1 pin-update precedent):
+// the RV-0149 "suspended-at-lapse untouched" pin encoded the PRE-ruling frozen text; the owner ruling
+// 2026-07-09 (`BOARD-DECISION-IDN-DELEG-EXPIRY_v1.0` → `Doc-2_Patch_v1.0.7`) resolved the carried
+// boundary, so the pin below now asserts the PATCHED machine (suspended+lapsed IS swept).
 
 // ── Deterministic fixtures (UUIDv7-shaped: version nibble 7, variant 8..b; 0xd4 = W2-IDN-4 namespace). ──
 const CTRL_ORG = "01920000-0000-7000-8000-0000000d4a01"; // controlling org (the grant issuer)
@@ -962,24 +968,203 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
     }
   });
 
-  // ── reinstate scaffold ──────────────────────────────────────────────────────
-  it("REINSTATE scaffold: rejects with an [ESC-IDN-DELEG-EXPIRY]-citing internal error (no write)", async () => {
-    const g = await seedGrant({ status: "suspended" });
-    await expect(
-      reinstateDelegationGrant({ delegationGrantId: g.id, updatedAt: g.updatedAt }),
-    ).rejects.toBeInstanceOf(DelegationReinstateGatedError);
-    await expect(
-      reinstateDelegationGrant({ delegationGrantId: g.id, updatedAt: g.updatedAt }),
-    ).rejects.toThrow(/ESC-IDN-DELEG-EXPIRY/);
+  // ── reinstate (REAL since W2-IDN-6.5 — `Doc-2_Patch_v1.0.7` rule 3) ──────────
+  it("REINSTATE in-window: suspended → active + a `delegation_grant_reinstated` audit row (atomic)", async () => {
+    const g = await seedGrant({ status: "suspended", validFrom: PAST_FROM, validTo: FUTURE });
+    const outcome = await inCtrlOrg((tx) =>
+      reinstateDelegationGrant(
+        { delegationGrantId: g.id, updatedAt: g.updatedAt },
+        ctrlCtx,
+        { appendAuditRecord },
+        tx,
+      ),
+    );
+    expect(outcome).toMatchObject({ ok: true, result: { status: "active" } });
     expect((await prisma.delegationGrant.findFirst({ where: { id: g.id } }))?.status).toBe(
-      "suspended",
-    ); // unchanged
+      "active",
+    );
+    const audit = await auditFor(g.id);
+    expect(audit.map((a) => a.action)).toEqual(["delegation_grant_reinstated"]);
+    expect(audit[0]!.actorType).toBe("user");
+    expect(audit[0]!.actorId).toBe(CTRL_USER);
+    expect(audit[0]!.organizationId).toBe(CTRL_ORG);
+    expect(audit[0]!.oldValue).toMatchObject({ status: "suspended" });
+    expect(audit[0]!.newValue).toMatchObject({ status: "active" });
   });
 
-  // ── System expiry sweep ───────────────────────────────────────────────────────
-  it("EXPIRE: sweeps active+lapsed → expired (System audit); leaves suspended-at-expiry; idempotent", async () => {
+  it("REINSTATE open-ended window: a suspended grant with valid_to NULL reinstates (the window never lapses)", async () => {
+    const g = await seedGrant({ status: "suspended", validTo: null });
+    const outcome = await inCtrlOrg((tx) =>
+      reinstateDelegationGrant(
+        { delegationGrantId: g.id, updatedAt: g.updatedAt },
+        ctrlCtx,
+        { appendAuditRecord },
+        tx,
+      ),
+    );
+    expect(outcome).toMatchObject({ ok: true, result: { status: "active" } });
+  });
+
+  it("REINSTATE after lapse (patch rule 3): a suspended grant whose window lapsed is REJECTED (STATE, in-register) — no write, no audit, no revival", async () => {
+    const g = await seedGrant({ status: "suspended", validFrom: PAST_FROM, validTo: PAST_TO });
+    const outcome = await inCtrlOrg((tx) =>
+      reinstateDelegationGrant(
+        { delegationGrantId: g.id, updatedAt: g.updatedAt },
+        ctrlCtx,
+        { appendAuditRecord, now: () => NOW_AFTER_EXPIRY },
+        tx,
+      ),
+    );
+    // The Board instrument (c): reject-expired stays INSIDE the frozen §C9 register — the STATE row.
+    expect(outcome).toMatchObject({
+      ok: false,
+      error: {
+        errorClass: "STATE",
+        errorCode: "identity_delegation_state_invalid",
+        message: expect.stringMatching(/validity window has lapsed/),
+      },
+    });
+    expect((await prisma.delegationGrant.findFirst({ where: { id: g.id } }))?.status).toBe(
+      "suspended",
+    ); // untouched — the sweep (System), not a User command, realizes `suspended → expired`.
+    expect(await auditFor(g.id)).toHaveLength(0);
+  });
+
+  it("REINSTATE boundary both directions (patch rule 3): window OPEN at reinstate time succeeds; one tick past valid_to rejects", async () => {
+    // Deterministic clock on BOTH sides of the boundary — the discriminating pair.
+    const edge = new Date("2600-01-01T00:00:00.000Z");
+    const before = new Date(edge.getTime() - 1);
+
+    const open = await seedGrant({ status: "suspended", validFrom: PAST_FROM, validTo: edge });
+    const ok = await inCtrlOrg((tx) =>
+      reinstateDelegationGrant(
+        { delegationGrantId: open.id, updatedAt: open.updatedAt },
+        ctrlCtx,
+        { appendAuditRecord, now: () => before },
+        tx,
+      ),
+    );
+    expect(ok).toMatchObject({ ok: true, result: { status: "active" } });
+
+    const lapsed = await seedGrant({ status: "suspended", validFrom: PAST_FROM, validTo: edge });
+    const rejected = await inCtrlOrg((tx) =>
+      reinstateDelegationGrant(
+        { delegationGrantId: lapsed.id, updatedAt: lapsed.updatedAt },
+        ctrlCtx,
+        { appendAuditRecord, now: () => edge }, // valid_to <= now ⇒ lapsed (the patch's "NOT passed" is exclusive)
+        tx,
+      ),
+    );
+    expect(rejected).toMatchObject({
+      ok: false,
+      error: { errorClass: "STATE", errorCode: "identity_delegation_state_invalid" },
+    });
+  });
+
+  it("REINSTATE illegal sources (patch rules 2/4 — no resurrection): expired · revoked · active · draft all → STATE; stale token → VALIDATION", async () => {
+    for (const from of ["expired", "revoked", "active", "draft"] as const) {
+      const g = await seedGrant({ status: from, validTo: FUTURE });
+      const outcome = await inCtrlOrg((tx) =>
+        reinstateDelegationGrant(
+          { delegationGrantId: g.id, updatedAt: g.updatedAt },
+          ctrlCtx,
+          { appendAuditRecord },
+          tx,
+        ),
+      );
+      expect(outcome, `reinstate from ${from}`).toMatchObject({
+        ok: false,
+        error: { errorClass: "STATE", errorCode: "identity_delegation_state_invalid" },
+      });
+      expect((await prisma.delegationGrant.findFirst({ where: { id: g.id } }))?.status).toBe(from);
+      expect(await auditFor(g.id)).toHaveLength(0);
+    }
+
+    // Stale token on a legal source — the IDN-4-ratified in-register VALIDATION (no §C9 CONFLICT code).
+    const g = await seedGrant({ status: "suspended", validTo: FUTURE });
+    const stale = await inCtrlOrg((tx) =>
+      reinstateDelegationGrant(
+        { delegationGrantId: g.id, updatedAt: new Date(0) },
+        ctrlCtx,
+        { appendAuditRecord },
+        tx,
+      ),
+    );
+    expect(stale).toMatchObject({
+      ok: false,
+      error: { errorClass: "VALIDATION", errorCode: "identity_delegation_invalid_input" },
+    });
+    expect((await prisma.delegationGrant.findFirst({ where: { id: g.id } }))?.status).toBe(
+      "suspended",
+    );
+  });
+
+  it("REINSTATE authority: representative-party caller → forbidden; non-party caller → NOT_FOUND collapse (byte-identical to nonexistent)", async () => {
+    const g = await seedGrant({ status: "suspended", validTo: FUTURE });
+    const rep = await withActiveOrgContext(repContext, (tx) =>
+      reinstateDelegationGrant(
+        { delegationGrantId: g.id, updatedAt: g.updatedAt },
+        { userId: REP_USER, activeOrgId: REP_ORG },
+        { appendAuditRecord },
+        tx,
+      ),
+    );
+    expect(rep).toMatchObject({
+      ok: false,
+      error: { errorClass: "AUTHORIZATION", errorCode: "identity_delegation_forbidden" },
+    });
+
+    const third = await withActiveOrgContext(thirdContext, (tx) =>
+      reinstateDelegationGrant(
+        { delegationGrantId: g.id, updatedAt: g.updatedAt },
+        thirdCtx,
+        { appendAuditRecord },
+        tx,
+      ),
+    );
+    const randomProbe = await withActiveOrgContext(thirdContext, (tx) =>
+      reinstateDelegationGrant(
+        { delegationGrantId: "01920000-0000-7000-8000-0000000d4dee", updatedAt: g.updatedAt },
+        thirdCtx,
+        { appendAuditRecord },
+        tx,
+      ),
+    );
+    expect(third).toEqual(randomProbe); // no existence oracle (§7.5)
+    expect(third).toMatchObject({
+      ok: false,
+      error: { errorClass: "NOT_FOUND", errorCode: "identity_delegation_not_found" },
+    });
+    expect((await prisma.delegationGrant.findFirst({ where: { id: g.id } }))?.status).toBe(
+      "suspended",
+    );
+  });
+
+  it("REINSTATE rollback direction (D7 invariant 1): a failing audit append rolls the suspended → active write back", async () => {
+    const g = await seedGrant({ status: "suspended", validTo: FUTURE });
+    const failingAppend = (() =>
+      Promise.reject(new Error("audit append failed (injected)"))) as typeof appendAuditRecord;
+    await expect(
+      inCtrlOrg((tx) =>
+        reinstateDelegationGrant(
+          { delegationGrantId: g.id, updatedAt: g.updatedAt },
+          ctrlCtx,
+          { appendAuditRecord: failingAppend },
+          tx,
+        ),
+      ),
+    ).rejects.toThrow(/audit append failed/);
+    expect((await prisma.delegationGrant.findFirst({ where: { id: g.id } }))?.status).toBe(
+      "suspended",
+    );
+    expect(await auditFor(g.id)).toHaveLength(0);
+  });
+
+  // ── System expiry sweep (patch rule 1 — BOTH non-terminal states) ─────────────
+  it("EXPIRE (ruling-realization pin update): sweeps active+lapsed AND suspended+lapsed → expired (System audit each); leaves in-window rows; idempotent", async () => {
     const active = await seedGrant({ status: "active", validFrom: PAST_FROM, validTo: PAST_TO });
-    // A SUSPENDED grant also lapsed — MUST NOT be swept ([ESC-IDN-DELEG-EXPIRY]; active → expired ONLY).
+    // A SUSPENDED grant also lapsed — NOW SWEPT (`Doc-2_Patch_v1.0.7` rule 1; the former RV-0149
+    // "untouched" pin encoded the pre-ruling text — this update is ruling-realization, not regression).
     const suspended = await seedGrant({
       status: "suspended",
       validFrom: PAST_FROM,
@@ -987,6 +1172,13 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
     });
     // An active grant still IN window — MUST NOT be swept.
     const future = await seedGrant({ status: "active", validFrom: PAST_FROM, validTo: FUTURE });
+    // A suspended grant still IN window — MUST NOT be swept (discriminates the window filter,
+    // not just the status filter, on the new suspended leg).
+    const suspendedFuture = await seedGrant({
+      status: "suspended",
+      validFrom: PAST_FROM,
+      validTo: FUTURE,
+    });
     const refresh = vi.fn<DelegationRefreshPort>(async () => {});
 
     const first = await expireDelegationGrants({
@@ -994,39 +1186,107 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
       refreshPort: refresh,
       now: () => NOW_AFTER_EXPIRY,
     });
-    expect(first.expired).toBe(1);
+    expect(first.expired).toBe(2);
     expect((await prisma.delegationGrant.findFirst({ where: { id: active.id } }))?.status).toBe(
       "expired",
     );
     expect((await prisma.delegationGrant.findFirst({ where: { id: suspended.id } }))?.status).toBe(
-      "suspended",
-    ); // untouched
+      "expired", // the patched `suspended → expired` edge, System-realized
+    );
     expect((await prisma.delegationGrant.findFirst({ where: { id: future.id } }))?.status).toBe(
       "active",
     ); // untouched
+    expect(
+      (await prisma.delegationGrant.findFirst({ where: { id: suspendedFuture.id } }))?.status,
+    ).toBe("suspended"); // untouched — in-window
 
-    const audit = await auditFor(active.id);
-    expect(audit.map((a) => a.action)).toEqual(["delegation_grant_expired"]);
-    expect(audit[0]!.actorType).toBe("system");
-    expect(audit[0]!.actorId).toBeNull();
-    // F-B2: the System expiry audit row carries the grant's CONTROLLING org as business context.
-    expect(audit[0]!.organizationId).toBe(CTRL_ORG);
-    expect(refresh).toHaveBeenCalledTimes(1);
-    // F-B2: the refresh seam receives the EXPIRED grant's identifying payload (mirrors the revoke leg's
-    // idiom) — a `toHaveBeenCalledTimes` count alone would not catch a wrong/empty payload.
+    for (const [grantId, fromStatus] of [
+      [active.id, "active"],
+      [suspended.id, "suspended"],
+    ] as const) {
+      const audit = await auditFor(grantId);
+      expect(audit.map((a) => a.action)).toEqual(["delegation_grant_expired"]);
+      expect(audit[0]!.actorType).toBe("system");
+      expect(audit[0]!.actorId).toBeNull();
+      // F-B2: the System expiry audit row carries the grant's CONTROLLING org as business context.
+      expect(audit[0]!.organizationId).toBe(CTRL_ORG);
+      expect(audit[0]!.oldValue).toMatchObject({ status: fromStatus });
+      expect(audit[0]!.newValue).toMatchObject({ status: "expired" });
+    }
+    expect(refresh).toHaveBeenCalledTimes(2);
+    // F-B2: the refresh seam receives each EXPIRED grant's identifying payload.
     expect(refresh).toHaveBeenCalledWith({
       delegationGrantId: active.id,
       vendorProfileId: VENDOR_PROFILE,
       representativeOrganizationId: REP_ORG,
     });
+    expect(refresh).toHaveBeenCalledWith({
+      delegationGrantId: suspended.id,
+      vendorProfileId: VENDOR_PROFILE,
+      representativeOrganizationId: REP_ORG,
+    });
 
-    // Idempotent — a terminal grant is never re-expired.
+    // Idempotent — a terminal grant is never re-expired (both states).
     const second = await expireDelegationGrants({
       appendAuditRecord,
       refreshPort: refresh,
       now: () => NOW_AFTER_EXPIRY,
     });
     expect(second.expired).toBe(0);
+  });
+
+  // ── no-resurrection (patch rule 4 — discriminating) ──────────────────────────
+  it("NO-RESURRECTION (patch rule 4): post-terminal delegation requires a NEW grant — new UUID, fresh independent audit chain; the terminal instance is append-only", async () => {
+    // Expire a suspended grant via the System sweep (the patched edge).
+    const old = await seedGrant({ status: "suspended", validFrom: PAST_FROM, validTo: PAST_TO });
+    await expireDelegationGrants({ appendAuditRecord, now: () => NOW_AFTER_EXPIRY });
+    const oldRow = await prisma.delegationGrant.findFirstOrThrow({ where: { id: old.id } });
+    expect(oldRow.status).toBe("expired");
+    const oldAudit = await auditFor(old.id);
+    expect(oldAudit.map((a) => a.action)).toEqual(["delegation_grant_expired"]);
+
+    // Reinstate MUST NOT revive it (rules 2/3) — terminal with respect to the instance.
+    const revive = await inCtrlOrg((tx) =>
+      reinstateDelegationGrant(
+        { delegationGrantId: old.id, updatedAt: oldRow.updatedAt },
+        ctrlCtx,
+        { appendAuditRecord },
+        tx,
+      ),
+    );
+    expect(revive).toMatchObject({
+      ok: false,
+      error: { errorClass: "STATE", errorCode: "identity_delegation_state_invalid" },
+    });
+
+    // Future delegation = a NEW grant (same parties/profile): new identity (new UUID), its OWN
+    // fresh audit trail; the old instance and its chain are untouched (append-only history).
+    const created = await inCtrlOrg((tx) =>
+      createDelegationGrant(
+        {
+          representativeOrganizationId: REP_ORG,
+          vendorProfileId: VENDOR_PROFILE,
+          permissionSet: ["can_submit_quote"],
+          validTo: FUTURE,
+        },
+        ctrlCtx,
+        { appendAuditRecord, configValueQuery, vendorProfileControlReader: control },
+        tx,
+      ),
+    );
+    expect(created.ok).toBe(true);
+    if (!created.ok) throw new Error("unreachable");
+    const newId = created.result.delegationGrantId;
+    expect(newId).not.toBe(old.id); // new UUID — IDs never reused (Invariant #8)
+
+    const newAudit = await auditFor(newId);
+    expect(newAudit.map((a) => a.action)).toEqual(["delegation_grant_issued"]); // fresh chain
+    // The OLD instance's chain gained nothing from the new issuance (independent trails).
+    expect((await auditFor(old.id)).map((a) => a.action)).toEqual(["delegation_grant_expired"]);
+    // And the old row itself is byte-stable terminal (append-only history; no revival).
+    const oldAfter = await prisma.delegationGrant.findFirstOrThrow({ where: { id: old.id } });
+    expect(oldAfter.status).toBe("expired");
+    expect(oldAfter.updatedAt.getTime()).toBe(oldRow.updatedAt.getTime());
   });
 
   // ── 8E end-to-end delegated-authz round trip (refresh immediacy) ───────────────

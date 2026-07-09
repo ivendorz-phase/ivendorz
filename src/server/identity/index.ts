@@ -32,3 +32,34 @@ export {
   handleSetUserAccountStatus,
   type SetUserAccountStatusHandlerDeps,
 } from "./set-user-account-status.route-handler";
+
+// W2-IDN-6.5 — the §C9 Delegation wired surface (Doc-5C §5.1, all 6 contracts) + the §B.6
+// command-dedup composition helpers (the Idempotency-Key replay wrap; also retro-fitted across the
+// 6.1 §C4 compositions above — the RV-0152 close carry).
+export {
+  handleCreateDelegationGrant,
+  type CreateDelegationGrantHandlerDeps,
+} from "./create-delegation-grant.route-handler";
+export {
+  handleReinstateDelegationGrant,
+  handleRevokeDelegationGrant,
+  handleSuspendDelegationGrant,
+  type DelegationGrantLifecycleHandlerDeps,
+} from "./delegation-grant-lifecycle.route-handler";
+export {
+  handleGetDelegationGrant,
+  type GetDelegationGrantHandlerDeps,
+} from "./get-delegation-grant.route-handler";
+export {
+  handleListDelegationGrants,
+  type ListDelegationGrantsHandlerDeps,
+  type ListDelegationGrantsWireInput,
+} from "./list-delegation-grants.route-handler";
+export {
+  dedupScope,
+  findStoredReplay,
+  persistWireReplay,
+  storedToWire,
+  wireToStored,
+  type WireIdempotencyKey,
+} from "./command-dedup";
