@@ -125,13 +125,21 @@ export async function dispatchOutboxEvents(
         skippedBackoff += 1;
         continue;
       }
-      // Forward-only `pending → dispatched`; the trigger blocks any illegal transition. Operational
-      // columns only (status/dispatched_at/attempts/updated_at) — payload columns stay immutable.
-      await tx.outboxEvent.update({
-        where: { id: row.id },
+      // Forward-only `pending → dispatched` under a WRITE-TIME compare-and-set on source status: the
+      // §B6 status-transition dedup guard is enforced at the WRITE, not only at SELECT. A row already
+      // advanced by a concurrent pass between our select and this write matches zero rows here — a
+      // 0-count no-op, never a same-state `dispatched → dispatched` re-advance (which the forward-only
+      // trigger admits as idempotent) that would double-bump `attempts`, overwrite `dispatched_at`
+      // (the archival-retention anchor), or double-count. Operational columns only (status/
+      // dispatched_at/attempts/updated_at) — payload columns stay immutable. Counting the returned
+      // `.count` keeps `dispatched` truthful under a lost race.
+      const advanced = await tx.outboxEvent.updateMany({
+        where: { id: row.id, status: "pending" },
         data: { status: "dispatched", dispatchedAt: now, attempts: { increment: 1 } },
       });
-      dispatched += 1;
+      if (advanced.count === 1) {
+        dispatched += 1;
+      }
     }
 
     return { dispatched, deadLettered, skippedBackoff, reconciledStuck, dlqPolicy };
@@ -165,11 +173,16 @@ export async function archiveDispatchedEvents(
 
     let archived = 0;
     for (const row of toArchive) {
-      await tx.outboxEvent.update({
-        where: { id: row.id },
+      // Compare-and-set on source status (`dispatched`): a row already archived by a concurrent pass
+      // between our select and this write matches zero rows — a 0-count no-op, so `archived` stays
+      // truthful under a lost race (never a same-state `archived → archived` re-count).
+      const advanced = await tx.outboxEvent.updateMany({
+        where: { id: row.id, status: "dispatched" },
         data: { status: "archived" },
       });
-      archived += 1;
+      if (advanced.count === 1) {
+        archived += 1;
+      }
     }
 
     return { archived };

@@ -118,11 +118,6 @@ export function isBackoffElapsed(
   return now.getTime() - updatedAt.getTime() >= backoffDelayMs(backoff, attempts);
 }
 
-/** Does the stored dead-letter policy call for parking (retain, never drop)? §B6 mandates never-drop. */
-export function dlqPolicyParks(dlqPolicy: string): boolean {
-  return dlqPolicy.toLowerCase().includes("park");
-}
-
 function asPositiveInt(value: unknown, key: string): number {
   if (typeof value === "number" && Number.isInteger(value) && value > 0) return value;
   throw new Error(`outbox POLICY: ${key} is not a positive integer: ${JSON.stringify(value)}`);

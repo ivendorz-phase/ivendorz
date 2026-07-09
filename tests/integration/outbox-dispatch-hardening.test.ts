@@ -108,6 +108,23 @@ async function readRow(
     : null;
 }
 
+/**
+ * Poll (yielding via setImmediate, no fixed sleep) until some backend is blocked waiting on a lock —
+ * i.e. the dispatch worker's per-row advance queued behind the CAS-test lock holder. Fails loud (never
+ * vacuously) if nothing blocks within the bound, so a worker that never reached the contended row
+ * surfaces as an error rather than a silent pass.
+ */
+async function waitUntilAnyBackendBlocked(): Promise<void> {
+  for (let i = 0; i < 500; i += 1) {
+    const rows = await prisma.$queryRawUnsafe<Array<{ blocked: number }>>(
+      `SELECT count(*)::int AS blocked FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid)) > 0`,
+    );
+    if ((rows[0]?.blocked ?? 0) > 0) return;
+    await new Promise((resolve) => setImmediate(resolve));
+  }
+  throw new Error("dispatch worker never blocked on the row lock (CAS race not reproduced)");
+}
+
 async function seededNumber(key: string): Promise<number> {
   const row = await prisma.systemConfiguration.findUnique({
     where: { key },
@@ -123,16 +140,19 @@ describe("W2-CORE-2 core.phase2_dispatch_outbox_events.v1 — retry/backoff + de
   });
 
   it("BACKOFF: a recently re-attempted pending row is NOT re-attempted this pass; once its backoff elapses it advances", async () => {
-    // attempts=1, last touched just now → inside the core.outbox_dispatch_backoff delay → left pending.
-    const id = await seedPending({ attempts: 1, updatedAgoMs: 0 });
+    // Seed attempts NEAR the ceiling (max−1): the exponential backoff has saturated at the POLICY CAP
+    // (minutes), so the "not yet elapsed" phase is governed by the cap — no implicit ~2s real-clock
+    // margin that a cold/slow CI could cross (B-2). Value-agnostic: the ceiling is read from the seed.
+    const nearCeiling = (await seededNumber(MAX_ATTEMPTS_KEY)) - 1;
+    const id = await seedPending({ attempts: nearCeiling, updatedAgoMs: 0 });
 
     const first = await dispatchOutboxEvents();
     expect(first.skippedBackoff).toBeGreaterThanOrEqual(1);
     const afterFirst = await readRow(id);
-    expect(afterFirst!.status).toBe("pending"); // not advanced — backoff not elapsed
-    expect(afterFirst!.attempts).toBe(1); // untouched
+    expect(afterFirst!.status).toBe("pending"); // not advanced — cap-governed backoff not elapsed
+    expect(afterFirst!.attempts).toBe(nearCeiling); // untouched
 
-    // Move the last-attempt time well into the past (beyond any plausible per-attempt backoff delay).
+    // Move the last-attempt time well into the past (beyond the backoff cap).
     await prisma.$transaction(async (tx) => {
       await tx.$executeRaw`SELECT set_config('app.is_platform_staff', 'true', true)`;
       await tx.$executeRawUnsafe(
@@ -144,7 +164,7 @@ describe("W2-CORE-2 core.phase2_dispatch_outbox_events.v1 — retry/backoff + de
     await dispatchOutboxEvents();
     const afterSecond = await readRow(id);
     expect(afterSecond!.status).toBe("dispatched"); // backoff elapsed → advanced
-    expect(afterSecond!.attempts).toBe(2); // one more attempt recorded
+    expect(afterSecond!.attempts).toBe(nearCeiling + 1); // one more attempt recorded
   });
 
   it("DEAD-LETTER PARK: a pending row at the max-attempts ceiling is retained (never advanced, never dropped) and counted per core.outbox_dlq_policy", async () => {
@@ -182,6 +202,97 @@ describe("W2-CORE-2 core.phase2_dispatch_outbox_events.v1 — retry/backoff + de
     const after = await readRow(id);
     expect(after!.status).toBe("dispatched");
     expect(after!.attempts).toBe(1);
+  });
+
+  it("LAST-PERMITTED ATTEMPT: a pending row at attempts = max−1 (backoff elapsed) still dispatches — never prematurely parked", async () => {
+    // `attempts = max − 1` is the LAST re-attempt-eligible value (strictly < the dead-letter ceiling).
+    // Backoff moved well past the cap so timing is not the gate — this pins the ceiling boundary itself:
+    // a `lt: max − 1` premature-park off-by-one would park this row (deadLettered) instead of advancing
+    // it (B-3). The at-ceiling side is already pinned by the DEAD-LETTER PARK case.
+    const maxAttempts = await seededNumber(MAX_ATTEMPTS_KEY);
+    const id = await seedPending({ attempts: maxAttempts - 1, updatedAgoMs: 10 * 60_000 });
+
+    await dispatchOutboxEvents();
+
+    const after = await readRow(id);
+    expect(after!.status).toBe("dispatched"); // advanced, NOT parked
+    expect(after!.attempts).toBe(maxAttempts); // the final permitted attempt recorded
+  });
+
+  it("BATCH SIZE caps rows advanced per dispatch pass (oldest-first) and per archive pass", async () => {
+    // Two dispatch-eligible rows made the OLDEST pending rows in the table (createdAgo ≈ 1yr) so the
+    // oldest-first candidate scan puts them at the FRONT deterministically — no other test seeds
+    // year-old pending rows (B-3 batchSize exercise, dispatch worker).
+    const older = await seedPending({ createdAgoMs: 366 * 86_400_000 });
+    const newer = await seedPending({ createdAgoMs: 365 * 86_400_000 });
+
+    const pass1 = await dispatchOutboxEvents({ batchSize: 1 });
+    expect(pass1.dispatched).toBe(1); // the cap advanced exactly one row this pass
+    expect((await readRow(older))!.status).toBe("dispatched"); // oldest advanced first
+    expect((await readRow(newer))!.status).toBe("pending"); // capped out — deferred to a later tick
+
+    const pass2 = await dispatchOutboxEvents({ batchSize: 1 });
+    expect(pass2.dispatched).toBe(1);
+    expect((await readRow(newer))!.status).toBe("dispatched"); // now the oldest pending → advanced
+
+    // Archive worker honours batchSize too: two archive-eligible rows, batchSize:1 leaves one behind.
+    const arcA = await seedDispatched(400 * 86_400_000);
+    const arcB = await seedDispatched(400 * 86_400_000);
+    const arch = await archiveDispatchedEvents({ batchSize: 1 });
+    expect(arch.archived).toBeGreaterThanOrEqual(1);
+    const stillDispatched = [await readRow(arcA), await readRow(arcB)].filter(
+      (r) => r!.status === "dispatched",
+    ).length;
+    expect(stillDispatched).toBeGreaterThanOrEqual(1); // batchSize:1 could not archive both this pass
+  });
+
+  it("CAS: a row advanced by a concurrent pass between selection and advance is NOT re-advanced (attempts/dispatched_at truthful)", async () => {
+    // Deterministic, sleep-free lost-race reproduction (B-1). A lock-holding transaction stands in for
+    // the CONCURRENT pass: it locks the row `FOR UPDATE` so the dispatch worker BLOCKS on its per-row
+    // advance AFTER it has already SELECTed the row as `pending` (a lock-free SELECT is never blocked).
+    // We poll pg_stat_activity until the worker is provably blocked, then the racer advances the row
+    // (its OWN earlier `dispatched_at` + a single attempt bump) and COMMITS, freeing the worker. Under
+    // the write-time compare-and-set the worker's advance re-checks `status = pending`, matches ZERO
+    // rows and is a no-op — `attempts` is not double-bumped and `dispatched_at` is not overwritten.
+    // Under the OLD `update({ where: { id } })` the worker's same-state `dispatched → dispatched` write
+    // WOULD land — attempts → 2, dispatched_at → the worker's later `now` — failing both pins.
+    const id = await seedPending();
+    const racerDispatchedAt = new Date(Date.now() - 60_000); // distinct, earlier than any worker `now`
+
+    let releaseLock!: () => void;
+    const lockReleased = new Promise<void>((resolve) => {
+      releaseLock = resolve;
+    });
+
+    const racer = prisma.$transaction(
+      async (tx) => {
+        await tx.$executeRaw`SELECT set_config('app.is_platform_staff', 'true', true)`;
+        // Hold the row lock so the worker blocks on its ADVANCE (not on its lock-free candidate SELECT).
+        await tx.$executeRawUnsafe(
+          `SELECT id FROM core.outbox_events WHERE id = $1::uuid FOR UPDATE`,
+          id,
+        );
+        await lockReleased;
+        // Racer wins: advance to dispatched with its OWN dispatched_at + a single attempt bump, then
+        // COMMIT (callback return) — releasing the lock the worker's advance is queued behind.
+        await tx.$executeRawUnsafe(
+          `UPDATE core.outbox_events SET status = 'dispatched', dispatched_at = $1::timestamptz, attempts = attempts + 1 WHERE id = $2::uuid`,
+          racerDispatchedAt.toISOString(),
+          id,
+        );
+      },
+      { timeout: 20_000, maxWait: 15_000 },
+    );
+
+    const worker = dispatchOutboxEvents();
+    await waitUntilAnyBackendBlocked(); // no fixed sleep — poll until the worker is blocked on the lock
+    releaseLock();
+    await Promise.all([racer, worker]);
+
+    const after = await readRow(id);
+    expect(after!.status).toBe("dispatched");
+    expect(after!.attempts).toBe(1); // racer's single bump — NOT 2 (old non-CAS write double-bumps)
+    expect(after!.dispatchedAt!.getTime()).toBe(racerDispatchedAt.getTime()); // NOT overwritten to `now`
   });
 });
 

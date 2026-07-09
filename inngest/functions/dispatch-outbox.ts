@@ -12,8 +12,10 @@ import { inngest } from "../client";
 //                                                    letter park, reconciliation; all POLICY-bounded).
 //   2. `core.phase2_archive_dispatched_events.v1` — `dispatched → archived` (retention-bounded).
 // Distinct steps ⇒ dispatch and archival are distinctly observed (Doc-8B §7.2). Each step is a single
-// durable, retriable Inngest step; the workers are idempotent + forward-only, so overlapping ticks and
-// step retries advance nothing twice.
+// durable, retriable Inngest step; the workers advance each row under a WRITE-TIME compare-and-set on
+// source status (a lost race is a 0-count no-op, not a same-state re-advance), and this function runs
+// at `concurrency: { limit: 1 }` — so overlapping ticks and step retries advance nothing twice and the
+// returned counters stay truthful.
 //
 // TRANSPORT ONLY (§B6 Events-Produced: none): this job pumps the outbox lifecycle; it COINS NO domain
 // event (Doc-2 §8 / Doc-4J / Doc-4L untouched). EMITTER-AGNOSTIC (R-a / ESC-W1-OUTBOX): it drains
@@ -36,7 +38,15 @@ export const OUTBOX_DRAIN_REQUESTED = "core/outbox.drain.requested" as const;
 const OUTBOX_DISPATCH_CRON = "* * * * *" as const; // every minute
 
 export const dispatchOutbox = inngest.createFunction(
-  { id: "core-dispatch-outbox", name: "M0 outbox event pump (dispatch + archive)" },
+  {
+    id: "core-dispatch-outbox",
+    name: "M0 outbox event pump (dispatch + archive)",
+    // Defense-in-depth: the cron tick and the `core/outbox.drain.requested` nudge can co-fire, so
+    // serialize runs to at most one at a time. Correctness does NOT rest on this cap — the workers
+    // are race-safe via a write-time compare-and-set on source status (drain-outbox.service.ts); the
+    // limit is belt-and-suspenders that also spares the DB redundant overlapping scans.
+    concurrency: { limit: 1 },
+  },
   [{ cron: OUTBOX_DISPATCH_CRON }, { event: OUTBOX_DRAIN_REQUESTED }],
   async ({ step }) => {
     // Step 1 — the §B6 dispatch worker (pending → dispatched, POLICY-bounded retry/backoff/DLQ + recon).
