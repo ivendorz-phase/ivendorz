@@ -3,12 +3,11 @@
 // `identity.users` directly, and never receive auth-mechanism fields (DC-4). Reads are unaudited
 // (Doc-4C §C3: `Audit-Required: no`) and emit no events.
 //
-// DISPLAY_NAME OMISSION (RV-0148 MINOR-4): the frozen §C3 projection (PassB line 117) lists
-// `display_name`, but no realized column carries it — Doc-2 §10.2 and Doc-6C `identity.users` both lack
-// it, so there is nothing to project (honest omission, not a coined column). This intra-corpus
-// divergence is registered as `[ESC-IDN-DISPLAYNAME]` (`esc_registry.md`), which GATES W2-IDN-6.1
-// (the `update_user_profile` wire that carries `display_name` as a request field). Resolution is
-// Board-owned (realize the column, or editorially drop the field from §C3/§C4) — never resolved here.
+// DISPLAY_NAME PROJECTION COMPLETE (W2-IDN-6.1): the frozen §C3 projection (PassB:117)
+// `{ user_id, status, display_name, preferences_summary }` is now realized in full — the
+// `[ESC-IDN-DISPLAYNAME]` gate (RV-0148 MINOR-4) was RESOLVED by the owner's Option A ruling
+// (2026-07-09): `Doc-2_Patch_v1.0.6` added the `identity.users.display_name` column to the data
+// corpus and `Doc-6C_Patch_v1.0.2` realized its DDL (the W2-IDN-6.1 forward-only migration).
 
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import { getUserRow } from "../../infrastructure/data/authz.repository";
@@ -23,6 +22,11 @@ export async function getUser(userId: string, db: DbExecutor = prisma): Promise<
   if (row === null) return { found: false };
   return {
     found: true,
-    user: { userId: row.userId, status: row.status, preferencesSummary: row.preferencesSummary },
+    user: {
+      userId: row.userId,
+      status: row.status,
+      displayName: row.displayName,
+      preferencesSummary: row.preferencesSummary,
+    },
   };
 }

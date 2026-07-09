@@ -129,3 +129,24 @@ export function errorResponse(error: WireError): WireResponse<never> {
 export function authChallengeResponse(): WireResponse<never> {
   return { status: 401, body: { reference_id: newReferenceId() } };
 }
+
+/**
+ * Parse the `If-Match` optimistic-concurrency token (Doc-5C §4.3 realization of Doc-5A §9:
+ * "Updates declaring `Concurrency: optimistic` carry `If-Match` with `updated_at`; a stale token is
+ * CONFLICT → 409"). The token VALUE is the entity's `updated_at` timestamp (ISO-8601); surrounding
+ * ETag quote syntax / a weak-validator prefix are tolerated transport dressing (HTTP-standard header,
+ * outside the Doc-5A application-header registry — Doc-5A §4.0 posture, same as `Retry-After`).
+ *
+ * Returns an INVALID Date (`NaN` time) when the header is absent or unparseable — the owning
+ * command's SYNTAX validation rejects it as the single `updated_at`-required failure path
+ * (`VALIDATION` → 400); no parallel error shape is minted at the transport edge.
+ */
+export function parseIfMatchTimestamp(request: Request): Date {
+  const raw = request.headers.get("if-match");
+  if (raw === null) return new Date(Number.NaN);
+  const unwrapped = raw
+    .trim()
+    .replace(/^W\//i, "")
+    .replace(/^"(.*)"$/, "$1");
+  return new Date(unwrapped);
+}

@@ -37,6 +37,28 @@ import {
   type ActivateMembershipDeps,
 } from "../application/commands/activate-membership.command";
 import { provisionIdentityForAuthUser } from "../application/commands/provision-identity.command";
+import {
+  updateUserProfileCommand,
+  DISPLAY_NAME_MAX_LENGTH,
+  type UpdateUserProfileContext,
+} from "../application/commands/update-user-profile.command";
+import {
+  updateUser2faSettingsCommand,
+  type UpdateUser2faSettingsContext,
+  type UpdateUser2faSettingsDeps,
+} from "../application/commands/update-user-2fa-settings.command";
+import {
+  deactivateOwnAccountCommand,
+  type DeactivateOwnAccountContext,
+  type DeactivateOwnAccountDeps,
+} from "../application/commands/deactivate-own-account.command";
+import {
+  setUserAccountStatusCommand,
+  validateSetUserAccountStatusInput,
+  SET_USER_ACCOUNT_STATUS_SLUG,
+  type SetUserAccountStatusContext,
+  type SetUserAccountStatusDeps,
+} from "../application/commands/set-user-account-status.command";
 import { getBuyerProfile as getBuyerProfileQuery } from "../application/queries/get-buyer-profile.query";
 import {
   upsertBuyerProfileCommand,
@@ -57,6 +79,8 @@ import type {
   CheckPermissionResult,
   CreateDelegationGrantInput,
   CreateDelegationGrantOutcome,
+  DeactivateOwnAccountInput,
+  DeactivateOwnAccountOutcome,
   DelegationGrantLifecycleInput,
   DelegationGrantLifecycleOutcome,
   ExpireDelegationGrantsResult,
@@ -68,6 +92,12 @@ import type {
   ProvisionIdentityInput,
   ProvisionIdentityResult,
   ReinstateDelegationGrantInput,
+  SetUserAccountStatusInput,
+  SetUserAccountStatusOutcome,
+  UpdateUser2faSettingsInput,
+  UpdateUser2faSettingsOutcome,
+  UpdateUserProfileInput,
+  UpdateUserProfileOutcome,
   UpsertBuyerProfileInput,
   UpsertBuyerProfileOutcome,
 } from "./types";
@@ -299,6 +329,93 @@ export type ActivateMembership = (
 ) => Promise<ActivateMembershipResult>;
 export const activateMembership: ActivateMembership = (input, deps) =>
   activateMembershipCommand(input, deps);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §C4 — User/Account WIRED write surface (W2-IDN-6.1). The four Doc-5C §4.1 user contracts on their
+// frozen routes (PATCH item + 3 named POST commands — never PUT). Actor scope: self + Admin-state;
+// NO active-org authorization on this sub-domain (Doc-5C §4.5). User lifecycle edges are consumed
+// from the IDN-5 `user.state-machine.ts` (the single authority — never re-derived). Three of the
+// four are AUDITED atomic writes (D7 pattern; M0 `appendAuditRecord` injected by contract TYPE);
+// `update_user_profile` is UNAUDITED BY FROZEN DECLARATION (Doc-4C §C4 PassB:183 "Audit: no").
+// Zero §8 events ([DC-1]). Context/deps shapes re-exported for the composition edge (contracts-only).
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type {
+  UpdateUserProfileContext,
+  UpdateUser2faSettingsContext,
+  UpdateUser2faSettingsDeps,
+  DeactivateOwnAccountContext,
+  DeactivateOwnAccountDeps,
+  SetUserAccountStatusContext,
+  SetUserAccountStatusDeps,
+};
+
+// The realized `display_name` wire bound ([realization convention] — Doc-4C §C4 `bounded`,
+// Doc-2_Patch_v1.0.6 §2) + the frozen DC-3 admin slug binding + the exported SYNTAX validator
+// (composition-edge category ordering), on the public face so the composition edge and tests bind
+// the SAME values (never re-declared literals).
+export { DISPLAY_NAME_MAX_LENGTH, SET_USER_ACCOUNT_STATUS_SLUG, validateSetUserAccountStatusInput };
+
+/** `identity.update_user_profile.v1` (Doc-4C §C4; Doc-5C §4.1 row 1 — `PATCH /identity/users/{id}`).
+ *  Self-scope partial update (display_name · phone · preferences); optimistic on `updated_at`
+ *  (If-Match). UNAUDITED — frozen §C4 `Audit: no`. Invoke with the self-context executor
+ *  (`withUserSelfContext` — `app.user_id` pinned). */
+export type UpdateUserProfile = (
+  input: UpdateUserProfileInput,
+  ctx: UpdateUserProfileContext,
+  db?: DbExecutor,
+) => Promise<UpdateUserProfileOutcome>;
+export const updateUserProfile: UpdateUserProfile = (input, ctx, db) =>
+  updateUserProfileCommand(input, ctx, db);
+
+/** `identity.update_user_2fa_settings.v1` (Doc-4C §C4; Doc-5C §4.1 row 2 — named POST command).
+ *  Self-scope 2FA SETTINGS toggle (DC-4 — never the challenge mechanism). AUDITED atomically
+ *  ([ESC-IDN-AUDIT] interim pointer). MUST be invoked INSIDE `withActiveOrg` — the ADR-021 tenant
+ *  audit leg requires the server-resolved org anchor (audit context, not authorization). */
+export type UpdateUser2faSettings = (
+  input: UpdateUser2faSettingsInput,
+  ctx: UpdateUser2faSettingsContext,
+  deps: UpdateUser2faSettingsDeps,
+  db?: DbExecutor,
+) => Promise<UpdateUser2faSettingsOutcome>;
+export const updateUser2faSettings: UpdateUser2faSettings = (input, ctx, deps, db) =>
+  updateUser2faSettingsCommand(input, ctx, deps, db);
+
+/** `identity.deactivate_own_account.v1` (Doc-4C §C4; Doc-5C §4.1 row 3 — named POST command).
+ *  Depart + anonymize (§14.3 compliance-redaction; irreversible; `soft_deleted` terminal). Last
+ *  Owner Protection enforced per org in ONE locking transaction (RV-0150 T6-F1). Opens its OWN
+ *  transaction under the frozen Doc-6C §6.2a DELETE-anonymize staff-GUC leg; audit rows stay
+ *  USER-attributed. AUDITED atomically ([ESC-IDN-AUDIT] — §9 redaction family pointer). */
+export type DeactivateOwnAccount = (
+  input: DeactivateOwnAccountInput,
+  ctx: DeactivateOwnAccountContext,
+  deps: DeactivateOwnAccountDeps,
+) => Promise<DeactivateOwnAccountOutcome>;
+export const deactivateOwnAccount: DeactivateOwnAccount = (input, ctx, deps) =>
+  deactivateOwnAccountCommand(input, ctx, deps);
+
+/** `identity.set_user_account_status.v1` (Doc-4C §C4; Doc-5C §4.1 row 4 — named POST command).
+ *  Admin platform governance (21.6; NO org context): `active ⇄ suspended` on the IDN-5 machine.
+ *  Affirmative leg = the server-derived platform-staff basis (DC-3 interim; fail-closed); the
+ *  non-staff deny leg is DELEGATED to `check_permission` at the composition edge (staff-space
+ *  never via org roles — RV-0147 B8). AUDITED atomically, ADMIN-attributed (never System). */
+export type SetUserAccountStatus = (
+  input: SetUserAccountStatusInput,
+  ctx: SetUserAccountStatusContext,
+  deps: SetUserAccountStatusDeps,
+) => Promise<SetUserAccountStatusOutcome>;
+export const setUserAccountStatus: SetUserAccountStatus = (input, ctx, deps) =>
+  setUserAccountStatusCommand(input, ctx, deps);
+
+// The M1 WIRE FACES for the §C4 user commands (outcome → Doc-5A envelope + §6.2 status) — same
+// One-Owner placement as the buyer-profile mappers (M1 owns how its writes become HTTP).
+export { mapUpdateUserProfile, userAccountInvalidInput } from "../api/update-user-profile.handler";
+export { mapUpdateUser2faSettings } from "../api/update-user-2fa-settings.handler";
+export { mapDeactivateOwnAccount } from "../api/deactivate-own-account.handler";
+export {
+  mapSetUserAccountStatus,
+  forbiddenSetUserAccountStatus,
+} from "../api/set-user-account-status.handler";
 
 // The pure lifecycle authority (state machines) — the SINGLE source of legal-edge truth (Doc-2 §5.1/§5.2 +
 // Doc-4C §C4/§C5/§C6). Re-exported so the W2-IDN-6.2 wired commands + consuming callers consult the SAME matrix and

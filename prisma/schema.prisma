@@ -167,6 +167,9 @@ model User {
   twoFaJsonb       Json?      @map("two_fa_jsonb") @db.JsonB
   status           UserStatus @default(active)
   preferencesJsonb Json?      @map("preferences_jsonb") @db.JsonB
+  // [Doc-2 §10.2 per Doc-2_Patch_v1.0.6 / Doc-6C_Patch_v1.0.2] optional user-chosen presentation
+  // name; personal data (anonymized on departure with the §C4 set); never an identifier.
+  displayName      String?    @map("display_name")
   createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz
   updatedAt        DateTime   @updatedAt @map("updated_at") @db.Timestamptz
   createdBy        String?    @map("created_by") @db.Uuid

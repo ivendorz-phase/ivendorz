@@ -97,3 +97,54 @@ export const MembershipAuditAction = {
 
 export type MembershipAuditActionToken =
   (typeof MembershipAuditAction)[keyof typeof MembershipAuditAction];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// User-account audit actions (W2-IDN-6.1 — the §C4 wired user commands). Doc-2 §9 enumerates NO
+// "User" domain, so ALL THREE audited §C4 user actions bind interim BY POINTER on the frozen
+// `[ESC-IDN-AUDIT]` channel — exactly as Doc-4C §C4 itself directs per contract (PassB:197/211/225)
+// and §C12.3 confirms ("user-account suspend/reinstate, anonymization, 2FA-settings change" are the
+// carried coverage). NOTHING is invented: each token below serializes a Doc-4C-authored interim
+// binding to its NEAREST Doc-2 §9 family; the channel's future §9 additive ratifies or renames them
+// (a rename touches Doc-4C + this constant, never Doc-2). Named CONSTANTS — never literals (Board
+// ruling 2026-06-30). NOTE: `update_user_profile` is NOT here — frozen Doc-4C §C4 declares it
+// `Audit: no` (PassB:183, "profile/preference edits are operational, not a Doc-2 §9 MUST-audit
+// action") and §C12.3's coverage list omits it; auditing it would require inventing an action.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The audit `entity_type` for `identity.users` rows (Doc-4C §C4 Mutation-Scope `identity.users`). */
+export const USER_ENTITY_TYPE = "user" as const;
+
+/**
+ * Canonical user-account audit actions (the three AUDITED §C4 user commands):
+ *   TWO_FA_SETTINGS_UPDATED → `update_user_2fa_settings` (Doc-4C §C4: "account-security setting
+ *               change — [ESC-IDN-AUDIT] (no enumerated Doc-2 §9 user-2FA-settings action; interim
+ *               bind nearest by pointer)"). Nearest §9 family: Domain Platform's security-sensitive
+ *               operations family ("Super Admin access (flagged)" / "service-role sensitive
+ *               operations") — the same Platform family §C4 itself names for the user-status action.
+ *               Attribution: User (self).
+ *   DEACTIVATED → `deactivate_own_account` (Doc-4C §C4: "anonymization follows the §14.3 /
+ *               Architecture §14.3 compliance-redaction model; [ESC-IDN-AUDIT] (no enumerated §9
+ *               user-anonymization action; interim nearest by pointer)"). Nearest §9 family: the §9
+ *               preamble redaction rule ("Redaction of sensitive fields creates a new audit event")
+ *               + Domain Platform "audit redaction (event)". Attribution: User (self). The audit
+ *               old/new payload carries STATUS + anonymized FIELD NAMES ONLY — never the personal
+ *               values (recording them would defeat the redaction the action performs).
+ *   SUSPENDED / REINSTATED → `set_user_account_status` (Doc-4C §C4 AUTHORS the pointer verbatim:
+ *               "Domain Platform ('Super Admin access (flagged)' / 'service-role sensitive
+ *               operations', §9) by pointer — [ESC-IDN-AUDIT] (no separately enumerated user-status
+ *               action)"). Attribution: Admin. Two distinct tokens so the immutable ledger records
+ *               what actually happened (suspend ≠ reinstate — the delegation-token precedent).
+ */
+export const UserAccountAuditAction = {
+  /** `[ESC-IDN-AUDIT]` — nearest §9 Platform security-sensitive family (User attribution). */
+  TWO_FA_SETTINGS_UPDATED: "user_2fa_settings_updated",
+  /** `[ESC-IDN-AUDIT]` — §9 preamble redaction rule / Platform "audit redaction (event)" family. */
+  DEACTIVATED: "user_account_deactivated",
+  /** `[ESC-IDN-AUDIT]` — §9 Domain Platform pointer authored in Doc-4C §C4 (Admin attribution). */
+  SUSPENDED: "user_account_suspended",
+  /** `[ESC-IDN-AUDIT]` — §9 Domain Platform pointer authored in Doc-4C §C4 (Admin attribution). */
+  REINSTATED: "user_account_reinstated",
+} as const;
+
+export type UserAccountAuditActionToken =
+  (typeof UserAccountAuditAction)[keyof typeof UserAccountAuditAction];

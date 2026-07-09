@@ -577,8 +577,19 @@ describe("identity §C3 auth-root reads (get_user / get_organization / get_membe
   it("get_user returns the minimized projection (never an auth-mechanism field)", async () => {
     const r = await getUser(USER_A);
     expect(r).toMatchObject({ found: true, user: { userId: USER_A, status: "active" } });
-    // No auth fields leak in the DTO shape.
-    if (r.found) expect(Object.keys(r.user)).toEqual(["userId", "status", "preferencesSummary"]);
+    // No auth fields leak in the DTO shape. The pinned key set is the FROZEN §C3 projection
+    // (PassB:117) `{ user_id, status, display_name, preferences_summary }` — COMPLETE as of
+    // W2-IDN-6.1: `displayName` joined per the owner's Option A ruling (`Doc-2_Patch_v1.0.6` /
+    // `Doc-6C_Patch_v1.0.2`; `ESC-IDN-DISPLAYNAME` resolved). The prior pin (no displayName) was
+    // the RV-0148 interim omission — updating it here is ruling-realization, not a regression.
+    if (r.found) {
+      expect(Object.keys(r.user)).toEqual([
+        "userId",
+        "status",
+        "displayName",
+        "preferencesSummary",
+      ]);
+    }
   });
 
   it("get_user collapses a non-existent user to found:false", async () => {

@@ -92,15 +92,18 @@ export type UpsertBuyerProfileOutcome =
 // never `identity.*` tables directly and never a shadow authorization check (Doc-4C §C3 / §B.11).
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** `identity.get_user.v1` projection (Doc-4C §C3) — personal-data-minimized (Doc-2 §3.2); never an
- *  auth-mechanism field (DC-4). `preferencesSummary` is the opaque `preferences_jsonb` (shape owned
- *  upstream). The frozen §C3 projection lists `display_name`, but no realized column carries it
- *  (Doc-2 §10.2 / Doc-6C `identity.users` have none) — omitted here under handle `[ESC-IDN-DISPLAYNAME]`
- *  (RV-0148 MINOR-4; `esc_registry.md`), which GATES the W2-IDN-6.1 `update_user_profile` wire. */
+/** `identity.get_user.v1` projection (Doc-4C §C3 PassB:117) — personal-data-minimized (Doc-2 §3.2);
+ *  never an auth-mechanism field (DC-4). `preferencesSummary` is the opaque `preferences_jsonb`
+ *  (shape owned upstream). `displayName` completes the frozen §C3 projection
+ *  `{ user_id, status, display_name, preferences_summary }` — realized at W2-IDN-6.1 per the
+ *  `Doc-2_Patch_v1.0.6` / `Doc-6C_Patch_v1.0.2` pair (`ESC-IDN-DISPLAYNAME` ✅ RESOLVED, owner
+ *  Option A 2026-07-09); nullable — absence is the legitimate state. */
 export interface UserView {
   userId: string;
   /** User lifecycle status (Doc-2 §5 / `user_status`): `active` | `suspended` | `soft_deleted`. */
   status: string;
+  /** Optional user-chosen presentation name (Doc-2 §10.2 per Patch v1.0.6); never an identifier. */
+  displayName: string | null;
   preferencesSummary: unknown;
 }
 
@@ -329,6 +332,148 @@ export type MembershipStateValue = "invited" | "pending" | "active" | "suspended
 
 /** The `user_status` value set (Doc-2 §10.2 status enum / `UserStatus`, Doc-6C §3.1). */
 export type UserStatusValue = "active" | "suspended" | "soft_deleted";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §C4 — User/Account WIRED write surface (W2-IDN-6.1). The four Doc-5C §4.1 user contracts:
+//   `update_user_profile.v1`  PATCH /identity/users/{id}                          · User (self) · UNAUDITED (§C4 Audit: no)
+//   `update_user_2fa_settings.v1` POST …/{id}/update_user_2fa_settings            · User (self) · audited [ESC-IDN-AUDIT]
+//   `deactivate_own_account.v1`   POST …/{id}/deactivate_own_account              · User (self) · audited [ESC-IDN-AUDIT]
+//   `set_user_account_status.v1`  POST …/{id}/set_user_account_status             · Admin       · audited [ESC-IDN-AUDIT]
+// Actor scope: self + Admin-state; NO active-org on this sub-domain (Doc-5C §4.5 — self ops act on
+// the platform-owned `users` record; Admin governance carries no org context). The target user id
+// is the PATH `{id}` (Doc-5C §4.1), server-checked against the session subject for self ops —
+// never a trusted body field. `updatedAt` is the optimistic-concurrency token, carried on the wire
+// as the `If-Match` header (Doc-5C §4.3). Field names/semantics owned by Doc-4C §C4 (verbatim);
+// bound by pointer, never re-authored. Events: none ([DC-1]).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Error outcome of a §C4 user-account command (Doc-4C §C4 error registers; classes per Doc-5A §6.2). */
+export interface UserAccountError {
+  /** Doc-5A §6.2 class → HTTP status (VALIDATION→400 · AUTHORIZATION→403 · NOT_FOUND→404 ·
+   *  CONFLICT→409 · BUSINESS→422). Only classes the §C4 registers author are raised. */
+  errorClass: "VALIDATION" | "AUTHORIZATION" | "NOT_FOUND" | "CONFLICT" | "BUSINESS";
+  /** The Doc-4C §C4 `identity_user_*` register code (frozen; never coined here). */
+  errorCode: string;
+  /** Human-safe, non-leaking message. */
+  message: string;
+}
+
+/**
+ * Input to `identity.update_user_profile.v1` (Doc-4C §C4 PassB:174). Self-scope — the target user is
+ * the SERVER-RESOLVED session subject (never client input; the path `{id}` is checked against it
+ * upstream). Absent optional field = stored value unchanged (Doc-4A §9.2 update-command semantics);
+ * explicit null is NOT admitted (the fields are `optional`, not `nullable` — Doc-4A §9.2).
+ */
+export interface UpdateUserProfileInput {
+  /** The path `{id}` (Doc-5A §5.4). SYNTAX-validated (uuid), then server-checked against the
+   *  session subject — a mismatch collapses to the §6.6 non-disclosure NOT_FOUND (§C4: "self-only —
+   *  never accept a target `user_id` ≠ session user"). */
+  targetUserId: string;
+  /** `display_name : string : optional : bounded` (§C4 PassB:174; bound per Doc-4A conventions —
+   *  the realized bound is `DISPLAY_NAME_MAX_LENGTH`). Presentation-only; never an identifier. */
+  displayName?: string;
+  /** `phone : string : optional : E.164` (§C4 — uniqueness not enforced here; auth-managed
+   *  identifiers are infra, DC-4). */
+  phone?: string;
+  /** `preferences : object : optional` — `preferences_jsonb` (Doc-2 §10.2). The internal shape is
+   *  owned upstream and carried opaque (no frozen preference-key catalog exists to allowlist —
+   *  the D7 jsonb posture); must be a plain JSON object. */
+  preferences?: unknown;
+  /** `updated_at : timestamp : required` — optimistic-concurrency token (§B.2), from `If-Match`. */
+  updatedAt: Date;
+}
+
+/** Result of a successful `update_user_profile` (Doc-4C §C4 response: `user_id` + `updated_at`). */
+export interface UpdateUserProfileResult {
+  userId: string;
+  /** The resulting `updated_at` (the new optimistic-concurrency token). */
+  updatedAt: Date;
+}
+
+/** Outcome of `identity.update_user_profile.v1`. */
+export type UpdateUserProfileOutcome =
+  { ok: true; result: UpdateUserProfileResult } | { ok: false; error: UserAccountError };
+
+/**
+ * Input to `identity.update_user_2fa_settings.v1` (Doc-4C §C4 PassB:192) — 2FA SETTINGS only; the
+ * challenge/verification mechanism is Supabase Auth infrastructure (DC-4) and is not represented.
+ */
+export interface UpdateUser2faSettingsInput {
+  /** The path `{id}` (Doc-5A §5.4); self-checked — mismatch collapses (§6.6 NOT_FOUND). */
+  targetUserId: string;
+  /** `two_fa_enabled : boolean : required`. */
+  twoFaEnabled: boolean;
+  /** `recovery_method : enum : optional` — the frozen §C4 declares an enum but names NO source
+   *  pointer, and no recovery-method value set exists anywhere in the corpus (checked Doc-2 §10.2
+   *  `two_fa`). Per Doc-4A §9.4 a needed-but-missing enum is ESCALATED, never coined — so a supplied
+   *  value FAILS CLOSED (VALIDATION) until an additive registers the value set (the RV-0148 MAJOR-2
+   *  `resource_scope_unsupported` fail-closed precedent). Carried in the Completion Report. */
+  recoveryMethod?: string;
+  /** `updated_at : timestamp : required` — optimistic-concurrency token, from `If-Match`. */
+  updatedAt: Date;
+}
+
+/** Result of a successful `update_user_2fa_settings` (Doc-4C §C4 response). */
+export interface UpdateUser2faSettingsResult {
+  userId: string;
+  twoFaEnabled: boolean;
+  updatedAt: Date;
+}
+
+/** Outcome of `identity.update_user_2fa_settings.v1`. */
+export type UpdateUser2faSettingsOutcome =
+  { ok: true; result: UpdateUser2faSettingsResult } | { ok: false; error: UserAccountError };
+
+/**
+ * Input to `identity.deactivate_own_account.v1` (Doc-4C §C4 PassB:205) — depart + anonymize
+ * (the §14.3 compliance-redaction path; irreversible).
+ */
+export interface DeactivateOwnAccountInput {
+  /** The path `{id}` (Doc-5A §5.4); self-checked — mismatch collapses (§6.6 NOT_FOUND). */
+  targetUserId: string;
+  /** `confirmation : boolean : required : explicit departure confirmation` — must be `true`. */
+  confirmation: boolean;
+  /** `updated_at : timestamp : required` — optimistic-concurrency token, from `If-Match`. */
+  updatedAt: Date;
+}
+
+/** Result of a successful `deactivate_own_account` (Doc-4C §C4 response: `user_id` + `status`). */
+export interface DeactivateOwnAccountResult {
+  userId: string;
+  /** Always `soft_deleted` on success (§C4: `status : enum : always` (= soft-deleted)). */
+  status: UserStatusValue;
+}
+
+/** Outcome of `identity.deactivate_own_account.v1`. */
+export type DeactivateOwnAccountOutcome =
+  { ok: true; result: DeactivateOwnAccountResult } | { ok: false; error: UserAccountError };
+
+/**
+ * Input to `identity.set_user_account_status.v1` (Doc-4C §C4 PassB:219) — Admin platform governance
+ * (21.6; no active-org context, §5.6). The target `user_id : uuid : required` is realized as the
+ * path `{id}` (Doc-5C §4.1 input placement).
+ */
+export interface SetUserAccountStatusInput {
+  /** The target user (`user_id : uuid : required` — the path `{id}`). */
+  targetUserId: string;
+  /** `target_status : enum(suspended|active) : required` (the §C4 `active ⇄ suspended` machine). */
+  targetStatus: "suspended" | "active";
+  /** `reason : string : required : structured admin reason` — recorded in the audit (BUSINESS). */
+  reason: string;
+  /** `updated_at : timestamp : required` — optimistic-concurrency token, from `If-Match`. */
+  updatedAt: Date;
+}
+
+/** Result of a successful `set_user_account_status` (Doc-4C §C4 response). */
+export interface SetUserAccountStatusResult {
+  userId: string;
+  status: UserStatusValue;
+  updatedAt: Date;
+}
+
+/** Outcome of `identity.set_user_account_status.v1`. */
+export type SetUserAccountStatusOutcome =
+  { ok: true; result: SetUserAccountStatusResult } | { ok: false; error: UserAccountError };
 
 /** Input to the System `identity.activate_membership.v1` worker (Doc-4C §C6). The target `pending`
  *  membership id (from the DC-4 verification-complete signal); System actor — no org/user context input. */

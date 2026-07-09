@@ -23,21 +23,33 @@ export interface ActiveDelegationGrantRow {
   permissionSet: string[];
 }
 
-/** `identity.get_user.v1` read (Doc-4C §C3) — the personal-data-minimized user projection (Doc-2 §3.2);
- *  auth-mechanism fields (`auth_user_id`/`two_fa_jsonb`, and never a password/2FA secret) are NEVER
- *  selected (DC-4). Only the realized columns are projected — Doc-6C's `identity.users` has no
- *  `display_name`; `preferencesSummary` is the opaque `preferences_jsonb` (shape owned upstream).
+/** `identity.get_user.v1` read (Doc-4C §C3 PassB:117) — the personal-data-minimized user projection
+ *  `{ user_id, status, display_name, preferences_summary }` (Doc-2 §3.2); auth-mechanism fields
+ *  (`auth_user_id`/`two_fa_jsonb`, and never a password/2FA secret) are NEVER selected (DC-4).
+ *  `display_name` is the W2-IDN-6.1 projection completion per `Doc-2_Patch_v1.0.6` /
+ *  `Doc-6C_Patch_v1.0.2` (`ESC-IDN-DISPLAYNAME` ✅ RESOLVED — owner Option A, 2026-07-09);
+ *  `preferencesSummary` is the opaque `preferences_jsonb` (shape owned upstream).
  *  `null` ⇒ not found / not disclosable. */
 export async function getUserRow(
   userId: string,
   db: DbExecutor = prisma,
-): Promise<{ userId: string; status: string; preferencesSummary: unknown } | null> {
+): Promise<{
+  userId: string;
+  status: string;
+  displayName: string | null;
+  preferencesSummary: unknown;
+} | null> {
   const row = await db.user.findFirst({
     where: { id: userId, deletedAt: null },
-    select: { id: true, status: true, preferencesJsonb: true },
+    select: { id: true, status: true, displayName: true, preferencesJsonb: true },
   });
   if (row === null) return null;
-  return { userId: row.id, status: row.status, preferencesSummary: row.preferencesJsonb };
+  return {
+    userId: row.id,
+    status: row.status,
+    displayName: row.displayName,
+    preferencesSummary: row.preferencesJsonb,
+  };
 }
 
 /** `identity.get_organization.v1` read (Doc-4C §C3) — the org projection (Doc-2 §10.2). `null` ⇒ not
