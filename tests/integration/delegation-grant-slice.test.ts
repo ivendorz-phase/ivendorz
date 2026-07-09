@@ -443,6 +443,120 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
     ).toBe(0);
   });
 
+  it("CREATE empty permission_set (F-B4): an empty set → VALIDATION via the policy `empty` branch (no write)", async () => {
+    const outcome = await inCtrlOrg((tx) =>
+      createDelegationGrant(
+        {
+          representativeOrganizationId: REP_ORG,
+          vendorProfileId: VENDOR_PROFILE,
+          permissionSet: [],
+          validTo: FUTURE,
+        },
+        ctrlCtx,
+        { appendAuditRecord, configValueQuery, vendorProfileControlReader: control },
+        tx,
+      ),
+    );
+    // An empty array passes SYNTAX (it IS an array) and reaches `validatePermissionSetForIssue`, whose
+    // `empty` branch (delegation-grant.policy.ts:56-58) returns VALIDATION / identity_delegation_invalid_input
+    // with the DISTINCT "permission_set is required." message. Deleting that branch would let the empty set
+    // fall through the zero-iteration loop to ok:true → an ISSUED grant; this assertion catches that.
+    expect(outcome).toMatchObject({
+      ok: false,
+      error: {
+        errorClass: "VALIDATION",
+        errorCode: "identity_delegation_invalid_input",
+        message: expect.stringMatching(/permission_set is required/),
+      },
+    });
+    expect(
+      await prisma.delegationGrant.count({ where: { controllingOrganizationId: CTRL_ORG } }),
+    ).toBe(0);
+  });
+
+  it("CREATE staff-space firewall (F-B1a): a staff-space slug BOUND to a member's role is STILL rejected (both firewall layers)", async () => {
+    // Bind the staff-space slug `staff_can_ban` (seeded by the catalog migration) to an ACTIVE CTRL_ORG
+    // member's role. `role_permissions` carries NO space CHECK, so the DB admits this (RV-0147 B8 — that
+    // reachability is exactly the point). With the binding present, deleting BOTH firewall layers — the
+    // policy `staff_space` branch AND the repository's `space='tenant'` held-set filter — would let
+    // `staff_can_ban` enter the held set and pass the ⊆-held gate → an ISSUED grant. This test asserts the
+    // grant is STILL rejected and never written, so the both-layers regression fails here.
+    const staffPermId = await slugId("staff_can_ban");
+    await prisma.rolePermission.create({
+      data: { roleId: CTRL_ROLE, permissionId: staffPermId, organizationId: CTRL_ORG },
+    });
+    try {
+      const outcome = await inCtrlOrg((tx) =>
+        createDelegationGrant(
+          {
+            representativeOrganizationId: REP_ORG,
+            vendorProfileId: VENDOR_PROFILE,
+            permissionSet: ["staff_can_ban"],
+            validTo: FUTURE,
+          },
+          ctrlCtx,
+          { appendAuditRecord, configValueQuery, vendorProfileControlReader: control },
+          tx,
+        ),
+      );
+      expect(outcome).toMatchObject({
+        ok: false,
+        error: { errorClass: "AUTHORIZATION", errorCode: "identity_delegation_forbidden" },
+      });
+      expect(
+        await prisma.delegationGrant.count({ where: { controllingOrganizationId: CTRL_ORG } }),
+      ).toBe(0);
+    } finally {
+      // Clean up the binding (the suite teardown idiom) — never leak the staff slug into a sibling test's
+      // held set.
+      await prisma.rolePermission.deleteMany({
+        where: { roleId: CTRL_ROLE, permissionId: staffPermId },
+      });
+    }
+  });
+
+  it("CREATE staff-space firewall (F-B1b): staff-space and not-held rejections carry DISTINCT messages (single-gate net)", async () => {
+    const base = { appendAuditRecord, configValueQuery, vendorProfileControlReader: control };
+    const run = (permissionSet: string[]) =>
+      inCtrlOrg((tx) =>
+        createDelegationGrant(
+          {
+            representativeOrganizationId: REP_ORG,
+            vendorProfileId: VENDOR_PROFILE,
+            permissionSet,
+            validTo: FUTURE,
+          },
+          ctrlCtx,
+          base,
+          tx,
+        ),
+      );
+
+    // A staff-space slug (unbound → excluded from the held set): the policy checks `space` BEFORE ⊆-held, so
+    // the STAFF-SPACE branch fires and emits its own message. Deleting that policy branch would collapse this
+    // to the not-held message below (the slug is not in the held set) → this assertion fails (single-gate net).
+    const staff = await run(["staff_can_ban"]);
+    if (staff.ok) throw new Error("unreachable: staff-space slug must be rejected");
+    expect(staff.error).toMatchObject({
+      errorClass: "AUTHORIZATION",
+      errorCode: "identity_delegation_forbidden",
+      message: expect.stringMatching(/a staff-space slug is not delegable/),
+    });
+
+    // A real tenant slug no CTRL_ORG member holds → the NOT-HELD branch → its own distinct message.
+    const notHeld = await run(["can_manage_billing"]);
+    if (notHeld.ok) throw new Error("unreachable: an unheld tenant slug must be rejected");
+    expect(notHeld.error).toMatchObject({
+      errorClass: "AUTHORIZATION",
+      errorCode: "identity_delegation_forbidden",
+      message: expect.stringMatching(/the org does not hold a requested slug/),
+    });
+
+    // Both map to the SAME frozen code (no distinct §C9 code exists), so the message is the only surface
+    // discriminator between the two firewall branches — they MUST differ.
+    expect(staff.error.message).not.toBe(notHeld.error.message);
+  });
+
   it("INVARIANT: a failing audit append rolls back the grant insert (no row, no audit)", async () => {
     const failingAppend = (() =>
       Promise.reject(new Error("audit append failed (injected)"))) as typeof appendAuditRecord;
@@ -469,6 +583,32 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
     expect(
       await prisma.delegationGrant.count({ where: { controllingOrganizationId: CTRL_ORG } }),
     ).toBe(0);
+  });
+
+  it("INVARIANT direction 1 (F-B3): a failing audit append on SUSPEND rolls back the status write (unchanged, unaudited)", async () => {
+    const g = await seedGrant({ status: "active" });
+    // Inject a rejecting audit append (the create-side direction-1 injection shape) — the append runs INSIDE
+    // the real active-org transaction, AFTER the `active → suspended` status write. A throw must roll that
+    // write back with the failed audit: threading a non-tx executor into `transitionDelegationGrantStatus`
+    // would commit the `suspended` write outside the tx and leave it standing (unaudited) — this test
+    // catches that regression on the shared lifecycle path.
+    const failingAppend = (() =>
+      Promise.reject(new Error("audit append failed (injected)"))) as typeof appendAuditRecord;
+    await expect(
+      inCtrlOrg((tx) =>
+        suspendDelegationGrant(
+          { delegationGrantId: g.id, updatedAt: g.updatedAt },
+          ctrlCtx,
+          { appendAuditRecord: failingAppend },
+          tx,
+        ),
+      ),
+    ).rejects.toThrow(/audit append failed/);
+    // The status write rolled back — the grant is still active and carries NO audit row.
+    expect((await prisma.delegationGrant.findFirst({ where: { id: g.id } }))?.status).toBe(
+      "active",
+    );
+    expect(await auditFor(g.id)).toHaveLength(0);
   });
 
   // ── default valid_to POLICY branch (RV-0149 F4) ───────────────────────────────
@@ -869,7 +1009,16 @@ describe("W2-IDN-4 delegation-grant write commands (real PostgreSQL)", () => {
     expect(audit.map((a) => a.action)).toEqual(["delegation_grant_expired"]);
     expect(audit[0]!.actorType).toBe("system");
     expect(audit[0]!.actorId).toBeNull();
+    // F-B2: the System expiry audit row carries the grant's CONTROLLING org as business context.
+    expect(audit[0]!.organizationId).toBe(CTRL_ORG);
     expect(refresh).toHaveBeenCalledTimes(1);
+    // F-B2: the refresh seam receives the EXPIRED grant's identifying payload (mirrors the revoke leg's
+    // idiom) — a `toHaveBeenCalledTimes` count alone would not catch a wrong/empty payload.
+    expect(refresh).toHaveBeenCalledWith({
+      delegationGrantId: active.id,
+      vendorProfileId: VENDOR_PROFILE,
+      representativeOrganizationId: REP_ORG,
+    });
 
     // Idempotent — a terminal grant is never re-expired.
     const second = await expireDelegationGrants({
