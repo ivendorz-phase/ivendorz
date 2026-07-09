@@ -115,8 +115,8 @@ M0 tables/triggers/allocator/audit-writer are realized (Wave 0/1). Wave-2 M0 = t
 **No CR4′ immutability trigger on any of the 4** (identity versions/hard-deletes nothing; CHK-6-031/032 = N/A).
 - **Doc-8:** 8D schema-constraint + org-anchor RLS (positive / negative / cross-tenant).
 
-### `W2-IDN-2` — Role/permission catalog seed (45 slugs + 4 bundles) · Doc-6C §5
-- **Content source = Doc-2 §7 (by pointer; Doc-6C coins nothing).** 45 slugs = **38 tenant** (`space='tenant'`) + **7 staff** (`space='staff'`); idempotent `ON CONFLICT (slug) DO UPDATE`.
+### `W2-IDN-2` — Role/permission catalog seed (43 slugs + 4 bundles) · Doc-6C §5 (as patched v1.0.1)
+- **Content source = Doc-2 §7 (by pointer; Doc-6C coins nothing).** **43 slugs = 36 tenant** (`space='tenant'`) **+ 7 staff** (`space='staff'`) — count corrected 45→43 per `Doc-6C_Patch_v1.0.1` (owner-ruled `ESC-IDN-SLUGCOUNT` Option A, 2026-07-09; Doc-2 §7's enumeration is and was the truth); idempotent `ON CONFLICT (slug) DO UPDATE`.
 - **4 system bundles (verbatim):** `Owner`, `Director`, `Manager`, `Officer` (`organization_id=NULL`, `is_system_bundle=true`); `ON CONFLICT (name) WHERE deleted_at IS NULL AND organization_id IS NULL DO NOTHING`.
 - **`role_permissions` mapping** = Doc-2 §7 bundle defaults (O/D/M/F columns); **Inv #2 guard — `staff_*` slugs never assigned to org bundles.** Separate idempotent data migration.
 - **Doc-8:** 8E Invariant #2 (two role dimensions).

@@ -41,7 +41,7 @@
 | Module | Realized | Remaining for full Wave-2 build |
 |---|---|---|
 | **M0 `core`** | 5 tables (`audit_records` CR4′, `outbox_events`, `id_sequences` + `allocate_human_ref`, `system_configuration`, `feature_flags`); 5 immutability triggers; 18 `core.*` POLICY keys; services: audit-writer, human-ref allocator, outbox drainer | Config/flag **read services on `contracts/`**; out-of-wire boundary formalization; M0 Doc-8 bands executing |
-| **M1 `identity`** | **5 of 9 tables** (`users`, `organizations`, `roles`, `memberships`, `buyer_profiles`) + org-anchor RLS on those 5 + system-bundle role seed; verticals: `provisionIdentity`, `getBuyerProfile`, `upsertBuyerProfile` | **4 tables** (`permissions`, `role_permissions`, `organization_workflow_settings`, `delegation_grants`); 45-slug/4-bundle seed; `check_permission`; delegation; 3 state machines; the Doc-5C management surface; 7 `identity.*` POLICY keys |
+| **M1 `identity`** | **5 of 9 tables** (`users`, `organizations`, `roles`, `memberships`, `buyer_profiles`) + org-anchor RLS on those 5 + system-bundle role seed; verticals: `provisionIdentity`, `getBuyerProfile`, `upsertBuyerProfile` | **4 tables** (`permissions`, `role_permissions`, `organization_workflow_settings`, `delegation_grants`); 43-slug/4-bundle seed (per `Doc-6C_Patch_v1.0.1`); `check_permission`; delegation; 3 state machines; the Doc-5C management surface; 7 `identity.*` POLICY keys |
 | **App layer** | `src/server/context` active-org guard live | `src/server/authz` seam (empty by design) wired to `check_permission` |
 
 **Net:** M0 is complete at the infra/schema level; the Wave-2 work is contract exposure + tests. M1 is ~55% — the read/write spine exists, but the **authorization core, delegation, org/membership management, and 4 tables are unbuilt**. Wave 2 is the universal unblock: every downstream module needs M0 infra + M1 `check_permission`/org-context.
@@ -107,8 +107,8 @@ This is the bulk of Wave 2. Ordered by the Decomposition's M1 chain.
 - **Acceptance / Doc-8:** **8D** schema-constraint + org-anchor RLS (positive/negative/cross-tenant).
 - **Done:** migration applies clean forward-only · RLS green.
 
-#### `W2-IDN-2` — Role/permission catalog seed (45 slugs + 4 bundles)
-- **Objective:** seed the 45 permission slugs + 4 system-bundle roles (`role_permissions` mapping).
+#### `W2-IDN-2` — Role/permission catalog seed (43 slugs + 4 bundles; count per `Doc-6C_Patch_v1.0.1`)
+- **Objective:** seed the 43 permission slugs (36 tenant + 7 staff — `ESC-IDN-SLUGCOUNT` Option A ruling) + 4 system-bundle roles (`role_permissions` mapping).
 - **Frozen authority:** Doc-6C §5.2 · Doc-2 §7. **Bind slugs by pointer — never coin or rename a slug.**
 - **Outputs:** idempotent seed (re-runnable); System-actor authored.
 - **Acceptance / Doc-8:** **8E** Invariant #2 (two role dimensions: Platform Participation ≠ Org Role).

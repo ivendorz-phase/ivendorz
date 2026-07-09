@@ -49,3 +49,20 @@ A → B ∥ T6 → clean-gate close.
 ---
 *Append-only Board packet. Conforms upward; coins nothing. Decision record to be appended below
 this line by/for the owner.*
+
+## DECISION RECORD (owner, 2026-07-09)
+
+**RULING: OPTION A — Doc-2 §7's enumerated 43 (36 tenant + 7 staff) is the truth; the "45 (38
+tenant)" figures in Doc-6C §5.1 / CHK-6-062 / the playbook were a propagated counting error.**
+
+Executed at close of this packet:
+- `generatedDocs/Doc-6C_Patch_v1.0.1.md` authored (additive editorial patch; frozen base files
+  untouched; Doc-6C → v1.0.1) and registered in `00_AUTHORITY_MAP.md` (series row amended +
+  patch row added).
+- Living-doc sync: `backend_execution_playbook.md` §5 + `backend_build_plan.md` §2/§4 corrected
+  45→43 / 38→36 with ruling citations.
+- `esc_registry.md` `ESC-IDN-SLUGCOUNT` row → RESOLVED (Option A).
+- `W2-IDN-2` unparked: Agent M1 reactivated (original packet + Handoff Note + this ruling) to
+  seed exactly the 43 enumerated slugs; 8E suite pins 43/36/7.
+
+**This packet is CLOSED.** Closed records never reopen; a future count question is a new item.
