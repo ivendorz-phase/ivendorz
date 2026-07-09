@@ -62,3 +62,38 @@ export const DelegationGrantAuditAction = {
 
 export type DelegationGrantAuditActionToken =
   (typeof DelegationGrantAuditAction)[keyof typeof DelegationGrantAuditAction];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Membership lifecycle audit actions (W2-IDN-5). BUSINESS actions live in Doc-2 §9 "Organization" domain
+// ("create, membership invite/accept/suspend/remove, …") — so, like the delegation tokens, NO Doc-2 §9 patch
+// is authored; these tokens bind BY POINTER to the existing §9 actions. The token STRINGS are the Doc-4C-class
+// serialization; a future rename touches Doc-4C + this constant, never Doc-2. Imported as NAMED CONSTANTS —
+// never a hardcoded literal (Board ruling 2026-06-30). Only the two System-timer edges realized this WP append
+// audit rows; the remaining membership edges (invite/accept/suspend/reinstate/remove) are W2-IDN-6.2's wired
+// commands and bind their own tokens then.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The audit `entity_type` for `identity.memberships` rows (Doc-4C §C6 Mutation-Scope `identity.memberships`). */
+export const MEMBERSHIP_ENTITY_TYPE = "membership" as const;
+
+/**
+ * Canonical membership audit actions realized this WP (the two System-timer edges only):
+ *   ACTIVATED → `pending → active` (`activate_membership`). Bound BY POINTER via **`[ESC-IDN-AUDIT]`** —
+ *               Doc-4C §C6 `activate_membership` Audit: "Domain Organization (membership activation, §9) by
+ *               pointer — `[ESC-IDN-AUDIT]` (no enumerated 'membership activate' action)". Attribution System
+ *               (§17.3). NOT a newly-invented business action — a bound-by-pointer serialization of the §9
+ *               "membership …/accept" activation family.
+ *   REMOVED   → `invited → removed` via expire (`expire_invitation`). Bound to the ENUMERATED Doc-2 §9
+ *               "Organization" action "membership … remove" (Doc-4C §C6 `expire_invitation` Audit: "Domain
+ *               Organization 'membership remove' (§9) by pointer"). Attribution System (§17.3).
+ * Distinct tokens so the immutable ledger records what actually happened (activate ≠ remove).
+ */
+export const MembershipAuditAction = {
+  /** `[ESC-IDN-AUDIT]` — bound by pointer to §9 membership activation family (System attribution). */
+  ACTIVATED: "membership_activated",
+  /** Bound to §9 "membership remove" (enumerated); the `expire_invitation` `invited → removed` leg. */
+  REMOVED: "membership_removed",
+} as const;
+
+export type MembershipAuditActionToken =
+  (typeof MembershipAuditAction)[keyof typeof MembershipAuditAction];

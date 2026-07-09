@@ -1,6 +1,8 @@
 import type { InngestFunction } from "inngest";
 import { dispatchOutbox } from "./dispatch-outbox";
 import { expireDelegationGrantsPump } from "./expire-delegation-grants";
+import { expireInvitationsPump } from "./expire-invitations";
+import { activateMembershipWorker } from "./activate-membership";
 
 // Inngest job functions registry — outbox consumers (REPOSITORY_STRUCTURE §7).
 //
@@ -14,4 +16,14 @@ import { expireDelegationGrantsPump } from "./expire-delegation-grants";
 // `expireDelegationGrantsPump` (W2-IDN-4) — the M1 delegation-grant expiry sweep (`active → expired`,
 // Doc-4C §C9 · System). Consumed via `@/modules/identity/contracts` (contracts-only); the M0 audit facade
 // is injected inside the function. Out-of-wire System worker; audited per expiry; coins no event ([DC-1]).
-export const functions: InngestFunction.Any[] = [dispatchOutbox, expireDelegationGrantsPump];
+//
+// `expireInvitationsPump` + `activateMembershipWorker` (W2-IDN-5) — the two M1 membership System timers:
+// invite-expiry SWEEP (`invited → removed`, cron; window POLICY-keyed) and verification-complete ACTIVATION
+// (`pending → active`, the DC-4 signal seam). Both consumed via `@/modules/identity/contracts`; M0
+// audit/config facades injected inside the functions. Out-of-wire; audited per mutation; coin no event ([DC-1]).
+export const functions: InngestFunction.Any[] = [
+  dispatchOutbox,
+  expireDelegationGrantsPump,
+  expireInvitationsPump,
+  activateMembershipWorker,
+];

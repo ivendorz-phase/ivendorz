@@ -28,6 +28,14 @@ import {
   expireDelegationGrantsCommand,
   type ExpireDelegationGrantsDeps,
 } from "../application/commands/expire-delegation-grants.command";
+import {
+  expireInvitationsCommand,
+  type ExpireInvitationsDeps,
+} from "../application/commands/expire-invitations.command";
+import {
+  activateMembershipCommand,
+  type ActivateMembershipDeps,
+} from "../application/commands/activate-membership.command";
 import { provisionIdentityForAuthUser } from "../application/commands/provision-identity.command";
 import { getBuyerProfile as getBuyerProfileQuery } from "../application/queries/get-buyer-profile.query";
 import {
@@ -43,6 +51,8 @@ import {
   type CheckPermissionDeps,
 } from "../application/queries/check-permission.query";
 import type {
+  ActivateMembershipInput,
+  ActivateMembershipResult,
   CheckPermissionInput,
   CheckPermissionResult,
   CreateDelegationGrantInput,
@@ -50,6 +60,7 @@ import type {
   DelegationGrantLifecycleInput,
   DelegationGrantLifecycleOutcome,
   ExpireDelegationGrantsResult,
+  ExpireInvitationsResult,
   GetBuyerProfileResult,
   GetMembershipResult,
   GetOrganizationResult,
@@ -262,3 +273,73 @@ export type ExpireDelegationGrants = (
 ) => Promise<ExpireDelegationGrantsResult>;
 export const expireDelegationGrants: ExpireDelegationGrants = (deps) =>
   expireDelegationGrantsCommand(deps);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §C5/§C6 — Organization · Membership · User lifecycle (W2-IDN-5). The two out-of-wire System timers +
+// the pure lifecycle authority (state machines + guards) re-exported for the app-layer / W2-IDN-6.2 wired
+// commands / other-module consumers. The machines/guards are PURE (own no state, read no DB, touch no
+// governance signal) — Doc-4M's "single lookup surface" for lifecycle, boundary-legal on the contracts face.
+// Every System-timer mutation is an AUDITED, ATOMIC write (D7): the M0 `appendAuditRecord` is INJECTED by
+// contract TYPE; the audit is atomic with the state write (same tx). Zero §8 events ([DC-1]).
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type { ExpireInvitationsDeps, ActivateMembershipDeps };
+
+/** `identity.expire_invitation.v1` (Doc-4C §C6 · System) — the out-of-wire sweep expiring `invited`
+ *  memberships whose invite window (`identity.membership_invite_expiry_window` POLICY) has lapsed
+ *  (`invited → removed`). Audited per invitation (System actor). */
+export type ExpireInvitations = (deps: ExpireInvitationsDeps) => Promise<ExpireInvitationsResult>;
+export const expireInvitations: ExpireInvitations = (deps) => expireInvitationsCommand(deps);
+
+/** `identity.activate_membership.v1` (Doc-4C §C6 · System) — the out-of-wire worker activating a `pending`
+ *  membership on the DC-4 verification-complete signal (`pending → active`, idempotent). Audited (System). */
+export type ActivateMembership = (
+  input: ActivateMembershipInput,
+  deps: ActivateMembershipDeps,
+) => Promise<ActivateMembershipResult>;
+export const activateMembership: ActivateMembership = (input, deps) =>
+  activateMembershipCommand(input, deps);
+
+// The pure lifecycle authority (state machines) — the SINGLE source of legal-edge truth (Doc-2 §5.1/§5.2 +
+// Doc-4C §C5). Re-exported so the W2-IDN-6.2 wired commands + consuming callers consult the SAME matrix and
+// never hand-roll a transition. Domain owns them; this is the boundary-legal public face.
+export {
+  canTransitionOrganization,
+  assertOrganizationTransition,
+  IllegalOrganizationTransitionError,
+  TERMINAL_ORGANIZATION_STATUSES,
+  type OrganizationStatus,
+} from "../domain/state-machines/organization.state-machine";
+export {
+  canTransitionMembership,
+  assertMembershipTransition,
+  IllegalMembershipTransitionError,
+  TERMINAL_MEMBERSHIP_STATES,
+  type MembershipState,
+} from "../domain/state-machines/membership.state-machine";
+export {
+  canTransitionUser,
+  assertUserTransition,
+  IllegalUserTransitionError,
+  TERMINAL_USER_STATUSES,
+  type UserStatus,
+} from "../domain/state-machines/user.state-machine";
+
+// The lifecycle GUARDS (pure policies) — the "only active participates" gate + Last-Owner-Protection /
+// Ownership-Succession decisions. Re-exported for the W2-IDN-6.2 wired commands (the BUSINESS-stage guard).
+export {
+  membershipParticipatesInAccessFormula,
+  organizationParticipatesInAccessFormula,
+} from "../domain/policies/membership-participation.policy";
+export {
+  evaluateLastOwnerProtection,
+  evaluateOwnershipSuccession,
+  type LastOwnerProtectionFacts,
+  type LastOwnerProtectionVerdict,
+  type OwnershipSuccessionFacts,
+  type OwnershipSuccessionVerdict,
+} from "../domain/policies/last-owner-protection.policy";
+
+// The repository fact-resolver for the Last-Owner guard (the SERVICE-LAYER guard's DB read). Re-exported so
+// W2-IDN-6.2 commands resolve owner facts through the M1 contracts face and hand them to the pure policy.
+export { resolveOwnerRemovalFacts } from "../infrastructure/data/membership-lifecycle.repository";

@@ -314,6 +314,43 @@ export type DelegationRefreshPort = (input: {
   representativeOrganizationId: string;
 }) => Promise<void>;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// §C5/§C6 — Organization · Membership · User lifecycle (W2-IDN-5). The state-machine value sets + the two
+// System-timer surfaces. The transition matrices themselves live in the domain state machines (the single
+// lifecycle authority, Doc-2 §5.1/§5.2); the pure predicates are re-exported on `services.ts`. Value-set
+// literals below are bound by pointer to the realized enums (Doc-6C §3.1/§3.2/§3.3), never re-authored.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The `org_status` value set (Doc-2 §5.1 / `OrgStatus`, Doc-6C §3.2). */
+export type OrganizationStatusValue = "active" | "suspended" | "soft_deleted";
+
+/** The `membership_state` value set (Doc-2 §5.2 / `MembershipState`, Doc-6C §3.3). */
+export type MembershipStateValue = "invited" | "pending" | "active" | "suspended" | "removed";
+
+/** The `user_status` value set (Doc-2 §10.2 status enum / `UserStatus`, Doc-6C §3.1). */
+export type UserStatusValue = "active" | "suspended" | "soft_deleted";
+
+/** Input to the System `identity.activate_membership.v1` worker (Doc-4C §C6). The target `pending`
+ *  membership id (from the DC-4 verification-complete signal); System actor — no org/user context input. */
+export interface ActivateMembershipInput {
+  membershipId: string;
+}
+
+/** Outcome of `identity.activate_membership.v1`. `activated: true` ⇒ the membership advanced `pending →
+ *  active` (audited). `activated: false` carries the discriminated no-op reason (System workers surface no
+ *  user response — this is for the Inngest seam + tests): `not_found` (no live membership) · `already_active`
+ *  (idempotent no-op) · `illegal_state` (source state ≠ `pending`) · `precondition` (org/user not active). */
+export interface ActivateMembershipResult {
+  activated: boolean;
+  reason?: "not_found" | "already_active" | "illegal_state" | "precondition";
+}
+
+/** Result of the System `identity.expire_invitation.v1` sweep (Doc-4C §C6 — mechanical counter). */
+export interface ExpireInvitationsResult {
+  /** Invitations advanced `invited → removed` (expire) this pass. */
+  expired: number;
+}
+
 /**
  * Input to lazy first-login identity provisioning (WP-1.3) — the authenticated Supabase subject.
  *
