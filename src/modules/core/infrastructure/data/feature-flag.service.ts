@@ -55,8 +55,10 @@ function scopeSatisfied(
   if (storedScope === null || storedScope === undefined) return true; // global scope
   if (!isPlainObject(storedScope)) return false; // uninterpretable → fail-safe disabled
   const supplied = suppliedScope ?? {};
+  // Own-property check (not `in`): never let a prototype-chain member satisfy a constraint on
+  // this fail-safe boundary (defense-in-depth; identical semantics for plain objects).
   return Object.entries(storedScope).every(
-    ([k, constraint]) => k in supplied && jsonEquals(constraint, supplied[k]),
+    ([k, constraint]) => Object.hasOwn(supplied, k) && jsonEquals(constraint, supplied[k]),
   );
 }
 

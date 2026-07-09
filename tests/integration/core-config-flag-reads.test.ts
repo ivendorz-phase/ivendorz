@@ -18,7 +18,10 @@ import { uuidv7 } from "../../src/shared/ids";
 // Flag fixtures: `core.feature_flags` is mutable configuration (SD=NO; DELETE permitted for admin
 // ops — Doc-6B Appendix A CHK-6-030), so fixtures use a fresh run-scoped key prefix and are
 // deleted in the FILE-scoped afterAll below (RV-0143: sweeps by the stable `test.w2core1.` base
-// prefix, so rows leaked by earlier runs are removed too). Superuser test connection bypasses the
+// prefix, so rows leaked by earlier runs are removed too). `core.system_configuration` is likewise
+// mutable-config under CHK-6-030; the executor-participation proofs create rows ONLY inside a
+// deliberately rolled-back transaction (they never commit), and the afterAll additionally sweeps
+// the config test-key prefix as belt-and-braces. Superuser test connection bypasses the
 // platform-staff RLS backstop — the same posture every existing M0 suite runs under (RLS is
 // defense-in-depth, not the model).
 
@@ -53,11 +56,25 @@ const FLAG_BASE_PREFIX = "test.w2core1.";
 /** Run-scoped flag-key prefix so parallel/re-runs never collide; swept by the file-scoped afterAll. */
 const FLAG_PREFIX = `${FLAG_BASE_PREFIX}${uuidv7()}.`;
 
+/**
+ * Stable config test-key domain (snake_case per the Doc-3 §12.2 registered-key shape, so the
+ * reference form passes §B8 V1 syntax). Rows under it are created ONLY inside rolled-back
+ * transactions; the afterAll sweep is belt-and-braces (`system_configuration` = CHK-6-030
+ * mutable-config).
+ */
+const CONFIG_TEST_KEY_PREFIX = "test_w2core1.";
+
+/** Sentinel thrown to force transaction rollback in the executor-participation proofs. */
+class RollbackSentinel extends Error {}
+
 // FILE-scoped so it fires after BOTH suites — the flag fixtures are seeded in the second describe,
 // and a suite-scoped afterAll in the first describe provably ran before any fixture existed
-// (RV-0143 MINOR). Deleting by the stable base prefix also sweeps previously leaked fixture rows.
+// (RV-0143 MINOR). Deleting by the stable base prefixes also sweeps previously leaked fixture rows.
 afterAll(async () => {
   await prisma.featureFlag.deleteMany({ where: { flagKey: { startsWith: FLAG_BASE_PREFIX } } });
+  await prisma.systemConfiguration.deleteMany({
+    where: { key: { startsWith: CONFIG_TEST_KEY_PREFIX } },
+  });
   await prisma.$disconnect();
 });
 
@@ -109,15 +126,41 @@ describe("W2-CORE-1 core.config_value_query.v1 (Doc-4B §B8 / Doc-6B §3.4)", ()
     expect((caught as CoreServiceError).code).toBe("core_config_key_not_found");
   });
 
-  it("participates in a caller-supplied transaction executor (CoreServiceExecutor pattern)", async () => {
-    const result = await prisma.$transaction(async (tx) =>
-      configValueQuery({ key: REF + REGISTERED_CORE_KEYS[0] }, tx),
-    );
-    const row = await prisma.systemConfiguration.findUnique({
-      where: { key: REGISTERED_CORE_KEYS[0] },
-      select: { valueJsonb: true },
-    });
-    expect(result.value).toEqual(row!.valueJsonb);
+  it("PROVES executor participation: reads a tx-created UNCOMMITTED config row through the supplied tx, then rolls back (RV-0143 B-1)", async () => {
+    // Load-bearing discrimination: the row below exists ONLY inside the open transaction. Under
+    // READ COMMITTED a NON-participating implementation (reading via the shared client) cannot
+    // see it and deterministically throws `core_config_key_not_found`; only a read that runs on
+    // the caller-supplied executor resolves it. The sentinel throw rolls the row back — it never
+    // commits (`system_configuration` mutation is CHK-6-030-permitted mutable-config).
+    // Run-scoped key_name (hex-only suffix keeps the §B8 V1 snake_case shape) — no unique-index
+    // contention between parallel runs even while the probe tx is open.
+    const registeredKey = `${CONFIG_TEST_KEY_PREFIX}executor_probe_${uuidv7().replace(/-/g, "")}`;
+    let inTxResult: { value: unknown; valueType: string } | undefined;
+
+    let caught: unknown;
+    try {
+      await prisma.$transaction(async (tx) => {
+        await tx.systemConfiguration.create({
+          data: {
+            id: uuidv7(),
+            key: registeredKey,
+            valueJsonb: 7, // arbitrary probe value — a TEST fixture, not a POLICY value
+            valueType: "integer", // an existing Doc-3 value_type token; nothing coined
+          },
+        });
+        inTxResult = await configValueQuery({ key: REF + registeredKey }, tx);
+        throw new RollbackSentinel("roll back the probe row");
+      });
+    } catch (e) {
+      caught = e;
+    }
+
+    expect(caught).toBeInstanceOf(RollbackSentinel);
+    // The tx-supplied read saw the uncommitted row → the executor was genuinely used.
+    expect(inTxResult).toEqual({ value: 7, valueType: "integer" });
+    // Rollback proof: the row never committed.
+    const after = await prisma.systemConfiguration.findUnique({ where: { key: registeredKey } });
+    expect(after).toBeNull();
   });
 });
 
@@ -175,5 +218,66 @@ describe("W2-CORE-1 core.feature_flag_evaluate.v1 (Doc-4B §B9 / Doc-6B §3.5 �
     const key = await seedFlag("disclosure_shape", true, { organization_id: uuidv7() });
     const result = await featureFlagEvaluate({ flagKey: key });
     expect(Object.keys(result)).toEqual(["enabled"]);
+  });
+
+  it("stored scope {} resolves ENABLED everywhere — vacuous constraint set (RV-0143 B-2)", async () => {
+    // Semantics pinned: an EMPTY constraint object imposes zero constraints, so `every` over its
+    // entries is vacuously true — `{}` grants globally, exactly like a NULL/absent scope. This is
+    // still fail-safe-consistent: nothing resolves BROADER than the store declares (it declares
+    // no constraints).
+    const key = await seedFlag("empty_scope", true, {});
+    expect(await featureFlagEvaluate({ flagKey: key })).toEqual({ enabled: true });
+    expect(
+      await featureFlagEvaluate({ flagKey: key, scope: { organization_id: uuidv7() } }),
+    ).toEqual({ enabled: true });
+  });
+
+  it("array + nested-object constraint values match structurally, mismatch fail-safe (RV-0143 B-2 — jsonEquals branches)", async () => {
+    const key = await seedFlag("structured_scope", true, {
+      regions: ["dhaka", "chattogram"],
+      cohort: { name: "internal" },
+    });
+    // Structurally equal array (order-sensitive) + nested object → enabled.
+    expect(
+      await featureFlagEvaluate({
+        flagKey: key,
+        scope: { regions: ["dhaka", "chattogram"], cohort: { name: "internal" } },
+      }),
+    ).toEqual({ enabled: true });
+    // Nested-object value mismatch → disabled (fail-safe).
+    expect(
+      await featureFlagEvaluate({
+        flagKey: key,
+        scope: { regions: ["dhaka", "chattogram"], cohort: { name: "external" } },
+      }),
+    ).toEqual({ enabled: false });
+  });
+
+  it("PROVES executor participation: evaluates a tx-created UNCOMMITTED flag row through the supplied tx, then rolls back (RV-0143 B-1)", async () => {
+    // Load-bearing discrimination: the flag row exists ONLY inside the open transaction. Under
+    // READ COMMITTED a NON-participating implementation (reading via the shared client) cannot
+    // see it and — by the §B9 V8 fail-safe — deterministically returns `{enabled: false}`; only
+    // a read on the caller-supplied executor resolves `{enabled: true}`. The sentinel throw rolls
+    // the row back — it never commits (`feature_flags` mutation is CHK-6-030-permitted).
+    const flagKey = `${FLAG_PREFIX}tx_uncommitted`;
+    let inTxResult: { enabled: boolean } | undefined;
+
+    let caught: unknown;
+    try {
+      await prisma.$transaction(async (tx) => {
+        await tx.featureFlag.create({ data: { id: uuidv7(), flagKey, enabled: true } });
+        inTxResult = await featureFlagEvaluate({ flagKey }, tx);
+        throw new RollbackSentinel("roll back the probe row");
+      });
+    } catch (e) {
+      caught = e;
+    }
+
+    expect(caught).toBeInstanceOf(RollbackSentinel);
+    // The tx-supplied read saw the uncommitted row → the executor was genuinely used.
+    expect(inTxResult).toEqual({ enabled: true });
+    // Rollback proof: the row never committed; the shared-client read fail-safes to disabled.
+    expect(await featureFlagEvaluate({ flagKey })).toEqual({ enabled: false });
+    expect(await prisma.featureFlag.findUnique({ where: { flagKey } })).toBeNull();
   });
 });
