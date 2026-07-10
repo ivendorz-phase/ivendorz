@@ -17,7 +17,7 @@ review/patch/audit trail is grouped by category.
 | File | Purpose |
 |------|---------|
 | `Master_System_Architecture_v1.0_FINAL.md` | **CANONICAL** single source of truth — the "why" |
-| `ADR_Compendium_v1.md` | Architecture Decision Records (rank 1) |
+| `ADR_Compendium_v1.md` (+ `ADR-021_Audit-Records-RLS-Asymmetry.md` + `ADR-024_Canonical_Vendor_Subdomain_URLs.md` + `ADR-025_Marketplace_Public_URL_Law.md`) | Architecture Decision Records (rank 1); ADR-021/024/025 carried alongside — full detail per `00_AUTHORITY_MAP.md` |
 | `iVendorz_Master_Overview_v1.0.md` | Consolidated overview (non-authoritative mirror) |
 | `iVendorz_New_Chat_Primer.md` · `iVendorZ_Context_Pack_v4.md` · `iVendorz_Context_Pack_v5.md` | Session bootstrap context (latest packs) |
 | `ivendorz_Project_Instructions.md` · `Project_Instructions_Reconciliation_Note_v1.0.md` | Program instructions |
@@ -30,7 +30,7 @@ review/patch/audit trail is grouped by category.
 - **Authoritative:** `Doc-2_Domain_Model_And_Database_Blueprint_v1.0.2.md` + patches `Doc2_Patch_v1.0.2.md`, `Doc-2_Patch_v1.0.3.md` (effective v1.0.3)
 
 **Doc-3 — RFQ Procurement Engine & Operational Specification**
-- **Authoritative:** `Doc-3_RFQ_Procurement_Engine_And_Operational_Specification_v1.0.1.md` + patches `Doc-3_Patch_v1.0.2.md`, `Doc-3_Policy_Key_Registration_Patch_v1.0.md` (`core.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ.md` (`rfq.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.2_Marketplace.md` (`marketplace.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.3_Trust.md` (`trust.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.4_Operations.md` (`operations.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.5_Communication.md` (`communication.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.6_Billing.md` (`billing.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.7_Admin.md` (`admin.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.8_AI.md` (`ai.*` keys) (effective v1.0.2)
+- **Authoritative:** `Doc-3_RFQ_Procurement_Engine_And_Operational_Specification_v1.0.1.md` + patches `Doc-3_Patch_v1.0.2.md`, `Doc-3_Policy_Key_Registration_Patch_v1.0.md` (`core.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ.md` (`rfq.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.2_Marketplace.md` (`marketplace.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.3_Trust.md` (`trust.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.4_Operations.md` (`operations.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.5_Communication.md` (`communication.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.6_Billing.md` (`billing.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.7_Admin.md` (`admin.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.8_AI.md` (`ai.*` keys), `Doc-3_Policy_Key_Registration_Patch_v1.11_PublicReadRateLimit.md` (`marketplace.public_read_rate_limit`, folded 2026-07-03 with the `ESC-7-API-PRODDETAIL` E-1/E-3 pair — see 00_AUTHORITY_MAP.md; full registration list per 00_AUTHORITY_MAP.md, this index is not exhaustively kept in step) (effective v1.0.2)
 
 **Architecture-level patches / reconfirmation**
 - `Architecture_CD-MA-1_Patch_v1.0.md` · `Architecture_CD-MA-1_Patch_Verification_v1.0.md` · `Architecture_Freeze_Reconfirmation_v1.0.md`
@@ -68,6 +68,7 @@ review/patch/audit trail is grouped by category.
 - PassB sub-domains: `Doc-4D_Content_v1.0_PassB_{VendorProfile,CatalogProductSpec,ProfileExperience,AdvertisingFavorites,Discovery}.md`
 - Content: `Doc-4D_Content_v1.0_PassA.md`
 - Reviews: `Doc-4D_Structure_Hard_Review_Report_v1.0.md` · `Doc-4D_PassA/PassB_Hard_Review_Report_v1.0.md`
+- Realization patches (folded, carried alongside — full detail per `00_AUTHORITY_MAP.md`): `Doc-4D_CanonicalHost_Patch_v1.0.2.md` (ADR-024, Canonical Vendor Subdomain wire realization) · `Doc-4D_PublicProductDetail_Patch_v1.0.3.md` (new `marketplace.get_public_product_detail.v1` contract, `R-ESC7-PRODDETAIL-FREEZE` E-1, folded 2026-07-03 with `Doc-5D_PublicProductDetail_Patch_v1.0.1.md` + `Doc-3_Policy_Key_Registration_Patch_v1.11_PublicReadRateLimit.md` + `ADR-025_Marketplace_Public_URL_Law.md`)
 - Patches/gates: `Doc-4D_Structure_Patch_v0.1.1.md` · `Doc-4D_Structure_Freeze_Gate_v1.0.md` · `Doc-4D_PassA/PassB_Patch_v1.0.1.md` · `…_Patch_Verification_Report_v1.0.md`
 
 ### Doc-4E — M3 RFQ Procurement Engine
@@ -153,7 +154,7 @@ review/patch/audit trail is grouped by category.
 | `Doc-5E_Structure_Proposal_v0.1.md` · `governanceReviews/Doc-5E_Freeze_Readiness_Audit_v1.0.md` | Doc-5E structure authoring history (v0.2; Hard Review) + freeze audit (`[ESC-RFQ-POLICY]` gate → cleared by Patch v1.1) |
 | `Doc-3_Policy_Key_Registration_Patch_v1.1_RFQ.md` | Additive Doc-3 §12.2 registration of 2 `rfq.*` API-realization keys; clears the Doc-5E freeze gate (Doc-4A §18.2) |
 | `Doc-3_Policy_Key_Registration_Patch_v1.2_Marketplace.md` | Additive Doc-3 §12.2 registration of 2 `marketplace.*` API-realization keys; clears the Doc-5D DD-6 content-freeze gate (Doc-4A §18.2) |
-| `Doc-5D_SERIES_FROZEN_v1.0.md` (M2 `marketplace`) | **Doc-5D FROZEN** — M2 Marketplace & Discovery API realization freeze manifest; effective = `Doc-5D_Content_v1.0_Pass1…3` + `Doc-5D_Structure_v1.0_FROZEN` + resolved registers. Realizes Doc-4D (71 contracts); first large public/anonymous surface; tri-actor (Public/User/Admin); R1–R10; R5 projection-separation + R9 non-disclosure attestations |
+| `Doc-5D_SERIES_FROZEN_v1.0.md` (M2 `marketplace`) (+ `Doc-5D_PublicProductDetail_Patch_v1.0.1.md`) | **Doc-5D FROZEN** — M2 Marketplace & Discovery API realization freeze manifest; effective = `Doc-5D_Content_v1.0_Pass1…3` + `Doc-5D_Structure_v1.0_FROZEN` + resolved registers. Realizes Doc-4D (71→72 contracts); first large public/anonymous surface; tri-actor (Public/User/Admin); R1–R10; R5 projection-separation + R9 non-disclosure attestations. **`Doc-5D_PublicProductDetail_Patch_v1.0.1.md`** (folded 2026-07-03): wire realization of `marketplace.get_public_product_detail.v1` (new row 65) + breadcrumb deterministic pick rule + `get_spec_library_entry` conformance correction; `R-ESC7-PRODDETAIL-FREEZE` E-1 wire leg |
 | `Doc-5D_Structure_v1.0_FROZEN.md` · `Doc-5D_Content_v1.0_Pass1…3.md` | Doc-5D source (canonical TOC + §0–§10 + Appendix A) |
 | `Doc-5D_Structure_Proposal_v0.1.md` · `governanceReviews/Doc-5D_Freeze_Readiness_Audit_v1.0.md` | Doc-5D structure authoring history (v0.2 + round-3 ADD-1/ADD-2; Hard Review) + freeze audit (DD-6 gate → cleared by Patch v1.2) |
 | `Doc-5G_SERIES_FROZEN_v1.0.md` (M5 `trust`) | **Doc-5G FROZEN** — M5 Trust & Verification (the governance-signal owner) API realization freeze manifest; effective = `Doc-5G_Content_v1.0_Pass1…3` + `Doc-5G_Structure_v1.0_FROZEN` + resolved registers. Realizes Doc-4G (40 contracts); multi-actor (Public/User/Admin); R1–R12; score-computation + governance/Billing firewall + non-disclosure attestations |
@@ -247,7 +248,7 @@ review/patch/audit trail is grouped by category.
 | `Doc-7H_SERIES_FROZEN_v1.0.md` | **7H FROZEN** — Admin Console *(last)*; HR1–HR12; Doc-5J + cross-module Admin legs; Admin-decides/owning-module-owns; no active-org; Trust firewall; event framing (M8 emits `VendorBanned` only) |
 | `Doc-7{A…H}_Structure_*` · `Doc-7{A…H}_Content_*` · `…_Independent_Hard_Review_*` · `…_Patch_*` · `…_Freeze_Audit_*` | Per-doc source + authoring history (each: Pass → Board Hard Review → Patch → closure check → Structure & Content Freeze Audits — all PASS) |
 
-**Program-level carried (additive channels, Board-approved):** `[ESC-7-API]` file-upload grant (M0/Doc-4B Storage by pointer; `file_ref` only) · `[ESC-7-API-PRODDETAIL/CATNAV/ADS]` (7D anonymous reads → Doc-5D patch) · `[ESC-IDN-DELEG-EXPIRY]` (7E reinstate UI → Doc-2 §5.10). **Doc-7 = COMPLETE; sibling programs Doc-6 (DB) / Doc-8 (Tests) continue.**
+**Program-level carried (additive channels, Board-approved):** `[ESC-7-API]` file-upload grant (M0/Doc-4B Storage by pointer; `file_ref` only) · `[ESC-7-API-CATNAV/ADS]` (7D anonymous reads → Doc-5D patch) · `[ESC-IDN-DELEG-EXPIRY]` (7E reinstate UI → Doc-2 §5.10). **`[ESC-7-API-PRODDETAIL]` RESOLVED 2026-07-03** — `Doc-4D_PublicProductDetail_Patch_v1.0.3.md` + `Doc-5D_PublicProductDetail_Patch_v1.0.1.md` + `Doc-3_Policy_Key_Registration_Patch_v1.11_PublicReadRateLimit.md` + `ADR-025_Marketplace_Public_URL_Law.md` folded together (`R-ESC7-PRODDETAIL-FREEZE`); unblocks FE-PUB-05. **Doc-7 = COMPLETE; sibling programs Doc-6 (DB) / Doc-8 (Tests) continue.**
 
 ---
 

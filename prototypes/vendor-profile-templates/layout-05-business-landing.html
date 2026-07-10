@@ -1,0 +1,53 @@
+<!doctype html>
+<!--
+  iVendorz — Vendor Profile · LAYOUT 05 "Business Landing" — HI-FI CLICKABLE PROTOTYPE (NON-PRODUCTION)
+  Target : Starter package vendors.
+  Focus  : Company introduction · products · contact · RFQ CTA. Single-page, lightweight, mobile-first.
+           No complex navigation.
+  Data   : 100% MOCK, from assets/data.js — the SAME object all 5 layouts consume (Content ≠ Presentation).
+  Governance: verified=binary · trust band+numeric only · 4-flag matrix · featured=editorial · no on-platform money.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>iVendorz · Layout 05 — Business Landing</title>
+    <link rel="stylesheet" href="assets/tokens.css" />
+    <link rel="stylesheet" href="assets/kit.css" />
+  </head>
+  <body>
+    <div class="pc-frame">
+      <div class="pc-stage" id="stage">
+        <div class="iv-site tpl-landing" id="site"></div>
+      </div>
+    </div>
+
+    <script src="assets/data.js"></script>
+    <script src="assets/icons.js"></script>
+    <script src="assets/render.js"></script>
+    <script>
+      var V = window.IV_VENDOR,
+        I = window.ivIcon;
+
+      // A compact single-page profile — no sticky tab nav, just anchored content. Lightweight sections.
+      document.getElementById("site").innerHTML = [
+        C.hero("landing"),
+        C.stats(),
+        C.about(false),
+        C.capabilities(),
+        C.productsSimple(true),
+        C.industries(),
+        C.certifications(),
+        C.contact(true),
+        C.ctaBand(),
+        C.footer(),
+        C.poweredStrip(),
+        C.mobileCta(),
+      ].join("");
+    </script>
+    <script src="assets/prototype.js"></script>
+    <script>
+      initPrototype({ name: "Layout 05 · Business Landing", tag: "Starter · single-page · mobile-first" });
+    </script>
+  </body>
+</html>

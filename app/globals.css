@@ -1,3 +1,914 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ==========================================================================
+   iVendorz Design System — CSS Custom Properties (Design Tokens)
+   Namespace: --iv-
+   Philosophy: "Industrial Precision, Human Clarity"
+   Modes: dark (default / primary), light (secondary)
+   ========================================================================== */
+
+@layer base {
+  :root {
+    /* -----------------------------------------------------------------------
+       BRAND — Electric Indigo (INTERACTIVE / secondary: links, focus rings,
+       selected-nav highlight, brand chips). NAVY (below) is the DOMINANT
+       primary/fill. 2026-06-30 palette migration: navy made dominant; indigo
+       confined to interactive states (purple footprint cut ~80%).
+    ----------------------------------------------------------------------- */
+    --iv-brand-50: #eef2ff;
+    --iv-brand-100: #e0e7ff;
+    --iv-brand-200: #c7d2fe;
+    --iv-brand-300: #a5b4fc;
+    --iv-brand-400: #818cf8;
+    --iv-brand-500: #6366f1;
+    --iv-brand-600: #4f46e5;
+    --iv-brand-700: #4338ca;
+    --iv-brand-800: #3730a3;
+    --iv-brand-900: #312e81;
+    --iv-brand-950: #1e1b4b;
+
+    /* -----------------------------------------------------------------------
+       NAVY — Deep Industrial Navy (DOMINANT brand · primary fills · sidebar)
+    ----------------------------------------------------------------------- */
+    --iv-navy-50: #eef2f8;
+    --iv-navy-100: #d9e1ef;
+    --iv-navy-200: #b7c6e0;
+    --iv-navy-300: #8ba0c6;
+    --iv-navy-400: #5a74a3;
+    --iv-navy-500: #375081;
+    --iv-navy-600: #283f6a;
+    --iv-navy-700: #1f3154;
+    --iv-navy-800: #182643;
+    --iv-navy-900: #111c33;
+    --iv-navy-950: #0b1322;
+
+    /* -----------------------------------------------------------------------
+       PREMIUM GOLD — Award · Premium actions · Verified tiers · Featured · Milestones
+       (token name kept `--iv-amber-*` for stability; values retuned to gold).
+    ----------------------------------------------------------------------- */
+    --iv-amber-50: #fbf7ea;
+    --iv-amber-100: #f5ecca;
+    --iv-amber-200: #ebd99a;
+    --iv-amber-300: #dcc05f;
+    --iv-amber-400: #cda434;
+    --iv-amber-500: #b8860b;
+    --iv-amber-600: #9a6f08;
+    --iv-amber-700: #7c5807;
+    --iv-amber-800: #5f4406;
+    --iv-amber-900: #4a3504;
+
+    /* -----------------------------------------------------------------------
+       SURFACE — Dark Mode (Primary Experience)
+    ----------------------------------------------------------------------- */
+    --iv-surface-base: #0a0e1a;
+    --iv-surface-raised: #0f1424;
+    --iv-surface-overlay: #151b2e;
+    --iv-surface-muted: #1c2340;
+    --iv-surface-border: #252d47;
+    --iv-surface-hover: #1e2540;
+    --iv-surface-selected: #202745;
+
+    /* -----------------------------------------------------------------------
+       SURFACE — Light Mode (Secondary Experience)
+    ----------------------------------------------------------------------- */
+    --iv-light-base: #f8fafc;
+    --iv-light-raised: #ffffff;
+    --iv-light-overlay: #ffffff;
+    --iv-light-muted: #f1f5f9;
+    --iv-light-border: #e2e8f0;
+    --iv-light-hover: #f8fafc;
+
+    /* -----------------------------------------------------------------------
+       SEMANTIC — Status Colors
+    ----------------------------------------------------------------------- */
+
+    /* Success — Verified, Active, Won */
+    --iv-success-subtle: rgba(22, 163, 74, 0.08);
+    --iv-success-muted: #14532d;
+    --iv-success-base: #16a34a;
+    --iv-success-bright: #22c55e;
+    --iv-success-text: #4ade80;
+
+    /* Warning — Pending, Under Review, Expiring */
+    --iv-warning-subtle: rgba(202, 138, 4, 0.08);
+    --iv-warning-muted: #713f12;
+    --iv-warning-base: #ca8a04;
+    --iv-warning-bright: #eab308;
+    --iv-warning-text: #fde047;
+
+    /* Danger — Rejected, Overdue (blacklist signals never rendered publicly) */
+    --iv-danger-subtle: rgba(220, 38, 38, 0.08);
+    --iv-danger-muted: #7f1d1d;
+    --iv-danger-base: #dc2626;
+    --iv-danger-bright: #ef4444;
+    --iv-danger-text: #fca5a5;
+
+    /* Info — New, Submitted, Invited */
+    --iv-info-subtle: rgba(37, 99, 235, 0.08);
+    --iv-info-muted: #1e3a5f;
+    --iv-info-base: #2563eb;
+    --iv-info-bright: #3b82f6;
+    --iv-info-text: #93c5fd;
+
+    /* Neutral — Draft, Closed, Inactive */
+    --iv-neutral-subtle: rgba(107, 114, 128, 0.08);
+    --iv-neutral-muted: #374151;
+    --iv-neutral-base: #6b7280;
+    --iv-neutral-bright: #9ca3af;
+    --iv-neutral-text: #d1d5db;
+
+    /* -----------------------------------------------------------------------
+       TRUST & GOVERNANCE — Domain-specific
+    ----------------------------------------------------------------------- */
+
+    /* Trust Score Ring — 0–100 */
+    --iv-trust-low: #ef4444; /* 0–39 */
+    --iv-trust-medium: #f59e0b; /* 40–69 */
+    --iv-trust-high: #22c55e; /* 70–89 */
+    --iv-trust-elite: #283f6a; /* 90–100 — Navy (de-purpled from indigo) */
+
+    /* Financial Tier Badges */
+    --iv-tier-a: #94a3b8; /* Tier A — Steel (0–5 Lac) */
+    --iv-tier-b: #34d399; /* Tier B — Emerald (5–25 Lac) */
+    --iv-tier-c: #60a5fa; /* Tier C — Blue (25 Lac–1 Cr) */
+    --iv-tier-d: #fbbf24; /* Tier D — Gold (1–5 Cr) */
+    --iv-tier-e: #283f6a; /* Tier E — Navy (5 Cr+; de-purpled from violet) */
+
+    /* Vendor Capability Flags */
+    --iv-cap-supply: #3b82f6; /* can_supply — Blue */
+    --iv-cap-service: #0d9488; /* can_service — Teal (de-purpled from indigo) */
+    --iv-cap-fabricate: #fbbf24; /* can_fabricate — Amber */
+    --iv-cap-consult: #22c55e; /* can_consult — Emerald */
+
+    /* -----------------------------------------------------------------------
+       CHART / DATA-VIZ — Navy · Indigo · Sky · Teal · Gold · Gray
+       (industrial; replaces purple-heavy defaults; for future chart surfaces).
+    ----------------------------------------------------------------------- */
+    --iv-chart-1: #283f6a; /* navy */
+    --iv-chart-2: #4f46e5; /* indigo */
+    --iv-chart-3: #0ea5e9; /* sky */
+    --iv-chart-4: #0d9488; /* teal */
+    --iv-chart-5: #b8860b; /* gold */
+    --iv-chart-6: #64748b; /* gray */
+
+    /* -----------------------------------------------------------------------
+       TYPOGRAPHY
+    ----------------------------------------------------------------------- */
+    --iv-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --iv-font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+
+    --iv-text-2xs: 0.625rem;
+    --iv-text-xs: 0.75rem;
+    --iv-text-sm: 0.875rem;
+    --iv-text-base: 1rem;
+    --iv-text-lg: 1.125rem;
+    --iv-text-xl: 1.25rem;
+    --iv-text-2xl: 1.5rem;
+    --iv-text-3xl: 1.875rem;
+    --iv-text-4xl: 2.25rem;
+    --iv-text-5xl: 3rem;
+    --iv-text-6xl: 3.75rem;
+
+    /* -----------------------------------------------------------------------
+       SPACING — 4px base grid
+    ----------------------------------------------------------------------- */
+    --iv-space-1: 4px;
+    --iv-space-2: 8px;
+    --iv-space-3: 12px;
+    --iv-space-4: 16px;
+    --iv-space-5: 20px;
+    --iv-space-6: 24px;
+    --iv-space-8: 32px;
+    --iv-space-10: 40px;
+    --iv-space-12: 48px;
+    --iv-space-16: 64px;
+    --iv-space-20: 80px;
+    --iv-space-24: 96px;
+
+    /* -----------------------------------------------------------------------
+       BORDER RADIUS
+    ----------------------------------------------------------------------- */
+    --iv-radius-sm: 4px;
+    --iv-radius-md: 8px;
+    --iv-radius-lg: 12px;
+    --iv-radius-xl: 16px;
+    --iv-radius-2xl: 24px;
+    --iv-radius-full: 9999px;
+
+    /* -----------------------------------------------------------------------
+       SHADOWS & ELEVATION
+    ----------------------------------------------------------------------- */
+    /* Light-tuned (PRIMARY theme); the dark-tuned set lives in `.dark` below. */
+    --iv-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.06);
+    --iv-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.1), 0 1px 2px rgba(15, 23, 42, 0.06);
+    --iv-shadow-md: 0 4px 8px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
+    --iv-shadow-lg: 0 12px 24px rgba(15, 23, 42, 0.1), 0 4px 8px rgba(15, 23, 42, 0.06);
+    --iv-shadow-xl: 0 20px 40px rgba(15, 23, 42, 0.12), 0 8px 16px rgba(15, 23, 42, 0.08);
+    --iv-shadow-2xl: 0 28px 64px rgba(15, 23, 42, 0.16);
+
+    /* Glow — interactive elements */
+    --iv-glow-brand: 0 0 0 1px rgba(99, 102, 241, 0.3), 0 0 20px rgba(99, 102, 241, 0.15);
+    --iv-glow-success: 0 0 0 1px rgba(34, 197, 94, 0.3), 0 0 20px rgba(34, 197, 94, 0.12);
+    --iv-glow-amber: 0 0 0 1px rgba(251, 191, 36, 0.3), 0 0 20px rgba(251, 191, 36, 0.12);
+
+    /* -----------------------------------------------------------------------
+       MOTION
+    ----------------------------------------------------------------------- */
+    --iv-duration-instant: 50ms;
+    --iv-duration-fast: 100ms;
+    --iv-duration-normal: 200ms;
+    --iv-duration-slow: 300ms;
+    --iv-duration-slower: 500ms;
+    --iv-duration-slowest: 800ms;
+
+    --iv-ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --iv-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --iv-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --iv-ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+
+    /* -----------------------------------------------------------------------
+       Z-INDEX
+    ----------------------------------------------------------------------- */
+    --iv-z-raised: 10;
+    --iv-z-dropdown: 100;
+    --iv-z-sticky: 200;
+    /* Mega menu panel (FE-PUB-09, MEGA_MENU_ARCHITECTURE §9.4): above the sticky header it hangs
+       from, below every overlay/modal layer — the panel never covers a dialog, sheet, or toast. */
+    --iv-z-mega-menu: 250;
+    --iv-z-overlay: 300;
+    --iv-z-modal: 400;
+    --iv-z-toast: 500;
+    --iv-z-tooltip: 600;
+
+    /* -----------------------------------------------------------------------
+       SEMANTIC TOKENS — the layer the kit consumes (theme-aware)
+       Light is the PRIMARY theme (DP §3.1; Doc-7B §3.4); `.dark` overrides
+       these below. Components read ONLY semantic tokens, never a primitive
+       surface/ink directly — so both themes "come for free." DEF-03.
+    ----------------------------------------------------------------------- */
+    --iv-light-selected: #eef2ff; /* missing from the light ramp — brand-50 */
+
+    /* Surfaces (semantic) */
+    --iv-bg: var(--iv-light-base);
+    --iv-surface: var(--iv-light-raised);
+    --iv-surface-2: var(--iv-light-muted);
+    --iv-overlay: var(--iv-light-overlay);
+    --iv-border: var(--iv-light-border);
+    --iv-hover: var(--iv-light-hover);
+    --iv-selected: var(--iv-light-selected);
+
+    /* Foreground / ink (semantic) — Navy typography hierarchy (2026-06-30 migration):
+       headings · section titles · key labels · links = brand navy; body/secondary/muted = slate. */
+    --iv-fg-strong: #0f172a; /* crisp ink — slate-900 (input text, key values) */
+    --iv-fg: #334155; /* body — slate-700 */
+    --iv-fg-secondary: #475569; /* secondary — slate-600 */
+    --iv-fg-muted: #5f6f86; /* meta / disabled — slate-500, nudged from #64748b for AA on gray surfaces */
+    --iv-fg-heading: #23438f; /* H1 · key labels · links (default) — brand navy */
+    --iv-fg-heading-strong: #1e3a8a; /* section/footer headings · link hover — deep navy */
+    --iv-fg-inverse: #ffffff; /* ink on brand / dark fills */
+
+    /* Elevation (semantic) — maps onto the shadow scale */
+    --iv-elevation-0: none;
+    --iv-elevation-1: var(--iv-shadow-sm);
+    --iv-elevation-2: var(--iv-shadow-md);
+    --iv-elevation-3: var(--iv-shadow-lg);
+    --iv-elevation-4: var(--iv-shadow-xl);
+
+    /* Layout containers & gutters */
+    --iv-container-sm: 640px;
+    --iv-container-md: 768px;
+    --iv-container-lg: 1024px;
+    --iv-container-xl: 1280px;
+    --iv-content-max: 1280px;
+    /* Mega menu panel width cap (MEGA_MENU_ARCHITECTURE §9.3) — dedicated, does not repoint content-max. */
+    --iv-mega-menu-max: 1440px;
+    --iv-gutter: 24px;
+    --iv-gutter-tight: 16px;
+
+    /* Icon sizing (Lucide) */
+    --iv-icon-xs: 14px;
+    --iv-icon-sm: 16px;
+    --iv-icon-md: 20px;
+    --iv-icon-lg: 24px;
+    --iv-icon-stroke: 1.75;
+
+    /* Primary brand gradient — Deep Navy → Electric Indigo (premium fills, e.g.
+       primary buttons). Subtle; no neon, no glassmorphism. */
+    --iv-gradient-primary: linear-gradient(135deg, #23438f 0%, #2f5eb8 100%);
+
+    /* Navigation rail — light industrial-gray surface (dark content).
+       Selected = soft Indigo highlight; hover = subtle. */
+    --iv-nav-bg: #f2f5f9;
+    --iv-nav-fg: var(--iv-fg);
+    --iv-nav-fg-muted: var(--iv-fg-muted);
+    --iv-nav-border: var(--iv-light-border);
+    --iv-nav-hover-bg: rgba(15, 23, 42, 0.05);
+    --iv-nav-selected-bg: var(--iv-brand-100);
+    --iv-nav-selected-fg: var(--iv-brand-700);
+    --iv-nav-badge-bg: var(--iv-light-border);
+    --iv-nav-badge-fg: var(--iv-fg-secondary);
+
+    /* shadcn/ui compatibility aliases — vendored primitives are themed THROUGH
+       the iv semantic tokens via these names (full color values, not HSL
+       triplets; tailwind.config maps each color key to `var(--name)`). */
+    --background: var(--iv-bg);
+    --foreground: var(--iv-fg);
+    --card: var(--iv-surface);
+    --card-foreground: var(--iv-fg);
+    --popover: var(--iv-overlay);
+    --popover-foreground: var(--iv-fg);
+    --primary: var(--iv-navy-700); /* DOMINANT Deep Navy (was indigo brand-600) */
+    --primary-foreground: var(--iv-fg-inverse);
+    --secondary: var(--iv-surface-2);
+    --secondary-foreground: var(--iv-fg);
+    --muted: var(--iv-surface-2);
+    --muted-foreground: var(--iv-fg-muted);
+    --accent: var(--iv-surface-2);
+    --accent-foreground: var(--iv-fg);
+    --destructive: var(--iv-danger-base);
+    --destructive-foreground: var(--iv-fg-inverse);
+    --border: var(--iv-border);
+    --input: var(--iv-border);
+    --ring: var(--iv-brand-500);
+  }
+
+  /* =========================================================================
+     DARK THEME — optional, first-class (DP §3.1). Applied via `.dark` on
+     <html> (Tailwind `darkMode: "class"`). Reassigns the SEMANTIC tokens only;
+     primitives are unchanged. No theme-switcher UI ships in this tranche.
+  ========================================================================= */
+  .dark {
+    --iv-bg: var(--iv-surface-base);
+    --iv-surface: var(--iv-surface-raised);
+    --iv-surface-2: var(--iv-surface-muted);
+    --iv-overlay: var(--iv-surface-overlay);
+    --iv-border: var(--iv-surface-border);
+    --iv-hover: var(--iv-surface-hover);
+    --iv-selected: var(--iv-surface-selected);
+
+    --iv-fg-strong: #ffffff;
+    --iv-fg: #ffffff;
+    --iv-fg-secondary: var(--iv-neutral-text);
+    --iv-fg-muted: var(--iv-neutral-bright);
+    --iv-fg-heading: #e2e8f0;
+    --iv-fg-heading-strong: #f1f5f9;
+    --iv-fg-inverse: #0a0e1a;
+
+    /* Dark-tuned shadows (the original heavy set) */
+    --iv-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --iv-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --iv-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+    --iv-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
+    --iv-shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.7), 0 8px 16px rgba(0, 0, 0, 0.5);
+    --iv-shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.8);
+
+    /* Primary brand fill on dark — navy reads a touch lighter; ink stays white. */
+    --primary: var(--iv-navy-600);
+    --primary-foreground: #ffffff;
+  }
+
+  /* =========================================================================
+     BASE RESETS & GLOBAL DEFAULTS
+  ========================================================================= */
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--iv-font-sans);
+    background-color: var(--iv-bg);
+    color: var(--iv-fg);
+    line-height: 1.5;
+    min-height: 100dvh;
+  }
+
+  /* Headings default to brand navy (typography hierarchy 2026-06-30); body stays slate.
+     A surface may override per element — explicit `text-*` utilities win over this base rule. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--iv-fg-heading);
+  }
+
+  /* Monospace for IDs, refs, financial figures */
+  code,
+  kbd,
+  samp,
+  pre,
+  [data-type="id"],
+  [data-type="ref"],
+  [data-type="amount"] {
+    font-family: var(--iv-font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Numeric tabular for all financial data */
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* Focus ring — WCAG 2.1 AA compliant */
+  :focus-visible {
+    outline: 2px solid var(--iv-brand-500);
+    outline-offset: 2px;
+    border-radius: var(--iv-radius-sm);
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: rgba(31, 49, 84, 0.18);
+    color: inherit;
+  }
+
+  /* Scrollbar — subtle dark */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--iv-surface-2);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--iv-border);
+    border-radius: var(--iv-radius-full);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--iv-fg-muted);
+  }
+}
+
+/* ==========================================================================
+   UTILITY COMPONENT CLASSES (LEGACY Wave-0 bootstrap)
+   Pre-composed CSS utilities from before the Doc-7B React kit existed. They
+   are dark-oriented and currently UNUSED by app code. The `src/frontend/` kit
+   supersedes them; retire these once surfaces adopt the kit (plan follow-up).
+   Kept (not removed) to avoid churn and preserve the bootstrap reference.
+========================================================================== */
+
+@layer components {
+  /* -----------------------------------------------------------------------
+     SURFACE UTILITIES
+  ----------------------------------------------------------------------- */
+  .iv-surface {
+    background-color: var(--iv-surface-raised);
+    border: 1px solid var(--iv-surface-border);
+    border-radius: var(--iv-radius-lg);
+  }
+
+  .iv-surface-muted {
+    background-color: var(--iv-surface-muted);
+    border: 1px solid var(--iv-surface-border);
+    border-radius: var(--iv-radius-md);
+  }
+
+  /* -----------------------------------------------------------------------
+     TEXT UTILITIES
+  ----------------------------------------------------------------------- */
+  .iv-text-primary {
+    color: #ffffff;
+  }
+  .iv-text-secondary {
+    color: var(--iv-neutral-text);
+  }
+  .iv-text-muted {
+    color: var(--iv-neutral-bright);
+  }
+  .iv-text-brand {
+    color: var(--iv-brand-400);
+  }
+  .iv-text-amber {
+    color: var(--iv-amber-400);
+  }
+  .iv-text-success {
+    color: var(--iv-success-text);
+  }
+  .iv-text-danger {
+    color: var(--iv-danger-text);
+  }
+  .iv-text-info {
+    color: var(--iv-info-text);
+  }
+  .iv-text-mono {
+    font-family: var(--iv-font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* -----------------------------------------------------------------------
+     BADGE / CHIP UTILITIES
+  ----------------------------------------------------------------------- */
+  .iv-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--iv-space-1);
+    padding: 2px var(--iv-space-2);
+    border-radius: var(--iv-radius-sm);
+    font-size: var(--iv-text-2xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  .iv-badge-brand {
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--iv-brand-300);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+  }
+  .iv-badge-success {
+    background: var(--iv-success-subtle);
+    color: var(--iv-success-text);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+  }
+  .iv-badge-warning {
+    background: var(--iv-warning-subtle);
+    color: var(--iv-warning-text);
+    border: 1px solid rgba(202, 138, 4, 0.2);
+  }
+  .iv-badge-danger {
+    background: var(--iv-danger-subtle);
+    color: var(--iv-danger-text);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+  }
+  .iv-badge-info {
+    background: var(--iv-info-subtle);
+    color: var(--iv-info-text);
+    border: 1px solid rgba(37, 99, 235, 0.2);
+  }
+  .iv-badge-neutral {
+    background: var(--iv-neutral-subtle);
+    color: var(--iv-neutral-text);
+    border: 1px solid rgba(107, 114, 128, 0.2);
+  }
+  .iv-badge-amber {
+    background: rgba(251, 191, 36, 0.1);
+    color: var(--iv-amber-300);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+  }
+
+  /* Financial Tier Badges */
+  .iv-tier-badge {
+    @apply iv-badge;
+  }
+  .iv-tier-a {
+    background: rgba(148, 163, 184, 0.12);
+    color: var(--iv-tier-a);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+  }
+  .iv-tier-b {
+    background: rgba(52, 211, 153, 0.12);
+    color: var(--iv-tier-b);
+    border: 1px solid rgba(52, 211, 153, 0.2);
+  }
+  .iv-tier-c {
+    background: rgba(96, 165, 250, 0.12);
+    color: var(--iv-tier-c);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+  }
+  .iv-tier-d {
+    background: rgba(251, 191, 36, 0.12);
+    color: var(--iv-tier-d);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+  }
+  .iv-tier-e {
+    background: rgba(167, 139, 250, 0.12);
+    color: var(--iv-tier-e);
+    border: 1px solid rgba(167, 139, 250, 0.2);
+  }
+
+  /* Capability Flag Chips */
+  .iv-cap-chip {
+    @apply iv-badge;
+  }
+  .iv-cap-supply {
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--iv-cap-supply);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+  }
+  .iv-cap-service {
+    background: rgba(129, 140, 248, 0.12);
+    color: var(--iv-cap-service);
+    border: 1px solid rgba(129, 140, 248, 0.25);
+  }
+  .iv-cap-fabricate {
+    background: rgba(251, 191, 36, 0.12);
+    color: var(--iv-cap-fabricate);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+  }
+  .iv-cap-consult {
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--iv-cap-consult);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+  }
+
+  /* -----------------------------------------------------------------------
+     BUTTON PRIMITIVES
+  ----------------------------------------------------------------------- */
+  .iv-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--iv-space-2);
+    font-family: var(--iv-font-sans);
+    font-size: var(--iv-text-sm);
+    font-weight: 500;
+    line-height: 1;
+    border-radius: var(--iv-radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition:
+      background-color var(--iv-duration-normal) var(--iv-ease-in-out),
+      border-color var(--iv-duration-normal) var(--iv-ease-in-out),
+      box-shadow var(--iv-duration-normal) var(--iv-ease-in-out),
+      color var(--iv-duration-normal) var(--iv-ease-in-out),
+      opacity var(--iv-duration-normal) var(--iv-ease-in-out);
+    user-select: none;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+
+  .iv-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* Sizes */
+  .iv-btn-sm {
+    padding: var(--iv-space-2) var(--iv-space-3);
+    font-size: var(--iv-text-xs);
+  }
+  .iv-btn-md {
+    padding: var(--iv-space-2) var(--iv-space-4);
+    font-size: var(--iv-text-sm);
+    height: 36px;
+  }
+  .iv-btn-lg {
+    padding: var(--iv-space-3) var(--iv-space-6);
+    font-size: var(--iv-text-base);
+    height: 44px;
+  }
+
+  /* Variants */
+  .iv-btn-primary {
+    background-color: var(--iv-brand-600);
+    color: #ffffff;
+    border-color: var(--iv-brand-500);
+  }
+  .iv-btn-primary:hover {
+    background-color: var(--iv-brand-500);
+    box-shadow: var(--iv-glow-brand);
+  }
+  .iv-btn-primary:active {
+    background-color: var(--iv-brand-700);
+  }
+
+  .iv-btn-secondary {
+    background-color: var(--iv-surface-muted);
+    color: var(--iv-neutral-text);
+    border-color: var(--iv-surface-border);
+  }
+  .iv-btn-secondary:hover {
+    background-color: var(--iv-surface-hover);
+    border-color: var(--iv-brand-800);
+    color: #ffffff;
+  }
+
+  .iv-btn-ghost {
+    background-color: transparent;
+    color: var(--iv-neutral-bright);
+    border-color: transparent;
+  }
+  .iv-btn-ghost:hover {
+    background-color: var(--iv-surface-hover);
+    color: #ffffff;
+  }
+
+  .iv-btn-amber {
+    background-color: var(--iv-amber-500);
+    color: #0a0e1a;
+    border-color: var(--iv-amber-400);
+    font-weight: 600;
+  }
+  .iv-btn-amber:hover {
+    background-color: var(--iv-amber-400);
+    box-shadow: var(--iv-glow-amber);
+  }
+
+  .iv-btn-danger {
+    background-color: rgba(220, 38, 38, 0.12);
+    color: var(--iv-danger-text);
+    border-color: rgba(220, 38, 38, 0.25);
+  }
+  .iv-btn-danger:hover {
+    background-color: rgba(220, 38, 38, 0.2);
+    border-color: var(--iv-danger-base);
+  }
+
+  /* -----------------------------------------------------------------------
+     FORM INPUT PRIMITIVES
+  ----------------------------------------------------------------------- */
+  .iv-input {
+    width: 100%;
+    background-color: var(--iv-surface-raised);
+    border: 1px solid var(--iv-surface-border);
+    border-radius: var(--iv-radius-md);
+    color: #ffffff;
+    font-family: var(--iv-font-sans);
+    font-size: var(--iv-text-sm);
+    padding: var(--iv-space-2) var(--iv-space-3);
+    height: 36px;
+    transition:
+      border-color var(--iv-duration-normal) var(--iv-ease-in-out),
+      box-shadow var(--iv-duration-normal) var(--iv-ease-in-out),
+      background-color var(--iv-duration-normal) var(--iv-ease-in-out);
+    outline: none;
+  }
+
+  .iv-input::placeholder {
+    color: var(--iv-neutral-base);
+  }
+
+  .iv-input:hover {
+    border-color: var(--iv-brand-800);
+    background-color: var(--iv-surface-overlay);
+  }
+
+  .iv-input:focus {
+    border-color: var(--iv-brand-500);
+    box-shadow: var(--iv-glow-brand);
+    background-color: var(--iv-surface-overlay);
+  }
+
+  .iv-input-error {
+    border-color: var(--iv-danger-base);
+  }
+  .iv-input-error:focus {
+    box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.4);
+  }
+
+  .iv-label {
+    display: block;
+    font-size: var(--iv-text-xs);
+    font-weight: 500;
+    color: var(--iv-neutral-bright);
+    margin-bottom: var(--iv-space-1);
+    letter-spacing: 0.01em;
+  }
+
+  /* -----------------------------------------------------------------------
+     DIVIDER
+  ----------------------------------------------------------------------- */
+  .iv-divider {
+    height: 1px;
+    background-color: var(--iv-surface-border);
+    border: none;
+    margin: 0;
+  }
+
+  /* -----------------------------------------------------------------------
+     LINK
+  ----------------------------------------------------------------------- */
+  .iv-link {
+    color: var(--iv-brand-400);
+    text-decoration: none;
+    transition: color var(--iv-duration-fast) var(--iv-ease-in-out);
+  }
+  .iv-link:hover {
+    color: var(--iv-brand-300);
+    text-decoration: underline;
+  }
+
+  /* -----------------------------------------------------------------------
+     SKELETON / LOADING
+  ----------------------------------------------------------------------- */
+  .iv-skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--iv-surface-muted) 25%,
+      var(--iv-surface-hover) 50%,
+      var(--iv-surface-muted) 75%
+    );
+    background-size: 200% 100%;
+    border-radius: var(--iv-radius-md);
+    animation: iv-shimmer var(--iv-duration-slowest) ease-in-out infinite;
+  }
+
+  @keyframes iv-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  /* -----------------------------------------------------------------------
+     SCROLLABLE CONTAINER
+  ----------------------------------------------------------------------- */
+  .iv-scroll-x {
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--iv-surface-border) transparent;
+  }
+
+  /* -----------------------------------------------------------------------
+     MOTION STANDARD — ENTRANCE CHOREOGRAPHY
+     (docs/frontend/design-system/motion_standard.md §2/§3)
+     For SERVER-rendered surfaces (grids, tables): apply to the PARENT; children
+     enter with a capped 30ms stagger. GPU-only properties (opacity/transform).
+     Framer Motion equivalents for client surfaces live in src/frontend/motion/.
+  ----------------------------------------------------------------------- */
+  /* Fade + 6px rise — card grids and section stacks. */
+  .iv-stagger-rise > * {
+    animation: iv-enter-rise var(--iv-duration-normal) var(--iv-ease-out) both;
+  }
+  /* Fade only — table rows (a translate would break position:sticky cells). */
+  .iv-stagger-fade > * {
+    animation: iv-enter-fade var(--iv-duration-normal) var(--iv-ease-out) both;
+  }
+  .iv-stagger-rise > *:nth-child(2),
+  .iv-stagger-fade > *:nth-child(2) {
+    animation-delay: 30ms;
+  }
+  .iv-stagger-rise > *:nth-child(3),
+  .iv-stagger-fade > *:nth-child(3) {
+    animation-delay: 60ms;
+  }
+  .iv-stagger-rise > *:nth-child(4),
+  .iv-stagger-fade > *:nth-child(4) {
+    animation-delay: 90ms;
+  }
+  .iv-stagger-rise > *:nth-child(5),
+  .iv-stagger-fade > *:nth-child(5) {
+    animation-delay: 120ms;
+  }
+  .iv-stagger-rise > *:nth-child(6),
+  .iv-stagger-fade > *:nth-child(6) {
+    animation-delay: 150ms;
+  }
+  .iv-stagger-rise > *:nth-child(7),
+  .iv-stagger-fade > *:nth-child(7) {
+    animation-delay: 180ms;
+  }
+  /* Cap: everything from the 8th child enters together — a long list must never
+     serialize its own visibility (Motion Standard §4.4). */
+  .iv-stagger-rise > *:nth-child(n + 8),
+  .iv-stagger-fade > *:nth-child(n + 8) {
+    animation-delay: 200ms;
+  }
+}
+
+@keyframes iv-enter-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes iv-enter-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   REDUCED-MOTION GUARD (Motion Standard §5) — collapses every CSS animation and
+   transition to an imperceptible duration for users who ask for less motion.
+   Framer Motion is guarded separately via MotionConfig reducedMotion="user"
+   (src/frontend/motion/motion-provider.tsx). Kept last so it wins the cascade.
+--------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    /* Delays must collapse too: the iv-stagger-* utilities use `both` fill + up-to-200ms
+       delays — an untouched delay would hold children invisible/offset and serialize a
+       pop-in for exactly the users who asked for less motion (RV-0154 F4). */
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}

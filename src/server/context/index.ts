@@ -7,3 +7,7 @@ export { resolveActiveOrg } from "./active-org";
 export type { ActiveOrgContext, ResolveActiveOrgResult } from "./active-org";
 export { withActiveOrg, withActiveOrgContext } from "./with-active-org";
 export type { ActiveOrgTx } from "./with-active-org";
+export { resolveSelfUser, withUserSelfContext } from "./user-self";
+export type { UserSelfTx } from "./user-self";
+export { resolveStaffContext } from "./staff-context";
+export type { ResolveStaffContext, StaffContext } from "./staff-context";

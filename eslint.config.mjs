@@ -24,6 +24,9 @@ const config = [
       "playwright-report/**",
       "test-results/**",
       "next-env.d.ts",
+      // Quarantined standalone experiments (own package.json/tsconfig where applicable) — not part
+      // of the governed Next.js app; excluded from the root gates (REPOSITORY_STRUCTURE v1.1 P-4).
+      "prototypes/**",
     ],
   },
 
@@ -63,6 +66,10 @@ const config = [
         },
         { type: "shared", pattern: "src/shared/**/*", mode: "file" },
         { type: "server", pattern: "src/server/**/*", mode: "file" },
+        // Doc-7 presentation kit (src/frontend reserved for Doc-7 — REPOSITORY_STRUCTURE §Review).
+        // Presentation-only: it may import other kit code + framework shared, NEVER a module
+        // (no contract/data coupling — Doc-7B BR4/BR10). app/ composes it; tests render it.
+        { type: "frontend", pattern: "src/frontend/**/*", mode: "file" },
         { type: "app", pattern: "app/**/*", mode: "file" },
         { type: "inngest", pattern: "inngest/**/*", mode: "file" },
         { type: "tests", pattern: "tests/**/*", mode: "file" },
@@ -104,7 +111,10 @@ const config = [
             },
             { from: ["shared"], allow: ["shared"] },
             { from: ["server"], allow: ["server", "module-contracts", "shared"] },
-            { from: ["app"], allow: ["app", "module-contracts", "server", "shared"] },
+            // The Doc-7 kit is presentation-only: kit + framework shared, NEVER a module
+            // (no `contracts/` coupling — the kit receives content by props; Doc-7B BR4/BR10).
+            { from: ["frontend"], allow: ["frontend", "shared"] },
+            { from: ["app"], allow: ["app", "module-contracts", "server", "shared", "frontend"] },
             { from: ["inngest"], allow: ["inngest", "module-contracts", "server", "shared"] },
             // Tests may compose any module's contracts/ + shared + server, never internals
             // (§10: no cross-module import bypasses contracts/, including from test code). E2E/a11y
@@ -112,7 +122,10 @@ const config = [
             // an axe scan) — `app` is the composition/UI layer, NOT a module internal, so this opens NO
             // cross-module-internal access and the One-Module rule is untouched. [WP-1.6 test-infra:
             // tests→app for e2e/a11y rendering, mirrors the WP-1.3 same-module boundaries refinement.]
-            { from: ["tests"], allow: ["tests", "module-contracts", "shared", "server", "app"] },
+            {
+              from: ["tests"],
+              allow: ["tests", "module-contracts", "shared", "server", "app", "frontend"],
+            },
           ],
         },
       ],

@@ -1,0 +1,308 @@
+<!doctype html>
+<!--
+  iVendorz — Vendor Profile TEMPLATE SYSTEM · HUB — HI-FI CLICKABLE PROTOTYPE (NON-PRODUCTION)
+  ==========================================================================================
+  The entry point: (1) Template SELECTION screen used during vendor onboarding, (2) Template
+  COMPARISON matrix, (3) LIVE side-by-side of all 5 templates (desktop/mobile). Stakeholders
+  compare all five, pick one, and approve BEFORE any production build (mockup-first gate).
+  All 5 templates render the SAME shared data (assets/data.js) — Content ≠ Presentation.
+  Non-authoritative · quarantined (prototypes/ registry) · coins no route/contract/token/page-ID.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>iVendorz · Vendor Profile Templates — Hi-Fi Prototype</title>
+    <link rel="stylesheet" href="assets/tokens.css" />
+    <link rel="stylesheet" href="assets/kit.css" />
+    <style>
+      /* Hub chrome — its own surface (not a product page); reuses iv tokens. */
+      body { background: var(--iv-bg); color: var(--iv-fg); }
+      .hub { min-height: 100vh; }
+      .hub-top { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--iv-surface) 92%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--iv-border); }
+      .hub-top .wrap { display: flex; align-items: center; gap: 16px; height: 62px; max-width: 1200px; }
+      .hub-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; color: var(--iv-fg-heading-strong); letter-spacing: -.01em; }
+      .hub-brand .dot { width: 30px; height: 30px; border-radius: 8px; background: var(--iv-gradient-primary); display: grid; place-items: center; color: #fff; font-size: 15px; }
+      .proto-pill { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--iv-amber-700); background: rgba(184,134,11,.12); border: 1px solid rgba(184,134,11,.28); padding: 4px 9px; border-radius: 999px; }
+      .iv-theme-dark .proto-pill { color: #dcc05f; }
+      .hub-tabs { display: flex; gap: 4px; margin-left: auto; }
+      .hub-tab { padding: 8px 14px; border-radius: 9px; font-size: 13.5px; font-weight: 600; color: var(--iv-fg-secondary); border: 1px solid transparent; }
+      .hub-tab:hover { background: var(--iv-hover); }
+      .hub-tab.on { background: var(--iv-navy-700); color: #fff; }
+      .theme-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px; border-radius: 9px; border: 1px solid var(--iv-border); background: var(--iv-surface); color: var(--iv-fg-secondary); font-size: 13px; }
+
+      .hub-hero { max-width: 1200px; margin: 0 auto; padding: clamp(32px,6vw,64px) 24px clamp(20px,3vw,32px); }
+      .hub-hero h1 { font-size: clamp(28px,5vw,46px); letter-spacing: -.02em; color: var(--iv-fg-heading-strong); max-width: 780px; }
+      .hub-hero p { font-size: clamp(15px,2vw,18px); color: var(--iv-fg-secondary); max-width: 680px; margin-top: 14px; line-height: 1.6; }
+      .content-note { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; font-size: 13px; font-weight: 600; color: var(--iv-navy-600); background: var(--iv-navy-50); border: 1px solid var(--iv-navy-100); padding: 8px 14px; border-radius: 999px; }
+      .iv-theme-dark .content-note { background: rgba(90,116,163,.14); color: #b7c6e0; border-color: rgba(90,116,163,.3); }
+
+      .view { max-width: 1200px; margin: 0 auto; padding: 12px 24px 80px; }
+      .view[hidden] { display: none; }
+
+      /* selection cards */
+      .sel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+      @media (max-width: 1000px) { .sel-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 660px) { .sel-grid { grid-template-columns: 1fr; } }
+      .tpl-card { border: 1.5px solid var(--iv-border); border-radius: 16px; background: var(--iv-surface); overflow: hidden; transition: .2s; display: flex; flex-direction: column; cursor: pointer; position: relative; }
+      .tpl-card:hover { border-color: var(--iv-navy-300); box-shadow: var(--iv-shadow-lg); transform: translateY(-3px); }
+      .tpl-card.sel { border-color: var(--iv-navy-600); box-shadow: 0 0 0 3px rgba(31,49,84,.12), var(--iv-shadow-lg); }
+      .tpl-check { position: absolute; top: 12px; right: 12px; width: 26px; height: 26px; border-radius: 50%; background: var(--iv-surface); border: 2px solid var(--iv-border); display: grid; place-items: center; color: transparent; transition: .15s; z-index: 2; }
+      .tpl-card.sel .tpl-check { background: var(--iv-navy-600); border-color: var(--iv-navy-600); color: #fff; }
+      .tpl-thumb { height: 172px; border-bottom: 1px solid var(--iv-border); overflow: hidden; position: relative; background: var(--iv-surface-2); }
+      .tpl-num { position: absolute; top: 12px; left: 12px; z-index: 2; font-family: var(--iv-font-mono); font-size: 11px; font-weight: 700; color: #fff; background: rgba(11,19,34,.6); padding: 3px 8px; border-radius: 6px; backdrop-filter: blur(4px); }
+      .tpl-info { padding: 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+      .tpl-name { font-size: 17px; font-weight: 800; color: var(--iv-fg-heading-strong); }
+      .tpl-targets { display: flex; flex-wrap: wrap; gap: 5px; }
+      .tpl-focus { font-size: 13px; color: var(--iv-fg-secondary); line-height: 1.5; }
+      .tpl-chars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+      .tpl-chars li { font-size: 12.5px; color: var(--iv-fg-secondary); display: flex; gap: 7px; align-items: flex-start; }
+      .tpl-chars .ic { color: var(--iv-success-base); width: 14px; height: 14px; margin-top: 2px; flex: none; }
+      .tpl-actions { display: flex; gap: 8px; margin-top: auto; padding-top: 6px; }
+
+      /* wireframe thumbnails */
+      .wf { position: absolute; inset: 0; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+      .wf b { display: block; border-radius: 3px; background: var(--iv-navy-200); }
+      .iv-theme-dark .wf b { background: var(--iv-navy-600); }
+      .wf .bar { height: 12px; }
+      .wf .cover { height: 46px; border-radius: 5px; background: var(--iv-gradient-primary); }
+      .wf .row { display: flex; gap: 6px; }
+      .wf .row > b { flex: 1; height: 24px; }
+      .wf .sq { width: 22px; height: 22px; border-radius: 5px; }
+      .wf .muted { background: var(--iv-border); }
+
+      /* selection footer bar */
+      .sel-foot { position: sticky; bottom: 0; margin-top: 24px; background: color-mix(in srgb, var(--iv-surface) 94%, transparent); backdrop-filter: blur(10px); border: 1px solid var(--iv-border); border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; gap: 16px; box-shadow: var(--iv-shadow-lg); }
+      .sel-foot .lbl { font-size: 13px; color: var(--iv-fg-secondary); }
+      .sel-foot .lbl b { color: var(--iv-fg-heading-strong); }
+
+      /* comparison table */
+      .cmp-wrap { overflow-x: auto; border: 1px solid var(--iv-border); border-radius: 14px; }
+      table.cmp { width: 100%; border-collapse: collapse; min-width: 860px; font-size: 13.5px; }
+      table.cmp th, table.cmp td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--iv-border); vertical-align: top; }
+      table.cmp thead th { background: var(--iv-surface-2); position: sticky; top: 0; }
+      table.cmp thead th:first-child { border-top-left-radius: 14px; }
+      table.cmp th.rowh { color: var(--iv-fg-muted); font-weight: 600; width: 150px; background: var(--iv-surface); }
+      table.cmp .tpl-h { font-weight: 800; color: var(--iv-fg-heading-strong); font-size: 14px; }
+      table.cmp .tpl-h span { display: block; font-weight: 500; font-size: 11.5px; color: var(--iv-fg-muted); margin-top: 2px; }
+      table.cmp td { color: var(--iv-fg-secondary); }
+      table.cmp tr:hover td { background: var(--iv-hover); }
+      .rec { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; color: var(--iv-success-ink); }
+      .iv-theme-dark .rec { color: var(--iv-success-text); }
+
+      /* live side-by-side */
+      .live-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+      .live-strip { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 16px; scroll-snap-type: x mandatory; }
+      .live-col { flex: none; scroll-snap-align: start; }
+      .live-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+      .live-head b { font-size: 14px; color: var(--iv-fg-heading-strong); }
+      .live-viewport { border: 10px solid #0b1322; border-radius: 22px; overflow: hidden; box-shadow: var(--iv-shadow-xl); background: #0b1322; }
+      .live-viewport iframe { border: 0; display: block; background: var(--iv-surface); }
+      .seg { display: inline-flex; background: var(--iv-surface-2); border: 1px solid var(--iv-border); border-radius: 9px; padding: 2px; }
+      .seg button { border: 0; background: transparent; padding: 6px 12px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--iv-fg-secondary); display: inline-flex; align-items: center; gap: 6px; }
+      .seg button.on { background: var(--iv-navy-700); color: #fff; }
+
+      .hub-footer { border-top: 1px solid var(--iv-border); padding: 24px; text-align: center; font-size: 12.5px; color: var(--iv-fg-muted); max-width: 1200px; margin: 0 auto; }
+    </style>
+  </head>
+  <body>
+    <div class="hub" id="hub">
+      <header class="hub-top">
+        <div class="wrap">
+          <div class="hub-brand"><span class="dot">iV</span> iVendorz <span style="font-weight:600;color:var(--iv-fg-muted)">· Vendor Profiles</span></div>
+          <span class="proto-pill">Prototype · non-production</span>
+          <nav class="hub-tabs">
+            <button class="hub-tab on" data-view="select">Select template</button>
+            <button class="hub-tab" data-view="compare">Compare</button>
+            <button class="hub-tab" data-view="live">Live preview</button>
+          </nav>
+          <button class="theme-btn" id="hub-theme"><svg class="ic ic-sm"><use href="#i-moon"/></svg><span>Dark</span></button>
+        </div>
+      </header>
+
+      <div class="hub-hero">
+        <h1>One vendor. Five ways to show up.</h1>
+        <p>Every vendor picks a profile template during onboarding. The <strong>same company data</strong> powers all five — only the layout, hierarchy and emphasis change. Choose, compare, and approve the design before we build.</p>
+        <div class="content-note"><svg class="ic ic-sm"><use href="#i-layers"/></svg> Content ≠ Presentation — all 5 templates read the identical shared data model</div>
+      </div>
+
+      <!-- ===================== SELECT ===================== -->
+      <section class="view" id="view-select">
+        <div class="sel-grid" id="sel-grid"></div>
+        <div class="sel-foot">
+          <svg class="ic ic-lg" style="color:var(--iv-navy-600)"><use href="#i-circle-dot"/></svg>
+          <div class="lbl">Selected: <b id="sel-name">Layout 01 · Corporate Classic</b> — you can change this anytime after onboarding.</div>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <a class="btn btn-outline" id="sel-preview" href="layout-01-corporate-classic.html" target="_blank"><svg class="ic ic-sm"><use href="#i-external-link"/></svg> Preview live</a>
+            <button class="btn btn-primary" id="sel-continue"><svg class="ic ic-sm"><use href="#i-check"/></svg> Use this template</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== COMPARE ===================== -->
+      <section class="view" id="view-compare" hidden>
+        <div class="cmp-wrap"><table class="cmp" id="cmp-table"></table></div>
+        <p style="font-size:12.5px;color:var(--iv-fg-muted);margin-top:14px;display:flex;align-items:center;gap:7px"><svg class="ic ic-sm" style="color:var(--iv-amber-600)"><use href="#i-award"/></svg> All templates support the full section set — enable / disable / reorder sections per vendor. The differences below are about default <em>emphasis</em>, not available data.</p>
+      </section>
+
+      <!-- ===================== LIVE ===================== -->
+      <section class="view" id="view-live" hidden>
+        <div class="live-toolbar">
+          <strong style="font-size:15px;color:var(--iv-fg-heading-strong)">All five, rendering the same data — live</strong>
+          <div class="seg" id="live-device" style="margin-left:auto">
+            <button class="on" data-dev="desktop"><svg class="ic ic-sm"><use href="#i-monitor"/></svg> Desktop</button>
+            <button data-dev="mobile"><svg class="ic ic-sm"><use href="#i-smartphone"/></svg> Mobile</button>
+          </div>
+        </div>
+        <div class="live-strip" id="live-strip"></div>
+        <p style="font-size:12.5px;color:var(--iv-fg-muted);margin-top:8px">Thumbnails are the actual layout pages, scaled. Open any in a full tab from the <b>Select</b> or <b>Preview live</b> buttons.</p>
+      </section>
+
+      <footer class="hub-footer">
+        iVendorz Vendor Profile Template System — high-fidelity prototype for <b>visual approval only</b>. Non-production · no backend · 100% mock data · quarantined under <code>prototypes/</code>. Approving the design authorizes no build; production stays wave-gated.
+      </footer>
+    </div>
+
+    <script src="assets/data.js"></script>
+    <script src="assets/icons.js"></script>
+    <script>
+      var TEMPLATES = [
+        { n: "01", id: "corporate", file: "layout-01-corporate-classic.html", name: "Corporate Classic", targets: ["Manufacturers", "Engineering", "Suppliers"], focus: "Professional, balanced, trust-first. Credibility, products and contact in a familiar corporate structure.", chars: ["Multi-page · 5 sections", "Curated home + tab nav", "Trust & capability up front"] },
+        { n: "02", id: "modern", file: "layout-02-modern-industrial.html", name: "Modern Industrial", targets: ["Premium vendors", "Large orgs", "National brands"], focus: "Branding and scale. A large cinematic hero, bold statistics and strong visual hierarchy.", chars: ["Multi-page · cinematic hero", "Prominent statistics band", "Modern cards + leadership team"] },
+        { n: "03", id: "catalogue", file: "layout-03-product-catalogue.html", name: "Product Catalogue", targets: ["Importers", "Distributors", "Equipment"], focus: "Products first. A full Products page with category navigation, spec filtering and inquiry CTAs.", chars: ["Multi-page · products-led", "Sticky filter rail + facets", "Dense product grid"] },
+        { n: "04", id: "portfolio", file: "layout-04-portfolio-projects.html", name: "Portfolio & Projects", targets: ["EPC", "Contractors", "Fabricators"], focus: "Experience and proof. Project-led home, a full Projects page with timeline, gallery and client logos.", chars: ["Multi-page · project-led home", "Case study + project timeline", "Image-led, client proof"] },
+        { n: "05", id: "landing", file: "layout-05-business-landing.html", name: "Business Landing", targets: ["Starter package"], focus: "Lightweight and fast. A single-page introduction — company, products, contact and RFQ CTA.", chars: ["Single-page (by design)", "Mobile-first & fast", "Essentials only, no nav"] },
+      ];
+
+      function wf(id) {
+        var m = {
+          corporate: '<b class="cover"></b><div class="row"><b class="sq"></b><b class="bar" style="flex:1;margin-top:5px"></b></div><div class="row"><b style="flex:2;height:40px"></b><b class="muted" style="flex:1;height:40px"></b></div><div class="row"><b class="muted" style="height:20px"></b><b class="muted" style="height:20px"></b><b class="muted" style="height:20px"></b></div>',
+          modern: '<b class="cover" style="height:72px"></b><div class="row"><b style="height:26px"></b><b style="height:26px"></b><b style="height:26px"></b><b style="height:26px"></b></div><div class="row"><b class="muted" style="height:30px"></b><b class="muted" style="height:30px"></b></div>',
+          catalogue: '<b class="cover" style="height:28px"></b><div class="row" style="flex:1"><b class="muted" style="width:34px"></b><div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px"><b style="height:30px"></b><b style="height:30px"></b><b style="height:30px"></b><b style="height:30px"></b><b style="height:30px"></b><b style="height:30px"></b></div></div>',
+          portfolio: '<b class="cover" style="height:60px"></b><div class="row"><b style="height:44px;flex:2"></b><b class="muted" style="height:44px;flex:1"></b></div><b class="muted bar" style="width:70%"></b>',
+          landing: '<div style="max-width:120px;margin:0 auto;display:flex;flex-direction:column;gap:6px;width:100%"><b class="cover" style="height:40px"></b><b class="sq" style="margin:0 auto;border-radius:50%"></b><b class="bar" style="width:80%;margin:0 auto"></b><div class="row"><b class="muted" style="height:22px"></b><b class="muted" style="height:22px"></b></div></div>',
+        };
+        return '<div class="wf">' + (m[id] || "") + "</div>";
+      }
+
+      var I = window.ivIcon;
+      var selected = 0;
+
+      // ---- selection cards ----
+      var grid = document.getElementById("sel-grid");
+      grid.innerHTML = TEMPLATES.map(function (t, i) {
+        return (
+          '<article class="tpl-card' + (i === 0 ? " sel" : "") + '" data-i="' + i + '">' +
+          '<div class="tpl-check">' + I("check", "ic-sm") + "</div>" +
+          '<div class="tpl-thumb"><span class="tpl-num">Layout ' + t.n + "</span>" + wf(t.id) + "</div>" +
+          '<div class="tpl-info">' +
+          '<div class="tpl-name">' + t.name + "</div>" +
+          '<div class="tpl-targets">' + t.targets.map(function (x) { return '<span class="badge badge-navy">' + x + "</span>"; }).join("") + "</div>" +
+          '<div class="tpl-focus">' + t.focus + "</div>" +
+          '<ul class="tpl-chars">' + t.chars.map(function (c) { return "<li>" + I("check-circle", "ic-sm") + " " + c + "</li>"; }).join("") + "</ul>" +
+          '<div class="tpl-actions"><a class="btn btn-outline btn-sm" href="' + t.file + '" target="_blank" onclick="event.stopPropagation()">' + I("external-link", "ic-sm") + " Preview</a>" +
+          '<button class="btn btn-primary btn-sm btn-block pick" data-i="' + i + '">' + I("check", "ic-sm") + " Select</button></div>" +
+          "</div></article>"
+        );
+      }).join("");
+
+      function select(i) {
+        selected = i;
+        document.querySelectorAll(".tpl-card").forEach(function (c, ci) { c.classList.toggle("sel", ci === i); });
+        document.getElementById("sel-name").textContent = "Layout " + TEMPLATES[i].n + " · " + TEMPLATES[i].name;
+        document.getElementById("sel-preview").href = TEMPLATES[i].file;
+      }
+      grid.addEventListener("click", function (e) {
+        var card = e.target.closest(".tpl-card");
+        var pick = e.target.closest(".pick");
+        if (pick) { select(+pick.getAttribute("data-i")); return; }
+        if (card) select(+card.getAttribute("data-i"));
+      });
+      document.getElementById("sel-continue").addEventListener("click", function () {
+        toast("Template selected: Layout " + TEMPLATES[selected].n + " · " + TEMPLATES[selected].name + ". (Mock — onboarding continues; nothing persists.)");
+      });
+
+      // ---- comparison table ----
+      var rows = [
+        ["Best for", TEMPLATES.map(function (t) { return t.targets.join(", "); })],
+        ["Recommended package", ["Growth / Pro", "Premium / Enterprise", "Pro (catalogue)", "Pro / Premium", "Starter"]],
+        ["Structure", ["Multi-page (5)", "Multi-page (5)", "Multi-page (5)", "Multi-page (5)", "Single-page"]],
+        ["Layout style", ["Balanced corporate", "Cinematic, bold", "Product-first grid", "Editorial, image-led", "Single-page"]],
+        ["Hero", ["Cover + logo card", "Full-bleed large hero", "Compact banner", "Large project hero", "Centered intro"]],
+        ["Navigation", ["5-page tab nav", "5-page tab nav", "5-page + filter rail", "5-page tab nav", "None (scroll)"]],
+        ["Product emphasis", ["Medium", "Medium", "Very high", "Low–medium", "Medium"]],
+        ["Project emphasis", ["Medium", "High", "Low", "Very high", "Low"]],
+        ["Statistics band", ["Yes", "Prominent", "No", "Case metrics", "Compact"]],
+        ["Content density", ["Balanced", "Spacious", "Dense", "Spacious", "Light"]],
+        ["Typical length", ["Long", "Long", "Medium", "Long", "Short"]],
+        ["Mobile behavior", ["Responsive", "Responsive", "Rail collapses", "Responsive", "Mobile-first"]],
+      ];
+      var recommend = ["Manufacturers & engineering firms", "Large brands wanting presence", "Distributors with deep catalogues", "EPC & contractors proving track record", "New / starter vendors"];
+      var head = '<thead><tr><th class="rowh"></th>' + TEMPLATES.map(function (t) { return '<th><div class="tpl-h">' + t.name + "<span>Layout " + t.n + "</span></div></th>"; }).join("") + "</tr></thead>";
+      var body = "<tbody>";
+      rows.forEach(function (r) {
+        body += '<tr><th class="rowh">' + r[0] + "</th>" + r[1].map(function (v) { return "<td>" + v + "</td>"; }).join("") + "</tr>";
+      });
+      body += '<tr><th class="rowh">Pick if…</th>' + recommend.map(function (v) { return '<td><span class="rec">' + I("check-circle", "ic-sm") + " " + v + "</span></td>"; }).join("") + "</tr>";
+      body += "</tbody>";
+      document.getElementById("cmp-table").innerHTML = head + body;
+
+      // ---- live side-by-side (scaled iframes) ----
+      var liveDevice = "desktop";
+      function renderLive() {
+        var W = liveDevice === "mobile" ? 390 : 1280;
+        var scale = liveDevice === "mobile" ? 0.62 : 0.30;
+        var VW = Math.round(W * scale);
+        var H = liveDevice === "mobile" ? 720 : 900;
+        var VH = Math.round(H * scale);
+        document.getElementById("live-strip").innerHTML = TEMPLATES.map(function (t) {
+          return (
+            '<div class="live-col">' +
+            '<div class="live-head"><b>' + t.name + '</b><a class="btn btn-ghost btn-sm" href="' + t.file + '" target="_blank">' + I("external-link", "ic-sm") + "</a></div>" +
+            '<div class="live-viewport" style="width:' + (VW + 20) + "px;height:" + (VH + 20) + 'px">' +
+            '<iframe src="' + t.file + "?device=" + liveDevice + '" style="width:' + W + "px;height:" + H + "px;transform:scale(" + scale + ');transform-origin:0 0" loading="lazy" title="' + t.name + '"></iframe>' +
+            "</div></div>"
+          );
+        }).join("");
+      }
+      document.getElementById("live-device").addEventListener("click", function (e) {
+        var b = e.target.closest("button[data-dev]");
+        if (!b) return;
+        this.querySelectorAll("button").forEach(function (x) { x.classList.remove("on"); });
+        b.classList.add("on");
+        liveDevice = b.getAttribute("data-dev");
+        renderLive();
+      });
+
+      // ---- view tabs ----
+      var liveInit = false;
+      document.querySelector(".hub-tabs").addEventListener("click", function (e) {
+        var b = e.target.closest(".hub-tab");
+        if (!b) return;
+        this.querySelectorAll(".hub-tab").forEach(function (x) { x.classList.remove("on"); });
+        b.classList.add("on");
+        var v = b.getAttribute("data-view");
+        ["select", "compare", "live"].forEach(function (k) { document.getElementById("view-" + k).hidden = k !== v; });
+        if (v === "live" && !liveInit) { renderLive(); liveInit = true; }
+        window.scrollTo(0, 0);
+      });
+
+      // ---- theme toggle (whole hub) ----
+      var hub = document.getElementById("hub");
+      document.getElementById("hub-theme").addEventListener("click", function () {
+        var dark = hub.classList.toggle("iv-theme-dark");
+        this.querySelector("span").textContent = dark ? "Light" : "Dark";
+        this.querySelector("use").setAttribute("href", dark ? "#i-sun" : "#i-moon");
+      });
+
+      // ---- toast ----
+      var rack;
+      function toast(msg) {
+        if (!rack) { rack = document.createElement("div"); rack.className = "pc-toasts"; document.body.appendChild(rack); }
+        var t = document.createElement("div"); t.className = "pc-toast"; t.innerHTML = I("circle-dot") + "<span>" + msg + "</span>";
+        rack.appendChild(t); while (rack.children.length > 3) rack.removeChild(rack.firstChild);
+        setTimeout(function () { t.classList.add("out"); setTimeout(function () { t.remove(); }, 300); }, 3600);
+      }
+    </script>
+  </body>
+</html>

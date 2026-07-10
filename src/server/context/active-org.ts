@@ -45,6 +45,14 @@ export interface ActiveOrgContext {
 /**
  * Outcome of active-org resolution. `resolved: false` is the FAIL-CLOSED outcome (no user, or no active
  * membership) — NOT an error, NOT all-orgs. The caller MUST treat it as "no tenant context" (deny / empty).
+ *
+ * NOTE (W2-IDN-6.6 / RV-0150 OBS-B1): this general context resolution validates ACTIVE MEMBERSHIP only
+ * (Doc-5C §3.3 — "validate that the principal holds an active membership") and DELIBERATELY does NOT gate
+ * `org_status`. The "org not suspended" precondition is the `switch_active_organization` BUSINESS check
+ * (Doc-4C §C8 PassB:535), NOT a general active-context property — because Doc-4C §C5 `soft_delete_organization`
+ * requires active-org CONTEXT on a `suspended` org (STATE `active|suspended → soft_deleted`). Gating
+ * `org_status` HERE would break that frozen lifecycle edge. See `[ESC-IDN-CTX-SUSPENDED-DOWNSTREAM]`
+ * (Handoff Note, W2-IDN-6.6) — the packet's downstream-resolveActiveOrg org-status gate is escalated.
  */
 export type ResolveActiveOrgResult =
   | { resolved: true; context: ActiveOrgContext }
@@ -89,16 +97,16 @@ export async function resolveActiveOrg(
     return { resolved: false, reason: "no-active-membership" };
   }
 
-  // (3) Resolve active_org from a confirmed active membership.
+  // (3) Resolve active_org from a confirmed active membership (Doc-5C §3.3 — ACTIVE MEMBERSHIP is the
+  //     general context predicate; org_status is NOT gated here — see the type-doc note + §C5 rationale).
   //
   // Wave-1 selection rule (DOCUMENTED): a Wave-1 user holds exactly ONE membership — the founding Owner
-  // membership in their personal org (WP-1.3 provisioning). When >1 active membership exists (a future
-  // multi-org user before `switch_active_organization` lands — Doc-5C §C8), pick the DETERMINISTIC
-  // DEFAULT: the OLDEST active membership (first in the `joinedAt asc, id asc` order above — the personal
-  // org, created at provisioning, is the earliest). This is a default-context selector, not a stored
-  // preference; the authoritative active-context state model is M1-owned (Doc-4C §C8 / Doc-5C §3.3), and
-  // an explicit `switch_active_organization` (a future wave) overrides this default. The client NEVER
-  // supplies the choice (CHK-5A-061).
+  // membership in their personal org (WP-1.3 provisioning). When >1 active membership exists (a multi-org
+  // user; the explicit `switch_active_organization` / `Iv-Active-Organization` header selects the target —
+  // Doc-4C §C8 / Doc-5C §3.3), pick the DETERMINISTIC DEFAULT: the OLDEST active membership (first in the
+  // `joinedAt asc, id asc` order above — the personal org, created at provisioning, is the earliest). This
+  // is a default-context selector, not a stored preference; the authoritative active-context state model is
+  // M1-owned. The client NEVER supplies the choice (CHK-5A-061).
   const selected = activeMemberships[0]!;
 
   return {

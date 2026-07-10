@@ -1,0 +1,617 @@
+<title>/vendors vs /discover — SEO surface prototype</title>
+<style>
+  :root {
+    --ground: #eaeef5;
+    --surface: #ffffff;
+    --surface-2: #f5f8fc;
+    --ink: #16203a;
+    --ink-2: #55627d;
+    --ink-3: #8a95ab;
+    --line: #dde3ee;
+    --line-2: #e9edf5;
+    --navy: #0e2a52;
+    --navy-2: #16386c;
+    --navy-line: #26456f;
+    --navy-ink: #cdd9ef;
+    --navy-ink-2: #7f95b8;
+    --indigo: #4f46e5;
+    --indigo-ink: #4338ca;
+    --indigo-soft: #eef0fe;
+    --gold: #a9740c;
+    --gold-soft: #fbf1d8;
+    --good: #0d7a53;
+    --good-soft: #dcf3e8;
+    --good-line: #a9dcc4;
+    --bad: #c5294f;
+    --bad-soft: #fbe0e7;
+    --bad-line: #f0b6c6;
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(16,32,58,.05), 0 12px 32px -14px rgba(16,32,58,.22);
+    --shadow-sm: 0 1px 2px rgba(16,32,58,.06), 0 4px 12px -8px rgba(16,32,58,.18);
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #080e1b;
+      --surface: #0f1a2e;
+      --surface-2: #16233c;
+      --ink: #e8edf7;
+      --ink-2: #a2b2cd;
+      --ink-3: #6c7d9c;
+      --line: #21324e;
+      --line-2: #1a2942;
+      --navy: #0a1f3d;
+      --navy-2: #123058;
+      --navy-line: #223f65;
+      --navy-ink: #cdd9ef;
+      --navy-ink-2: #7f95b8;
+      --indigo: #818cf8;
+      --indigo-ink: #a5b0ff;
+      --indigo-soft: #1b2547;
+      --gold: #e6b53f;
+      --gold-soft: #33280f;
+      --good: #34d399;
+      --good-soft: #10281f;
+      --good-line: #1f5642;
+      --bad: #fb7185;
+      --bad-soft: #2c1520;
+      --bad-line: #5a2436;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 16px 40px -18px rgba(0,0,0,.7);
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.4), 0 6px 16px -10px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="light"] {
+    --ground: #eaeef5; --surface: #ffffff; --surface-2: #f5f8fc;
+    --ink: #16203a; --ink-2: #55627d; --ink-3: #8a95ab;
+    --line: #dde3ee; --line-2: #e9edf5;
+    --navy: #0e2a52; --navy-2: #16386c; --navy-line: #26456f;
+    --navy-ink: #cdd9ef; --navy-ink-2: #7f95b8;
+    --indigo: #4f46e5; --indigo-ink: #4338ca; --indigo-soft: #eef0fe;
+    --gold: #a9740c; --gold-soft: #fbf1d8;
+    --good: #0d7a53; --good-soft: #dcf3e8; --good-line: #a9dcc4;
+    --bad: #c5294f; --bad-soft: #fbe0e7; --bad-line: #f0b6c6;
+    --shadow: 0 1px 2px rgba(16,32,58,.05), 0 12px 32px -14px rgba(16,32,58,.22);
+    --shadow-sm: 0 1px 2px rgba(16,32,58,.06), 0 4px 12px -8px rgba(16,32,58,.18);
+  }
+  :root[data-theme="dark"] {
+    --ground: #080e1b; --surface: #0f1a2e; --surface-2: #16233c;
+    --ink: #e8edf7; --ink-2: #a2b2cd; --ink-3: #6c7d9c;
+    --line: #21324e; --line-2: #1a2942;
+    --navy: #0a1f3d; --navy-2: #123058; --navy-line: #223f65;
+    --navy-ink: #cdd9ef; --navy-ink-2: #7f95b8;
+    --indigo: #818cf8; --indigo-ink: #a5b0ff; --indigo-soft: #1b2547;
+    --gold: #e6b53f; --gold-soft: #33280f;
+    --good: #34d399; --good-soft: #10281f; --good-line: #1f5642;
+    --bad: #fb7185; --bad-soft: #2c1520; --bad-line: #5a2436;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 16px 40px -18px rgba(0,0,0,.7);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.4), 0 6px 16px -10px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(120% 80% at 85% -10%, color-mix(in srgb, var(--indigo) 9%, transparent), transparent 60%),
+      var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: clamp(20px, 4vw, 52px) clamp(16px, 4vw, 40px) 72px; }
+
+  /* ---- Masthead ---- */
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .09em; text-transform: uppercase;
+    color: var(--ink-2); background: var(--surface); border: 1px solid var(--line);
+    padding: 6px 12px; border-radius: 999px; box-shadow: var(--shadow-sm);
+  }
+  .eyebrow b { color: var(--indigo-ink); font-weight: 600; }
+  h1.thesis {
+    font-size: clamp(28px, 5vw, 46px); line-height: 1.04; letter-spacing: -.02em;
+    font-weight: 680; margin: 20px 0 0; max-width: 16ch; text-wrap: balance;
+  }
+  h1.thesis .alt { color: var(--indigo); }
+  .lede { margin: 16px 0 0; max-width: 62ch; color: var(--ink-2); font-size: clamp(15px, 1.5vw, 17px); }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 12.5px; font-weight: 600; padding: 6px 12px 6px 10px; border-radius: 999px;
+    border: 1px solid transparent;
+  }
+  .pill .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .pill.good { background: var(--good-soft); color: var(--good); border-color: var(--good-line); }
+  .pill.good .dot { background: var(--good); }
+  .pill.bad { background: var(--bad-soft); color: var(--bad); border-color: var(--bad-line); }
+  .pill.bad .dot { background: var(--bad); }
+
+  /* ---- Compare grid ---- */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 34px; }
+  @media (max-width: 940px) { .compare { grid-template-columns: 1fr; } }
+
+  .browser {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column;
+  }
+  .browser-tag {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 12px 16px; border-bottom: 1px solid var(--line-2); background: var(--surface-2);
+  }
+  .browser-tag .who { display: flex; align-items: center; gap: 9px; font-weight: 650; font-size: 14px; }
+  .browser-tag .who code { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); font-weight: 500; }
+  .verdict { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+    font-weight: 600; padding: 5px 10px; border-radius: 8px; border: 1px solid transparent; white-space: nowrap; }
+  .verdict.good { color: var(--good); background: var(--good-soft); border-color: var(--good-line); }
+  .verdict.bad { color: var(--bad); background: var(--bad-soft); border-color: var(--bad-line); }
+
+  /* url bar */
+  .urlbar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--surface); border-bottom: 1px solid var(--line-2); }
+  .dots { display: flex; gap: 6px; flex: none; }
+  .dots i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+  .dots i:nth-child(1){ background:#f2695a;} .dots i:nth-child(2){ background:#f4be4f;} .dots i:nth-child(3){ background:#5bc466;}
+  .addr {
+    flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0;
+    font-family: var(--mono); font-size: 12.5px; color: var(--ink);
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px;
+  }
+  .addr .lock { flex: none; font-size: 12px; }
+  .addr .path { color: var(--ink); font-weight: 600; }
+  .addr .host { color: var(--ink-3); }
+  .addr .idx { margin-left: auto; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; font-weight: 700; padding: 2px 7px; border-radius: 5px; }
+  .addr .idx.good { color: var(--good); background: var(--good-soft); }
+  .addr .idx.bad { color: var(--bad); background: var(--bad-soft); }
+
+  /* viewport shared */
+  .viewport { position: relative; }
+  .vp-scale { }
+
+  /* ===== PUBLIC marketing chrome ===== */
+  .mkt-nav {
+    display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-bottom: 1px solid var(--line-2);
+    background: var(--surface);
+  }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 750; letter-spacing: -.01em; font-size: 15px; }
+  .brand .mark { width: 22px; height: 22px; border-radius: 6px; background: linear-gradient(135deg, var(--navy-2), var(--indigo)); display: grid; place-items: center; color: #fff; font-size: 13px; font-weight: 800; }
+  .mkt-links { display: flex; gap: 15px; font-size: 13px; color: var(--ink-2); }
+  .mkt-links a { color: inherit; text-decoration: none; }
+  .mkt-links a.on { color: var(--ink); font-weight: 650; }
+  .mkt-cta { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .btn { font-size: 12.5px; font-weight: 600; padding: 7px 13px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+  .btn.pri { background: var(--indigo); border-color: var(--indigo); color: #fff; }
+
+  .vp-body { padding: 18px 18px 20px; }
+  .page-h { font-size: 21px; font-weight: 700; letter-spacing: -.01em; margin: 0; }
+  .page-sub { margin: 5px 0 0; color: var(--ink-2); font-size: 13px; }
+  .search {
+    margin-top: 13px; display: flex; align-items: center; gap: 9px;
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 11px; padding: 10px 13px; color: var(--ink-3); font-size: 13px;
+  }
+  .search .mag { flex: none; }
+  .search .to { margin-left: auto; font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); border: 1px dashed var(--line); padding: 2px 6px; border-radius: 5px; }
+
+  .listing { display: grid; grid-template-columns: 150px 1fr; gap: 16px; margin-top: 16px; }
+  @media (max-width: 480px){ .listing { grid-template-columns: 1fr; } }
+  .facets { border: 1px solid var(--line); border-radius: 11px; padding: 12px; background: var(--surface); align-self: start; }
+  .facets h4 { margin: 0 0 9px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+  .facet-grp { margin-bottom: 11px; }
+  .facet-grp .lbl { font-size: 11.5px; font-weight: 650; color: var(--ink-2); margin-bottom: 5px; }
+  .facet-grp .opt { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ink-2); padding: 2px 0; }
+  .facet-grp .opt .box { width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid var(--line); flex: none; }
+  .facet-grp .opt.sel .box { background: var(--indigo); border-color: var(--indigo); }
+
+  /* ===== APP navy chrome ===== */
+  .app-shell { display: grid; grid-template-columns: 148px 1fr; min-height: 100%; }
+  @media (max-width: 480px){ .app-shell { grid-template-columns: 56px 1fr; } .app-nav .txt { display: none; } }
+  .app-nav { background: var(--navy); color: var(--navy-ink); padding: 14px 10px; border-right: 1px solid var(--navy-line); }
+  .app-nav .brand { color: #fff; margin: 0 6px 16px; font-size: 14px; }
+  .app-nav .brand .mark { background: linear-gradient(135deg, var(--indigo), #8b93ff); }
+  .nav-item { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 9px; font-size: 12.5px; color: var(--navy-ink-2); margin-bottom: 2px; }
+  .nav-item .ic { width: 15px; text-align: center; flex: none; opacity: .9; }
+  .nav-item.on { background: color-mix(in srgb, var(--indigo) 26%, transparent); color: #fff; font-weight: 600; }
+  .app-main { display: flex; flex-direction: column; min-width: 0; background: var(--surface); }
+  .app-top { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--line-2); }
+  .app-search { flex: 1; max-width: 340px; display: flex; align-items: center; gap: 8px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 9px; padding: 8px 12px; color: var(--ink-3); font-size: 12.5px; }
+  .app-top .spacer { flex: 1; }
+  .app-top .chip-i { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink-2); font-size: 14px; }
+  .app-top .avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--navy-2), var(--indigo)); color: #fff; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+  .app-content { padding: 16px 18px 20px; }
+  .toolbar { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .tchip { font-size: 11.5px; color: var(--ink-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; background: var(--surface); display: inline-flex; align-items: center; gap: 6px; }
+
+  /* ===== shared VendorCard ===== */
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-top: 13px; }
+  @media (max-width: 560px){ .cards { grid-template-columns: 1fr; } }
+  .vcard { border: 1px solid var(--line); border-radius: 12px; padding: 13px; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .vcard .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .vcard .name { font-size: 13.5px; font-weight: 680; letter-spacing: -.01em; line-height: 1.25; }
+  .badge-v { flex: none; display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--gold); background: var(--gold-soft); padding: 3px 7px; border-radius: 6px; }
+  .vcard .meta { margin-top: 5px; font-size: 11.5px; color: var(--ink-2); }
+  .vcard .meta .sep { color: var(--ink-3); margin: 0 5px; }
+  .caps { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+  .cap { font-size: 10.5px; font-weight: 600; color: var(--indigo-ink); background: var(--indigo-soft); border: 1px solid color-mix(in srgb, var(--indigo) 22%, transparent); padding: 3px 8px; border-radius: 999px; }
+  .pager { margin-top: 14px; display: flex; justify-content: flex-end; }
+  .pager .next { font-size: 12px; font-weight: 600; color: var(--ink-2); border: 1px solid var(--line); border-radius: 9px; padding: 7px 13px; }
+
+  /* ---- head / metadata panel ---- */
+  .head-panel { border-top: 1px solid var(--line-2); background: var(--surface-2); }
+  .head-panel .hp-tab { display: flex; align-items: center; gap: 8px; padding: 9px 15px; font-family: var(--mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); border-bottom: 1px solid var(--line-2); }
+  .code { font-family: var(--mono); font-size: 11.8px; line-height: 1.75; padding: 13px 15px; overflow-x: auto; white-space: pre; margin: 0; color: var(--ink); }
+  .code .c { color: var(--ink-3); }
+  .code .k { color: var(--indigo-ink); }
+  .code .g { color: var(--good); font-weight: 600; }
+  .code .b { color: var(--bad); font-weight: 600; }
+  .code .s { color: var(--ink-2); }
+
+  .delta { display: flex; gap: 9px; align-items: flex-start; padding: 12px 15px; font-size: 12px; color: var(--ink-2); border-top: 1px solid var(--line-2); background: var(--surface); }
+  .delta .k { flex: none; font-size: 14px; line-height: 1.2; }
+
+  /* ---- SERP strip ---- */
+  section.block { margin-top: 40px; }
+  .block-h { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .block-h h2 { font-size: 20px; font-weight: 700; letter-spacing: -.01em; margin: 0; }
+  .block-h .note { color: var(--ink-2); font-size: 13.5px; }
+  .serp { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .serp-bar { display: flex; align-items: center; gap: 10px; padding: 13px 18px; border-bottom: 1px solid var(--line-2); background: var(--surface-2); }
+  .serp-bar .q { flex: 1; max-width: 460px; display: flex; align-items: center; gap: 9px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; font-size: 13px; color: var(--ink); }
+  .serp-bar .g { font-weight: 700; font-size: 15px; letter-spacing: -.02em; }
+  .serp-bar .g .b1{color:#4285f4}.serp-bar .g .b2{color:#ea4335}.serp-bar .g .b3{color:#fbbc05}.serp-bar .g .b4{color:#4285f4}.serp-bar .g .b5{color:#34a853}.serp-bar .g .b6{color:#ea4335}
+  .result { padding: 18px 20px; }
+  .result + .result { border-top: 1px solid var(--line-2); }
+  .result .crumb { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-2); }
+  .result .crumb .fav { width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, var(--navy-2), var(--indigo)); color:#fff; display: grid; place-items: center; font-size: 10px; font-weight: 800; flex: none; }
+  .result .crumb .u { font-family: var(--mono); font-size: 11.5px; }
+  .result .title { font-size: 19px; color: #1a5fd6; margin: 6px 0 3px; font-weight: 500; letter-spacing: -.01em; }
+  .result .snippet { font-size: 13px; color: var(--ink-2); max-width: 66ch; }
+  .result .sublinks { display: flex; gap: 18px; margin-top: 9px; flex-wrap: wrap; }
+  .result .sublinks a { font-size: 12.5px; color: #1a5fd6; text-decoration: none; }
+  .result.blocked { background: repeating-linear-gradient(135deg, transparent, transparent 10px, color-mix(in srgb, var(--bad) 5%, transparent) 10px, color-mix(in srgb, var(--bad) 5%, transparent) 20px); }
+  .result.blocked .crumb .fav { background: var(--surface-2); color: var(--ink-3); border: 1px solid var(--line); }
+  .result.blocked .title { color: var(--ink-3); }
+  .result.blocked .u { text-decoration: line-through; color: var(--ink-3); }
+  .stamp { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 4px 9px; border-radius: 7px; margin-bottom: 10px; }
+  .stamp.good { color: var(--good); background: var(--good-soft); border: 1px solid var(--good-line); }
+  .stamp.bad { color: var(--bad); background: var(--bad-soft); border: 1px solid var(--bad-line); }
+  @media (prefers-color-scheme: dark){ .result .title, .result .sublinks a { color: #7aa9f5; } }
+  :root[data-theme="dark"] .result .title, :root[data-theme="dark"] .result .sublinks a { color: #7aa9f5; }
+  :root[data-theme="light"] .result .title, :root[data-theme="light"] .result .sublinks a { color: #1a5fd6; }
+
+  /* ---- fix table ---- */
+  .fixes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+  @media (max-width: 760px){ .fixes { grid-template-columns: 1fr; } }
+  .fix { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .fix .fh { display: flex; align-items: center; gap: 9px; padding: 12px 15px; border-bottom: 1px solid var(--line-2); font-weight: 650; font-size: 13.5px; }
+  .fix .fh .tier { margin-left: auto; font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; }
+  .fix .fh .tier.now { color: var(--good); background: var(--good-soft); }
+  .fix .fh .tier.gated { color: var(--gold); background: var(--gold-soft); }
+  .fix ul { margin: 0; padding: 12px 15px 14px 30px; font-size: 12.5px; color: var(--ink-2); }
+  .fix ul li { margin-bottom: 6px; }
+  .fix ul li code { font-family: var(--mono); font-size: 11.5px; background: var(--surface-2); border: 1px solid var(--line); padding: 1px 5px; border-radius: 5px; color: var(--ink); }
+
+  /* ---- boundary diagram ---- */
+  .boundary { max-width: 540px; margin: 0 auto; }
+  .zone { border-radius: 14px; padding: 18px 18px 20px; border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
+  .zone.pub { background: color-mix(in srgb, var(--good) 7%, var(--surface)); border-color: var(--good-line); }
+  .zone.priv { background: color-mix(in srgb, var(--bad) 7%, var(--surface)); border-color: var(--bad-line); }
+  .znode { display: inline-flex; align-items: center; gap: 8px; font-weight: 650; font-size: 13.5px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; box-shadow: var(--shadow-sm); }
+  .zarrow { text-align: center; color: var(--ink-3); font-size: 18px; line-height: 1; margin: 4px 0 6px; padding-left: 22px; }
+  .zcard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 13px 15px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .zpath { font-family: var(--mono); font-size: 15px; font-weight: 700; letter-spacing: -.01em; color: var(--ink); }
+  .zlist { list-style: none; display: flex; gap: 14px; margin: 0; padding: 0; flex-wrap: wrap; }
+  .zlist li { font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+  .zlist.good li { color: var(--good); }
+  .zlist.bad li { color: var(--bad); }
+  .authbar { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
+  .authbar .line { flex: 1; height: 0; border-top: 2px dashed var(--bad-line); }
+  .authbar .lbl { font-family: var(--mono); font-size: 11px; letter-spacing: .09em; text-transform: uppercase; font-weight: 700; color: var(--bad); background: var(--bad-soft); border: 1px solid var(--bad-line); border-radius: 999px; padding: 6px 13px; white-space: nowrap; }
+
+  /* ---- footer ---- */
+  footer { margin-top: 44px; border-top: 1px solid var(--line); padding-top: 22px; color: var(--ink-2); font-size: 12.5px; }
+  footer .gov { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+  @media (max-width: 760px){ footer .gov { grid-template-columns: 1fr; } }
+  footer .gov .row { border: 1px solid var(--line); border-radius: 11px; padding: 12px 14px; background: var(--surface); }
+  footer .gov .row .r { font-family: var(--mono); font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--indigo-ink); font-weight: 600; }
+  footer .gov .row p { margin: 6px 0 0; font-size: 12px; color: var(--ink-2); }
+  footer .fine { font-family: var(--mono); font-size: 11px; color: var(--ink-3); line-height: 1.7; }
+  footer .fine b { color: var(--ink-2); font-weight: 600; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .browser, .serp, .fix, footer { animation: rise .6s cubic-bezier(.2,.7,.2,1) both; }
+    .compare .browser:nth-child(2){ animation-delay: .07s; }
+    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <span class="eyebrow"><b>iVendorz</b> · SEO surface review · realizes SEO Authority Matrix v1.0</span>
+    <h1 class="thesis">Same catalog.<br><span class="alt">Opposite front doors.</span></h1>
+    <p class="lede"><code style="font-family:var(--mono);font-size:.92em">/vendors</code> and <code style="font-family:var(--mono);font-size:.92em">/discover</code> render the identical vendor set from the same M2 reads &mdash; but one is a public marketing directory Google should own, and the other is a signed-in buyer workspace Google must never see. Presentation-only prototype; no production code touched.</p>
+    <div class="legend">
+      <span class="pill good"><span class="dot"></span>Public &middot; indexed &middot; canonical</span>
+      <span class="pill bad"><span class="dot"></span>Authenticated &middot; noindex &middot; behind sign-in</span>
+    </div>
+  </header>
+
+  <div class="compare">
+
+    <!-- ===================== PUBLIC /vendors ===================== -->
+    <article class="browser">
+      <div class="browser-tag">
+        <span class="who">P-PUB-12 Vendor Directory <code>(public)</code></span>
+        <span class="verdict good">Index this</span>
+      </div>
+      <div class="urlbar">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="addr">
+          <span class="lock">🔓</span><span class="host">ivendorz.com</span><span class="path">/vendors</span>
+          <span class="idx good">Indexed</span>
+        </span>
+      </div>
+
+      <div class="viewport">
+        <!-- marketing nav -->
+        <nav class="mkt-nav">
+          <span class="brand"><span class="mark">iV</span>iVendorz</span>
+          <span class="mkt-links">
+            <a href="#">Marketplace</a><a href="#" class="on">Vendors</a><a href="#">Categories</a><a href="#">RFQs</a>
+          </span>
+          <span class="mkt-cta"><span class="btn">Sign in</span><span class="btn pri">Get started</span></span>
+        </nav>
+
+        <div class="vp-body">
+          <h2 class="page-h">Vendor directory</h2>
+          <p class="page-sub">Browse verified industrial suppliers across Bangladesh.</p>
+          <div class="search"><span class="mag">🔎</span>Search suppliers by name or category&hellip;<span class="to">action=/search</span></div>
+
+          <div class="listing">
+            <aside class="facets">
+              <h4>Filter vendors</h4>
+              <div class="facet-grp"><div class="lbl">Category</div>
+                <div class="opt sel"><span class="box"></span>Valves &amp; Fittings</div>
+                <div class="opt"><span class="box"></span>Steel &amp; Metals</div>
+                <div class="opt"><span class="box"></span>Pumps &amp; Motors</div>
+              </div>
+              <div class="facet-grp"><div class="lbl">Capability</div>
+                <div class="opt"><span class="box"></span>Supply</div>
+                <div class="opt"><span class="box"></span>Fabricate</div>
+              </div>
+              <div class="facet-grp"><div class="lbl">Verified</div>
+                <div class="opt sel"><span class="box"></span>Verified only</div>
+              </div>
+            </aside>
+
+            <div>
+              <div class="cards">
+                <div class="vcard">
+                  <div class="top"><span class="name">Padma Valve &amp; Fittings Ltd.</span><span class="badge-v">✓ Verified</span></div>
+                  <div class="meta">Valves &amp; Fittings<span class="sep">·</span>Dhaka · Tejgaon I/A</div>
+                  <div class="caps"><span class="cap">Supply</span><span class="cap">Service</span><span class="cap">Fabricate</span></div>
+                </div>
+                <div class="vcard">
+                  <div class="top"><span class="name">Bengal Steel Industries</span><span class="badge-v">✓ Verified</span></div>
+                  <div class="meta">Steel &amp; Metals<span class="sep">·</span>Chattogram · Kalurghat</div>
+                  <div class="caps"><span class="cap">Supply</span><span class="cap">Fabricate</span></div>
+                </div>
+                <div class="vcard">
+                  <div class="top"><span class="name">Jamuna Electrical &amp; Drives</span></div>
+                  <div class="meta">Electrical &amp; Drives<span class="sep">·</span>Dhaka · Tongi</div>
+                  <div class="caps"><span class="cap">Supply</span><span class="cap">Service</span><span class="cap">Consult</span></div>
+                </div>
+                <div class="vcard">
+                  <div class="top"><span class="name">Meghna Pumps &amp; Motors</span><span class="badge-v">✓ Verified</span></div>
+                  <div class="meta">Pumps &amp; Motors<span class="sep">·</span>Narayanganj · Fatullah</div>
+                  <div class="caps"><span class="cap">Supply</span><span class="cap">Service</span></div>
+                </div>
+              </div>
+              <div class="pager"><span class="next">Next →</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="head-panel">
+        <div class="hp-tab">📄 document &lt;head&gt; — served to every crawler</div>
+<pre class="code"><span class="c">// public, canonical, socially rich</span>
+<span class="k">robots</span>:   { index: <span class="g">true</span>, follow: <span class="g">true</span> }
+<span class="k">canonical</span>: <span class="s">"https://ivendorz.com/vendors"</span>
+<span class="k">openGraph</span>: { title, description, url, image }
+<span class="k">twitter</span>:  { card: "summary_large_image" }
+<span class="c">// structured data (ItemList) intentionally omitted —</span>
+<span class="c">// evaluated separately under the SEO Authority Matrix</span></pre>
+        <div class="delta"><span class="k" style="color:var(--good)">✓</span><span>Owns the public search equity for the vendor directory. Belongs in the apex sitemap. <b style="color:var(--ink)">Structured data (e.g. ItemList) is intentionally out of scope here</b> — it deserves its own Architecture Board decision under the SEO Authority Matrix.</span></div>
+      </div>
+    </article>
+
+    <!-- ===================== APP /discover ===================== -->
+    <article class="browser">
+      <div class="browser-tag">
+        <span class="who">P-BUY-02 Buyer Discover <code>(app)/(buyer)</code></span>
+        <span class="verdict bad">Never index</span>
+      </div>
+      <div class="urlbar">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="addr">
+          <span class="lock">🔒</span><span class="host">app.ivendorz.com</span><span class="path">/discover</span>
+          <span class="idx bad">Noindex</span>
+        </span>
+      </div>
+
+      <div class="viewport">
+        <div class="app-shell">
+          <nav class="app-nav">
+            <span class="brand"><span class="mark">iV</span><span class="txt">iVendorz</span></span>
+            <div class="nav-item"><span class="ic">▤</span><span class="txt">Dashboard</span></div>
+            <div class="nav-item on"><span class="ic">◎</span><span class="txt">Discover</span></div>
+            <div class="nav-item"><span class="ic">▦</span><span class="txt">RFQs</span></div>
+            <div class="nav-item"><span class="ic">▤</span><span class="txt">Quotations</span></div>
+            <div class="nav-item"><span class="ic">✓</span><span class="txt">Approvals</span></div>
+            <div class="nav-item"><span class="ic">☰</span><span class="txt">CRM</span></div>
+            <div class="nav-item"><span class="ic">▥</span><span class="txt">Engagements</span></div>
+          </nav>
+          <div class="app-main">
+            <div class="app-top">
+              <span class="app-search">🔎 Search vendors, RFQs&hellip;</span>
+              <span class="spacer"></span>
+              <span class="chip-i">🔔</span>
+              <span class="avatar">RA</span>
+            </div>
+            <div class="app-content">
+              <h2 class="page-h">Discover vendors</h2>
+              <p class="page-sub">Search verified industrial vendors by capability, category and location.</p>
+              <div class="toolbar">
+                <span class="tchip">🔎 Search vendors</span>
+                <span class="tchip">Category ▾</span>
+                <span class="tchip">Capability ▾</span>
+                <span class="tchip">Location ▾</span>
+              </div>
+              <div class="cards">
+                <div class="vcard">
+                  <div class="top"><span class="name">Padma Valve &amp; Fittings Ltd.</span><span class="badge-v">✓ Verified</span></div>
+                  <div class="meta">Valves &amp; Fittings<span class="sep">·</span>Dhaka · Tejgaon I/A</div>
+                  <div class="caps"><span class="cap">Supply</span><span class="cap">Service</span><span class="cap">Fabricate</span></div>
+                </div>
+                <div class="vcard">
+                  <div class="top"><span class="name">Bengal Steel Industries</span><span class="badge-v">✓ Verified</span></div>
+                  <div class="meta">Steel &amp; Metals<span class="sep">·</span>Chattogram · Kalurghat</div>
+                  <div class="caps"><span class="cap">Supply</span><span class="cap">Fabricate</span></div>
+                </div>
+                <div class="vcard">
+                  <div class="top"><span class="name">Jamuna Electrical &amp; Drives</span></div>
+                  <div class="meta">Electrical &amp; Drives<span class="sep">·</span>Dhaka · Tongi</div>
+                  <div class="caps"><span class="cap">Supply</span><span class="cap">Service</span><span class="cap">Consult</span></div>
+                </div>
+                <div class="vcard">
+                  <div class="top"><span class="name">Meghna Pumps &amp; Motors</span><span class="badge-v">✓ Verified</span></div>
+                  <div class="meta">Pumps &amp; Motors<span class="sep">·</span>Narayanganj · Fatullah</div>
+                  <div class="caps"><span class="cap">Supply</span><span class="cap">Service</span></div>
+                </div>
+              </div>
+              <div class="pager"><span class="next">Next →</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="head-panel">
+        <div class="hp-tab">📄 document &lt;head&gt; — behind the sign-in wall</div>
+<pre class="code"><span class="c">// private workspace — nothing to share, nothing to rank</span>
+<span class="k">robots</span>:   { index: <span class="b">false</span>, follow: <span class="b">false</span> }
+<span class="k">canonical</span>: <span class="b">—  (none)</span>
+<span class="k">openGraph</span>: <span class="b">—  (none)</span>
+<span class="k">twitter</span>:  <span class="b">—  (none)</span>
+<span class="k">ld+json</span>:  <span class="b">—  (none)</span></pre>
+        <div class="delta"><span class="k" style="color:var(--bad)">✕</span><span>Session-gated. Excluded from every sitemap; the middleware auth boundary keeps crawlers out before metadata ever matters.</span></div>
+      </div>
+    </article>
+
+  </div>
+
+  <!-- ===================== boundary diagram ===================== -->
+  <section class="block">
+    <div class="block-h">
+      <h2>Marketplace vs application — one boundary</h2>
+      <span class="note">The authentication line is the architecture: everything above it is public and indexed, everything below it is private and never crawled.</span>
+    </div>
+    <div class="boundary">
+      <div class="zone pub">
+        <div class="znode">🌐 Public Internet</div>
+        <div class="zarrow">↓</div>
+        <div class="zcard">
+          <span class="zpath">/vendors</span>
+          <ul class="zlist good">
+            <li>✅ Indexed</li>
+            <li>✅ In sitemap</li>
+            <li>✅ Canonical</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="authbar"><span class="line"></span><span class="lbl">🔒 Authentication Boundary</span><span class="line"></span></div>
+
+      <div class="zone priv">
+        <div class="znode">🔑 Buyer Login</div>
+        <div class="zarrow">↓</div>
+        <div class="zcard">
+          <span class="zpath">/discover</span>
+          <ul class="zlist bad">
+            <li>❌ Noindex</li>
+            <li>❌ No sitemap</li>
+            <li>❌ Internal workspace</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SERP verdict ===================== -->
+  <section class="block">
+    <div class="block-h">
+      <h2>How Google sees it</h2>
+      <span class="note">One catalog, one canonical result — the workspace twin simply never appears.</span>
+    </div>
+    <div class="serp">
+      <div class="serp-bar">
+        <span class="g"><span class="b1">G</span><span class="b2">o</span><span class="b3">o</span><span class="b4">g</span><span class="b5">l</span><span class="b6">e</span></span>
+        <span class="q">🔎 industrial valve suppliers dhaka</span>
+      </div>
+      <div class="result">
+        <div class="stamp good">● Appears in search</div>
+        <div class="crumb"><span class="fav">iV</span><span class="u">ivendorz.com › vendors</span></div>
+        <div class="title">Vendor directory · iVendorz</div>
+        <div class="snippet">Browse verified industrial suppliers across Bangladesh by category and capability — valves, steel, pumps, fabrication and more, with capability and verification at a glance.</div>
+        <div class="sublinks"><a href="#">Valves &amp; Fittings</a><a href="#">Steel &amp; Metals</a><a href="#">Pumps &amp; Motors</a><a href="#">Fabrication</a></div>
+      </div>
+      <div class="result blocked">
+        <div class="stamp bad">✕ Never indexed</div>
+        <div class="crumb"><span class="fav">·</span><span class="u">app.ivendorz.com/discover</span></div>
+        <div class="title">Discover vendors</div>
+        <div class="snippet">This buyer workspace sits behind the sign-in boundary and carries <code style="font-family:var(--mono);font-size:.92em">noindex, nofollow</code>. It is excluded from the sitemap and blocked in robots — so it can never surface here or split ranking signal with the public directory.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== fix tiers ===================== -->
+  <section class="block">
+    <div class="block-h">
+      <h2>What the prototype proposes</h2>
+      <span class="note">Two tiers — separated by governance, not by effort.</span>
+    </div>
+    <div class="fixes">
+      <div class="fix">
+        <div class="fh">Safe now · pure conformance<span class="tier now">no architecture</span></div>
+        <ul>
+          <li><code>robots: { index:false, follow:false }</code> on the <code>(app)</code> group metadata</li>
+          <li>Self-canonical on <code>/vendors</code> via the existing URL builder</li>
+          <li>Directly realizes frozen matrix rows 8 &amp; 10 — mints no new authority</li>
+        </ul>
+      </div>
+      <div class="fix">
+        <div class="fh">Gated · Wave-4 &amp; ADR-024<span class="tier gated">human board</span></div>
+        <ul>
+          <li>Middleware auth boundary for the <code>(app)</code> route group</li>
+          <li>Host-aware <code>robots.txt</code> + apex <code>sitemap-index</code> (ADR-024 Decision 9 — not a flat disallow list)</li>
+          <li>Structured data (e.g. <code>ItemList</code>) — omitted here; evaluated separately under the SEO Authority Matrix</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="gov">
+      <div class="row"><div class="r">Matrix Row 8</div><p>RFQs · quotations · <b>workspace</b> · account · admin — private, no public URL exists, <b>nothing is indexed</b> (session-gated, default-private).</p></div>
+      <div class="row"><div class="r">Matrix Row 9</div><p>Apex sitemap-index → canonical hosts; each serves its own platform-generated robots.txt. Private app surfaces excluded by construction.</p></div>
+      <div class="row"><div class="r">Matrix Row 10</div><p>One resource = one canonical URL; builder-only emission — no string-concatenated public URL anywhere.</p></div>
+    </div>
+    <p class="fine">
+      <b>Prototype only — no production code.</b> Vendor data mirrors the shared discovery seed / MOCK_VENDORS.<br>
+      Source of truth: <b>governanceReviews/URL-NAMING-SEO-REVIEW-ADJUDICATION_v1.0.md</b> (FROZEN v1.0, 2026-07-06) → SEO Authority Matrix.<br>
+      Grounded in ADR-024 · ADR-025 · Doc-4D CanonicalHost Patch v1.0.2 · Doc-7C auth boundary. Reference-never-restate (CLAUDE.md §11).
+    </p>
+  </footer>
+
+</div>

@@ -73,6 +73,88 @@ export interface AppendAuditRecordResult {
   auditId: string;
 }
 
+// ── W2-CORE-1 — config (POLICY) + feature-flag read services (Doc-4B §B8/§B9) ────────────────
+
+/**
+ * Error codes of the M0 config/flag read services — transcribed VERBATIM from Doc-4B
+ * (§B8 `core.config_value_query.v1` · §B9 `core.feature_flag_evaluate.v1`); never coined here.
+ * NOTE: an unknown `flag_key` is NOT an error — it resolves disabled, fail-safe (Doc-4B §B9 V8).
+ */
+export type CoreServiceErrorCode =
+  /** Doc-4B §B8 — REFERENCE: key not registered / not present in the POLICY store. */
+  | "core_config_key_not_found"
+  /** Doc-4B §B8 — VALIDATION: key absent or not well-formed per Doc-4A §18.2. */
+  | "core_config_invalid_key"
+  /** Doc-4B §B9 — VALIDATION: flag_key absent, or scope not well-formed per scope_jsonb shape. */
+  | "core_flag_invalid_input";
+
+/**
+ * Typed contract error carrying a Doc-4B error code. Part of the cross-module surface so
+ * callers can discriminate on `code` (codes bound by pointer; message is diagnostic only).
+ *
+ * CONVENTION NOTE (RV-0143 NIT, raised by Team-4): typed contract errors live in `contracts/` —
+ * a typed error envelope (stable code + diagnostic message, ZERO domain logic) is public contract
+ * surface, not a domain value-object (REPOSITORY_STRUCTURE §3; Doc-4A error-code discipline).
+ * Convention-setting for later modules: copy this shape deliberately rather than re-deciding.
+ */
+export class CoreServiceError extends Error {
+  readonly code: CoreServiceErrorCode;
+
+  constructor(code: CoreServiceErrorCode, message: string) {
+    super(message);
+    this.name = "CoreServiceError";
+    this.code = code;
+  }
+}
+
+/**
+ * Input to `core.config_value_query.v1` (Doc-4B §B8).
+ * Runtime POLICY read by key — owning engines read tunable values via M0, never literals
+ * (Doc-4A §18.2: "A contract MUST NOT hardcode a numeric value for any limit").
+ */
+export interface ConfigValueQueryInput {
+  /**
+   * POLICY key in the full reference form `core.system_configuration.<domain>.<key_name>`
+   * (Doc-4A §18.2; Doc-4B §B8 V1). The key MUST be registered in Doc-3 §12.2 (by pointer) —
+   * an unknown key is a contract gap (escalate), never a runtime invention (Doc-4B §B8 V8).
+   */
+  key: string;
+}
+
+/**
+ * Output of `core.config_value_query.v1` (Doc-4B §B8).
+ */
+export interface ConfigValueQueryResult {
+  /** `value_jsonb` (Doc-2 §10.1), interpreted per `valueType`. */
+  value: unknown;
+  /** `value_type` per Doc-2 §10.1 (e.g. integer | duration | enum — Doc-3 v1.0). */
+  valueType: string;
+}
+
+/**
+ * Input to `core.feature_flag_evaluate.v1` (Doc-4B §B9).
+ * Runtime flag evaluation by any module to gate controlled rollout.
+ */
+export interface FeatureFlagEvaluateInput {
+  /** The flag identifier (Doc-2 §10.1 `flag_key`). */
+  flagKey: string;
+  /**
+   * Evaluation scope per Doc-2 §10.1 `scope_jsonb` (e.g. organization_id, environment);
+   * absent → default/global evaluation (Doc-4B §B9).
+   */
+  scope?: Record<string, unknown>;
+}
+
+/**
+ * Output of `core.feature_flag_evaluate.v1` (Doc-4B §B9). EXACTLY the Doc-4B output surface —
+ * `enabled` only; the stored `scope_jsonb` / row internals are never disclosed (Doc-6B §3.5
+ * firewall posture: no broader exposure than the resolved boolean).
+ */
+export interface FeatureFlagEvaluateResult {
+  /** The resolved flag state for the supplied scope (Doc-2 §10.1 `enabled` + `scope_jsonb`). */
+  enabled: boolean;
+}
+
 /**
  * Options for the M0 transactional-outbox drainer (Doc-8B §7.2; Doc-6B §3.2). Mechanical only —
  * no domain semantics. The drainer is EMITTER-AGNOSTIC (R-a / ESC-W1-OUTBOX): it drains whatever
@@ -98,4 +180,55 @@ export interface DrainOutboxResult {
   archived: number;
   /** `pending` rows skipped because `attempts >= core.outbox_dispatch_max_attempts` (left for DLQ). */
   skippedMaxAttempts: number;
+}
+
+// ── W2-CORE-2 — the two Doc-4B §B6 outbox Phase-2 worker contracts ────────────────────────────
+// `core.phase2_dispatch_outbox_events.v1` (dispatch + retry/backoff + dead-letter park +
+// reconciliation) and `core.phase2_archive_dispatched_events.v1` (retention-bounded archival).
+// Mechanical counters only — no domain meaning; M0 TRANSPORTS envelopes and authors no event
+// (§B6 Events-Produced: none). POLICY bounds come from `core.config_value_query.v1` (never literals).
+
+/** Input to `core.phase2_dispatch_outbox_events.v1` (Doc-4B §B6). */
+export interface OutboxDispatchInput {
+  /** Cap on `pending` rows scanned for advancement this pass (a poll batch). Bounded default. */
+  batchSize?: number;
+}
+
+/**
+ * Result of one `core.phase2_dispatch_outbox_events.v1` pass (Doc-4B §B6 — mechanical counters).
+ * The dead-letter / reconciliation counts are the ops-telemetry alert surface (§B6: "never silently
+ * drop"); parked rows are RETAINED in `pending` (attempts at max), never deleted.
+ */
+export interface OutboxDispatchResult {
+  /** Rows advanced `pending → dispatched` this pass (the status-transition dedup guard). */
+  dispatched: number;
+  /**
+   * `pending` rows at `attempts >= core.outbox_dispatch_max_attempts` — parked (dead-lettered) per
+   * `core.outbox_dlq_policy`, retained not dropped (Doc-4B §B6 dead-letter rule). The alert count.
+   */
+  deadLettered: number;
+  /** `pending` rows not yet re-attempt-eligible this pass under `core.outbox_dispatch_backoff`. */
+  skippedBackoff: number;
+  /**
+   * `pending` rows stuck beyond the expected dispatch latency (attempts in `[1, max)`) that the
+   * reconciliation sweep flagged (Doc-4B §B6 reconciliation — re-enqueued by the next tick / alerted).
+   */
+  reconciledStuck: number;
+  /** The governing `core.outbox_dlq_policy` value this run applied (by pointer; e.g. `park_and_alert`). */
+  dlqPolicy: string;
+}
+
+/** Input to `core.phase2_archive_dispatched_events.v1` (Doc-4B §B6). */
+export interface OutboxArchiveInput {
+  /** Cap on `dispatched` rows scanned for archival this pass (a poll batch). Bounded default. */
+  batchSize?: number;
+}
+
+/** Result of one `core.phase2_archive_dispatched_events.v1` pass (Doc-4B §B6 — mechanical counter). */
+export interface OutboxArchiveResult {
+  /**
+   * Rows advanced `dispatched → archived` this pass — only those with `dispatched_at` older than
+   * `core.outbox_archive_retention` (the retention-bounded distinct archival leg).
+   */
+  archived: number;
 }

@@ -1,0 +1,389 @@
+/* Comparative Statement (CS) — document stylesheet (WP-2; freeze §3, Visual-Approval-bound).
+ *
+ * The CS is a FIXED A4 LANDSCAPE procurement document: print-white in both app themes
+ * (a printed document has one look — deliberate, not an omission), deterministic layout,
+ * no responsive behavior inside the sheets (freeze §3.1). All selectors are `.cs-` scoped;
+ * imported by the CS route only, but written collision-safe because Next.js applies it globally.
+ *
+ * Print: small physical margins via `@page` (8mm — Visual Approval ruling); sheets resize to the
+ * printable area so the dialog's Default/Small margin settings never clip or rescale. Pagination
+ * is content-driven (page count flexes with items; computed "Page N of M" footers — never a
+ * shrunken font, freeze §3.2). */
+
+.cs-scope {
+  --cs-navy: var(--iv-navy-700, #1f3154);
+  --cs-navy-deep: #0f2440;
+  --cs-ink: #1c2530;
+  --cs-muted: #55617a;
+  --cs-hair: #c8d1dc;
+  --cs-band: #f2f5f9;
+  --cs-low-bg: #e6f4ec;
+  --cs-low-ink: #0c6b3d;
+  --cs-conf: #a03b34;
+  --cs-draft-ink: #8a6d1f;
+  --cs-draft-bg: #faf3dd;
+}
+
+/* ---- A4 landscape sheet (screen preview) ---- */
+.cs-sheet {
+  width: 297mm;
+  height: 210mm;
+  background: #ffffff;
+  color: var(--cs-ink);
+  margin: 0 auto;
+  padding: 9mm 10mm 7mm;
+  box-sizing: border-box;
+  box-shadow: 0 2px 14px rgba(10, 20, 40, 0.22);
+  font-family: Arial, "Helvetica Neue", "Segoe UI", sans-serif;
+  font-size: 8.3pt;
+  line-height: 1.45;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.cs-sheet * {
+  box-sizing: border-box;
+}
+.cs-sheet-body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+/* Wide-content rule: sheets scroll inside their own container on narrow screens, never the page. */
+.cs-sheet-scroll {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+/* ---- document typography ---- */
+.cs-doc-title {
+  font-size: 14pt;
+  font-weight: 700;
+  color: var(--cs-navy);
+  letter-spacing: 0.04em;
+}
+.cs-sec-h {
+  font-size: 9pt;
+  font-weight: 700;
+  color: var(--cs-navy);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1.6pt solid var(--cs-navy);
+  padding-bottom: 2.5pt;
+  margin: 0 0 5pt;
+}
+.cs-caption {
+  font-size: 7pt;
+  color: var(--cs-muted);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.cs-num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+.cs-draft-chip {
+  display: inline-block;
+  font-size: 6.8pt;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--cs-draft-ink);
+  background: var(--cs-draft-bg);
+  border: 1px solid #e3d5a6;
+  padding: 1.5pt 6pt;
+  border-radius: 2pt;
+  vertical-align: 2pt;
+}
+.cs-prov {
+  font-size: 6.9pt;
+  color: var(--cs-muted);
+  margin-top: 2.5pt;
+}
+.cs-tick {
+  color: var(--cs-low-ink);
+  font-weight: 700;
+}
+
+/* ---- rules / letterhead ---- */
+.cs-rule-strong {
+  border: 0;
+  border-top: 2pt solid var(--cs-navy);
+  margin: 3mm 0 0;
+}
+.cs-rule-thin {
+  border: 0;
+  border-top: 0.5pt solid var(--cs-hair);
+  margin: 0.8mm 0 0;
+}
+.cs-letterhead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8mm;
+  align-items: flex-start;
+}
+.cs-lh-name {
+  font-size: 13pt;
+  font-weight: 800;
+  color: var(--cs-navy);
+  letter-spacing: 0.02em;
+}
+.cs-lh-tag {
+  font-size: 7.6pt;
+  color: var(--cs-muted);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-top: 1pt;
+}
+.cs-lh-contact {
+  font-size: 7.6pt;
+  color: var(--cs-ink);
+  margin-top: 3pt;
+  line-height: 1.5;
+}
+.cs-lh-contact span {
+  color: var(--cs-muted);
+}
+
+/* ---- key/value + data tables ---- */
+.cs-kv {
+  border-collapse: collapse;
+  width: 100%;
+}
+.cs-kv th,
+.cs-kv td {
+  border: 0.5pt solid var(--cs-hair);
+  padding: 2.6pt 5pt;
+  font-size: 8pt;
+  text-align: left;
+}
+.cs-kv th {
+  background: var(--cs-band);
+  color: var(--cs-navy);
+  font-weight: 700;
+  width: 34%;
+  white-space: nowrap;
+}
+.cs-data {
+  border-collapse: collapse;
+  width: 100%;
+}
+.cs-data th,
+.cs-data td {
+  border: 0.5pt solid var(--cs-hair);
+  padding: 2.6pt 4.5pt;
+  font-size: 8pt;
+  text-align: left;
+}
+.cs-data thead th {
+  background: var(--cs-navy-deep);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ---- item comparison table ---- */
+.cs-items {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+.cs-items th,
+.cs-items td {
+  border: 0.5pt solid var(--cs-hair);
+  padding: 3.4pt 3.5pt;
+  font-size: 8.2pt;
+  overflow: hidden;
+  text-align: left;
+}
+.cs-items thead th {
+  background: var(--cs-navy-deep);
+  color: #fff;
+  font-weight: 700;
+  text-align: center;
+  padding: 3pt 2.5pt;
+}
+.cs-items thead tr.cs-items-sub th {
+  background: #24466e;
+  font-weight: 600;
+  font-size: 7.4pt;
+}
+.cs-items td.cs-low {
+  background: var(--cs-low-bg);
+  color: var(--cs-low-ink);
+  font-weight: 700;
+}
+.cs-items tbody tr:nth-child(even) td:not(.cs-low) {
+  background: #fafbfd;
+}
+.cs-items tr.cs-totals td {
+  font-weight: 700;
+  background: var(--cs-band);
+  border-top: 1pt solid var(--cs-navy);
+}
+.cs-items tr.cs-grand td {
+  font-weight: 800;
+  background: #e9eef5;
+  color: var(--cs-navy);
+}
+.cs-legend-swatch {
+  display: inline-block;
+  width: 8pt;
+  height: 5pt;
+  background: var(--cs-low-bg);
+  border: 0.5pt solid #bfe0cd;
+}
+
+/* ---- repeating page header (page 2 onward) + footer ---- */
+.cs-page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6mm;
+}
+.cs-page-head-l {
+  display: flex;
+  align-items: baseline;
+  gap: 3mm;
+  min-width: 0;
+}
+.cs-page-head-co {
+  font-size: 8pt;
+  font-weight: 700;
+  color: var(--cs-navy);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.cs-page-head-t {
+  font-size: 11pt;
+  font-weight: 700;
+  color: var(--cs-navy);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.cs-page-head-r {
+  font-size: 7.6pt;
+  color: var(--cs-ink);
+  white-space: nowrap;
+}
+.cs-page-head-r b {
+  color: var(--cs-navy);
+}
+.cs-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6mm;
+  border-top: 0.5pt solid var(--cs-hair);
+  padding-top: 1.6mm;
+  margin-top: 2mm;
+  font-size: 7pt;
+  color: var(--cs-muted);
+}
+.cs-foot-conf b {
+  color: var(--cs-conf);
+  letter-spacing: 0.05em;
+}
+.cs-foot-pg {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- panels + signature blocks ---- */
+.cs-panel {
+  border: 0.5pt solid var(--cs-hair);
+}
+.cs-panel-h {
+  background: var(--cs-band);
+  color: var(--cs-navy);
+  font-weight: 700;
+  font-size: 8pt;
+  padding: 2.5pt 5pt;
+  border-bottom: 0.5pt solid var(--cs-hair);
+  letter-spacing: 0.03em;
+}
+.cs-sig-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 0.5pt solid var(--cs-hair);
+}
+.cs-sig-cell {
+  border-right: 0.5pt solid var(--cs-hair);
+  padding: 2pt 4pt 3pt;
+}
+.cs-sig-cell:last-child {
+  border-right: 0;
+}
+.cs-sig-role {
+  font-size: 7.4pt;
+  font-weight: 700;
+  color: #fff;
+  background: var(--cs-navy-deep);
+  margin: -2pt -4pt 3pt;
+  padding: 2.5pt 4pt;
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+.cs-sig-space {
+  height: 10mm;
+}
+.cs-sig-line {
+  border-top: 0.6pt solid var(--cs-ink);
+  margin-top: 2pt;
+  padding-top: 2pt;
+  text-align: center;
+}
+.cs-sig-name {
+  font-size: 7.8pt;
+  font-weight: 700;
+}
+.cs-sig-title {
+  font-size: 7pt;
+  color: var(--cs-muted);
+}
+
+/* ---- print (A4 landscape, small margins, content-driven pagination) ---- */
+@page {
+  size: A4 landscape;
+  margin: 8mm;
+}
+@media print {
+  /* Only the document prints: hide the app shell and the screen-only chrome around the sheets. */
+  body * {
+    visibility: hidden;
+  }
+  .cs-scope,
+  .cs-scope * {
+    visibility: visible;
+  }
+  /* Zero out ALL screen spacing (container padding, flex gaps) — any leftover pushes a sheet
+     past the printable height and emits a phantom overflow page. */
+  .cs-scope {
+    position: absolute;
+    inset: 0;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+  .cs-print-hidden {
+    display: none !important;
+  }
+  .cs-sheet-list {
+    display: block !important;
+  }
+  .cs-sheet-scroll {
+    overflow: visible;
+    padding: 0;
+    margin: 0;
+  }
+  .cs-sheet {
+    width: 281mm;
+    height: 192mm;
+    padding: 1mm 2mm 0;
+    box-shadow: none;
+    margin: 0;
+    page-break-after: always;
+  }
+  .cs-sheet-scroll:last-of-type .cs-sheet {
+    page-break-after: auto;
+  }
+}

@@ -25,6 +25,7 @@
 import { ensureProvisioned, resolveSupabaseSession } from "@/server/auth";
 import { loadActiveOrgBuyerProfile } from "@/server/identity";
 import { AccountView, type AccountViewState } from "./account-view";
+import { AccountBuyerProfileForm } from "./account-buyer-profile-form";
 
 export const metadata = {
   title: "Account settings — iVendorz",
@@ -52,9 +53,13 @@ export default async function AccountPage() {
       ? { kind: "empty" }
       : { kind: "present", profile: outcome.profile };
 
+  // The READ view (unchanged — form-free, per WP-1.6) PLUS the D7 write affordance below it for
+  // authenticated callers (create form when absent, edit form when present). The form is a CLIENT island
+  // that POSTs to `POST /api/identity/buyer_profiles`; the read view stays a pure server-rendered RSC.
   return (
     <main>
       <AccountView state={state} />
+      {outcome.authenticated ? <AccountBuyerProfileForm profile={outcome.profile} /> : null}
     </main>
   );
 }

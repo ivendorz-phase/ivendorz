@@ -55,7 +55,7 @@ module can be added without core redesign.
 
 | Concern | Technology |
 |---------|-----------|
-| Frontend | Next.js 15 App Router + React + Tailwind + shadcn/ui |
+| Frontend | Next.js 15 App Router + React + Tailwind + shadcn/ui + Framer Motion |
 | Backend | Next.js route handlers + server actions (TypeScript) |
 | Database | Supabase PostgreSQL (one schema per module) |
 | ORM | Prisma |
@@ -94,7 +94,7 @@ importable). One module, one owner.
 | M3 | RFQ Procurement Engine | `rfq` · Doc-4E | RFQs, routing, matching, sorting, invitations, quotations, comparison |
 | M4 | Business Operations | `operations` · Doc-4F | post-award docs, finance records, Vendor CRM |
 | M5 | Trust & Verification | `trust` · Doc-4G | trust scores, performance scores, verification records, fraud signals |
-| M6 | Communication | `comms` · Doc-4H | chat, RFQ threads, notifications, delivery logs |
+| M6 | Communication | `communication` · Doc-4H | chat, RFQ threads, notifications, delivery logs |
 | M7 | Monetization | `billing` · Doc-4I | plans, subscriptions, entitlements, quotas, lead credits, platform invoices |
 | M8 | Admin Operations | `admin` · Doc-4J | moderation, bans, approvals, import, config policy, authoritative event catalog |
 | M9 | AI Layer (reserved) | `ai` · Doc-4K | regenerable derived artifacts only |

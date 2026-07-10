@@ -1,0 +1,206 @@
+# WORK PACKAGE — FE-PUB-05 Product Detail
+
+- **Lane:** G (new public route + a URL-law realization; architecture-adjacent — realizes the
+  now-folded `ESC-7-API-PRODDETAIL` corpus fold, ADR-025)
+- **Reviewed-SHA record:** `50b3c0d` (round 3 — fixes RV-0132 round-2's MINOR over `883594f`)
+- **Value:** Core Marketplace · **Priority:** P1 · **Size:** M · **Risk:** Med
+- **Owns:** P-PUB-11 (Product detail, public)
+
+## Scoping note — what this milestone realizes, and what it explicitly does not
+
+`ESC-7-API-PRODDETAIL` folded 2026-07-03 (`R-ESC7-PRODDETAIL-FREEZE`, RV-0130): a new Public contract
+`marketplace.get_public_product_detail.v1` (`generatedDocs/Doc-4D_PublicProductDetail_Patch_v1.0.3.md` +
+`Doc-5D_PublicProductDetail_Patch_v1.0.1.md`) and a canonical product URL law
+(`generatedDocs/ADR-025_Marketplace_Public_URL_Law.md`) are now ratified architecture — but this is a
+**presentation-only codebase with no backend**. Exactly as FE-PUB-10 did for the vendor URL law, this
+milestone realizes the **FE-visible shape** of the ratified contract against enriched seed data, not a
+real wired read. No backend call is added; nothing here waits on a further escalation.
+
+## In scope (this delta)
+
+- **New canonical URL builder** `app/(public)/_components/product-url.ts` (`productHref`,
+  `extractProductId`) realizing ADR-025's apex route `/marketplace/product/{name-slug}-{uuid}` —
+  id-anchored (UUID tail is the sole resolution key; the name-slug prefix is presentation-only,
+  derived at render, never authoritative — Decision 2). A non-canonical slug prefix (or a bare-id
+  request) 301-redirects to the current canonical (`permanentRedirect()`, Decision 5 / Doc-5D
+  patch conformance row F-2) — the id-only leg resolves via this redirect, not a second canonical.
+- **New route** `app/(public)/marketplace/product/[slug]/page.tsx` — the real standalone product
+  page this milestone exists to build (the interim never had one: "there is NO standalone
+  anonymous product page" was the prior interim's own governing comment). Renders: breadcrumb
+  (via the deterministic pick rule below), product core (name/description/decorative media tile —
+  no fabricated image URLs), specifications (the seed's existing free-text `spec` field, not
+  invented structured rows), documents (honest empty state — the seed carries none, never
+  fabricated), vendor summary card (name + `vendorHref()`-built link + the existing
+  `VendorVerifiedBadge` [binary verified signal only — the seed carries no trust tier/score, so
+  reaching for the kit's tier-based `TrustBadge` would fabricate a grading that doesn't exist;
+  reused verbatim from the vendor microsite, not duplicated] — no raw `vendor_slug` rendered as
+  text, only inside the href). **No price/currency rendered** — see "Corrected from the interim"
+  below.
+- **Canonical + og:url metadata** via `generateMetadata`, built from `productHref` (absolute via
+  `metadataBase`, same pattern as FE-PUB-10's vendor routes).
+- **R9 non-disclosure** — an unknown/unpublished product ID 404s byte-identically (`notFound()`,
+  same `getXOr404` pattern as the vendor microsite's `get-vendor.ts`).
+- **Breadcrumb deterministic pick rule** (Doc-5D patch Part 2), implemented as a real function
+  operating on real data — **not stubbed**: deepest path wins → `is_specialized` → `level=primary`
+  → lowest category-UUID, evaluated over each vendor's category assignments.
+  - **Reuses the real, already-frozen-mirrored 794-node taxonomy tree** built by FE-PUB-09
+    (`@/frontend/navigation`'s `buildTaxonomyIndex(taxonomySeed.nodes, OVERLAY_V1)` +
+    `pathTo(id)`) for the ancestor chain — **does not invent a second taxonomy**. The existing
+    flat `FEATURED_CATEGORIES`/`CATEGORY_GROUPS` (a separate legacy 15-slug set, per the category
+    page's own comment) are NOT reused for this, since they carry no depth/hierarchy to
+    demonstrate the tiebreak rule against.
+  - New parallel seed map `VENDOR_CATEGORY_ASSIGNMENTS` (mirrors the `PROFILE_EXTRAS` pattern —
+    additive, keyed by vendor slug) assigns each seed vendor 1–2 real taxonomy-node category
+    assignments (`category_id` = a real node id from the 794-node tree, `is_specialized`,
+    `level: primary|secondary`). Two vendors (Padma Valve & Fittings; Karnaphuli Chemicals) are
+    deliberately given a **same-depth or different-depth pair** so the tiebreak rule actually
+    exercises the "deepest wins" and "is_specialized" branches on real data, not just a
+    single-path degenerate case.
+- **New product fields** (additive to the seed, parallel-map pattern — mirrors how `PROFILE_EXTRAS`
+  sits beside `VENDORS`): real UUID-shaped `id` per product (replacing the current slug-shaped
+  `id`, which the id-anchored URL law requires) + `description`. **No structured `Attributes`
+  section** — reserved-empty, per the frozen contract's own v1 socket.
+- **Retire the interim** (`app/(public)/_components/product-detail.tsx`) — its own header comment
+  already declared this file retires "at cutover"; that cutover is now. Deleted. Every call site
+  repointed from `productDetailHref()` to `productHref()`:
+  `app/(public)/search/page.tsx` (the `?product=` inline-swap branch removed — product cards link
+  straight to the new canonical page instead of toggling a query param), `.../marketplace/category/
+  [slug]/page.tsx`, `_components/microsite/product-showcase.tsx`, `_components/landing/
+  popular-products.tsx`.
+
+## Fix-and-reverify (round 1)
+
+Review-A (RV-0132) found a real MAJOR: the first build carried forward the retired interim's
+"More from {vendor}" related-products section unchanged. The folded Doc-4D patch's binding
+exclusion manifest excludes related items from this projection by name ("carried
+`ESC-7-API/related`") — the same sentence the WP card had already quoted to justify dropping
+price, but the exclusion wasn't applied to this section. Fixed: removed the `related` field from
+`PublicProductDetailVM`/`getPublicProductDetail` and the whole section + its now-unused imports
+from the page. Also fixed 1 MINOR (a stale `ESC-7-API-PRODDETAIL`-as-open-gap comment in
+`product-showcase.tsx`) and, found during the same pass, a same-class stale reference in `seed.ts`'s
+own header comment. Re-verified clean (tsc/eslint/prettier + a fresh Playwright pass confirming the
+section is gone and axe stays 0). 2 OBS from the same review (case-sensitive UUID matching; a
+plain-string UUID tiebreak comparison) are recorded, not fixed — non-gating, neither exercised by
+any seeded case. Full record: `project-management/review-log.md` RV-0132.
+
+## Fix-and-reverify (round 2)
+
+Fresh-context Review-A re-check at `883594f` found the MAJOR fix real and complete, but 1 new
+MINOR: `seed.ts`'s section-header comment (just above `getPublicProductDetail`, ~line 372) still
+read "...+ related published products from the same vendor" — a second, unswept stale reference
+to the excluded `related` concept, directly contradicting the corrected docstring 150 lines below
+it in the same file. Same class as round 1's fixed MINOR; missed because round 1's sweep checked
+the top-of-file header comment but not this adjacent section comment. Non-functional
+(tsc/eslint/prettier independently re-confirmed clean) but real — governance-boundary comment
+accuracy is load-bearing in this program. Verdict: REVISION (BLOCKER=MAJOR=0, MINOR=1 — gating
+per §13). Full record: `project-management/review-log.md` RV-0132, round-2 addendum.
+
+## Review-B (fresh dispatch, checkpoint `50b3c0d`)
+
+Independent Review-B, real Playwright + `@axe-core/playwright` access (both already devDependencies,
+Chromium pre-installed) — closed the one gap all 3 Review-A rounds disclosed: drove a real
+`next dev --turbopack -p 3320` server with headless Chromium, confirming both redirect cases via
+actual post-hydration `page.url()` (not curl/RSC-payload inference). Non-canonical slug prefix and
+bare-UUID requests both land on the canonical URL. Canonical render confirmed first-hand (correct
+`<h1>`, 4-level Padma breadcrumb, no "More from" text, no price/currency). Karnaphuli gear-oil
+breadcrumb independently confirmed showing the `is_specialized`-tiebreak result ("Lubricants, Oils &
+Greases"). R9 404 confirmed on both unknown-UUID and malformed-slug requests with zero leaked
+product/vendor strings. Adversarial slug-injection probe (`<script>`-shaped prefix over a valid
+UUID tail) — no crash, no script execution, clean 301 to canonical. Axe: 0 violations. Regression
+check: `/`, `/search`, `/marketplace/category/valves-fittings?tab=products` all link to the new
+canonical product URLs, 0 remaining `?product=` pattern hits. `tsc`/`eslint`/`prettier` independently
+re-run clean. **Verdict: PASS — 0 BLOCKER/MAJOR/MINOR/new-OBS.** Full record:
+`project-management/review-log.md` RV-0132, Review-B addendum.
+
+**Gate cleared: A:PASS ∧ B:PASS (B/M/M=0) — the self-close signal per Amendment v1.3 §13.**
+
+## Fix-and-reverify (round 3)
+
+Author fixed the round-2 MINOR at `50b3c0d` (deleted the stale "+ related published products from
+the same vendor" clause and corrected the stale `TrustBadge` mention to `VendorVerifiedBadge` in
+`seed.ts`'s section-header comment). A third, independent fresh-context Review-A re-checked this
+fix plus did an exhaustive whole-tree re-sweep (not just the previously-touched files) for both
+defect classes, confirmed zero kit-file drift across all 4 substantive + 3 chore commits, confirmed
+the cumulative `abd5bb9..50b3c0d` diff stays coherent (only removes the related-items feature and
+fixes stale comments — URL builder, breadcrumb tiebreak body, and R9 gate all untouched),
+independently re-ran `tsc`/`eslint`/`prettier` clean, and did a partial live-render pass (real dev
+server + curl-driven SSR-body inspection, since no Playwright/browser tool was available this
+session either): canonical URL renders correctly (real 4-level breadcrumb, no related section, no
+price/currency, `VendorVerifiedBadge` "Verified" text present); unknown-id request's body already
+shows 404 content with zero leaked product/vendor data. The two redirect cases could not be
+confirmed via true JS-executed `page.url()` (curl can't run client JS); the RSC payload evidence is
+consistent with the redirect firing but is not a first-hand confirmation — flagged for Review-B to
+close out with real browser-tool access. **Verdict: PASS** (0 BLOCKER/MAJOR/MINOR/new-OBS). Full
+record: `project-management/review-log.md` RV-0132, round-3 addendum. Milestone proceeds to a
+fresh Review-B dispatch.
+
+## Corrected from the interim (found during scoping, not fabricated)
+
+The interim `product-detail.tsx` rendered a **price** (`CurrencyDisplay`/"On request"). The
+now-ratified `Doc-4D_PublicProductDetail_Patch_v1.0.3`'s **normative exclusion manifest is
+explicit and binding**: *"no price or currency"* is on the composed Product Detail Projection's
+excluded-fields list. This was a defensible design under the old, informal interim (which invented
+no field, just showed whatever the search-result card already carried) but is now a real
+regression against the ratified contract if carried forward unchanged. **This milestone drops
+price/currency from the new product detail page entirely** — the product card list views
+(`ProductCard`, unrelated to this milestone, a separate kit component) are untouched and keep
+their own price display, since the exclusion is scoped to the **detail projection**, not to search
+result cards generally (the frozen text names the composed read, not the whole product surface).
+
+## Out of scope (Review-A enforces)
+
+- Real backend read — no HTTP call, no live `marketplace.get_public_product_detail.v1` invocation.
+  Presentation-mode interim only, same posture as FE-PUB-10.
+- The Host Resolution Matrix / suspended-vendor 404 nuance beyond a simple absent/unpublished
+  check — the seed has no suspended/banned vendor state to render differently; the uniform
+  `notFound()` already collapses every R9 cause identically by construction (there's only one
+  branch), which is the correct behavior, not a shortcut.
+- Sitemap/robots/discovery-file changes.
+- Any change to `ProductCard`/`ProductCardVM` (the shared kit list-card component) — this
+  milestone touches product-DETAIL rendering only; the list card keeps its existing price display.
+- Any change to the vendor microsite (`/vendors/[slug]/*`) — FE-PUB-10's territory, closed.
+- Any new kit primitive fork — reuses `Card`/`Button`/`Separator`/`EmptyState`/`ResultsGrid`/
+  `ProductCard`/`VendorVerifiedBadge` verbatim (documents render an `EmptyState`, not `FileLink` —
+  the seed carries no document refs, so there's nothing for `FileLink` to point at; adding one
+  would mean fabricating a href); no duplicate breadcrumb component invented — a small
+  presentation-only breadcrumb is composed inline from the taxonomy `pathTo()` output (the
+  existing mega-menu breadcrumb is a client-only drill-trail bound to menu-state providers, not
+  reusable here — confirmed during scoping, not assumed).
+
+## Dependencies
+
+- H: — none (ESC-7-API-PRODDETAIL resolved 2026-07-03, RV-0130; the folded corpus text is the
+  binding spec for this build).
+- S: — none.
+
+## Lifecycle ownership
+
+Builder = **Team-1** · Maintainer = **Team-1** · Review A → Review B (fresh contexts); on a clean
+A:PASS ∧ B:PASS gate the owning Dev team self-closes per `review-process.md` Amendment v1.3 §13.
+
+## Key dates
+
+Created 2026-07-03 · Started 2026-07-03 · Paused — · Resumed — · Closed 2026-07-03
+
+## DoD confirmation (checked at close)
+
+☑ page DoD ☑ WCAG-AA (axe 0 violations on the product detail page) ☑ tsc/eslint/prettier ☑ R9 404
+verified (unknown UUID + malformed/non-UUID slug both render the shared `(public)` not-found
+boundary — Playwright, `networkidle` wait, since dev-mode streams an initial 200 before the
+not-found boundary paints; status codes are unreliable in dev mode, verified against rendered
+"404"/"Not found" content instead) ☑ 301 slug-correction verified (non-canonical slug prefix +
+bare-id request both land on the canonical URL — `permanentRedirect`, verified via `page.url()`
+after `networkidle`, same dev-mode timing caveat) ☑ canonical + og:url absolute via `metadataBase`
+☑ breadcrumb deterministic pick rule verified against real taxonomy data on two vendors exercising
+both tiebreak branches (Padma: depth wins, Butterfly Valves over Valves & Piping; Karnaphuli:
+`is_specialized` wins at equal depth, Lubricants over Basic Chemicals) ☑ no price/currency
+rendered anywhere on the detail page (the retired interim's "More from {vendor}" related-products
+grid — the section that would have carried a price display — was removed entirely in round 1's
+fix, per the folded contract's exclusion manifest; see "Fix-and-reverify (round 1)") ☑ interim
+`product-detail.tsx` deleted, zero remaining `productDetailHref` imports (repo-wide grep) ☑ Review
+A PASS ☑ Review B PASS (B/M/M=0) ☑ gate approval (Dev-team self-close, Amendment v1.3 §13) ☑ no
+TODO/dead code ☑ no duplicate components ☑ tracker updated ☑ card closed
+
+**Round 3 update:** ☑ Review A PASS (`50b3c0d`, RV-0132 round-3 addendum) — ☑ Review B PASS
+(`50b3c0d`, RV-0132 Review-B addendum — live redirect confirmation closed via real Playwright
+access). Gate cleared: A:PASS ∧ B:PASS, B/M/M=0. Dev-team self-close per Amendment v1.3 §13.

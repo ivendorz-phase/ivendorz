@@ -1,0 +1,87 @@
+<!doctype html>
+<!--
+  iVendorz — Vendor Profile · LAYOUT 04 "Portfolio & Projects" — HI-FI CLICKABLE PROTOTYPE (NON-PRODUCTION)
+  MULTI-PAGE microsite (frozen canonical 7 — Doc-7D §10.2). Target: EPC · contractors · fabricators ·
+  service providers. Focus: experience · completed projects · capability proof. Home is project-led
+  (signature case study + recent work); the Projects page holds the full timeline + gallery.
+  Data: 100% MOCK from assets/data.js — the SAME object all layouts consume (Content ≠ Presentation).
+  Governance: "featured" projects = editorial slice, never a computed ranking (GI-04). verified=binary ·
+              trust band+numeric only · 4-flag matrix · no on-platform money.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>iVendorz · Layout 04 — Portfolio &amp; Projects</title>
+    <link rel="stylesheet" href="assets/tokens.css" />
+    <link rel="stylesheet" href="assets/kit.css" />
+  </head>
+  <body>
+    <div class="pc-frame">
+      <div class="pc-stage" id="stage">
+        <div class="iv-site tpl-portfolio" id="site"></div>
+      </div>
+    </div>
+
+    <script src="assets/data.js"></script>
+    <script src="assets/icons.js"></script>
+    <script src="assets/render.js"></script>
+    <script src="assets/router.js"></script>
+    <script>
+      var V = window.IV_VENDOR,
+        I = window.ivIcon;
+
+      // Project-led home: cinematic hero → signature case study → stats → recent projects (→ Projects
+      // page) → capabilities → CTA. The full timeline + gallery live on the Projects page.
+      function portfolioHome() {
+        var p = V.projects[0];
+        var feature =
+          '<section class="section" data-section="projects"><div class="wrap">' +
+          C.sectionHead("Signature project", "Proven on the ground", "Selected delivered work — the proof behind the capability claims.") +
+          '<article class="project-card project-feature">' +
+          '<div class="project-media"><img src="' + p.img + '" data-lightbox alt="' + p.name + '"><span class="badge badge-gold sector-tag">' + I("award", "ic-sm") + " Featured</span></div>" +
+          '<div class="project-body" style="display:flex;flex-direction:column;justify-content:center">' +
+          '<div class="project-client">' + p.client + " · " + p.year + "</div>" +
+          '<h3 class="project-name" style="font-size:22px">' + p.name + "</h3>" +
+          '<p class="project-scope">' + p.scope + "</p>" +
+          '<div class="case-metric"><div><div class="m">620</div><div class="l">HP valves supplied</div></div>' +
+          '<div><div class="m">400 MW</div><div class="l">Plant capacity</div></div>' +
+          '<div><div class="m">100%</div><div class="l">On-time delivery</div></div></div>' +
+          '<div style="margin-top:18px"><a class="btn btn-primary" data-page="projects">' + I("file-text", "ic-sm") + " See all projects</a></div>" +
+          "</div></article></div></section>";
+        var recent =
+          '<section class="section section-alt" data-section="projects"><div class="wrap">' +
+          C.sectionHead("Recent work", "More delivered projects", "") +
+          '<div class="project-grid">' +
+          V.projects
+            .slice(1, 3)
+            .map(function (pr) {
+              return (
+                '<article class="project-card"><div class="project-media"><img src="' + pr.img + '" alt="' + pr.name + '"><span class="badge badge-navy sector-tag">' + pr.sector + "</span></div>" +
+                '<div class="project-body"><div class="project-client">' + pr.client + " · " + pr.year + '</div><h3 class="project-name">' + pr.name + '</h3><p class="project-scope">' + pr.scope + "</p>" +
+                '<div class="project-foot"><span class="project-value">' + pr.value + "</span></div></div></article>"
+              );
+            })
+            .join("") +
+          "</div>" + C.viewAll("projects", "View the full timeline") + "</div></section>";
+        return C.hero("modern") + feature + C.stats(true) + recent + C.capabilities() + C.clients(true) + C.ctaBand();
+      }
+
+      mountMicrosite({
+        home: "home",
+        order: ["home", "about", "products", "projects", "contact"],
+        pages: {
+          home: portfolioHome,
+          about: C.pageAbout,
+          products: function () { return C.pageProducts(false); },
+          projects: C.pageProjects,
+          contact: C.pageContact,
+        },
+      });
+    </script>
+    <script src="assets/prototype.js"></script>
+    <script>
+      initPrototype({ name: "Layout 04 · Portfolio & Projects", tag: "EPC · multi-page · proof-of-work" });
+    </script>
+  </body>
+</html>
