@@ -20,6 +20,14 @@ ledger row added (same mechanism as v1.2's 144→150); coverage re-verified **PA
 per the companion's §6 + the owner-provided mockup (§6.9 rulings R1–R4 honored); reuses the
 vendor-microsite kit 100% + 2 new thin compositions (`ProjectHero`, `ProjectVendorSummaryCard`).
 
+**v1.4 (additive amendment, 2026-07-10):** Owner Board-minted **FE-PUB-12 Confidentiality Charter**
+(from the Trust Adoption Ladder package, `trust_adoption_ladder_planning_and_design.md` §5.1
+owner-approved v0.3 `ac3412f`; owner ruled the charter home `/legal/confidentiality-charter`).
+`P-PUB-26` minted — `page_inventory.md` §3 row added + coverage-script UNIVERSE bumped **151 → 152**
++ coverage ledger row added (same mechanism as v1.3). Content SSoT =
+`docs/product/requirements/confidentiality_charter.md` §A; page reuses the P-PUB-21/22
+`LegalDocument` scaffold; publication gated on the charter's review.
+
 **ROADMAP ONLY** — what · lifecycle owners · status · dependencies · gates. Queues and registers:
 [`execution-board.md`](execution-board.md) · process: [`review-process.md`](review-process.md) ·
 promotions: [`promotion-watchlist.md`](promotion-watchlist.md). `FE-*` IDs are program-management
@@ -35,8 +43,8 @@ wave-gated (§7).
 Milestone status is **derived** from the owning team file's page rows (`team-1/2/3.md` = the
 page-level source record) via the priority chain in `review-process.md` §9. **Owns vs touches:**
 "owns" = coverage accounting (every P-* page exactly once program-wide); "touches" = may modify
-without owning — only "owns" counts toward 151 (the frozen 144 + the additive P-DOC 6 [v1.2] +
-P-PUB-25 [v1.3, FE-PUB-11 Project Detail]).
+without owning — only "owns" counts toward 152 (the frozen 144 + the additive P-DOC 6 [v1.2] +
+P-PUB-25 [v1.3, FE-PUB-11 Project Detail] + P-PUB-26 [v1.4, FE-PUB-12 Confidentiality Charter]).
 **Page-gate carve-out:** an ESC-gated page inside
 a milestone never blocks milestone close; it stays ⛔ tracked at page level and re-enters when its
 handle resolves (the "cluster COMPLETE − P-ACC-12" convention). Statuses re-derived at cutover,
@@ -85,6 +93,7 @@ FE-PF-01 Design Tokens ✅ (ongoing ownership → FE-DS) · FE-PF-03 Platform Sh
 | FE-PUB-09 Mega Menu & Taxonomy Nav | Core Marketplace | P2 | L | Med | ~~H: taxonomy P1 · H: MEGA_MENU package~~ **both CLEARED 2026-07-03 (owner Board)** · S: `ESC-7-API-CATNAV` (live data) stays open — build-time seed interim | — (touches nav + P-PUB-07/08/09 + P-PUB-08 landing enrich) | ✅ Complete (RV-0126, A:PASS B:PASS, Dev-team self-close 2026-07-03 @ `4d1aae8`) — phases 0–5 built, 3 rounds of owner findings adjudicated; then a **3-round fix-and-reverify cycle** (2 fix attempts self-verified with a flawed content fingerprint and didn't actually work, caught before shipping; real root cause = an always-eager SEO-nav component barrel-importing the whole heavy chunk, fixed round 3); empirically re-verified via independent isolated build + real interaction tracing. WP `governanceReviews/milestones/fe-pub-09-mega-menu/` |
 | FE-PUB-10 Canonical Vendor Subdomain | Vendor Growth | P1 | M | Med | H: ADR-024 + Doc-7D §11 (ratified 2026-07-03 @ `c1187a8`; §11 corpus fold pending as a records action — build proceeds against the ratified section per its banner) | — (touches P-PUB-13..17 chrome + all vendor-link emitters) | ✅ Complete (RV-0128, A:PASS B:PASS, Dev-team self-close 2026-07-03 @ `cafefcb`) — presentation-mode-interim slice only: new `vendorHref(slug, subpage?)` central URL builder (ADR-024 Vendor URL Builder rule, SHALL), 16 call sites repointed off inline `/vendors/${slug}` concatenation, `alternates.canonical` + `openGraph.url` (absolute via `metadataBase`) added to all 7 microsite routes; byte-identical output verified (text/screenshot diff). One disputed MINOR (isolated-worktree prettier false positive) resolved via a zero-code-delta procedural re-review, full record RV-0128. **Real CHR resolution/middleware host-routing, path→canonical-host 301s, Host-Resolution-Matrix 404s, robots.txt/sitemap stubs, and dev `{slug}.localhost` verification are NOT built here** — they require a backend read (vendor subdomain binding, active-custom-domain status) this presentation-only codebase doesn't have; stay interim/open on `ESC-MKT-SUBDOMAIN-MIGRATE` (open) and `ESC-MKT-CANONICAL-URL` (resolved-with-interim) for a future wave. This builder is the single swap point that later wave needs. |
 | FE-PUB-11 Project Detail Page | Vendor Growth | P1 | M | Med | ~~H: `showcase_projects` public read~~ (presentation-only build against the editorial project seed — real wired read stays Wave-4, same posture as FE-PUB-03/05) · `P-PUB-25` minted + coverage 150→151 (done) | P-PUB-25 | 🟩 **Built (RV-0138)** — owner directed the implementation same-day (kickoff). New route `app/(public)/vendors/[slug]/projects/[projectSlug]/page.tsx` nested under the microsite chrome; completes the Vendor Profile → Project Card → **Project Detail** journey (`ProjectShowcase`'s "View details" wired from `disabled` → real `/vendors/[slug]/projects/[slug]` link at both call sites). 2 new thin components (`ProjectHero`, `ProjectVendorSummaryCard`) + extended the project seed with detail fields (`getShowcaseProject` lookup); reuses `VendorSection`/`CapabilityMatrix`/`StatusChip`/`EmptyState`/kit, zero new kit primitives. Matches the owner-provided mockup (two-column: hero+gallery+Executive Summary [Challenge/Solution] left; Executed-by card + Project Details + Scope-of-Deliverables right). **§6.9 rulings honored:** R1 Verified-only (no tier badge), R2 named client (detail-page only, vendor-authored+consent-responsible), R3 no "Verify"/Documents genuine-empty, R4 placeholder media; Gold stays reserved (category label rendered navy, not gold). id-anchored canonical URL via the vendorHref builder base; unknown project → byte-equivalent `notFound()` (Inv#11). tsc/eslint/prettier green; coverage PASS 151/151. **Owner: Team-1** (Public/M2 surface — Buyer/Vendor-workspace teams own no code here, so built as a single Team-1 milestone, not a 1/2/3 split). |
+| FE-PUB-12 Confidentiality Charter | Platform | P2 | S | Low | H: charter content approved (Trust Adoption Ladder §5.1, owner-approved v0.3 `ac3412f`) · route ruled by owner 2026-07-10 · `P-PUB-26` minted + coverage 151→152 (done) | P-PUB-26 | 🟩 **Built (owner-directed same-day, v1.4 mint)** — new route `app/(public)/legal/confidentiality-charter/page.tsx` reusing the P-PUB-21/22 `LegalDocument` scaffold (T-STATIC, zero new components); content = `confidentiality_charter.md` §A verbatim (10 commitments + honest moderation-visibility note per RA-F1; annex §C guards honored: vendor-scoped claims, no read-audit claim); **published live 2026-07-10 (`78752ed`** — `LegalDocument` `published` + real `lastUpdated`, pending-notice removed). Post-publication wording changes re-enter the review lanes. **Owner: Team-1.** |
 
 ## Track 2 — FE-BUY Buyer (Builder/Maintainer: Team-2)
 
@@ -238,6 +247,7 @@ comma lists, `..` ranges):
 | FE-PUB-07 | P-PUB-10, P-PUB-19, P-PUB-20 |
 | FE-PUB-08 | P-PUB-02..06, P-PUB-18, P-PUB-21..24 |
 | FE-PUB-11 | P-PUB-25 |
+| FE-PUB-12 | P-PUB-26 |
 | FE-ACC-01 | P-AUTH-01..08 |
 | FE-ACC-02 | P-ACC-01..22 |
 | FE-BUY-01 | P-BUY-01 |

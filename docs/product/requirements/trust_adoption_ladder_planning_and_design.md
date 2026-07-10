@@ -1,6 +1,6 @@
 # iVendorz Trust Adoption Ladder — Planning & Design
 
-**Status:** v0.3 — OWNER-APPROVED (planning approval 2026-07-10; not implementation authorization)
+**Status:** v0.4 — OWNER-APPROVED (planning approval 2026-07-10; not implementation authorization)
 **Date:** 2026-07-10
 **Lane:** Product planning & positioning (Track: enterprise trust adoption)
 **Revision v0.2 (2026-07-10):** folded owner pre-approval adjudication Round 2 —
@@ -13,6 +13,10 @@ is to be **extracted into a standalone buyer-facing publishable document**; this
 document stays internal-governance; extraction plan in §5.1; no page/route coined here
 (page-universe governance owns that). (b) Review-A Round 3 folded (§8): RA-F1/F2 MINORs +
 RA-F4/F5 NITs applied, RA-F3 OBS recorded; gate 0 · 0 · 0.
+**Revision v0.4 (2026-07-10):** §5.1 extraction RULED — owner chose
+`/legal/confidentiality-charter`; `P-PUB-26` Board-minted (FE-PUB-12, coverage 151→152);
+charter extracted to `confidentiality_charter.md`; page built on the `LegalDocument`
+scaffold and published live 2026-07-10 (`78752ed`).
 **Authority:** NON-AUTHORITATIVE under the frozen corpus. Every architectural fact in this
 document is bound **by pointer** to its frozen owner; nothing is restated as new authority.
 On any conflict, the frozen document wins (CLAUDE.md §7). Amendments after any future
@@ -236,11 +240,13 @@ trust asset, not an internal artifact — it is to be extracted into its **own s
 buyer-facing publishable document**, referenceable from marketing pages, onboarding flows,
 RFQ creation surfaces, and enterprise sales materials. This planning document remains
 internal governance; §5.1 stays the Charter's specification of record until extraction.
-Candidate public homes named by the owner as examples (not rulings):
-`/legal/confidentiality-charter` · `/about/privacy-by-design`. The actual route and page
-ID are assigned through the standard page-universe governance (page IDs are Board-only;
-the coverage invariant applies) — **no page or route is coined by this document.** The
-extracted charter text goes through the standard review lanes before any public use.
+**RULED (owner, 2026-07-10, v0.4):** home = `/legal/confidentiality-charter`; page
+**P-PUB-26** Board-minted through the standard page-universe governance (FE-PUB-12,
+coverage 151→152, `page_inventory.md` §3). The extracted charter lives at
+`docs/product/requirements/confidentiality_charter.md` (§A publishable text · §C internal
+traceability annex). The charter was owner-Board-closed and **published live 2026-07-10**
+(`78752ed`); post-publication wording changes re-enter the standard review lanes (that doc
+is now the specification of record for the charter content).
 
 ### 5.2 Approval-chain positioning
 
@@ -385,4 +391,4 @@ Round 2 (§8); the fold is complete at v0.2.
 
 ---
 
-*End of document — v0.3 OWNER-APPROVED, 2026-07-10. Coins nothing; edits no frozen text.*
+*End of document — v0.4 OWNER-APPROVED, 2026-07-10. Coins nothing; edits no frozen text.*

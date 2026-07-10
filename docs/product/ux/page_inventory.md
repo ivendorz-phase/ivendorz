@@ -123,6 +123,7 @@ modals are added — those are pattern states, not inventory rows.)*
 | P-PUB-23 | Resources / Blog | Static | — | J-GST-01 | Optional, SEO |
 | P-PUB-24 | Contact / Support (public) | Static | — | — | |
 | P-PUB-25 | Microsite — Project detail (case study) | Details | `get_public_vendor_profile` + `showcase_projects` (unwired; editorial seed interim) | J-GST-04 | FE-PUB-11 (owner Board-minted 2026-07-03). Nested `/vendors/[slug]/projects/[projectSlug]`. Named client shown (companion §6.9 R2); binary Verified only, no tier/score (R1/Inv#6); Documents genuine-empty, no platform "verify" (R3); placeholder media (R4). |
+| P-PUB-26 | Legal — Confidentiality Charter | Static | — | J-GST-01 | FE-PUB-12 (owner Board-minted 2026-07-10, coverage 151→152). `/legal/confidentiality-charter`. Buyer-facing trust asset; content SSoT = `docs/product/requirements/confidentiality_charter.md` §A (every clause pointer-backed to a frozen rule, annex §C internal); published live 2026-07-10 (`78752ed`); vendor-scoped claims only (RA-F1); reuses the P-PUB-21/22 `LegalDocument` scaffold. |
 
 > Public has **zero concept of buyer-private status** (Invariant #11). Ads not rendered anonymously →
 > `ESC-7-API-ADS` (`ER`).
