@@ -109,20 +109,32 @@ async function readRow(
 }
 
 /**
- * Poll (yielding via setImmediate, no fixed sleep) until some backend is blocked waiting on a lock —
- * i.e. the dispatch worker's per-row advance queued behind the CAS-test lock holder. Fails loud (never
- * vacuously) if nothing blocks within the bound, so a worker that never reached the contended row
- * surfaces as an error rather than a silent pass.
+ * Poll (yielding via setImmediate, no fixed sleep) until some backend is blocked SPECIFICALLY BY
+ * `blockerPid` — i.e. the dispatch worker's per-row advance is queued behind THIS racer's row lock.
+ *
+ * WI-CAS-FLAKE root-cause fix (RV-0146 OBS-1 — "waitUntilAnyBackendBlocked bounded-poll throw under
+ * load"): the prior barrier had two races. (1) It matched ANY blocked backend platform-wide
+ * (`cardinality(pg_blocking_pids(pid)) > 0`), so an unrelated backend blocked elsewhere on the shared
+ * server (another suite/session under load) could satisfy it and release the lock BEFORE the worker
+ * was queued on OUR row. Scoping to the racer's backend PID cures this: the racer holds ONLY our
+ * fixture row's `FOR UPDATE` lock, so any backend it blocks is provably blocked on OUR row. (2) The
+ * bound was a fixed 500-iteration count that can EXHAUST before a load-slowed worker reaches its
+ * advance (the observed intermittent throw); a generous WALL-CLOCK deadline removes that false-throw
+ * while still failing loud (never vacuously) if the worker genuinely never contends.
  */
-async function waitUntilAnyBackendBlocked(): Promise<void> {
-  for (let i = 0; i < 500; i += 1) {
+async function waitUntilBlockedBy(blockerPid: number): Promise<void> {
+  const deadline = Date.now() + 15_000;
+  while (Date.now() < deadline) {
     const rows = await prisma.$queryRawUnsafe<Array<{ blocked: number }>>(
-      `SELECT count(*)::int AS blocked FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid)) > 0`,
+      `SELECT count(*)::int AS blocked FROM pg_stat_activity WHERE $1::int = ANY(pg_blocking_pids(pid))`,
+      blockerPid,
     );
     if ((rows[0]?.blocked ?? 0) > 0) return;
     await new Promise((resolve) => setImmediate(resolve));
   }
-  throw new Error("dispatch worker never blocked on the row lock (CAS race not reproduced)");
+  throw new Error(
+    `dispatch worker never blocked on the racer-held row lock (blocker pid ${blockerPid}) within 15s (CAS race not reproduced)`,
+  );
 }
 
 async function seededNumber(key: string): Promise<number> {
@@ -263,6 +275,14 @@ describe("W2-CORE-2 core.phase2_dispatch_outbox_events.v1 — retry/backoff + de
     const lockReleased = new Promise<void>((resolve) => {
       releaseLock = resolve;
     });
+    // The racer resolves this with its backend PID the instant it PROVABLY HOLDS the row lock. Two
+    // determinism roles: the worker is started only AFTER the lock is held (removes the racer-acquire-
+    // vs-worker-start race), and the PID scopes the block barrier to THIS racer (removes the shared-
+    // server false-positive) — see `waitUntilBlockedBy`.
+    let markRacerHoldingLock!: (pid: number) => void;
+    const racerHoldsLock = new Promise<number>((resolve) => {
+      markRacerHoldingLock = resolve;
+    });
 
     const racer = prisma.$transaction(
       async (tx) => {
@@ -272,6 +292,12 @@ describe("W2-CORE-2 core.phase2_dispatch_outbox_events.v1 — retry/backoff + de
           `SELECT id FROM core.outbox_events WHERE id = $1::uuid FOR UPDATE`,
           id,
         );
+        // Signal the row lock is held (this backend now owns ONLY our fixture row's lock) + expose the
+        // backend PID the barrier scopes to.
+        const pidRows = await tx.$queryRawUnsafe<Array<{ pid: number }>>(
+          `SELECT pg_backend_pid()::int AS pid`,
+        );
+        markRacerHoldingLock(pidRows[0]!.pid);
         await lockReleased;
         // Racer wins: advance to dispatched with its OWN dispatched_at + a single attempt bump, then
         // COMMIT (callback return) — releasing the lock the worker's advance is queued behind.
@@ -284,8 +310,9 @@ describe("W2-CORE-2 core.phase2_dispatch_outbox_events.v1 — retry/backoff + de
       { timeout: 20_000, maxWait: 15_000 },
     );
 
+    const racerPid = await racerHoldsLock; // lock provably held BEFORE the worker starts (no acquire race)
     const worker = dispatchOutboxEvents();
-    await waitUntilAnyBackendBlocked(); // no fixed sleep — poll until the worker is blocked on the lock
+    await waitUntilBlockedBy(racerPid); // no fixed sleep — poll until the worker is blocked BY the racer
     releaseLock();
     await Promise.all([racer, worker]);
 
