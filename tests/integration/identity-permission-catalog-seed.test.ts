@@ -4,11 +4,17 @@ import { resolve } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 import { prisma } from "../../src/shared/db";
 
-// W2-IDN-2 — Doc-8E Invariant #2 (two role dimensions: Platform Participation ≠ Org Role)
+// W2-IDN-2 / W2-IDN-7 — Doc-8E Invariant #2 (two role dimensions: Platform Participation ≠ Org Role)
 // conformance for the Doc-2 §7 permission/role-bundle catalog seed
-// (`prisma/migrations/20260709130000_identity_catalog_seed`), as corrected by
-// `Doc-6C_Patch_v1.0.1` (owner-ruled `ESC-IDN-SLUGCOUNT` Option A, 2026-07-09):
-// **43 slugs = 36 tenant + 7 staff** (NOT the base-text "45/38" — a propagated counting error).
+// (`prisma/migrations/20260709130000_identity_catalog_seed` + the W2-IDN-7 routing-slug extension
+// `20260710160000_identity_routing_slugs_seed`).
+//
+// COUNT (the real arithmetic): **45 slugs = 36 tenant + 9 staff**. History — the base 43 (36+7)
+// per owner ruling `ESC-IDN-SLUGCOUNT` Option A / `Doc-6C_Patch_v1.0.1` (the base-text "45/38" was a
+// propagated counting error), GREW by +2 staff at owner ruling `ESC-RFQ-SLUG` (`Doc-2_Patch_v1.0.8`
+// PATCH-D2-07, 2026-07-10: `staff_can_view_routing` + `staff_can_manage_routing`). The count is now
+// 45 again but 36/9, NOT the stale Doc-6C §3.5 "45 (38/7)" prose (T6-OBS-3 / RV-0159). Doc-6C count
+// overlay: `Doc-6C_Patch_v1.0.3` (43→45, staff 7→9).
 //
 // The seed migration already applied in global-setup (`applyMigrations`, Doc-8B §3) — this suite
 // asserts the RESULTING catalog state against Doc-2 §7's enumeration, then proves idempotency by
@@ -63,7 +69,8 @@ const TENANT_SLUGS = [
   "can_submit_review",
 ] as const;
 
-// The 7 staff slugs, verbatim from Doc-2 §7 "Platform-staff slugs (separate space)".
+// The 9 staff slugs, verbatim from Doc-2 §7 "Platform-staff slugs (separate space)" — the 7 base
+// slugs + the 2 routing-governance slugs added by `Doc-2_Patch_v1.0.8` (owner ruling `ESC-RFQ-SLUG`).
 const STAFF_SLUGS = [
   "staff_can_moderate_rfq",
   "staff_can_verify",
@@ -72,7 +79,13 @@ const STAFF_SLUGS = [
   "staff_can_manage_categories",
   "staff_can_redact_audit",
   "staff_super_admin",
+  // Doc-2 v1.0.8 PATCH-D2-07 (routing/matching governance; read/write split; both staff-space):
+  "staff_can_view_routing",
+  "staff_can_manage_routing",
 ] as const;
+
+// The 2 routing-governance slugs (Doc-2 v1.0.8) — asserted staff-space + on NO org bundle (Inv #2).
+const ROUTING_SLUGS = ["staff_can_view_routing", "staff_can_manage_routing"] as const;
 
 const SYSTEM_BUNDLE_NAMES = ["Owner", "Director", "Manager", "Officer"] as const;
 
@@ -111,16 +124,16 @@ function loadSeedStatements(): { permissionsStmt: string; rolePermissionsStmt: s
   };
 }
 
-describe("W2-IDN-2 — Doc-8E Invariant #2: permission/role-bundle catalog seed (Doc-2 §7, 43-slug per Doc-6C_Patch_v1.0.1)", () => {
+describe("W2-IDN-2/7 — Doc-8E Invariant #2: permission/role-bundle catalog seed (Doc-2 §7 + v1.0.8, 45-slug)", () => {
   afterAll(async () => {
     await prisma.$disconnect();
   });
 
-  // ── §1 — identity.permissions catalog: exactly 43 slugs (36 tenant + 7 staff) ──
+  // ── §1 — identity.permissions catalog: exactly 45 slugs (36 tenant + 9 staff) ──
 
-  it("seeds exactly 43 permission slugs total", async () => {
+  it("seeds exactly 45 permission slugs total", async () => {
     const rows = await prisma.permission.findMany({ select: { slug: true } });
-    expect(rows).toHaveLength(43);
+    expect(rows).toHaveLength(45);
   });
 
   it("seeds exactly 36 tenant-space slugs, matching Doc-2 §7 verbatim (names + count)", async () => {
@@ -132,14 +145,31 @@ describe("W2-IDN-2 — Doc-8E Invariant #2: permission/role-bundle catalog seed 
     expect(new Set(rows.map((r) => r.slug))).toEqual(new Set(TENANT_SLUGS));
   });
 
-  it("seeds exactly 7 staff-space slugs, matching Doc-2 §7 verbatim (names + count)", async () => {
+  it("seeds exactly 9 staff-space slugs, matching Doc-2 §7 (+ v1.0.8) verbatim (names + count)", async () => {
     const rows = await prisma.permission.findMany({
       where: { space: "staff" },
       select: { slug: true },
     });
-    expect(rows).toHaveLength(7);
+    expect(rows).toHaveLength(9);
     expect(new Set(rows.map((r) => r.slug))).toEqual(new Set(STAFF_SLUGS));
   });
+
+  // ── §1a — W2-IDN-7 routing-governance slugs: staff-space + on NO org bundle (Inv #2 discriminating) ──
+
+  it.each(ROUTING_SLUGS)(
+    "routing slug '%s' is seeded as staff-space and mapped to ZERO org bundles (Inv #2)",
+    async (slug) => {
+      const perm = await prisma.permission.findUniqueOrThrow({
+        where: { slug },
+        select: { space: true, id: true },
+      });
+      expect(perm.space).toBe("staff");
+      // Discriminating: a routing slug wrongly placed in an org bundle would make this non-zero
+      // (the same firewall the "ZERO staff→bundle" aggregate proves, pinned per-routing-slug).
+      const mapped = await prisma.rolePermission.count({ where: { permissionId: perm.id } });
+      expect(mapped).toBe(0);
+    },
+  );
 
   // ── §2 — identity.roles: exactly 4 system bundles (verbatim names, pre-seeded by identity_init) ──
 
@@ -188,15 +218,37 @@ describe("W2-IDN-2 — Doc-8E Invariant #2: permission/role-bundle catalog seed 
 
   it("double-run idempotency: re-executing the seed's own SQL a second time leaves state IDENTICAL", async () => {
     const { permissionsStmt, rolePermissionsStmt } = loadSeedStatements();
+    const routingStmt = loadRoutingSlugStatement();
 
     const before = await snapshot();
     await prisma.$executeRawUnsafe(permissionsStmt);
     await prisma.$executeRawUnsafe(rolePermissionsStmt);
+    await prisma.$executeRawUnsafe(routingStmt); // W2-IDN-7 routing-slug seed — also re-run safe
     const after = await snapshot();
 
     expect(after).toEqual(before);
+    expect(after.totalPermissions).toBe(45); // 43 base upserted + 2 routing untouched → still 45
   });
 });
+
+// Load the single INSERT from the W2-IDN-7 routing-slug seed migration (its own on-disk content, so
+// the idempotency probe re-runs the REAL migration SQL rather than a hand-duplicated copy).
+function loadRoutingSlugStatement(): string {
+  const sql = readFileSync(
+    resolve(
+      __dirname,
+      "../../prisma/migrations/20260710160000_identity_routing_slugs_seed/migration.sql",
+    ),
+    "utf8",
+  );
+  const idx = sql.indexOf('INSERT INTO "identity"."permissions"');
+  if (idx < 0) {
+    throw new Error(
+      "[8E identity-permission-catalog-seed] could not locate the routing-slug INSERT in its migration file — has it moved/renamed?",
+    );
+  }
+  return sql.slice(idx);
+}
 
 interface CatalogSnapshot {
   totalPermissions: number;

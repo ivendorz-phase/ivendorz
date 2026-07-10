@@ -201,7 +201,7 @@ describe("W2-IDN-6.4 §C7 role/permission wired surface — 8C + 8E (real Postgr
 
   // ════ A. list_permissions — GET /identity/permissions (DUAL-ACTOR; authenticated scope) ════
 
-  it("LIST_PERMISSIONS: 200 + §8.6 list envelope; all 43 slugs; space filter (tenant→36, staff→7); DUAL-ACTOR authenticated scope (NO active-org needed); 401 unauth; pagination fail-closed", async () => {
+  it("LIST_PERMISSIONS: 200 + §8.6 list envelope; all 45 slugs; space filter (tenant→36, staff→9); DUAL-ACTOR authenticated scope (NO active-org needed); 401 unauth; pagination fail-closed", async () => {
     const u = await freshUser(); // a user with NO org membership — proves the authenticated (dual-actor) scope.
 
     const all = await handleListPermissions({}, readDeps(u.authUserId));
@@ -210,14 +210,14 @@ describe("W2-IDN-6.4 §C7 role/permission wired surface — 8C + 8E (real Postgr
       result: { items: unknown[]; pageInfo: { hasMore: boolean } };
       reference_id: string;
     };
-    expect(body.result.items).toHaveLength(43);
+    expect(body.result.items).toHaveLength(45);
     expect(body.result.pageInfo).toEqual({ hasMore: false });
     expect(typeof body.reference_id).toBe("string");
 
     const tenant = await handleListPermissions({ space: "tenant" }, readDeps(u.authUserId));
     expect((tenant.body as { result: { items: unknown[] } }).result.items).toHaveLength(36);
     const staff = await handleListPermissions({ space: "staff" }, readDeps(u.authUserId));
-    expect((staff.body as { result: { items: unknown[] } }).result.items).toHaveLength(7);
+    expect((staff.body as { result: { items: unknown[] } }).result.items).toHaveLength(9);
 
     // 401 unauthenticated.
     const anon = await handleListPermissions(

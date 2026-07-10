@@ -10,7 +10,8 @@
 // precedent): the §C7 `page_size`/`cursor` dimension is bounded by a `[DC-5]` POLICY key that was
 // NEVER REGISTERED (Doc-3 v1.9 §Notes: "No `identity.list_page_size_max`"); Doc-5A §8.5 forbids a
 // literal. So the wire face rejects a supplied `page_size`/`cursor` (400, citing the handle) and this
-// query returns the FULL catalog (43 slugs) in the frozen `slug` order with `has_more: false`.
+// query returns the FULL catalog (45 slugs — 36 tenant + 9 staff, per Doc-2 §7 + v1.0.8) in the
+// frozen `slug` order with `has_more: false`.
 //
 // Read: unaudited (§17.1 / §B.8) · `Idempotency: not-applicable` · zero events · reads NO governance
 // signal (firewall default).
