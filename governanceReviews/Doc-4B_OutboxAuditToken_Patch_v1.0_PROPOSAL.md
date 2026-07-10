@@ -138,6 +138,14 @@ companion ruling §1/§2/§3). Attribution/Mutation-Scope unchanged.
   `appendAuditRecord`. Dispatch mechanics unchanged.
 - **`core.write_outbox_event.v1` (Leg 1) + dead-letter park (Leg 4):** unaffected — still carried;
   no audit written for them (fail-closed interim).
+- **Operational watch (Team-6 OBS, 2026-07-10) — audit-partition liveness coupling.** Because the audit
+  append is atomic with the advances (D7 rule 5), outbox advancement now depends on the append
+  committing. A future monthly `core.audit_records_YYYY_MM` partition provisioned WITHOUT its
+  `…_context_append` INSERT policy (the exact risk the `20260630090000_audit_context_append_policy`
+  migration's partition-rotation note already flags) would cause every advancing run to roll back and
+  the outbox to stall — the correct **fail-closed** posture (safety over liveness; no data-integrity
+  hole), but a runbook item: partition rotation MUST attach the staff `…_context_append` policy to each
+  new audit partition. No change to this diff; forward-watch for the Doc-6B §3.1 partition-rotation runbook.
 
 ---
 
