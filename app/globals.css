@@ -284,7 +284,6 @@
     --iv-content-max: 1280px;
     /* Mega menu panel width cap (MEGA_MENU_ARCHITECTURE §9.3) — dedicated, does not repoint content-max. */
     --iv-mega-menu-max: 1440px;
-    --iv-page-max: 1536px;
     --iv-gutter: 24px;
     --iv-gutter-tight: 16px;
 
