@@ -1,15 +1,19 @@
 # iVendorz — Program Status & Authoring Roadmap
 
 **Companion to `iVendorz_Context_Pack_v5.md`.** Detailed per-module ledger + live work queue. Read both into a fresh chat to resume.
-**Updated:** 2026-06-28. Non-authoritative orientation — on any conflict, the FROZEN corpus wins; patch this to match.
+**Updated:** 2026-07-11. Non-authoritative orientation — on any conflict, the FROZEN corpus wins; patch this to match.
 
-> **CURRENT PHASE: Wave 2 — Core Platform (M0 → M1).** **Waves 0–1 are DELIVERED to `main`:** Wave 0
-> Repository Bootstrap (2026-06-27; `wave0-complete`, merge `b1c70fd`; Exit Gate GREEN 5/5) + **Wave 1
-> Foundation / Walking Skeleton (2026-06-28; `wave1-complete`, merge `3345b00`; Integration Audit GREEN
-> 14/14, Exit Gate GREEN on all in-wave clauses — deploy/CI-on-`main` parked per Board, WP-1.9).**
-> Baseline records: `Wave0_Baseline_Report_v1.0.md` · `Wave1_Baseline_Report_v1.0.md`; governance records:
-> `governanceReviews/Wave-{0,1}_Integration_Audit_and_Exit_Gate_v1.0.md`. The gated build sequence is
-> `Build_Roadmap_v1.0.md` — **Wave 2 (Core Platform, M0 → M1) is next.**
+> **CURRENT PHASE: Wave 3 — Independent Domains (M2 · M5 · M6 · M7, parallel).** **Waves 0–2 are
+> DELIVERED to `origin/main`:** Wave 0 Repository Bootstrap (2026-06-27; `wave0-complete`, merge
+> `b1c70fd`; Exit Gate GREEN 5/5) + Wave 1 Foundation / Walking Skeleton (2026-06-28; `wave1-complete`,
+> merge `3345b00`; Integration Audit GREEN 14/14) + **Wave 2 Core Platform (full M0 + M1) — 2026-07-11,
+> PR #2 → `origin/main` merge-commit `2e42ed5`; branch-protection CI ALL GREEN on the remote (Verify
+> incl. real ubuntu `next build` · Vitest 386/33 · Playwright E2E+a11y); Vercel Production deploy live.**
+> Baseline records: `Wave{0,1,2}_Baseline_Report_v1.0.md`; governance records:
+> `governanceReviews/Wave-{0,1,2}_Integration_Audit_and_Exit_Gate_v1.0.md`. The gated build sequence is
+> `Build_Roadmap_v1.0.md` — **Wave 3 (Independent Domains, M2/M5/M6/M7 parallel) is next.** (Owner-deferred
+> external: Supabase PRODUCTION migrations — the deploy pipeline runs `next build` + `prisma generate`
+> only; `prisma migrate deploy` against prod Supabase is a separate owner step.)
 
 ---
 
@@ -150,8 +154,9 @@ Next:
 2. **Build Roadmap — PRODUCED** (`Build_Roadmap_v1.0.md`, 2026-06-26): the engineering execution plan sequencing the decomposition into a gated build program — Wave 0 Repository Bootstrap · Wave 1 Walking Skeleton · Wave 2 M0→M1 · Wave 3 M2/M5/M6/M7 (parallel) · Wave 4 M3 (moat) · Wave 5 M4/M8 · Wave 6 M9; per-wave Doc-8 suite gates; merge strategy (one module scope per PR); DoR/DoD; MVP-Ready/Production-Ready as engineering gate-states. No dates/estimates; coins nothing. **The final planning artifact before code — drives Wave 0.**
 3. **Implementation (Code) — IN PROGRESS.** Next.js + Supabase + Prisma + Inngest, gated by the Doc-8 conformance fabric (authored-not-run; executes + merge-gates as code lands).
    - **Wave 0 — Repository Bootstrap: DELIVERED 2026-06-27** (baseline tag `wave0-complete`, merge `b1c70fd`; Exit Gate GREEN 5/5 — skeleton compiles · 10 schemas migrate clean · harness runs · CI merge-gate active · all WP tags). Records: `Wave0_Baseline_Report_v1.0.md` · `governanceReviews/Wave-0_Integration_Audit_and_Exit_Gate_v1.0.md`. Open external/admin items: GitHub remote + branch-protection/required-checks; Supabase project + secrets (Wave 1).
-   - **Wave 1 — Foundation (Walking Skeleton, `Build_Roadmap` §3): DELIVERED 2026-06-28** (baseline tag `wave1-complete`, merge `3345b00`; Integration Audit GREEN 14/14; Exit Gate GREEN on all in-wave clauses — one end-to-end slice: login → atomic lazy-provision → server-validated active-org RLS context → wired `get_buyer_profile.v1` → Doc-7E Account screen; `CHK-8-024` adversarially proven; synthetic outbox observer). Records: `Wave1_Baseline_Report_v1.0.md` · `governanceReviews/Wave-1_Integration_Audit_and_Exit_Gate_v1.0.md`. **PARKED (Board): deploy + CI-green-on-`main` (WP-1.9) — Supabase + Vercel + push `main` to the `origin` remote + branch-protection/required-checks.** Deferred non-blocking ESCs: `ESC-W1-USER-PROVISION` · `ESC-W1-CONTEXT-RESOLVE` · `ESC-W1-AUTH-401` · `ESC-IDN-BUYERPROFILE-CODE`.
-   - **Wave 2 — Core Platform (M0 → M1, full module builds; `Build_Roadmap` § Wave 2): NEXT.** Integration branch `wave/2-core-platform` cut from `main`; no implementation started.
+   - **Wave 1 — Foundation (Walking Skeleton, `Build_Roadmap` §3): DELIVERED 2026-06-28** (baseline tag `wave1-complete`, merge `3345b00`; Integration Audit GREEN 14/14; Exit Gate GREEN on all in-wave clauses — one end-to-end slice: login → atomic lazy-provision → server-validated active-org RLS context → wired `get_buyer_profile.v1` → Doc-7E Account screen; `CHK-8-024` adversarially proven; synthetic outbox observer). Records: `Wave1_Baseline_Report_v1.0.md` · `governanceReviews/Wave-1_Integration_Audit_and_Exit_Gate_v1.0.md`. **WP-1.9 (deploy + CI-green-on-`main`) — RESOLVED at Wave-2 delivery 2026-07-11:** `origin` remote push + branch-protection/required-checks + Vercel Production deploy + CI-green-on-`main` all live (PR #2 / `2e42ed5`); only Supabase PRODUCTION migrations remain (owner-deferred). Deferred non-blocking ESCs: `ESC-W1-USER-PROVISION` · `ESC-W1-CONTEXT-RESOLVE` · `ESC-W1-AUTH-401` · `ESC-IDN-BUYERPROFILE-CODE`.
+   - **Wave 2 — Core Platform (M0 → M1, full module builds; `Build_Roadmap` § Wave 2): DELIVERED to `origin/main` 2026-07-11** (PR #2, GitHub merge-commit `2e42ed5`; Integration Audit GREEN 14/14 — `governanceReviews/Wave-2_Integration_Audit_and_Exit_Gate_v1.0.md`; Exit Gate GREEN). **M0 closed** (CORE-1…4; `[D-5]` outbox audit = run/batch, RV-0161 A+T6+B; `Doc-4B_OutboxAuditToken_Patch_v1.0`). **M1 closed** (IDN-1…7; `M1-MODULE-CLOSE_v1.0`). **Branch-protection CI ALL GREEN on the remote** (Verify incl. real ubuntu `next build` · Vitest 386/33 · Playwright E2E+a11y); admin-merged (solo repo cannot self-approve the 1 required review; `enforce_admins=false`). **Vercel Production deploy live** (`2e42ed5`). CI caught 3 defects local audits structurally cannot (Windows `next build` EPERMs pre-prerender; local suite is Vitest not Playwright), all fixed pre-merge: **W2X-F1** (prettier 3.8.5 reformat), **W2X-F2** `faa75df` (shell `useSearchParams`→`<Suspense>` static-prerender fix), **W2X-F3** `70175a4` (home smoke assertion realigned to the Doc-7D landing hero). Records: `Wave2_Baseline_Report_v1.0.md`. **PARKED (owner-deferred 2026-07-11): Supabase PRODUCTION migrations** — `prisma migrate deploy` against the prod Supabase conn-string is a separate owner step (not run by `next build`/`prisma generate`).
+   - **Wave 3 — Independent Domains (M2 · M5 · M6 · M7, parallel; `Build_Roadmap` § Wave 3): NEXT (current phase).** Public/Marketplace FE (Doc-7D) is built here once each module's Doc-5 surface is wired. No implementation started.
 
 *(Corpus tidy DONE: `Doc-5K_SERIES_FROZEN_v1.0` manifest added for peer-parity; `Doc-3 …v1.8_AI` registers the `ai.*` keys and clears `[ESC-AI-POLICY]`. All 10 modules now have a `SERIES_FROZEN` (or `Content_v1.0_FROZEN`) manifest + a cleared POLICY gate.)*
 
