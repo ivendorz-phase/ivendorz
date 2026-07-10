@@ -78,6 +78,36 @@ New slice: `tests/integration/workflow-settings-wire-slice.test.ts` (4 tests).
   - PATCH stale-If-Match REDs (200 not 409) if the CAS token is not enforced; §B.6 replay REDs (a second
     audit row / a re-executed `multi_step`) if the dedup store or window read is dropped.
 
+**RV-0159 B-1 fix-forward amendment (2026-07-10 — TEST-ONLY, zero production-code change; `git diff` non-
+test/non-report set EMPTY):**
+- **B-1 (MINOR, accepted) — `buyer_courtesy_options` deferred fail-close pinned.** Added the twin
+  assertion in the PATCH slice mirroring `default_routing_mode`:
+  `deferredFields:{ buyerCourtesyOptionsSupplied:true } → 400 + error_code identity_workflow_invalid_input
+  + /deferred/ message` (also added the `error_code` pin to the `default_routing_mode` sibling for
+  symmetry). **Non-vacuous:** the policy's reject operand is `defaultRoutingModeSupplied ||
+  buyerCourtesyOptionsSupplied`; dropping the `buyerCourtesyOptionsSupplied` half lets the frozen-declared
+  field WRITE (200) instead of reject (400) — the `toBe(400)` REDs (Review-B probe-2 confirmed the drop was
+  previously undetected). Closes the RV-0157 MINOR-B1 twin-unpinned class. Runtime behavior UNCHANGED (the
+  deferred pair stays Board-carried to IDN-7 for realize-vs-defer; §12 F1 row).
+- **B-2 (NIT, folded) — dead `strip` helper removed.** Deleted the copy-paste `strip` helper (was kept
+  alive only by `void strip;`); the replay byte-compare uses `wireJson`. No behavior touched.
+- **T6-OBS-2 (folded) — nested-jsonb firewall assertion added (8E Discriminator 4).** A request nesting
+  governance-signal NAMES inside legitimately-writable jsonb (`financial_permissions:{financial_tier:"A",
+  trust_score:99, …}` + `notification_rules:{performance_score:99, …}`) → 200; the audit `newValue`
+  TOP-LEVEL keys are EXACTLY the four workflow keys (no signal key promoted); the nested values persist
+  VERBATIM as inert org-config in the jsonb columns; the org's `verification_level` is UNCHANGED. Pins what
+  Team-6's P1 probe proved structurally (the jsonb-passthrough risk is contained — no signal consumer reads
+  this table). REDs if a nested key were ever flattened into the audited top-level or routed to a signal.
+- **OBS-B (folded — it was cheap) — delegation-ineligibility pinned.** Added a DB-free command-direct test
+  (new `it` block): an injected `check_permission` returning `{decision:"allow", satisfiedBy:"delegation"}`
+  → the command REJECTS `403 identity_workflow_forbidden` (the §C11:716 `satisfiedBy!=='membership'` guard,
+  upstream of any write). Non-vacuous: dropping the guard operand lets a delegation-allow proceed (404/200),
+  not 403. (Trivial via the injectable `authorize` dep — no delegation-grant seeding needed.)
+- **Test delta:** slice 4 → **5 tests** (+1 = the OBS-B block; B-1 + T6-OBS-2 added assertions into existing
+  tests). Full suite **368 / 31** (was 367 / 31), zero regressions. tsc / ESLint / Prettier green. (The one
+  first-run failure was the documented unrelated `outbox-dispatch-hardening` CAS timing flake — "CAS flake
+  dormant" per both RV-0159 entries; deterministic PASS on re-run; the workflow slice is 5/5 both runs.)
+
 ## 7. Self-review
 - Self-check gates run: manual `/ivendorz-security` lens (org context server-resolved; explicit org
   anchor RV-0146; no RLS-only gate; no cross-module access; firewall) · `/review-a-lens` (projection /

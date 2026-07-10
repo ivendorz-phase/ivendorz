@@ -5,7 +5,12 @@ import { uuidv7 } from "../../src/shared/ids";
 import { concurrencyEtag } from "../../src/shared/http";
 import type { ensureProvisioned } from "../../src/server/auth";
 import { handleGetWorkflowSettings, handleUpdateWorkflowSettings } from "../../src/server/identity";
-import type { UpdateWorkflowSettingsInput } from "../../src/modules/identity/contracts";
+import { updateWorkflowSettings } from "../../src/modules/identity/contracts";
+import type {
+  CheckPermissionResult,
+  UpdateWorkflowSettingsInput,
+} from "../../src/modules/identity/contracts";
+import { appendAuditRecord } from "../../src/modules/core/contracts";
 
 // W2-IDN-6.8 — the §C11 Organization Workflow Settings WIRED surface (Doc-5C §6.1 rows 34–35, both
 // contracts), Doc-8 bands 8C + 8E:
@@ -63,11 +68,6 @@ const noProvision: typeof ensureProvisioned = async () => ({
 const asSession = (authUserId: string) => async () => ({ authUserId });
 
 const wireJson = (b: unknown): unknown => JSON.parse(JSON.stringify(b));
-const strip = (b: unknown) => {
-  const rest = { ...(b as Record<string, unknown>) };
-  delete rest.reference_id;
-  return rest;
-};
 const key = () => `iv-k-${uuidv7()}`;
 
 const deps = (auth: string, k: string | null | undefined) => ({
@@ -337,7 +337,10 @@ describe("W2-IDN-6.8 §C11 workflow-settings wired surface — 8C + 8E (real Pos
     );
     expect(stale.headers?.ETag).toBe(concurrencyEtag(current.updatedAt));
 
-    // Deferred fields FAIL CLOSED → 400.
+    // Deferred fields FAIL CLOSED → 400 — BOTH §C11:718-declared deferred fields pinned (RV-0159 B-1;
+    // the twin-unpinned class of RV-0157 MINOR-B1). Each assertion is NON-VACUOUS: dropping its operand
+    // from the policy's `defaultRoutingModeSupplied || buyerCourtesyOptionsSupplied` reject would let a
+    // frozen-declared field WRITE (200) instead of reject (400) → the `toBe(400)` REDs.
     const deferred = await handleUpdateWorkflowSettings(
       {
         rfqApprovalMode: "none",
@@ -347,7 +350,26 @@ describe("W2-IDN-6.8 §C11 workflow-settings wired surface — 8C + 8E (real Pos
       deps(owner.authUserId, key()),
     );
     expect(deferred.status).toBe(400);
+    expect((deferred.body as { error: { error_code: string } }).error.error_code).toBe(
+      "identity_workflow_invalid_input",
+    );
     expect((deferred.body as { error: { message: string } }).error.message).toMatch(/deferred/);
+    // The `buyer_courtesy_options` twin (probe-2 proved its operand was silently droppable → B-1).
+    const deferredCourtesy = await handleUpdateWorkflowSettings(
+      {
+        rfqApprovalMode: "none",
+        deferredFields: { buyerCourtesyOptionsSupplied: true },
+        updatedAt: current.updatedAt,
+      },
+      deps(owner.authUserId, key()),
+    );
+    expect(deferredCourtesy.status).toBe(400);
+    expect((deferredCourtesy.body as { error: { error_code: string } }).error.error_code).toBe(
+      "identity_workflow_invalid_input",
+    );
+    expect((deferredCourtesy.body as { error: { message: string } }).error.message).toMatch(
+      /deferred/,
+    );
 
     // Empty patch (no realizable field) → 400.
     const empty = await handleUpdateWorkflowSettings(
@@ -514,9 +536,71 @@ describe("W2-IDN-6.8 §C11 workflow-settings wired surface — 8C + 8E (real Pos
     // The jsonb columns still hold the prior legitimate values — the smuggled signal VALUES are absent.
     expect(persisted).not.toContain("unlimited");
     expect(persisted).not.toContain("approved");
-    // Non-disclosure sanity: the two probes (foreign settings) collapse identically — not applicable to
-    // a singleton read (no cross-org addressing); the byte-identical NOT_FOUND is exercised in the GET
-    // absent-row leg above (strip parity is the org-wire idiom).
-    void strip;
+
+    // DISCRIMINATOR 4 (T6-OBS-2 — the NESTED-jsonb passthrough is contained): governance-signal NAMES
+    // nested INSIDE legitimately-writable jsonb fields (`financial_permissions` / `notification_rules`)
+    // are the client's OWN org-config data — NOT the M5/M2/M4-owned platform signals (no signal consumer
+    // reads this table). They persist VERBATIM as inert values, the audit's TOP-LEVEL field set stays
+    // EXACTLY the four workflow keys (no signal key promoted to the audited write), and the org's
+    // Trust-reflected `verification_level` is UNCHANGED. REDs if the command ever flattened a nested key
+    // into the audited top-level or routed it to a signal (Team-6 P1 probe, pinned).
+    const tokenNested = (await reloadSettings(org.id)).updatedAt;
+    const nested = await handleUpdateWorkflowSettings(
+      {
+        financialPermissions: {
+          financial_tier: "A",
+          trust_score: 99,
+          award_approval_threshold_bdt: 3000000,
+        },
+        notificationRules: { performance_score: 99, on_award: ["owner"] },
+        updatedAt: tokenNested,
+      },
+      deps(owner.authUserId, key()),
+    );
+    expect(nested.status).toBe(200);
+    const auditsNested = await settingsAudits(org.id);
+    const nestedAudit = auditsNested[auditsNested.length - 1]!;
+    expect(Object.keys(nestedAudit.newValue as object).sort()).toEqual([...WORKFLOW_AUDIT_KEYS]);
+    for (const signal of GOVERNANCE_SIGNAL_KEYS) {
+      expect(Object.keys(nestedAudit.newValue as object)).not.toContain(signal);
+    }
+    // The nested signal-NAMED values are stored VERBATIM in the jsonb columns (inert org-config).
+    const rowNested = await reloadSettings(org.id);
+    expect(rowNested.financialPermissionsJsonb).toEqual({
+      financial_tier: "A",
+      trust_score: 99,
+      award_approval_threshold_bdt: 3000000,
+    });
+    expect(rowNested.notificationRulesJsonb).toEqual({
+      performance_score: 99,
+      on_award: ["owner"],
+    });
+    // The org's Trust-reflected `verification_level` is UNCHANGED (the firewall-adjacent field).
+    expect((await reloadOrg(org.id)).verificationLevel).toBe(orgBefore.verificationLevel);
+  });
+
+  // ════ D. Delegation-ineligibility (OBS-B — the §C11:716 `satisfiedBy!=='membership'` guard) ════
+
+  it("AUTHZ delegation-ineligibility (§C11:716): a delegation-satisfied check_permission allow is REJECTED (403 identity_workflow_forbidden) — the command requires satisfiedBy==='membership'; DB-free (the reject is upstream of the write)", async () => {
+    const owner = await freshUser();
+    // Inject a `check_permission` that ALLOWS but via DELEGATION (not membership). The command's AUTHZ
+    // leg (step 2, upstream of any write) must reject it fail-closed — Delegation is NOT eligible for
+    // workflow-settings management (§C11 PassB:716; the invite_member precedent). NON-VACUOUS: dropping
+    // the `satisfiedBy!=='membership'` operand would let this proceed to the write (404/200), not 403.
+    const outcome = await updateWorkflowSettings(
+      { rfqApprovalMode: "single", updatedAt: new Date() },
+      { userId: owner.id, activeOrgId: uuidv7() },
+      {
+        appendAuditRecord,
+        authorize: async (): Promise<CheckPermissionResult> => ({
+          decision: "allow",
+          satisfiedBy: "delegation",
+        }),
+      },
+    );
+    expect(outcome.ok).toBe(false);
+    if (outcome.ok) return;
+    expect(outcome.error.errorClass).toBe("AUTHORIZATION");
+    expect(outcome.error.errorCode).toBe("identity_workflow_forbidden");
   });
 });
