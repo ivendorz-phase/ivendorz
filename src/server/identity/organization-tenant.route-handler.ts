@@ -17,10 +17,8 @@
 // Zero §8 events ([DC-1]); the soft-delete cross-module cascade stays out-of-wire (Doc-5C §7.4).
 
 import { ensureProvisioned, type AuthSession } from "@/server/auth";
-import { withActiveOrg } from "@/server/context";
 import { appendAuditRecord } from "@/modules/core/contracts";
 import {
-  COMMAND_DEDUP_WINDOW_KEY,
   mapSoftDeleteOrganization,
   mapTransferOwnership,
   mapUpdateOrganizationProfile,
@@ -36,13 +34,8 @@ import {
   type UpdateOrganizationProfileInput,
   type UpdateOrganizationProfileResult,
 } from "@/modules/identity/contracts";
-import { authChallengeResponse, type WireResponse } from "@/shared/http";
-import {
-  dedupScope,
-  findStoredReplay,
-  persistWireReplay,
-  type WireIdempotencyKey,
-} from "./command-dedup";
+import type { WireResponse } from "@/shared/http";
+import { runTenantWrite, type WireIdempotencyKey } from "./command-dedup";
 
 /** Resolve the authenticated Supabase subject, or `null` when unauthenticated (injectable). */
 export type ResolveSession = () => Promise<AuthSession | null>;
@@ -59,77 +52,6 @@ export interface OrganizationTenantHandlerDeps {
   userAgent?: string | null;
 }
 
-type TenantContext = {
-  userId: string;
-  activeOrgId: string;
-  ipAddress?: string | null;
-  userAgent?: string | null;
-};
-
-type TenantTx = Parameters<Parameters<typeof withActiveOrg>[1]>[0];
-
-/** The one shared tenant composition (see header). `run` binds the contract's command + context;
- *  `mapper` fixes its wire face (`null` = the §6.6 unresolved-context collapse). */
-async function handleTenantOrgCommand<TOutcome, TResult>(
-  contractId: string,
-  run: (ctx: TenantContext, tx: TenantTx) => Promise<TOutcome>,
-  mapper: (outcome: TOutcome | null) => WireResponse<TResult>,
-  isOk: (outcome: TOutcome) => boolean,
-  deps: OrganizationTenantHandlerDeps,
-): Promise<WireResponse<TResult>> {
-  const session = await deps.resolveSession();
-  if (session === null) {
-    return authChallengeResponse();
-  }
-
-  // §B.6 mandatory-key SYNTAX leg (Doc-5C §4.3) — before any semantic processing.
-  if (deps.idempotencyKey === null) {
-    return orgInvalidInput("Idempotency-Key header is required.");
-  }
-  const key = deps.idempotencyKey;
-
-  await deps.ensureProvisioned(session);
-
-  const ran = await withActiveOrg(session, async (tx, context) => {
-    if (key !== undefined) {
-      const replay = await findStoredReplay<TResult>(
-        dedupScope(contractId, context.userId, context.activeOrgId, key),
-        COMMAND_DEDUP_WINDOW_KEY,
-        tx,
-      );
-      if (replay !== null) {
-        return replay;
-      }
-    }
-
-    const outcome = await run(
-      {
-        userId: context.userId,
-        activeOrgId: context.activeOrgId,
-        ipAddress: deps.ipAddress ?? null,
-        userAgent: deps.userAgent ?? null,
-      },
-      tx,
-    );
-    const wire = mapper(outcome);
-
-    if (isOk(outcome) && key !== undefined) {
-      // §B.6 persist — SUCCESS-ONLY, same tx as the audited write (the §14.3 joint rule).
-      await persistWireReplay(
-        dedupScope(contractId, context.userId, context.activeOrgId, key),
-        wire,
-        tx,
-      );
-    }
-    return wire;
-  });
-
-  if (!ran.resolved) {
-    return mapper(null); // §6.6 collapse (no user / no active membership).
-  }
-  return ran.value;
-}
-
 /** The HTTP face for `PATCH /identity/organizations/{id}` (`200`). `deferredFields` carries the
  *  wire-body presence of the fail-closed §C5 fields (address/contact_info/brand_assets_ref). */
 export async function handleUpdateOrganizationProfile(
@@ -138,7 +60,7 @@ export async function handleUpdateOrganizationProfile(
     deferredFields?: UpdateOrganizationProfileDeferredFields;
   },
 ): Promise<WireResponse<UpdateOrganizationProfileResult>> {
-  return handleTenantOrgCommand(
+  return runTenantWrite(
     "identity.update_organization_profile.v1",
     (ctx, tx) =>
       updateOrganizationProfile(
@@ -152,6 +74,7 @@ export async function handleUpdateOrganizationProfile(
       ),
     mapUpdateOrganizationProfile,
     (o) => o.ok,
+    orgInvalidInput,
     deps,
   );
 }
@@ -162,11 +85,12 @@ export async function handleTransferOwnership(
   input: TransferOwnershipInput,
   deps: OrganizationTenantHandlerDeps,
 ): Promise<WireResponse<TransferOwnershipResult>> {
-  return handleTenantOrgCommand(
+  return runTenantWrite(
     "identity.transfer_ownership.v1",
     (ctx, tx) => transferOwnership(input, ctx, { appendAuditRecord }, tx),
     mapTransferOwnership,
     (o) => o.ok,
+    orgInvalidInput,
     deps,
   );
 }
@@ -177,11 +101,12 @@ export async function handleSoftDeleteOrganization(
   input: SoftDeleteOrganizationInput,
   deps: OrganizationTenantHandlerDeps,
 ): Promise<WireResponse<SoftDeleteOrganizationResult>> {
-  return handleTenantOrgCommand(
+  return runTenantWrite(
     "identity.soft_delete_organization.v1",
     (ctx, tx) => softDeleteOrganization(input, ctx, { appendAuditRecord }, tx),
     mapSoftDeleteOrganization,
     (o) => o.ok,
+    orgInvalidInput,
     deps,
   );
 }

@@ -27,6 +27,7 @@
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import { UUID_PATTERN } from "./_validation";
+import { buildUserAuditInput } from "./_audit";
 import {
   loadOrganizationRow,
   softDeleteOrganizationWithCascade,
@@ -187,9 +188,7 @@ export async function softDeleteOrganizationCommand(
   //     per-row audit: the cascade is the org action's own State Effect, not a §5.2 transition
   //     (Doc-2 §5.2 defines no soft-deleted membership state — logged judgment call).
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: ctx.activeOrgId,
       entityType: ORGANIZATION_ENTITY_TYPE,
       entityId: ctx.activeOrgId,
@@ -200,9 +199,7 @@ export async function softDeleteOrganizationCommand(
         reason: input.reason,
         cascaded_membership_count: write.cascadedMembershipCount,
       },
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 

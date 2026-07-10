@@ -32,6 +32,7 @@
 // Events: none (§8) — `[DC-1]` (Module 1 produces no domain events; §C12.4).
 
 import type { AppendAuditRecord } from "@/modules/core/contracts";
+import { buildUserAuditInput } from "./_audit";
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import { updateActiveOrgWorkflowSettingsFields } from "../../infrastructure/data/workflow-settings.repository";
 import {
@@ -180,18 +181,14 @@ export async function updateWorkflowSettingsCommand(
   //     the four workflow field sets ONLY (old/new) — no governance-signal key can appear (the write's
   //     field set is closed; the firewall). If this throws, the whole tx (incl. the write) rolls back.
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: ctx.activeOrgId,
       entityType: WORKFLOW_SETTINGS_ENTITY_TYPE,
       entityId: ctx.activeOrgId, // the active-org singleton (one settings row per org — Doc-6C §3.7).
       action: WorkflowSettingsAuditAction.CHANGED,
       oldValue: write.oldValue,
       newValue: write.newValue,
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 

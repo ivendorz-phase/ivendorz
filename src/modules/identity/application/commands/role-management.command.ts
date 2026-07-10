@@ -36,6 +36,7 @@
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import { UUID_PATTERN } from "./_validation";
+import { buildUserAuditInput } from "./_audit";
 import {
   composeRolePermissions,
   countLiveBoundMemberships,
@@ -277,18 +278,14 @@ export async function updateRoleCommand(
 
   // AUDIT — the ENUMERATED §9 "role/permission change" action, atomic (same tx; D7).
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: ctx.activeOrgId,
       entityType: ROLE_ENTITY_TYPE,
       entityId: role.id,
       action: RoleAuditAction.UPDATED,
       oldValue: { name: written.oldName },
       newValue: { name: newName },
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 
@@ -399,9 +396,7 @@ export async function setRolePermissionsCommand(
   // AUDIT — the ENUMERATED §9 "role/permission change" action; the add/removed/effective slug sets
   // recorded (a removal is an audited revocation — PassB:509). Atomic (same tx; D7).
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: ctx.activeOrgId,
       entityType: ROLE_ENTITY_TYPE,
       entityId: role.id,
@@ -412,9 +407,7 @@ export async function setRolePermissionsCommand(
         removed_slugs: written.removedSlugs,
         effective_slugs: written.effectiveSlugs,
       },
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 
@@ -503,9 +496,7 @@ export async function deleteRoleCommand(
 
   // AUDIT — the ENUMERATED §9 "role/permission change" action (the soft-delete leg). Atomic (same tx; D7).
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: ctx.activeOrgId,
       entityType: ROLE_ENTITY_TYPE,
       entityId: role.id,
@@ -515,9 +506,7 @@ export async function deleteRoleCommand(
         deleted: true,
         ...(input.reason !== undefined ? { reason: input.reason } : {}),
       },
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 

@@ -23,7 +23,6 @@
 // never a literal). Zero §8 events ([DC-1]).
 
 import { ensureProvisioned, type AuthSession } from "@/server/auth";
-import { withActiveOrg } from "@/server/context";
 import { appendAuditRecord, configValueQuery } from "@/modules/core/contracts";
 import {
   COMMAND_DEDUP_WINDOW_KEY,
@@ -34,15 +33,8 @@ import {
   type CreateDelegationGrantResult,
   type VendorProfileControlReader,
 } from "@/modules/identity/contracts";
-import { authChallengeResponse, type WireResponse } from "@/shared/http";
-import {
-  claimStoredReplay,
-  dedupScope,
-  findStoredReplay,
-  persistWireReplay,
-  releaseStoredClaim,
-  type WireIdempotencyKey,
-} from "./command-dedup";
+import { type WireResponse } from "@/shared/http";
+import { runTenantCreate, type WireIdempotencyKey } from "./command-dedup";
 
 /** Resolve the authenticated Supabase subject, or `null` when unauthenticated (injectable). */
 export type ResolveSession = () => Promise<AuthSession | null>;
@@ -72,97 +64,27 @@ export async function handleCreateDelegationGrant(
   input: CreateDelegationGrantInput,
   deps: CreateDelegationGrantHandlerDeps,
 ): Promise<WireResponse<CreateDelegationGrantResult>> {
-  const session = await deps.resolveSession();
-  if (session === null) {
-    return authChallengeResponse();
-  }
-
-  // §B.6 mandatory-key SYNTAX leg (Doc-5C §4.3) — before any semantic processing.
-  if (deps.idempotencyKey === null) {
-    return delegationInvalidInput("Idempotency-Key header is required.");
-  }
-  const key = deps.idempotencyKey;
-
-  await deps.ensureProvisioned(session);
-
-  const ran = await withActiveOrg(session, async (tx, context) => {
-    const scope =
-      key !== undefined
-        ? dedupScope(CONTRACT_ID, context.userId, context.activeOrgId, key)
-        : undefined;
-
-    if (scope !== undefined) {
-      // §B.6 replay lookup (within-window same-key → the stored response; NO re-execution).
-      const replay = await findStoredReplay<CreateDelegationGrantResult>(
-        scope,
-        COMMAND_DEDUP_WINDOW_KEY,
+  // No handler-level SYNTAX leg (`validateSyntax` omitted) — the command owns validation; the §B.6
+  // mandatory-key leg is the first category-1 slot, exactly as before.
+  return runTenantCreate(
+    CONTRACT_ID,
+    COMMAND_DEDUP_WINDOW_KEY,
+    (ctx, tx) =>
+      createDelegationGrant(
+        input,
+        ctx,
+        {
+          appendAuditRecord,
+          configValueQuery,
+          ...(deps.vendorProfileControlReader !== undefined
+            ? { vendorProfileControlReader: deps.vendorProfileControlReader }
+            : {}),
+        },
         tx,
-      );
-      if (replay !== null) {
-        return replay;
-      }
-
-      // Doc-4A §14.3 IN-FLIGHT protection (Pass4:159; RV-0153 F2): CLAIM the key BEFORE the
-      // command. Create has no CAS/machine leg, so the claim is the single-execution guard —
-      // a concurrent same-key contender blocks on this transaction's uncommitted claim, LOSES
-      // once it commits, and returns the stored winner below; "a replay arriving while the
-      // original execution is still in-flight MUST NOT begin a second execution".
-      const claim = await claimStoredReplay(scope, COMMAND_DEDUP_WINDOW_KEY, tx);
-      if (claim === "lost") {
-        const winner = await findStoredReplay<CreateDelegationGrantResult>(
-          scope,
-          COMMAND_DEDUP_WINDOW_KEY,
-          tx,
-        );
-        if (winner !== null) {
-          return winner; // the §9.3 stored payload — this caller's business logic never began.
-        }
-        // Unreachable by construction: a lost claim implies a committed within-window record
-        // (pending rows never commit — claim/complete/release share one tx). Fail CLOSED rather
-        // than risk a second execution under one idempotency key (§14.3).
-        throw new Error(
-          "command-dedup: claim lost but no stored record resolved (unreachable; failing closed per Doc-4A §14.3).",
-        );
-      }
-    }
-
-    const outcome = await createDelegationGrant(
-      input,
-      {
-        userId: context.userId,
-        activeOrgId: context.activeOrgId,
-        ipAddress: deps.ipAddress ?? null,
-        userAgent: deps.userAgent ?? null,
-      },
-      {
-        appendAuditRecord,
-        configValueQuery,
-        ...(deps.vendorProfileControlReader !== undefined
-          ? { vendorProfileControlReader: deps.vendorProfileControlReader }
-          : {}),
-      },
-      tx,
-    );
-    const wire = mapCreateDelegationGrant(outcome);
-
-    if (scope !== undefined) {
-      if (outcome.ok) {
-        // §B.6 persist — SUCCESS-ONLY, same tx as the audited write (the §14.3 joint rule);
-        // completes this transaction's own pending claim in place.
-        await persistWireReplay(scope, wire, tx);
-      } else {
-        // Error OUTCOME (no throw — the tx will commit): release the claim so the error is
-        // never cached and the key never wedges (§9.6 retry stays live). A THROWN failure
-        // rolls the claim back with the transaction.
-        await releaseStoredClaim(scope, tx);
-      }
-    }
-    return wire;
-  });
-
-  // Unresolved active-org context (no user / no active membership) → the §6.6 `404` collapse.
-  if (!ran.resolved) {
-    return mapCreateDelegationGrant(null);
-  }
-  return ran.value;
+      ),
+    mapCreateDelegationGrant,
+    (o) => o.ok,
+    delegationInvalidInput,
+    deps,
+  );
 }

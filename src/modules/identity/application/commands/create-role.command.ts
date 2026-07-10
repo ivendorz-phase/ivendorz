@@ -25,6 +25,7 @@
 // Doc-2 §9 Organization "role/permission change" action (PassB:482) — NO `[ESC-IDN-AUDIT]`.
 
 import type { AppendAuditRecord } from "@/modules/core/contracts";
+import { buildUserAuditInput } from "./_audit";
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import {
   findLiveRoleByName,
@@ -196,9 +197,7 @@ export async function createRoleCommand(
   // (7) AUDIT — the ENUMERATED §9 "role/permission change" action, atomic (same tx; D7). Payload =
   //     ids + the created field set (name + the initial slug set) only (Doc-6A §12 ids+meta).
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: ctx.activeOrgId,
       entityType: ROLE_ENTITY_TYPE,
       entityId: created.roleId,
@@ -209,9 +208,7 @@ export async function createRoleCommand(
         is_system_bundle: false,
         permission_slugs: requestedSlugs,
       },
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 

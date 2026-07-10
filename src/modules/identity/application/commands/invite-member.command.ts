@@ -40,6 +40,7 @@
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import { UUID_PATTERN } from "./_validation";
+import { buildUserAuditInput } from "./_audit";
 import {
   findInvitableRole,
   findLiveMembershipForUserInOrg,
@@ -255,9 +256,7 @@ export async function inviteMemberCommand(
   // (7) AUDIT — the ENUMERATED §9 "membership invite" action, atomic (same tx; D7). Payload =
   //     ids + the membership field set only (no email/PII value — Doc-6A §12 ids+meta).
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: ctx.activeOrgId,
       entityType: MEMBERSHIP_ENTITY_TYPE,
       entityId: created.membershipId,
@@ -269,9 +268,7 @@ export async function inviteMemberCommand(
           ? { superseded_membership_id: supersededMembershipId }
           : {}),
       },
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 

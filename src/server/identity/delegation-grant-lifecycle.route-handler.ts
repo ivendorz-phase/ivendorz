@@ -15,10 +15,8 @@
 // Zero §8 events. Window POLICY: `identity.command_dedup_window` (unseeded until W2-IDN-7).
 
 import { ensureProvisioned, type AuthSession } from "@/server/auth";
-import { withActiveOrg } from "@/server/context";
 import { appendAuditRecord } from "@/modules/core/contracts";
 import {
-  COMMAND_DEDUP_WINDOW_KEY,
   delegationInvalidInput,
   mapDelegationGrantLifecycle,
   mapRevokeDelegationGrant,
@@ -26,17 +24,11 @@ import {
   revokeDelegationGrant,
   suspendDelegationGrant,
   type DelegationGrantLifecycleInput,
-  type DelegationGrantLifecycleOutcome,
   type DelegationGrantLifecycleResult,
   type RevokeDelegationGrantWireResult,
 } from "@/modules/identity/contracts";
-import { authChallengeResponse, type WireResponse } from "@/shared/http";
-import {
-  dedupScope,
-  findStoredReplay,
-  persistWireReplay,
-  type WireIdempotencyKey,
-} from "./command-dedup";
+import type { WireResponse } from "@/shared/http";
+import { runTenantWrite, type WireIdempotencyKey } from "./command-dedup";
 
 /** Resolve the authenticated Supabase subject, or `null` when unauthenticated (injectable). */
 export type ResolveSession = () => Promise<AuthSession | null>;
@@ -53,89 +45,17 @@ export interface DelegationGrantLifecycleHandlerDeps {
   userAgent?: string | null;
 }
 
-type LifecycleCommand = (
-  input: DelegationGrantLifecycleInput,
-  ctx: {
-    userId: string;
-    activeOrgId: string;
-    ipAddress?: string | null;
-    userAgent?: string | null;
-  },
-  deps: { appendAuditRecord: typeof appendAuditRecord },
-  db: Parameters<Parameters<typeof withActiveOrg>[1]>[0],
-) => Promise<DelegationGrantLifecycleOutcome>;
-
-/** The one shared lifecycle composition (see header). `mapper` fixes the contract's wire face. */
-async function handleLifecycle<T>(
-  contractId: string,
-  command: LifecycleCommand,
-  mapper: (outcome: DelegationGrantLifecycleOutcome | null) => WireResponse<T>,
-  input: DelegationGrantLifecycleInput,
-  deps: DelegationGrantLifecycleHandlerDeps,
-): Promise<WireResponse<T>> {
-  const session = await deps.resolveSession();
-  if (session === null) {
-    return authChallengeResponse();
-  }
-
-  if (deps.idempotencyKey === null) {
-    return delegationInvalidInput("Idempotency-Key header is required.");
-  }
-  const key = deps.idempotencyKey;
-
-  await deps.ensureProvisioned(session);
-
-  const ran = await withActiveOrg(session, async (tx, context) => {
-    if (key !== undefined) {
-      const replay = await findStoredReplay<T>(
-        dedupScope(contractId, context.userId, context.activeOrgId, key),
-        COMMAND_DEDUP_WINDOW_KEY,
-        tx,
-      );
-      if (replay !== null) {
-        return replay;
-      }
-    }
-
-    const outcome = await command(
-      input,
-      {
-        userId: context.userId,
-        activeOrgId: context.activeOrgId,
-        ipAddress: deps.ipAddress ?? null,
-        userAgent: deps.userAgent ?? null,
-      },
-      { appendAuditRecord },
-      tx,
-    );
-    const wire = mapper(outcome);
-
-    if (outcome.ok && key !== undefined) {
-      await persistWireReplay(
-        dedupScope(contractId, context.userId, context.activeOrgId, key),
-        wire,
-        tx,
-      );
-    }
-    return wire;
-  });
-
-  if (!ran.resolved) {
-    return mapper(null); // §6.6 collapse (no user / no active membership).
-  }
-  return ran.value;
-}
-
 /** The HTTP face for `POST /identity/delegation_grants/{id}/suspend_delegation_grant` (`200`). */
 export async function handleSuspendDelegationGrant(
   input: DelegationGrantLifecycleInput,
   deps: DelegationGrantLifecycleHandlerDeps,
 ): Promise<WireResponse<DelegationGrantLifecycleResult>> {
-  return handleLifecycle(
+  return runTenantWrite(
     "identity.suspend_delegation_grant.v1",
-    (i, c, d, tx) => suspendDelegationGrant(i, c, d, tx),
+    (ctx, tx) => suspendDelegationGrant(input, ctx, { appendAuditRecord }, tx),
     mapDelegationGrantLifecycle,
-    input,
+    (o) => o.ok,
+    delegationInvalidInput,
     deps,
   );
 }
@@ -146,17 +66,18 @@ export async function handleReinstateDelegationGrant(
   input: DelegationGrantLifecycleInput,
   deps: DelegationGrantLifecycleHandlerDeps,
 ): Promise<WireResponse<DelegationGrantLifecycleResult>> {
-  return handleLifecycle(
+  return runTenantWrite(
     "identity.reinstate_delegation_grant.v1",
-    (i, c, d, tx) =>
+    (ctx, tx) =>
       reinstateDelegationGrant(
-        { delegationGrantId: i.delegationGrantId, updatedAt: i.updatedAt },
-        c,
-        d,
+        { delegationGrantId: input.delegationGrantId, updatedAt: input.updatedAt },
+        ctx,
+        { appendAuditRecord },
         tx,
       ),
     mapDelegationGrantLifecycle,
-    input,
+    (o) => o.ok,
+    delegationInvalidInput,
     deps,
   );
 }
@@ -167,11 +88,12 @@ export async function handleRevokeDelegationGrant(
   input: DelegationGrantLifecycleInput,
   deps: DelegationGrantLifecycleHandlerDeps,
 ): Promise<WireResponse<RevokeDelegationGrantWireResult>> {
-  return handleLifecycle(
+  return runTenantWrite(
     "identity.revoke_delegation_grant.v1",
-    (i, c, d, tx) => revokeDelegationGrant(i, c, d, tx),
+    (ctx, tx) => revokeDelegationGrant(input, ctx, { appendAuditRecord }, tx),
     mapRevokeDelegationGrant,
-    input,
+    (o) => o.ok,
+    delegationInvalidInput,
     deps,
   );
 }

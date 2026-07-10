@@ -61,14 +61,7 @@ import {
   type UpdateRoleResult,
 } from "@/modules/identity/contracts";
 import { authChallengeResponse, type WireResponse } from "@/shared/http";
-import {
-  claimStoredReplay,
-  dedupScope,
-  findStoredReplay,
-  persistWireReplay,
-  releaseStoredClaim,
-  type WireIdempotencyKey,
-} from "./command-dedup";
+import { runTenantCreate, runTenantWrite, type WireIdempotencyKey } from "./command-dedup";
 
 /** Resolve the authenticated Supabase subject, or `null` when unauthenticated (injectable). */
 export type ResolveSession = () => Promise<AuthSession | null>;
@@ -196,74 +189,6 @@ export interface RoleWriteHandlerDeps {
   userAgent?: string | null;
 }
 
-type TenantContext = {
-  userId: string;
-  activeOrgId: string;
-  ipAddress?: string | null;
-  userAgent?: string | null;
-};
-type TenantTx = Parameters<Parameters<typeof withActiveOrg>[1]>[0];
-
-/** The shared tenant composition for the three MANAGEMENT writes (the 6.3 house shape — replay
- *  lookup only, no claim; the `updated_at` CAS is the single-execution guard). */
-async function handleRoleManagementCommand<TOutcome, TResult>(
-  contractId: string,
-  run: (ctx: TenantContext, tx: TenantTx) => Promise<TOutcome>,
-  mapper: (outcome: TOutcome | null) => WireResponse<TResult>,
-  isOk: (outcome: TOutcome) => boolean,
-  deps: RoleWriteHandlerDeps,
-): Promise<WireResponse<TResult>> {
-  const session = await deps.resolveSession();
-  if (session === null) {
-    return authChallengeResponse();
-  }
-  // §B.6 mandatory-key SYNTAX leg (Doc-5C §4.3) — before any semantic processing.
-  if (deps.idempotencyKey === null) {
-    return roleInvalidInput("Idempotency-Key header is required.");
-  }
-  const key = deps.idempotencyKey;
-
-  await deps.ensureProvisioned(session);
-
-  const ran = await withActiveOrg(session, async (tx, context) => {
-    if (key !== undefined) {
-      const replay = await findStoredReplay<TResult>(
-        dedupScope(contractId, context.userId, context.activeOrgId, key),
-        COMMAND_DEDUP_WINDOW_KEY,
-        tx,
-      );
-      if (replay !== null) {
-        return replay;
-      }
-    }
-
-    const outcome = await run(
-      {
-        userId: context.userId,
-        activeOrgId: context.activeOrgId,
-        ipAddress: deps.ipAddress ?? null,
-        userAgent: deps.userAgent ?? null,
-      },
-      tx,
-    );
-    const wire = mapper(outcome);
-
-    if (isOk(outcome) && key !== undefined) {
-      await persistWireReplay(
-        dedupScope(contractId, context.userId, context.activeOrgId, key),
-        wire,
-        tx,
-      );
-    }
-    return wire;
-  });
-
-  if (!ran.resolved) {
-    return mapper(null); // 404 collapse (no user / no active membership).
-  }
-  return ran.value;
-}
-
 /**
  * `POST /identity/roles` (`201` + `Location`) — `identity.create_role.v1` with the §14.3 CREATE claim
  * leg (the invite_member precedent). Returns the §9.3 stored replay on a within-window same-key
@@ -273,80 +198,16 @@ export async function handleCreateRole(
   input: CreateRoleInput,
   deps: RoleWriteHandlerDeps,
 ): Promise<WireResponse<CreateRoleResult>> {
-  const session = await deps.resolveSession();
-  if (session === null) {
-    return authChallengeResponse();
-  }
-  // SYNTAX FIRST (Doc-4A §11.2 fixed order — the command re-runs the same exported validator), then
-  // the §B.6 mandatory-key leg on the same category-1 slot.
-  const syntaxFailure = validateCreateRoleInput(input);
-  if (syntaxFailure !== null) {
-    return roleInvalidInput(syntaxFailure);
-  }
-  if (deps.idempotencyKey === null) {
-    return roleInvalidInput("Idempotency-Key header is required.");
-  }
-  const key = deps.idempotencyKey;
-
-  await deps.ensureProvisioned(session);
-
-  const contractId = "identity.create_role.v1";
-  const ran = await withActiveOrg(session, async (tx, context) => {
-    const scope =
-      key !== undefined
-        ? dedupScope(contractId, context.userId, context.activeOrgId, key)
-        : undefined;
-
-    if (scope !== undefined) {
-      const replay = await findStoredReplay<CreateRoleResult>(scope, COMMAND_DEDUP_WINDOW_KEY, tx);
-      if (replay !== null) {
-        return replay;
-      }
-      // Doc-4A §14.3 IN-FLIGHT protection (RV-0153 F2): CLAIM the key BEFORE the command — a create
-      // has no CAS, so the claim is the single-execution guard.
-      const claim = await claimStoredReplay(scope, COMMAND_DEDUP_WINDOW_KEY, tx);
-      if (claim === "lost") {
-        const winner = await findStoredReplay<CreateRoleResult>(
-          scope,
-          COMMAND_DEDUP_WINDOW_KEY,
-          tx,
-        );
-        if (winner !== null) {
-          return winner; // the §9.3 stored payload — this caller's business logic never began.
-        }
-        throw new Error(
-          "command-dedup: claim lost but no stored record resolved (unreachable; failing closed per Doc-4A §14.3).",
-        );
-      }
-    }
-
-    const outcome = await createRole(
-      input,
-      {
-        userId: context.userId,
-        activeOrgId: context.activeOrgId,
-        ipAddress: deps.ipAddress ?? null,
-        userAgent: deps.userAgent ?? null,
-      },
-      { appendAuditRecord },
-      tx,
-    );
-    const wire = mapCreateRole(outcome);
-
-    if (scope !== undefined) {
-      if (outcome.ok) {
-        await persistWireReplay(scope, wire, tx);
-      } else {
-        await releaseStoredClaim(scope, tx); // errors never cached; the key stays live (§9.6).
-      }
-    }
-    return wire;
-  });
-
-  if (!ran.resolved) {
-    return mapCreateRole(null); // 404 collapse (no user / no active membership).
-  }
-  return ran.value;
+  return runTenantCreate(
+    "identity.create_role.v1",
+    COMMAND_DEDUP_WINDOW_KEY,
+    (ctx, tx) => createRole(input, ctx, { appendAuditRecord }, tx),
+    mapCreateRole,
+    (o) => o.ok,
+    roleInvalidInput,
+    deps,
+    () => validateCreateRoleInput(input),
+  );
 }
 
 /** `PATCH /identity/roles/{id}` (`200`) — `identity.update_role.v1` (rename; system bundles immutable). */
@@ -354,11 +215,12 @@ export async function handleUpdateRole(
   input: UpdateRoleInput,
   deps: RoleWriteHandlerDeps,
 ): Promise<WireResponse<UpdateRoleResult>> {
-  return handleRoleManagementCommand(
+  return runTenantWrite(
     "identity.update_role.v1",
     (ctx, tx) => updateRole(input, ctx, { appendAuditRecord }, tx),
     mapUpdateRole,
     (o) => o.ok,
+    roleInvalidInput,
     deps,
   );
 }
@@ -369,11 +231,12 @@ export async function handleSetRolePermissions(
   input: SetRolePermissionsInput,
   deps: RoleWriteHandlerDeps,
 ): Promise<WireResponse<SetRolePermissionsResult>> {
-  return handleRoleManagementCommand(
+  return runTenantWrite(
     "identity.set_role_permissions.v1",
     (ctx, tx) => setRolePermissions(input, ctx, { appendAuditRecord }, tx),
     mapSetRolePermissions,
     (o) => o.ok,
+    roleInvalidInput,
     deps,
   );
 }
@@ -384,11 +247,12 @@ export async function handleDeleteRole(
   input: DeleteRoleInput,
   deps: RoleWriteHandlerDeps,
 ): Promise<WireResponse<DeleteRoleResult>> {
-  return handleRoleManagementCommand(
+  return runTenantWrite(
     "identity.delete_role.v1",
     (ctx, tx) => deleteRole(input, ctx, { appendAuditRecord }, tx),
     mapDeleteRole,
     (o) => o.ok,
+    roleInvalidInput,
     deps,
   );
 }

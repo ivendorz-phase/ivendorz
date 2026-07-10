@@ -18,6 +18,7 @@
 
 import { prisma, type DbExecutor } from "@/shared/db";
 import type { AppendAuditRecord, ConfigValueQuery } from "@/modules/core/contracts";
+import { buildUserAuditInput } from "./_audit";
 import {
   findActiveMembership,
   resolveGrantedTenantSlugs,
@@ -215,18 +216,14 @@ export async function createDelegationGrantCommand(
   // (9) AUDIT — atomic with the write (SAME tx `db`), via the M0 facade ONLY. Canonical `delegation_grant_
   //     issued` action; a throw here rolls the insert back (Invariant 1).
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: ctx.activeOrgId,
       entityType: DELEGATION_GRANT_ENTITY_TYPE,
       entityId: write.id,
       action: DelegationGrantAuditAction.ISSUED,
       oldValue: null,
       newValue: write.newValue,
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 

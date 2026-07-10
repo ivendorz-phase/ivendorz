@@ -35,6 +35,7 @@
 // Events: none (§8 — [DC-1]).
 
 import type { AllocateHumanReference, AppendAuditRecord } from "@/modules/core/contracts";
+import { buildUserAuditInput } from "./_audit";
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import { uuidv7 } from "../../../../shared/ids";
 import {
@@ -211,9 +212,7 @@ export async function createOrganizationCommand(
   //     `identity.organizations` (+ founding membership) — the founding membership is disclosed in
   //     `new_value` (ids/values only, Doc-6A §12).
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: created.organizationId,
       entityType: ORGANIZATION_ENTITY_TYPE,
       entityId: created.organizationId,
@@ -226,9 +225,7 @@ export async function createOrganizationCommand(
         is_personal_org: false,
         owner_membership_id: created.ownerMembershipId,
       },
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 

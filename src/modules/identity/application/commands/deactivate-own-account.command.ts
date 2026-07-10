@@ -35,6 +35,7 @@
 
 import { prisma } from "../../../../shared/db";
 import { UUID_PATTERN } from "./_validation";
+import { buildUserAuditInput } from "./_audit";
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import {
   anonymizeAndSoftDeleteUser,
@@ -245,18 +246,14 @@ export async function deactivateOwnAccountCommand(
       );
       if (moved === null) continue; // concurrently moved on — the CAS is the guard; nothing to audit.
       await deps.appendAuditRecord(
-        {
-          actorId: ctx.userId,
-          actorType: "user",
+        buildUserAuditInput(ctx, {
           organizationId: membership.organizationId,
           entityType: MEMBERSHIP_ENTITY_TYPE,
           entityId: membership.membershipId,
           action: MembershipAuditAction.REMOVED,
           oldValue: moved.oldValue,
           newValue: moved.newValue,
-          ipAddress: ctx.ipAddress ?? null,
-          userAgent: ctx.userAgent ?? null,
-        },
+        }),
         tx,
       );
     }
@@ -265,18 +262,14 @@ export async function deactivateOwnAccountCommand(
     //     status transition + anonymized FIELD NAMES only — never the personal values. The users
     //     record is platform-owned: `organization_id` is null (no org anchor — Doc-2 §9 CR2).
     await deps.appendAuditRecord(
-      {
-        actorId: ctx.userId,
-        actorType: "user",
+      buildUserAuditInput(ctx, {
         organizationId: null,
         entityType: USER_ENTITY_TYPE,
         entityId: ctx.userId,
         action: UserAccountAuditAction.DEACTIVATED,
         oldValue: { status: write.previousStatus },
         newValue: { status: "soft_deleted", anonymized_fields: [...USER_ANONYMIZATION_FIELDS] },
-        ipAddress: ctx.ipAddress ?? null,
-        userAgent: ctx.userAgent ?? null,
-      },
+      }),
       tx,
     );
 
