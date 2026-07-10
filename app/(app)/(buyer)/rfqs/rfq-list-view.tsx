@@ -87,9 +87,12 @@ export function RfqListView({
 
   return (
     <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6">
+      {/* Description second sentence = privacy subtext (trust_adoption_ladder §5.3). Wording is
+          VENDOR-SCOPED (Review-A RA-F1): an absolute "only your org + invited vendors" claim would
+          deny the frozen moderation stage / staff visibility — never overpromise past the corpus. */}
       <PageHeader
         title="RFQs"
-        description="Author, track and manage your organization's requests for quotation."
+        description="Author, track and manage your organization's requests for quotation. Your RFQs are never public — no vendor can see them except those invited to quote."
         actions={<NewRfqButton />}
       />
 

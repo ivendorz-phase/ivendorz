@@ -82,6 +82,32 @@ export function RfqPreviewDocument({ form }: { form: RfqDraftForm }) {
         </div>
       </header>
 
+      {/* ── Privacy statement (owner-specified copy 2026-07-10 — trust_adoption_ladder §5.3) — makes
+          the document's non-disclosure posture visible: always-private (Doc-3 §5.1), routing-scoped
+          visibility, internal-only guidance (the closing footnote states the exclusion). ── */}
+      <section aria-label="Privacy" className="rounded border border-slate-300 bg-slate-50 p-3">
+        <dl className="space-y-1 text-xs text-slate-700">
+          <div className="flex gap-2">
+            <dt className="w-20 shrink-0 text-2xs font-semibold uppercase tracking-wide text-slate-500">
+              Privacy
+            </dt>
+            <dd>Private RFQ</dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="w-20 shrink-0 text-2xs font-semibold uppercase tracking-wide text-slate-500">
+              Visibility
+            </dt>
+            <dd>Only vendors matched by your routing preferences or explicitly selected by you</dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="w-20 shrink-0 text-2xs font-semibold uppercase tracking-wide text-slate-500">
+              Internal
+            </dt>
+            <dd>Budget and routing preferences remain confidential</dd>
+          </div>
+        </dl>
+      </section>
+
       {/* ── Subject & scope ── */}
       <section className="space-y-1">
         <SectionTitle>Subject &amp; scope</SectionTitle>

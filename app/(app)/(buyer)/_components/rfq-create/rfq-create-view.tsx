@@ -4,7 +4,7 @@
 // (Wave 4; PARKED behind the write-wiring milestone). PRESENTATION-ONLY.
 //
 // REUSE: shell `Breadcrumbs`; kit `Card`/`Button`/`FormField`/`EmptyState`/`ErrorState`; buyer `Textarea`/
-// `Select`/`DescriptionList`; buyer-scoped `UploadArea`.
+// `Select`/`DescriptionList`; buyer-scoped `UploadArea` + `Callout`.
 //
 // GOVERNANCE: no real submit/mutation/upload/search/AI/matching (Board scope). The buyer sets routing
 // BREADTH (`routing_mode`) + preference hints — never matching weights (R6); the engine decides who is
@@ -12,11 +12,12 @@
 // submit-required fields (budget / district / routing) are noted, never enforced client-side here.
 
 import Link from "next/link";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Lock } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent } from "@/frontend/primitives/card";
 import { ErrorState } from "@/frontend/components/error-state";
 import { Breadcrumbs } from "../../../_components/shell";
+import { Callout } from "../callout";
 import { UploadArea } from "./upload-area";
 import { SubmitPreview } from "./submit-preview";
 import { CommunicationSection } from "./communication-section";
@@ -87,6 +88,14 @@ export function RfqCreateView({ data }: { data: RfqCreateData }) {
           quotations.
         </p>
       </header>
+
+      {/* Privacy affordance (owner-specified copy 2026-07-10 — trust_adoption_ladder §5.3). There is
+          deliberately NO public/private option: RFQs are always private (Doc-3 §5.1 — distributed,
+          never published), so the page states the guarantee instead of asking. */}
+      <Callout icon={<Lock aria-hidden />} className="mb-6">
+        <span className="font-medium text-foreground">Privacy by Design</span> — Your RFQ is never
+        publicly published.
+      </Callout>
 
       {submission === "error" ? (
         <ErrorState

@@ -313,7 +313,7 @@ export function VendorSection({ form }: { form: RfqDraftForm }) {
       <FormField
         id="rfq-routing"
         label="Routing"
-        description="How broadly to route this RFQ. The matching engine still decides who is invited."
+        description="How broadly to route this RFQ. The matching engine still decides who is invited. Routing preferences affect vendor matching only. They never make an RFQ public."
         className="sm:col-span-2"
         required
       >
