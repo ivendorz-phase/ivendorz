@@ -373,15 +373,19 @@ describe("W2-CORE-4 [D-5] outbox audit leg — run/batch granularity (Doc-4B §B
     await prisma.$disconnect();
   });
 
-  it("DISPATCH RUN: a pass that advances ≥ 1 row appends EXACTLY ONE System-attributed run-level audit record (count in new_value; not one-per-event)", async () => {
-    await seedPending(); // a fresh advanceable row → this run advances ≥ 1
+  it("DISPATCH RUN: a pass that advances MULTIPLE rows appends EXACTLY ONE System-attributed run-level audit record (one-per-run, NOT one-per-event)", async () => {
+    // Seed TWO fresh advanceable rows so the run provably advances ≥ 2 — this is what deterministically
+    // distinguishes one-per-RUN from a one-per-EVENT regression (Review-B MINOR): a per-event impl would
+    // write ≥ 2 records here, a per-run impl exactly 1.
+    await seedPending();
+    await seedPending();
 
     const before = await countAudit(DISPATCH_RUN_ACTION);
     const result = await dispatchOutboxEvents();
     const after = await countAudit(DISPATCH_RUN_ACTION);
 
-    expect(result.dispatched).toBeGreaterThanOrEqual(1);
-    expect(after - before).toBe(1); // EXACTLY one run-level record regardless of rows advanced
+    expect(result.dispatched).toBeGreaterThanOrEqual(2); // ≥ 2 rows advanced this run…
+    expect(after - before).toBe(1); // …yet EXACTLY one run-level record (one-per-run, not per-event)
 
     const row = await latestAudit(DISPATCH_RUN_ACTION);
     expect(row).not.toBeNull();
@@ -414,15 +418,18 @@ describe("W2-CORE-4 [D-5] outbox audit leg — run/batch granularity (Doc-4B §B
     expect(after - before).toBe(0); // …but NO audit record (noise rule)
   });
 
-  it("ARCHIVE RUN: a pass that archives ≥ 1 row appends EXACTLY ONE System-attributed run-level audit record", async () => {
-    await seedDispatched(400 * 86_400_000); // a retention-elapsed dispatched row → archival advances
+  it("ARCHIVE RUN: a pass that archives MULTIPLE rows appends EXACTLY ONE System-attributed run-level audit record (one-per-run, NOT one-per-event)", async () => {
+    // Two retention-elapsed dispatched rows so the run provably archives ≥ 2 — the one-per-run vs
+    // one-per-event distinguisher (Review-B MINOR).
+    await seedDispatched(400 * 86_400_000);
+    await seedDispatched(400 * 86_400_000);
 
     const before = await countAudit(ARCHIVE_RUN_ACTION);
     const result = await archiveDispatchedEvents();
     const after = await countAudit(ARCHIVE_RUN_ACTION);
 
-    expect(result.archived).toBeGreaterThanOrEqual(1);
-    expect(after - before).toBe(1);
+    expect(result.archived).toBeGreaterThanOrEqual(2); // ≥ 2 rows archived this run…
+    expect(after - before).toBe(1); // …yet EXACTLY one run-level record (one-per-run, not per-event)
 
     const row = await latestAudit(ARCHIVE_RUN_ACTION);
     expect(row).not.toBeNull();
