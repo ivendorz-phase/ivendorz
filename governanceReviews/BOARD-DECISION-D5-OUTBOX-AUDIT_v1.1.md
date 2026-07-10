@@ -83,6 +83,24 @@ Presented with the verified realizability analysis + two coupled decisions, the 
 - **Does not close Legs 1 + 4.** They stay open on the Board channel for a future additive frozen
   patch; this ruling neither builds nor forecloses them.
 
+## 5. Entity-model ratification (Board, 2026-07-10)
+
+The `Doc-4B_OutboxAuditToken_Patch_v1.0` §"Run-level entity_type" item was flagged as a judgment call
+for Review-A. The Board **adjudicated it directly** (2026-07-10), approving the **run-level audit
+model**:
+
+- `entity_type = outbox_dispatch_run` and `entity_type = outbox_archive_run`.
+- `entity_id` **MUST** be the per-run UUIDv7 generated for that dispatch/archive run.
+- **Rationale (Board):** the audit record represents a dispatch/archive **execution run**, not
+  individual outbox events; one successful run that advances ≥ 1 row produces **exactly one** immutable
+  audit record; a failed or zero-advance run produces **none** — preserving deterministic, immutable,
+  additive audit semantics.
+- The `entity_type = outbox_events` + per-run-id alternative is **rejected**.
+
+`Doc-4B_OutboxAuditToken_Patch_v1.0` is updated accordingly (status APPROVED); the realization then
+runs the normal pipeline **Review-A → Team-6 Security → Review-B**, after which W2-CORE-4 closes and the
+program continues to the Wave-2 Integration Audit.
+
 ---
 
 *Non-authoritative Board-decision record. Refines v1.0; conforms upward (§7); coins nothing; edits no

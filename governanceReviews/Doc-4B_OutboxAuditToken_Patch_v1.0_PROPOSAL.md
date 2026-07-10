@@ -1,10 +1,16 @@
 # Doc-4B_OutboxAuditToken_Patch_v1.0_PROPOSAL.md
 
-> **⛔ STATUS: PROPOSED — human/Board approval PENDING (CLAUDE.md §8: architecture-affecting
-> realization requires HUMAN approval; code review alone is insufficient).** Review-A PENDING ·
-> `00_AUTHORITY_MAP.md` registration PENDING. On approval this is copied to
-> `generatedDocs/Doc-4B_OutboxAuditToken_Patch_v1.0.md`, registered in the Authority Map, and carried
-> **alongside** the unedited frozen `Doc-4B_Content_v1.0_PassB` — **no frozen file edited in place.**
+> **✅ STATUS: APPROVED — human/Board ruling 2026-07-10 (CLAUDE.md §8 HUMAN approval satisfied).** The
+> Board ratified the **run-level audit model**: `entity_type = outbox_dispatch_run` / `outbox_archive_run`;
+> `entity_id` **MUST** be the per-run UUIDv7 generated for that dispatch/archive run; one successful run
+> that advances ≥ 1 row produces exactly one immutable audit record; failed / zero-advance runs produce
+> none (deterministic, immutable, additive). The §"Run-level entity_type" judgment call is thereby
+> **adjudicated** (the `outbox_events`+run-id alternative is rejected).
+>
+> **Governance-pipeline PENDING (owner-directed order):** Review-A → Team-6 Security → Review-B. On
+> pipeline pass, this is copied to `generatedDocs/Doc-4B_OutboxAuditToken_Patch_v1.0.md`, registered in
+> `00_AUTHORITY_MAP.md`, and carried **alongside** the unedited frozen `Doc-4B_Content_v1.0_PassB` — **no
+> frozen file edited in place.**
 >
 > **Companion to `BOARD-DECISION-D5-OUTBOX-AUDIT_v1.1.md`** (the owner's 2026-07-10 scope + granularity
 > ruling). This patch owns the **wire-level serialization**; the ruling owns the **decision**. A future
@@ -17,7 +23,8 @@
 
 ## Status
 
-PROPOSED — human/Board approval pending (2026-07-10).
+APPROVED — human/Board ruling 2026-07-10 (run-level model ratified). Governance pipeline
+(Review-A → Team-6 → Review-B) + `00_AUTHORITY_MAP.md` registration + corpus fold PENDING.
 
 | Field | Value |
 |---|---|
@@ -64,13 +71,14 @@ note deferred to the Board:
   racers, pure retries, and backoff-skips are never audited (they are not advances). `deadLettered`
   and `reconciledStuck` are frozen `§B6`/`§17.1` **operational telemetry, not a business audit
   action** — they do **not** trigger an audit row.
-- **Run-level `entity_type` (logged judgment call — for Review-A).** The audited unit is the
-  **service-role operation/run**, not a single `outbox_events` row (that is precisely what run/batch
-  granularity means). Precedent: the enumerated `Doc-2 §9` Admin action **"import job execution"**
-  audits the *job/run*, not each imported row. `entity_id` is a **fresh UUIDv7 run-correlation id**
-  (time-ordered; not a persisted `outbox_events` PK — there is no `outbox_dispatch_runs` table, by
-  rule M0 has no aggregate). Alternative considered + rejected: `entity_type = outbox_events` with a
-  per-run id would mis-signal that the id identifies one stream row. Flagged for Review-A adjudication.
+- **Run-level `entity_type` (Board-ADJUDICATED 2026-07-10).** The audited unit is the **service-role
+  operation/run**, not a single `outbox_events` row (that is precisely what run/batch granularity
+  means). Precedent: the enumerated `Doc-2 §9` Admin action **"import job execution"** audits the
+  *job/run*, not each imported row. `entity_id` **MUST** be a **fresh UUIDv7 run-correlation id**
+  (time-ordered; not a persisted `outbox_events` PK — there is no `outbox_dispatch_runs` table, by rule
+  M0 has no aggregate). **The Board rejected** the alternative `entity_type = outbox_events` + per-run
+  id (it would mis-signal that the id identifies one stream row) and ratified `outbox_dispatch_run` /
+  `outbox_archive_run` with the per-run UUIDv7 `entity_id` (Board ruling 2026-07-10).
 - **Token convention.** snake_case, past tense (`outbox_events_dispatched` / `outbox_events_archived`)
   — consistent with the corpus's snake_case structured codes and the M1 `*_created`/`*_changed`
   tokens. Two tokens (one per worker) so the immutable ledger distinguishes a dispatch run from an
@@ -128,4 +136,5 @@ entity_type, entity_id, value mapping) + the run/batch granularity of the two Do
 sensitive operations" outbox audit legs. No business-action change (the §9 family is enumerated — no
 Doc-2 patch), no contract-shape change, no Doc-4B re-implementation, no dispatch-mechanics change, no
 event/slug/schema change. Companion to BOARD-DECISION-D5-OUTBOX-AUDIT_v1.1. Frozen Doc-4B text not
-edited in place. **PROPOSED — human/Board approval + Review-A + Authority-Map registration PENDING.***
+edited in place. **APPROVED — Board ruling 2026-07-10 (run-level model ratified); Review-A → Team-6 →
+Review-B + Authority-Map registration + corpus fold PENDING.***
