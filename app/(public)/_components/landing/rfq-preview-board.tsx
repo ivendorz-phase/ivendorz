@@ -231,7 +231,7 @@ export function RfqPreviewBoard() {
 
       {/* Footer — primary conversion CTA (routes to auth) + honesty caption */}
       <div className="mt-4 border-t border-border pt-3">
-        <Button asChild size="lg" className="w-full gap-2">
+        <Button asChild size="lg" variant="amber" className="w-full gap-2">
           <Link href={AUTH_HREF}>
             Post Your RFQ — 100% Free <ArrowRight aria-hidden="true" />
           </Link>

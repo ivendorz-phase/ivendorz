@@ -355,7 +355,7 @@ const config: Config = {
         "iv-accordion-up": "iv-accordion-up 200ms cubic-bezier(0,0,0.2,1)",
         /* Ambient ticker loop (like iv-shimmer/iv-pulse-brand) — slow + linear so it reads as a
            calm live feed, never a flashy motion; paused on hover/focus, off under reduced-motion. */
-        "iv-marquee-up": "iv-marquee-up 40s linear infinite",
+        "iv-marquee-up": "iv-marquee-up 28s linear infinite",
       },
 
       /* -----------------------------------------------------------------------
