@@ -149,9 +149,26 @@ function findActiveGroupLabel(nav: NavSection[], pathname: string, search: strin
   return null;
 }
 
+// `useSearchParams()` triggers a client-side-rendering bailout during static prerendering, so its
+// caller must sit under a Suspense boundary (Next.js 15 — missing-suspense-with-csr-bailout). The
+// fallback renders the SAME sidebar with an empty query string (active-state falls back to
+// pathname-only), so there is no layout shift; the real query is applied on hydration. Only
+// `useSearchParams` bails — `usePathname()` stays in the inner component.
 export function Sidebar({ nav }: { nav: NavSection[] }) {
-  const pathname = usePathname();
+  return (
+    <React.Suspense fallback={<SidebarInner nav={nav} search="" />}>
+      <SidebarWithSearch nav={nav} />
+    </React.Suspense>
+  );
+}
+
+function SidebarWithSearch({ nav }: { nav: NavSection[] }) {
   const search = useSearchParams().toString();
+  return <SidebarInner nav={nav} search={search} />;
+}
+
+function SidebarInner({ nav, search }: { nav: NavSection[]; search: string }) {
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = React.useState(false);
   const userToggledRef = React.useRef(false);
 

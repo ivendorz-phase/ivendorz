@@ -132,18 +132,33 @@ function findActiveGroupLabel(nav: NavSection[], pathname: string, search: strin
   return null;
 }
 
-export function MobileNav({
-  nav,
-  org,
-  organizations,
-}: {
+interface MobileNavProps {
   nav: NavSection[];
   org?: ShellOrg;
   organizations?: ShellOrg[];
-}) {
+}
+
+// `useSearchParams()` triggers a client-side-rendering bailout during static prerendering, so its
+// caller must sit under a Suspense boundary (Next.js 15 — missing-suspense-with-csr-bailout). The
+// fallback renders the same drawer with an empty query string (active-state falls back to
+// pathname-only); the real query is applied on hydration. Only `useSearchParams` bails —
+// `usePathname()` stays in the inner component.
+export function MobileNav(props: MobileNavProps) {
+  return (
+    <React.Suspense fallback={<MobileNavInner {...props} search="" />}>
+      <MobileNavWithSearch {...props} />
+    </React.Suspense>
+  );
+}
+
+function MobileNavWithSearch(props: MobileNavProps) {
+  const search = useSearchParams().toString();
+  return <MobileNavInner {...props} search={search} />;
+}
+
+function MobileNavInner({ nav, org, organizations, search }: MobileNavProps & { search: string }) {
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
-  const search = useSearchParams().toString();
 
   // Accordion: at most ONE group open at a time (mirrors the desktop `Sidebar`); navigating into a
   // group's page auto-opens that group.
