@@ -1018,3 +1018,165 @@ export interface ProvisionIdentityResult {
   /** The founding Owner membership id (UUIDv7), or null if not resolvable on the idempotent path. */
   ownerMembershipId: string | null;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §C7 — Role & Permission contracts (W2-IDN-6.4; Doc-4C §C7; Doc-5C §5.1 rows 17–22). Two reads
+// (`list_permissions` — the genuinely-DUAL-ACTOR wire read [Doc-5C §2.5 note: row 17 is "genuinely
+// dual-actor on the wire — User / internal-service, no split leg"], authenticated-scope, platform
+// catalog · `list_roles` — User, active-org scope, own-org roles + system seeds) + four writes
+// (`create_role` 201+Location · `update_role` PATCH · `set_role_permissions` POST · `delete_role`
+// DELETE / ADR-012 soft-delete). Firewall: `staff_*` never assignable to an org role (Invariant #2),
+// permission set ⊆ the assignable tenant catalog and NEVER ownership-class (DC-CR7), the 4 system
+// bundles immutable. `updated_at` carriage is PER-CONTRACT (RV-0153 call-1): NO §C7 contract declares
+// `Concurrency: optimistic` and NO §C7 register authors a concurrency-CONFLICT code — so `updated_at`
+// is the frozen REQUIRED request-BODY field (stale arrival view → VALIDATION 400; a LOSING concurrent
+// write [lost CAS] → VALIDATION 400 CARRYING the current token via `ETag`, §9.5/§9.6 — the §C6
+// posture, adapted: roles have NO STATE code, so the losing write collapses to VALIDATION not STATE).
+// Field names/semantics owned by Doc-4C §C7 (verbatim); bound by pointer. Events: none ([DC-1]).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The permission-catalog projection (Doc-4C §C7 `list_permissions` response — `{ slug, description,
+ *  space }`, Doc-2 §10.2). The `space` distinguishes the tenant vs staff slug space (Invariant #2). */
+export interface PermissionView {
+  slug: string;
+  description: string | null;
+  space: "tenant" | "staff";
+}
+
+/** Input to `identity.list_permissions.v1` (Doc-4C §C7 PassB:453). Dual-actor (User / internal-
+ *  service); authenticated scope (no active-org). `page_size`/`cursor` are FAIL-CLOSED at the wire
+ *  face pending `ESC-IDN-LIST-PAGESIZE` (no registered identity page-size POLICY key — the
+ *  list_delegation_grants precedent) and are NOT part of this input. */
+export interface ListPermissionsInput {
+  /** `space : enum(tenant|staff) : optional : filter` — the catalog is returned unfiltered when absent. */
+  spaceFilter?: "tenant" | "staff";
+}
+
+/** Result of `identity.list_permissions.v1` — the Doc-5A §8.6 list shape (full catalog while the
+ *  page-size dimension is handle-gated; `hasMore` always false). */
+export interface ListPermissionsResult {
+  items: PermissionView[];
+  pageInfo: { hasMore: boolean; nextCursor?: string };
+}
+
+/** The role-list projection (Doc-4C §C7 `list_roles` response — `{ role_id, name, is_system_bundle }`,
+ *  Doc-2 §10.2). */
+export interface RoleView {
+  roleId: string;
+  name: string;
+  isSystemBundle: boolean;
+}
+
+/** Input to `identity.list_roles.v1` (Doc-4C §C7 PassB:464). User, active-org scope. `page_size`/
+ *  `cursor` FAIL-CLOSED at the wire face (as above). */
+export interface ListRolesInput {
+  /** `include_system : boolean : optional : default true` — include the platform system-bundle seeds. */
+  includeSystem?: boolean;
+}
+
+/** Result of `identity.list_roles.v1` — the Doc-5A §8.6 list shape (own-org roles + system seeds). */
+export interface ListRolesResult {
+  items: RoleView[];
+  pageInfo: { hasMore: boolean; nextCursor?: string };
+}
+
+/** Error outcome of a §C7 role write (Doc-4C §C7 error registers; classes per Doc-5A §6.2). */
+export interface RoleError {
+  /** Doc-5A §6.2 class → HTTP status (VALIDATION→400 · AUTHORIZATION→403 · NOT_FOUND→404 ·
+   *  REFERENCE→422 · BUSINESS→422 · CONFLICT→409). Only classes the §C7 registers author are raised. */
+  errorClass: "VALIDATION" | "AUTHORIZATION" | "NOT_FOUND" | "REFERENCE" | "BUSINESS" | "CONFLICT";
+  /** The Doc-4C §C7 `identity_role_*` / `identity_permission_slug_unknown` register code (frozen). */
+  errorCode: string;
+  /** Human-safe, non-leaking message. */
+  message: string;
+  /** The role's CURRENT `updated_at` — populated ONLY on the LOSING-WRITE leg (lost CAS on a live
+   *  own-org role) so the wire mapper emits the Doc-5A §9.5 `ETag` current-token header (§9.6 re-read-
+   *  retry). NEVER populated on a plain stale-arrival-view or a SCOPE/BUSINESS rejection (call-13). */
+  currentUpdatedAt?: Date;
+}
+
+/** Input to `identity.create_role.v1` (Doc-4C §C7 PassB:476). The active org is SERVER-RESOLVED
+ *  (Invariant #5) and is NOT part of this input. */
+export interface CreateRoleInput {
+  /** `name : string : required : bounded; unique-per-org` (and not a reserved system-bundle name). */
+  name: string;
+  /** `permission_slugs : list<string> : optional : initial bundle; each MUST exist in the §7 catalog`
+   *  (and be an assignable tenant slug — never staff, never ownership-class). */
+  permissionSlugs?: string[];
+}
+
+/** Result of a successful `create_role` (§C7 response: role_id · name · reference_id). */
+export interface CreateRoleResult {
+  roleId: string;
+  name: string;
+}
+
+/** Outcome of `identity.create_role.v1`. */
+export type CreateRoleOutcome =
+  { ok: true; result: CreateRoleResult } | { ok: false; error: RoleError };
+
+/** Input to `identity.update_role.v1` (Doc-4C §C7 PassB:489) — rename a custom bundle. */
+export interface UpdateRoleInput {
+  /** The path `{id}` (frozen `role_id : uuid : required`). */
+  roleId: string;
+  /** `name : string : optional : bounded; unique-per-org` — when omitted, no change. */
+  name?: string;
+  /** `updated_at : timestamp : required` — REQUIRED body field (no optimistic declaration; no §C7
+   *  CONFLICT code): stale arrival → VALIDATION 400; losing write → VALIDATION 400 + `ETag`. */
+  updatedAt: Date;
+}
+
+/** Result of a successful `update_role` (§C7 response: role_id · name · updated_at · reference_id). */
+export interface UpdateRoleResult {
+  roleId: string;
+  name: string;
+  updatedAt: Date;
+}
+
+/** Outcome of `identity.update_role.v1`. */
+export type UpdateRoleOutcome =
+  { ok: true; result: UpdateRoleResult } | { ok: false; error: RoleError };
+
+/** Input to `identity.set_role_permissions.v1` (Doc-4C §C7 PassB:501) — compose the N:N bundle. */
+export interface SetRolePermissionsInput {
+  /** The path `{id}` (frozen `role_id : uuid : required`). */
+  roleId: string;
+  /** `add_slugs : list<string> : optional` (each ∈ the assignable tenant catalog). */
+  addSlugs?: string[];
+  /** `remove_slugs : list<string> : optional` (a removal = an audited revocation, PassB:503). */
+  removeSlugs?: string[];
+  /** `updated_at : timestamp : required` — REQUIRED body field (stale → 400; losing write → 400 + `ETag`). */
+  updatedAt: Date;
+}
+
+/** Result of a successful `set_role_permissions` (§C7 response: role_id · effective_slugs ·
+ *  updated_at · reference_id). */
+export interface SetRolePermissionsResult {
+  roleId: string;
+  effectiveSlugs: string[];
+  updatedAt: Date;
+}
+
+/** Outcome of `identity.set_role_permissions.v1`. */
+export type SetRolePermissionsOutcome =
+  { ok: true; result: SetRolePermissionsResult } | { ok: false; error: RoleError };
+
+/** Input to `identity.delete_role.v1` (Doc-4C §C7 PassB:514) — ADR-012 soft-delete a custom bundle. */
+export interface DeleteRoleInput {
+  /** The path `{id}` (frozen `role_id : uuid : required`). */
+  roleId: string;
+  /** `updated_at : timestamp : required` — REQUIRED body field (stale → 400; losing write → 400 + `ETag`). */
+  updatedAt: Date;
+  /** Optional operator reason recorded on the soft-delete markers (bounded convention). */
+  reason?: string;
+}
+
+/** Result of a successful `delete_role` (§C7 response: role_id · deleted (= true) · reference_id). */
+export interface DeleteRoleResult {
+  roleId: string;
+  deleted: true;
+}
+
+/** Outcome of `identity.delete_role.v1`. */
+export type DeleteRoleOutcome =
+  { ok: true; result: DeleteRoleResult } | { ok: false; error: RoleError };

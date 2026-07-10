@@ -241,3 +241,48 @@ export const OrganizationAuditAction = {
 
 export type OrganizationAuditActionToken =
   (typeof OrganizationAuditAction)[keyof typeof OrganizationAuditAction];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Role & permission audit actions (W2-IDN-6.4 — the §C7 wired role commands). Doc-2 §9 ENUMERATES
+// the "Organization" domain action **"role/permission change"** (line 686: "membership
+// invite/accept/suspend/remove, **role/permission change**, ownership change/succession, …") — so,
+// UNLIKE the buyer-profile / user-account tokens, ALL FOUR audited §C7 writes bind BY POINTER to an
+// ENUMERATED §9 action (NO `[ESC-IDN-AUDIT]` channel — the enumerated-action precedent of the
+// membership `INVITED`/`ACCEPTED` tokens). Each contract's Audit declaration authors the SAME bind:
+// `create_role` (PassB:482), `update_role` (PassB:494), `set_role_permissions` (PassB:507),
+// `delete_role` (PassB:519) all state 'Domain Organization "role/permission change" (§9)'. The token
+// STRINGS are the Doc-4C-class serialization; a future rename touches Doc-4C + this constant, never
+// Doc-2. Named CONSTANTS — never a hardcoded literal (Board ruling 2026-06-30).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The audit `entity_type` for `identity.roles` rows. Every §C7 write records the "role/permission
+ *  change" against the ROLE aggregate (`set_role_permissions` Mutation-Scope is `identity.role_
+ *  permissions` per PassB:507, but the audited entity is the role the composition belongs to — the
+ *  membership/org aggregate-entity precedent; the added/removed/effective slugs ride the payload). */
+export const ROLE_ENTITY_TYPE = "role" as const;
+
+/**
+ * Canonical role/permission audit actions — each bound BY POINTER to the ENUMERATED Doc-2 §9
+ * Organization action "role/permission change" (never `[ESC-IDN-AUDIT]`; the action is enumerated):
+ *   CREATED             → `create_role` (`→` a NEW custom bundle; `old_value = null`).
+ *   UPDATED             → `update_role` (bundle metadata / name change).
+ *   PERMISSIONS_CHANGED → `set_role_permissions` (N:N composition add/remove; removal = an audited
+ *                         revocation, PassB:503/:509 — "removing a slug is an audited revocation").
+ *   DELETED             → `delete_role` (ADR-012 soft-delete — never a hard delete; Invariant #8).
+ * FOUR distinct SERIALIZATION tokens so the immutable ledger records what actually happened
+ * (create ≠ rename ≠ recompose ≠ delete) — the delegation/user-account/org distinct-token precedent;
+ * ONE §9 business action ("role/permission change"), nothing coined. Attribution: User (§17.3).
+ */
+export const RoleAuditAction = {
+  /** §9 Organization "role/permission change" (enumerated); the `create_role` `→` NEW bundle leg. */
+  CREATED: "role_created",
+  /** §9 Organization "role/permission change" (enumerated); the `update_role` rename leg. */
+  UPDATED: "role_updated",
+  /** §9 Organization "role/permission change" (enumerated); the `set_role_permissions` compose leg
+   *  (add/remove; a removal is an audited revocation — PassB:503/:509). */
+  PERMISSIONS_CHANGED: "role_permissions_changed",
+  /** §9 Organization "role/permission change" (enumerated); the `delete_role` ADR-012 soft-delete leg. */
+  DELETED: "role_deleted",
+} as const;
+
+export type RoleAuditActionToken = (typeof RoleAuditAction)[keyof typeof RoleAuditAction];

@@ -143,6 +143,24 @@ import {
   type MembershipLifecycleContext,
   type MembershipLifecycleDeps,
 } from "../application/commands/membership-lifecycle.command";
+import {
+  createRoleCommand,
+  ROLE_NAME_MAX_LENGTH,
+  ROLE_PERMISSION_SLUGS_MAX,
+  validateCreateRoleInput,
+  type CreateRoleContext,
+  type CreateRoleDeps,
+} from "../application/commands/create-role.command";
+import {
+  deleteRoleCommand,
+  ROLE_DELETE_REASON_MAX_LENGTH,
+  setRolePermissionsCommand,
+  updateRoleCommand,
+  type RoleManagementContext,
+  type RoleManagementDeps,
+} from "../application/commands/role-management.command";
+import { listPermissions as listPermissionsQuery } from "../application/queries/list-permissions.query";
+import { listRoles as listRolesQuery } from "../application/queries/list-roles.query";
 import { getBuyerProfile as getBuyerProfileQuery } from "../application/queries/get-buyer-profile.query";
 import {
   upsertBuyerProfileCommand,
@@ -170,6 +188,18 @@ import type {
   CreateDelegationGrantOutcome,
   CreateOrganizationInput,
   CreateOrganizationOutcome,
+  CreateRoleInput,
+  CreateRoleOutcome,
+  DeleteRoleInput,
+  DeleteRoleOutcome,
+  ListPermissionsInput,
+  ListPermissionsResult,
+  ListRolesInput,
+  ListRolesResult,
+  SetRolePermissionsInput,
+  SetRolePermissionsOutcome,
+  UpdateRoleInput,
+  UpdateRoleOutcome,
   DeactivateOwnAccountInput,
   DeactivateOwnAccountOutcome,
   DelegationGrantLifecycleInput,
@@ -931,6 +961,115 @@ export {
   membershipInvalidInput,
   membershipNotFoundCollapse,
 } from "../api/membership.handler";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §C7 — Role & Permission WIRED surface (W2-IDN-6.4). The six Doc-5C §5.1 role/permission contracts
+// on their frozen routes (rows 17–22): two reads (`list_permissions` — the genuinely-dual-actor wire
+// read; `list_roles` — User, active-org) + four writes. Every write is an AUDITED, ATOMIC write (D7):
+// the M0 `appendAuditRecord` is INJECTED by contract TYPE and binds to the ENUMERATED Doc-2 §9
+// "role/permission change" action (NO `[ESC-IDN-AUDIT]`). THE FIREWALL (Invariant #2 + DC-CR7):
+// `staff_*` never assignable to an org role; permission set ⊆ the assignable tenant catalog and never
+// ownership-class; the 4 system bundles immutable (create/update/set-perms/delete reject them). Roles
+// have NO §5 state machine (catalog rows). `updated_at` = the frozen REQUIRED body field (no §C7
+// optimistic/CONFLICT declaration — the RV-0153 call-1 posture). Zero §8 events ([DC-1]).
+// Context/deps shapes re-exported for the composition edge (contracts-only).
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type { CreateRoleContext, CreateRoleDeps, RoleManagementContext, RoleManagementDeps };
+
+// The realized wire bounds ([realization convention]s — face-exported so compositions and tests bind
+// the SAME values, the RV-0152 NIT-B3 symmetry) + the frozen Doc-2 §7 slug binding (`can_manage_users`
+// — §C7 `[ESC-IDN-SLUG]` interim, PassB:474; a catalog token by pointer — re-exported from the §C6
+// binding) + the exported SYNTAX validator (composition-edge category ordering, the create precedent).
+export {
+  ROLE_NAME_MAX_LENGTH,
+  ROLE_PERMISSION_SLUGS_MAX,
+  ROLE_DELETE_REASON_MAX_LENGTH,
+  validateCreateRoleInput,
+};
+
+/** `identity.list_permissions.v1` (Doc-4C §C7; Doc-5C §5.1 row 17 — `GET /identity/permissions` ·
+ *  200). THE genuinely-dual-actor wire read (User / internal-service; authenticated scope, no active-
+ *  org). Reads the platform-owned catalog; unaudited; zero events. */
+export type ListPermissions = (
+  input: ListPermissionsInput,
+  db?: DbExecutor,
+) => Promise<ListPermissionsResult>;
+export const listPermissions: ListPermissions = (input, db) => listPermissionsQuery(input, db);
+
+/** `identity.list_roles.v1` (Doc-4C §C7; Doc-5C §5.1 row 18 — `GET /identity/roles` · 200). User,
+ *  active-org scope; own-org roles + system seeds; unaudited. `orgId` is SERVER-RESOLVED. */
+export type ListRoles = (
+  input: ListRolesInput,
+  orgId: string,
+  db?: DbExecutor,
+) => Promise<ListRolesResult>;
+export const listRoles: ListRoles = (input, orgId, db) => listRolesQuery(input, orgId, db);
+
+/** `identity.create_role.v1` (Doc-4C §C7; Doc-5C §5.1 row 19 — `POST /identity/roles` · 201 +
+ *  Location). A NEW custom bundle (`is_system_bundle = false`, active-org); `can_manage_users`; the
+ *  §B.6 CREATE claim leg lives at the composition. MUST run INSIDE `withActiveOrgContext`. */
+export type CreateRole = (
+  input: CreateRoleInput,
+  ctx: CreateRoleContext,
+  deps: CreateRoleDeps,
+  db?: DbExecutor,
+) => Promise<CreateRoleOutcome>;
+export const createRole: CreateRole = (input, ctx, deps, db) =>
+  createRoleCommand(input, ctx, deps, db);
+
+/** `identity.update_role.v1` (Doc-4C §C7; Doc-5C §5.1 row 20 — `PATCH /identity/roles/{id}` · 200).
+ *  Rename a custom bundle; system bundles immutable. MUST run INSIDE `withActiveOrgContext`. */
+export type UpdateRole = (
+  input: UpdateRoleInput,
+  ctx: RoleManagementContext,
+  deps: RoleManagementDeps,
+  db?: DbExecutor,
+) => Promise<UpdateRoleOutcome>;
+export const updateRole: UpdateRole = (input, ctx, deps, db) =>
+  updateRoleCommand(input, ctx, deps, db);
+
+/** `identity.set_role_permissions.v1` (Doc-4C §C7; Doc-5C §5.1 row 21 —
+ *  `POST /identity/roles/{id}/set_role_permissions` · 200). Compose the N:N bundle (add/remove;
+ *  removal = audited revocation); the composition firewall (⊆ assignable · never staff · never
+ *  ownership-class); system bundles immutable. MUST run INSIDE `withActiveOrgContext`. */
+export type SetRolePermissions = (
+  input: SetRolePermissionsInput,
+  ctx: RoleManagementContext,
+  deps: RoleManagementDeps,
+  db?: DbExecutor,
+) => Promise<SetRolePermissionsOutcome>;
+export const setRolePermissions: SetRolePermissions = (input, ctx, deps, db) =>
+  setRolePermissionsCommand(input, ctx, deps, db);
+
+/** `identity.delete_role.v1` (Doc-4C §C7; Doc-5C §5.1 row 22 — `DELETE /identity/roles/{id}` · 200).
+ *  ADR-012 soft-delete (never hard-delete; Invariant #8); system bundles undeletable; blocked while
+ *  members are bound. MUST run INSIDE `withActiveOrgContext`. */
+export type DeleteRole = (
+  input: DeleteRoleInput,
+  ctx: RoleManagementContext,
+  deps: RoleManagementDeps,
+  db?: DbExecutor,
+) => Promise<DeleteRoleOutcome>;
+export const deleteRole: DeleteRole = (input, ctx, deps, db) =>
+  deleteRoleCommand(input, ctx, deps, db);
+
+// The M1 WIRE FACES for the §C7 role/permission contracts (outcome → Doc-5A envelope + §6.2 status) —
+// the One-Owner placement; the app-layer composition edge consumes them via
+// `@/modules/identity/contracts` (contracts-only).
+export {
+  mapCreateRole,
+  mapDeleteRole,
+  mapListPermissions,
+  mapListRoles,
+  mapSetRolePermissions,
+  mapUpdateRole,
+  roleErrorResponse,
+  roleInvalidInput,
+  roleNotFoundCollapse,
+  type ListPermissionsWireResult,
+  type ListRolesWireResult,
+} from "../api/role.handler";
 
 // The pure lifecycle authority (state machines) — the SINGLE source of legal-edge truth (Doc-2 §5.1/§5.2 +
 // Doc-4C §C4/§C5/§C6). Re-exported so the W2-IDN-6.2 wired commands + consuming callers consult the SAME matrix and

@@ -97,3 +97,17 @@ export {
   handleAcceptInvitation,
   type AcceptInvitationHandlerDeps,
 } from "./accept-invitation.route-handler";
+
+// W2-IDN-6.4 — the §C7 Role & Permission wired surface (Doc-5C §5.1 rows 17–22, all 6 contracts).
+export {
+  handleCreateRole,
+  handleDeleteRole,
+  handleListPermissions,
+  handleListRoles,
+  handleSetRolePermissions,
+  handleUpdateRole,
+  type ListPermissionsWireInput,
+  type ListRolesWireInput,
+  type RoleReadHandlerDeps,
+  type RoleWriteHandlerDeps,
+} from "./role.route-handler";
