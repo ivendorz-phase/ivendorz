@@ -71,7 +71,8 @@ export interface PublicVendorProfileView {
  * indistinguishable; never leaks which).
  */
 export type GetPublicVendorProfileResult =
-  { found: true; profile: PublicVendorProfileView } | { found: false };
+  | { found: true; profile: PublicVendorProfileView }
+  | { found: false };
 
 /**
  * Lookup key for `get_public_vendor_profile` — EXACTLY ONE of `vendorProfileId` (UUIDv7) or `humanRef`

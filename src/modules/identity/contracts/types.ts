@@ -135,7 +135,8 @@ export interface OrganizationView {
 
 /** Outcome of `identity.get_organization.v1` — `found: false` collapses not-found / not-disclosable. */
 export type GetOrganizationResult =
-  { found: true; organization: OrganizationView } | { found: false };
+  | { found: true; organization: OrganizationView }
+  | { found: false };
 
 /** `identity.get_membership.v1` projection (Doc-2 §10.2 / Doc-4C §C3). `state` is the access-formula input
  *  (§6.1) — only `active` participates in the gate; the caller reads it, never re-derives the
@@ -260,7 +261,8 @@ export interface CreateDelegationGrantResult {
 
 /** Outcome of `identity.create_delegation_grant.v1`. */
 export type CreateDelegationGrantOutcome =
-  { ok: true; result: CreateDelegationGrantResult } | { ok: false; error: DelegationGrantError };
+  | { ok: true; result: CreateDelegationGrantResult }
+  | { ok: false; error: DelegationGrantError };
 
 /** Input to `identity.suspend_delegation_grant.v1` / `revoke_delegation_grant.v1` (Doc-4C §C9). `updatedAt`
  *  is the required optimistic-concurrency token (the caller's last-seen `updated_at`). */
@@ -281,7 +283,8 @@ export interface DelegationGrantLifecycleResult {
 
 /** Outcome of a delegation-grant lifecycle command (suspend/revoke). */
 export type DelegationGrantLifecycleOutcome =
-  { ok: true; result: DelegationGrantLifecycleResult } | { ok: false; error: DelegationGrantError };
+  | { ok: true; result: DelegationGrantLifecycleResult }
+  | { ok: false; error: DelegationGrantError };
 
 /** Input to `identity.reinstate_delegation_grant.v1` (Doc-4C §C9 #25 — REAL since W2-IDN-6.5; the
  *  business boundary is `Doc-2_Patch_v1.0.7` rule 3: valid only for a currently `suspended`,
@@ -312,7 +315,8 @@ export interface DelegationGrantView {
 /** Outcome of `identity.get_delegation_grant.v1` — `found: false` collapses absent AND non-party
  *  (§C9 SCOPE `NOT_FOUND` collapse beyond parties, §7.5 — one indistinguishable shape). */
 export type GetDelegationGrantResult =
-  { found: true; grant: DelegationGrantView } | { found: false };
+  | { found: true; grant: DelegationGrantView }
+  | { found: false };
 
 /**
  * Input to `identity.list_delegation_grants.v1` (Doc-4C §C9 request contract — the frozen filter
@@ -484,7 +488,8 @@ export interface UpdateUserProfileResult {
 
 /** Outcome of `identity.update_user_profile.v1`. */
 export type UpdateUserProfileOutcome =
-  { ok: true; result: UpdateUserProfileResult } | { ok: false; error: UserAccountError };
+  | { ok: true; result: UpdateUserProfileResult }
+  | { ok: false; error: UserAccountError };
 
 /**
  * Input to `identity.update_user_2fa_settings.v1` (Doc-4C §C4 PassB:192) — 2FA SETTINGS only; the
@@ -514,7 +519,8 @@ export interface UpdateUser2faSettingsResult {
 
 /** Outcome of `identity.update_user_2fa_settings.v1`. */
 export type UpdateUser2faSettingsOutcome =
-  { ok: true; result: UpdateUser2faSettingsResult } | { ok: false; error: UserAccountError };
+  | { ok: true; result: UpdateUser2faSettingsResult }
+  | { ok: false; error: UserAccountError };
 
 /**
  * Input to `identity.deactivate_own_account.v1` (Doc-4C §C4 PassB:205) — depart + anonymize
@@ -538,7 +544,8 @@ export interface DeactivateOwnAccountResult {
 
 /** Outcome of `identity.deactivate_own_account.v1`. */
 export type DeactivateOwnAccountOutcome =
-  { ok: true; result: DeactivateOwnAccountResult } | { ok: false; error: UserAccountError };
+  | { ok: true; result: DeactivateOwnAccountResult }
+  | { ok: false; error: UserAccountError };
 
 /**
  * Input to `identity.set_user_account_status.v1` (Doc-4C §C4 PassB:219) — Admin platform governance
@@ -565,7 +572,8 @@ export interface SetUserAccountStatusResult {
 
 /** Outcome of `identity.set_user_account_status.v1`. */
 export type SetUserAccountStatusOutcome =
-  { ok: true; result: SetUserAccountStatusResult } | { ok: false; error: UserAccountError };
+  | { ok: true; result: SetUserAccountStatusResult }
+  | { ok: false; error: UserAccountError };
 
 /** Input to the System `identity.activate_membership.v1` worker (Doc-4C §C6). The target `pending`
  *  membership id (from the DC-4 verification-complete signal); System actor — no org/user context input. */
@@ -665,7 +673,8 @@ export interface CreateOrganizationResult {
 
 /** Outcome of `identity.create_organization.v1`. */
 export type CreateOrganizationOutcome =
-  { ok: true; result: CreateOrganizationResult } | { ok: false; error: OrganizationError };
+  | { ok: true; result: CreateOrganizationResult }
+  | { ok: false; error: OrganizationError };
 
 /**
  * Input to `identity.update_organization_profile.v1` (Doc-4C §C5 PassB:257). The target org is the
@@ -692,7 +701,8 @@ export interface UpdateOrganizationProfileResult {
 
 /** Outcome of `identity.update_organization_profile.v1`. */
 export type UpdateOrganizationProfileOutcome =
-  { ok: true; result: UpdateOrganizationProfileResult } | { ok: false; error: OrganizationError };
+  | { ok: true; result: UpdateOrganizationProfileResult }
+  | { ok: false; error: OrganizationError };
 
 /**
  * Input to `identity.transfer_ownership.v1` (Doc-4C §C5 PassB:271) — the §5.5-guarded succession
@@ -725,7 +735,8 @@ export interface TransferOwnershipResult {
 
 /** Outcome of `identity.transfer_ownership.v1`. */
 export type TransferOwnershipOutcome =
-  { ok: true; result: TransferOwnershipResult } | { ok: false; error: OrganizationError };
+  | { ok: true; result: TransferOwnershipResult }
+  | { ok: false; error: OrganizationError };
 
 /** Input to `identity.soft_delete_organization.v1` (Doc-4C §C5 PassB:285). DELETE item (ADR-012);
  *  the target org is the path `{id}` = the active org. Cascade: in-module memberships ONLY
@@ -750,7 +761,8 @@ export interface SoftDeleteOrganizationResult {
 
 /** Outcome of `identity.soft_delete_organization.v1`. */
 export type SoftDeleteOrganizationOutcome =
-  { ok: true; result: SoftDeleteOrganizationResult } | { ok: false; error: OrganizationError };
+  | { ok: true; result: SoftDeleteOrganizationResult }
+  | { ok: false; error: OrganizationError };
 
 /** Input to `identity.restore_organization.v1` (Doc-4C §C5 PassB:300). The `organization_id : uuid :
  *  required` request field is the path `{id}` (Doc-5C §4.1 placement). Dual-leg actor: User (Owner)
@@ -777,7 +789,8 @@ export interface RestoreOrganizationResult {
 
 /** Outcome of `identity.restore_organization.v1`. */
 export type RestoreOrganizationOutcome =
-  { ok: true; result: RestoreOrganizationResult } | { ok: false; error: OrganizationError };
+  | { ok: true; result: RestoreOrganizationResult }
+  | { ok: false; error: OrganizationError };
 
 /** Input to `identity.set_organization_status.v1` (Doc-4C §C5 PassB:314) — Admin platform
  *  governance (21.6; NO org context, §5.6). The `organization_id` field is the path `{id}`. */
@@ -802,7 +815,8 @@ export interface SetOrganizationStatusResult {
 
 /** Outcome of `identity.set_organization_status.v1`. */
 export type SetOrganizationStatusOutcome =
-  { ok: true; result: SetOrganizationStatusResult } | { ok: false; error: OrganizationError };
+  | { ok: true; result: SetOrganizationStatusResult }
+  | { ok: false; error: OrganizationError };
 
 /** Input to `identity.admin_recover_ownership.v1` (Doc-4C §C5 PassB:328) — Admin orphaned-ownership
  *  recovery (21.6; NO org context; §5.5-guarded — RV-0150 lock). The `organization_id` field is the
@@ -827,7 +841,8 @@ export interface AdminRecoverOwnershipResult {
 
 /** Outcome of `identity.admin_recover_ownership.v1`. */
 export type AdminRecoverOwnershipOutcome =
-  { ok: true; result: AdminRecoverOwnershipResult } | { ok: false; error: OrganizationError };
+  | { ok: true; result: AdminRecoverOwnershipResult }
+  | { ok: false; error: OrganizationError };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // §C6 — Membership WIRED write surface (W2-IDN-6.3). The five Doc-5C §5.1 membership contracts:
@@ -854,7 +869,13 @@ export interface MembershipError {
    *  STATE→409 · CONFLICT→409 · REFERENCE→422 · BUSINESS→422). Only classes the §C6 registers
    *  author are raised. */
   errorClass:
-    "VALIDATION" | "AUTHORIZATION" | "NOT_FOUND" | "STATE" | "CONFLICT" | "REFERENCE" | "BUSINESS";
+    | "VALIDATION"
+    | "AUTHORIZATION"
+    | "NOT_FOUND"
+    | "STATE"
+    | "CONFLICT"
+    | "REFERENCE"
+    | "BUSINESS";
   /** The Doc-4C §C6 `identity_membership_*` / `identity_role_not_found` /
    *  `identity_org_last_owner_block` register code (frozen; never coined here). */
   errorCode: string;
@@ -892,7 +913,8 @@ export interface InviteMemberResult {
 
 /** Outcome of `identity.invite_member.v1`. */
 export type InviteMemberOutcome =
-  { ok: true; result: InviteMemberResult } | { ok: false; error: MembershipError };
+  | { ok: true; result: InviteMemberResult }
+  | { ok: false; error: MembershipError };
 
 /** Input to `identity.accept_invitation.v1` (Doc-4C §C6 PassB:363) — realized on the frozen
  *  alternative leg "(or `membership_id` + identity match)": the path `{id}` + the authenticated
@@ -914,7 +936,8 @@ export interface AcceptInvitationResult {
 
 /** Outcome of `identity.accept_invitation.v1`. */
 export type AcceptInvitationOutcome =
-  { ok: true; result: AcceptInvitationResult } | { ok: false; error: MembershipError };
+  | { ok: true; result: AcceptInvitationResult }
+  | { ok: false; error: MembershipError };
 
 /** Input to `identity.set_membership_status.v1` (Doc-4C §C6 PassB:391) — suspend/reinstate.
  *  The SUSPEND leg is §5.5-guarded (PassB:393 "cannot suspend the sole active Owner"). */
@@ -940,7 +963,8 @@ export interface SetMembershipStatusResult {
 
 /** Outcome of `identity.set_membership_status.v1`. */
 export type SetMembershipStatusOutcome =
-  { ok: true; result: SetMembershipStatusResult } | { ok: false; error: MembershipError };
+  | { ok: true; result: SetMembershipStatusResult }
+  | { ok: false; error: MembershipError };
 
 /** Input to `identity.remove_member.v1` (Doc-4C §C6 PassB:405) — `active|suspended → removed`
  *  (terminal). §5.5-GUARDED (PassB:407 "Last Owner Protection, §5.5" — the RV-0150 lock). */
@@ -962,7 +986,8 @@ export interface RemoveMemberResult {
 
 /** Outcome of `identity.remove_member.v1`. */
 export type RemoveMemberOutcome =
-  { ok: true; result: RemoveMemberResult } | { ok: false; error: MembershipError };
+  | { ok: true; result: RemoveMemberResult }
+  | { ok: false; error: MembershipError };
 
 /** Input to `identity.revoke_invitation.v1` (Doc-4C §C6 PassB:419) — `invited → removed`
  *  (terminal). NOT §5.5-guarded (the frozen §C6 revoke register authors NO last-owner code — an
@@ -984,7 +1009,8 @@ export interface RevokeInvitationResult {
 
 /** Outcome of `identity.revoke_invitation.v1`. */
 export type RevokeInvitationOutcome =
-  { ok: true; result: RevokeInvitationResult } | { ok: false; error: MembershipError };
+  | { ok: true; result: RevokeInvitationResult }
+  | { ok: false; error: MembershipError };
 
 /**
  * Input to lazy first-login identity provisioning (WP-1.3) — the authenticated Supabase subject.
@@ -1116,7 +1142,8 @@ export interface CreateRoleResult {
 
 /** Outcome of `identity.create_role.v1`. */
 export type CreateRoleOutcome =
-  { ok: true; result: CreateRoleResult } | { ok: false; error: RoleError };
+  | { ok: true; result: CreateRoleResult }
+  | { ok: false; error: RoleError };
 
 /** Input to `identity.update_role.v1` (Doc-4C §C7 PassB:489) — rename a custom bundle. */
 export interface UpdateRoleInput {
@@ -1138,7 +1165,8 @@ export interface UpdateRoleResult {
 
 /** Outcome of `identity.update_role.v1`. */
 export type UpdateRoleOutcome =
-  { ok: true; result: UpdateRoleResult } | { ok: false; error: RoleError };
+  | { ok: true; result: UpdateRoleResult }
+  | { ok: false; error: RoleError };
 
 /** Input to `identity.set_role_permissions.v1` (Doc-4C §C7 PassB:501) — compose the N:N bundle. */
 export interface SetRolePermissionsInput {
@@ -1162,7 +1190,8 @@ export interface SetRolePermissionsResult {
 
 /** Outcome of `identity.set_role_permissions.v1`. */
 export type SetRolePermissionsOutcome =
-  { ok: true; result: SetRolePermissionsResult } | { ok: false; error: RoleError };
+  | { ok: true; result: SetRolePermissionsResult }
+  | { ok: false; error: RoleError };
 
 /** Input to `identity.delete_role.v1` (Doc-4C §C7 PassB:514) — ADR-012 soft-delete a custom bundle. */
 export interface DeleteRoleInput {
@@ -1182,7 +1211,8 @@ export interface DeleteRoleResult {
 
 /** Outcome of `identity.delete_role.v1`. */
 export type DeleteRoleOutcome =
-  { ok: true; result: DeleteRoleResult } | { ok: false; error: RoleError };
+  | { ok: true; result: DeleteRoleResult }
+  | { ok: false; error: RoleError };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // §C8 — Authorization & Active-Organization Context (W2-IDN-6.6; Doc-4C §C8 · Doc-5C §6)
@@ -1216,7 +1246,8 @@ export interface SwitchActiveOrganizationResult {
  * (`identity_context_state_invalid`, the frozen "org not suspended"; RV-0150 OBS-B1).
  */
 export type SwitchActiveOrganizationOutcome =
-  { ok: true; organizationId: string } | { ok: false; code: "not_found" | "state_invalid" };
+  | { ok: true; organizationId: string }
+  | { ok: false; code: "not_found" | "state_invalid" };
 
 /** The active-context projection (Doc-4C §C8 `get_active_context` response, PassB:547 — the EXACT frozen
  *  field set; `effective_permission_summary` = the resolved slugs from `check_permission` resolution). */
@@ -1302,7 +1333,8 @@ export interface WorkflowSettingsView {
  * wire hands the client via `ETag` (for the update's REQUIRED `If-Match` — Doc-5C §6.4).
  */
 export type GetWorkflowSettingsResult =
-  { found: true; settings: WorkflowSettingsView; updatedAt: Date } | { found: false };
+  | { found: true; settings: WorkflowSettingsView; updatedAt: Date }
+  | { found: false };
 
 /** The two DEFERRED §C11 fields' wire-presence flags (no realized Doc-6C §3.7 column → fail-closed
  *  VALIDATION when supplied — the `UpdateOrganizationProfileDeferredFields` precedent). */
@@ -1360,4 +1392,5 @@ export interface WorkflowSettingsError {
 
 /** Outcome of `identity.update_workflow_settings.v1`. */
 export type UpdateWorkflowSettingsOutcome =
-  { ok: true; result: UpdateWorkflowSettingsResult } | { ok: false; error: WorkflowSettingsError };
+  | { ok: true; result: UpdateWorkflowSettingsResult }
+  | { ok: false; error: WorkflowSettingsError };

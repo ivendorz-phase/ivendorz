@@ -37,7 +37,8 @@ export type PermissionSetRejectReason =
   | "not_held"; //      a tenant slug the controlling org does NOT hold (rule 1) → AUTHORIZATION.
 
 export type PermissionSetValidation =
-  { ok: true } | { ok: false; reason: PermissionSetRejectReason; slug: string };
+  | { ok: true }
+  | { ok: false; reason: PermissionSetRejectReason; slug: string };
 
 /**
  * Validate a requested `permission_set` for delegation issuance (Doc-4C §C9 create Validation Matrix).

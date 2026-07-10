@@ -14,7 +14,13 @@ import type { StatusTone } from "./status-chip";
 /** Quotation lifecycle — frozen Doc-4M / Doc-2 §5.5. There is NO `revised` state: revisions are immutable
  *  versions within `submitted`. `selected`/`not_selected` reach only from `shortlisted`. */
 export type QuotationState =
-  "draft" | "submitted" | "withdrawn" | "shortlisted" | "selected" | "not_selected" | "expired";
+  | "draft"
+  | "submitted"
+  | "withdrawn"
+  | "shortlisted"
+  | "selected"
+  | "not_selected"
+  | "expired";
 
 export interface StateDisplay {
   label: string;

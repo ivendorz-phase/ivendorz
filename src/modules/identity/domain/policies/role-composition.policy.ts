@@ -47,7 +47,8 @@ export type SlugRejectReason =
   | "ownership_class"; // an Owner-only slug (rule 3 / DC-CR7) — reserved to the system Owner bundle.
 
 export type SlugSetValidation =
-  { ok: true } | { ok: false; reason: SlugRejectReason; slug: string };
+  | { ok: true }
+  | { ok: false; reason: SlugRejectReason; slug: string };
 
 /**
  * Validate a requested slug set for TENANT custom-role composition (Doc-4C §C7 `create_role` /

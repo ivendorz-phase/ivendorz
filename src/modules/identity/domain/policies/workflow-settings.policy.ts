@@ -83,7 +83,8 @@ export interface WorkflowSettingsPatch {
 
 /** SYNTAX validation result: either a typed patch, or a failure message (mapped to VALIDATION 400). */
 export type WorkflowSettingsSyntaxResult =
-  { ok: true; patch: WorkflowSettingsPatch } | { ok: false; message: string };
+  | { ok: true; patch: WorkflowSettingsPatch }
+  | { ok: false; message: string };
 
 /**
  * The raw (already casing-mapped) update input the command validates. The four realizable fields are

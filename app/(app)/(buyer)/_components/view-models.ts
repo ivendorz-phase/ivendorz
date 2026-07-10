@@ -33,7 +33,13 @@ export type RfqState =
  * directly (only `shortlisted`/`selected` indirectly via RFQ-level commands); the rest are vendor/System.
  */
 export type QuotationState =
-  "draft" | "submitted" | "withdrawn" | "shortlisted" | "selected" | "not_selected" | "expired";
+  | "draft"
+  | "submitted"
+  | "withdrawn"
+  | "shortlisted"
+  | "selected"
+  | "not_selected"
+  | "expired";
 
 /**
  * Engagement lifecycle — pinned to the CONTRACT AUTHORITY (Doc-4F §F5 / Doc-2 §3.5): `open → in_delivery
@@ -89,7 +95,10 @@ export type BuyerVendorStatus = "approved" | "conditional" | "blacklisted" | "no
  * §11.8/§12.1). Rendered on the routing log (P-BUY-13) as observed context, never chosen by the buyer here.
  */
 export type RoutingMode =
-  "approved_only" | "approved_conditional" | "approved_open" | "open_market";
+  | "approved_only"
+  | "approved_conditional"
+  | "approved_open"
+  | "open_market";
 
 /**
  * RFQ invitation lifecycle — the frozen Doc-4M / Doc-2 §3 `rfq_invitations` machine (verbatim):
@@ -100,7 +109,13 @@ export type RoutingMode =
  * modelled for type fidelity; the labels are neutral + NON-PENALIZING (a decline is never a vendor judgement).
  */
 export type InvitationState =
-  "draft" | "selected" | "deferred" | "delivered" | "accepted" | "declined" | "expired";
+  | "draft"
+  | "selected"
+  | "deferred"
+  | "delivered"
+  | "accepted"
+  | "declined"
+  | "expired";
 
 /** A monetary value pair — `{ amount, currency }`, BDT default at the render site only (GI-08; Doc-2 §0.4). */
 export interface MoneyValue {
