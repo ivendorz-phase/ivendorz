@@ -221,14 +221,22 @@ describe("W2-IDN-6.4 §C7 role/permission wired surface — 8C + 8E (real Postgr
     );
     expect(anon.status).toBe(401);
 
-    // pagination handle-gated (ESC-IDN-LIST-PAGESIZE) → 400.
-    expect((await handleListPermissions({ pageSize: "10" }, readDeps(u.authUserId))).status).toBe(
-      400,
+    // pagination handle-gated (ESC-IDN-LIST-PAGESIZE) → 400 with the read's OWN frozen register token
+    // `identity_permission_invalid_input` (PassB:456) — NOT the role sibling's token (RV-0157 F1).
+    const paged = await handleListPermissions({ pageSize: "10" }, readDeps(u.authUserId));
+    expect(paged.status).toBe(400);
+    expect(
+      (paged.body as { error: { error_class: string; error_code: string } }).error.error_class,
+    ).toBe("VALIDATION");
+    expect((paged.body as { error: { error_code: string } }).error.error_code).toBe(
+      "identity_permission_invalid_input",
     );
     expect((await handleListPermissions({ cursor: "x" }, readDeps(u.authUserId))).status).toBe(400);
-    // bad space enum → 400.
-    expect((await handleListPermissions({ space: "boss" }, readDeps(u.authUserId))).status).toBe(
-      400,
+    // bad space enum → 400 with the SAME frozen permission token.
+    const badSpace = await handleListPermissions({ space: "boss" }, readDeps(u.authUserId));
+    expect(badSpace.status).toBe(400);
+    expect((badSpace.body as { error: { error_code: string } }).error.error_code).toBe(
+      "identity_permission_invalid_input",
     );
   });
 

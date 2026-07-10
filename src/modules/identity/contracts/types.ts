@@ -1044,7 +1044,10 @@ export interface PermissionView {
 }
 
 /** Input to `identity.list_permissions.v1` (Doc-4C §C7 PassB:453). Dual-actor (User / internal-
- *  service); authenticated scope (no active-org). `page_size`/`cursor` are FAIL-CLOSED at the wire
+ *  service); authenticated scope (no active-org). VALIDATION legs (bad `space` enum · fail-closed
+ *  pagination) emit the read's OWN frozen register token **`identity_permission_invalid_input`**
+ *  (PassB:456) — DISTINCT from the `identity_role_invalid_input` the writes + `list_roles` use
+ *  (PassB:467/:479/:492/:504/:517); RV-0157 F1. `page_size`/`cursor` are FAIL-CLOSED at the wire
  *  face pending `ESC-IDN-LIST-PAGESIZE` (no registered identity page-size POLICY key — the
  *  list_delegation_grants precedent) and are NOT part of this input. */
 export interface ListPermissionsInput {

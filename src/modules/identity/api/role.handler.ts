@@ -24,8 +24,12 @@ import type {
 } from "@/modules/identity/contracts";
 
 // The frozen §C7 register codes shared by the composition edge (never re-declared literals — the
-// 6.1/6.2/6.3 precedent).
+// 6.1/6.2/6.3 precedent). `list_permissions` authors its OWN VALIDATION token
+// (`identity_permission_invalid_input`, PassB:456) — DISTINCT from the `identity_role_invalid_input`
+// the four writes + `list_roles` use (PassB:467/:479/:492/:504/:517); a role token on the permission
+// read would restate the sibling contract's register (reference-never-restate; RV-0157 F1).
 const ROLE_INVALID_INPUT_CODE = "identity_role_invalid_input";
+const PERMISSION_INVALID_INPUT_CODE = "identity_permission_invalid_input";
 const ROLE_NOT_FOUND_CODE = "identity_role_not_found";
 
 /** The wire list shape (Doc-5A §8.6 — items + page_info inside the §5.6 envelope). */
@@ -39,11 +43,23 @@ export interface ListRolesWireResult {
 }
 
 /** The §C7-wide SYNTAX failure response (`identity_role_invalid_input` → §6.2 `400`) — used by the
- *  compositions for the mandatory Idempotency-Key leg and malformed-body/dimension legs. */
+ *  four writes + `list_roles` for the mandatory Idempotency-Key leg and malformed-body/dimension legs. */
 export function roleInvalidInput(message: string): WireResponse<never> {
   return errorResponse({
     error_class: "VALIDATION",
     error_code: ROLE_INVALID_INPUT_CODE,
+    message,
+    retryable: false,
+  });
+}
+
+/** The `list_permissions` SYNTAX failure response (`identity_permission_invalid_input` → §6.2 `400`,
+ *  the frozen §C7 PassB:456 register token for the permission read — NOT the role sibling's token).
+ *  Used by `handleListPermissions`' bad-`space`-enum + fail-closed-pagination legs (RV-0157 F1). */
+export function permissionInvalidInput(message: string): WireResponse<never> {
+  return errorResponse({
+    error_class: "VALIDATION",
+    error_code: PERMISSION_INVALID_INPUT_CODE,
     message,
     retryable: false,
   });

@@ -1064,6 +1064,7 @@ export {
   mapListRoles,
   mapSetRolePermissions,
   mapUpdateRole,
+  permissionInvalidInput,
   roleErrorResponse,
   roleInvalidInput,
   roleNotFoundCollapse,

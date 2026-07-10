@@ -42,6 +42,7 @@ import {
   mapListRoles,
   mapSetRolePermissions,
   mapUpdateRole,
+  permissionInvalidInput,
   roleInvalidInput,
   setRolePermissions,
   updateRole,
@@ -95,24 +96,26 @@ export interface ListRolesWireInput {
   sort?: string;
 }
 
-/** Reject the handle-gated pagination/sort dimensions (Doc-4A §11.2 category 1 — see header). */
-function paginationReject(dim: {
-  pageSize?: string;
-  cursor?: string;
-  sort?: string;
-}): WireResponse<never> | null {
+/** Reject the handle-gated pagination/sort dimensions (Doc-4A §11.2 category 1 — see header). The
+ *  `invalidInput` helper is passed PER READ so each emits its OWN frozen §C7 VALIDATION token —
+ *  `permissionInvalidInput` (PassB:456) for `list_permissions`, `roleInvalidInput` (PassB:467) for
+ *  `list_roles` (RV-0157 F1: never restate the sibling read's register). */
+function paginationReject(
+  dim: { pageSize?: string; cursor?: string; sort?: string },
+  invalidInput: (message: string) => WireResponse<never>,
+): WireResponse<never> | null {
   if (dim.pageSize !== undefined) {
-    return roleInvalidInput(
+    return invalidInput(
       "page_size is not accepted: the identity page-size POLICY bound is unregistered (ESC-IDN-LIST-PAGESIZE).",
     );
   }
   if (dim.cursor !== undefined) {
-    return roleInvalidInput(
+    return invalidInput(
       "cursor is not accepted: no cursor has been issued (pagination pending ESC-IDN-LIST-PAGESIZE).",
     );
   }
   if (dim.sort !== undefined) {
-    return roleInvalidInput(
+    return invalidInput(
       "sort is not accepted: the contract declares no sortable field (server-fixed order).",
     );
   }
@@ -132,10 +135,12 @@ export async function handleListPermissions(
   if (session === null) {
     return authChallengeResponse();
   }
-  const pageReject = paginationReject(input);
+  // `list_permissions` emits its OWN frozen VALIDATION token (`identity_permission_invalid_input`,
+  // PassB:456) on BOTH its error legs — never the role sibling's token (RV-0157 F1).
+  const pageReject = paginationReject(input, permissionInvalidInput);
   if (pageReject !== null) return pageReject;
   if (input.space !== undefined && input.space !== "tenant" && input.space !== "staff") {
-    return roleInvalidInput("space must be one of: tenant, staff.");
+    return permissionInvalidInput("space must be one of: tenant, staff.");
   }
   const typed: ListPermissionsInput =
     input.space !== undefined ? { spaceFilter: input.space as "tenant" | "staff" } : {};
@@ -155,7 +160,8 @@ export async function handleListRoles(
   if (session === null) {
     return authChallengeResponse();
   }
-  const pageReject = paginationReject(input);
+  // `list_roles` keeps the role register token `identity_role_invalid_input` (PassB:467) — its own.
+  const pageReject = paginationReject(input, roleInvalidInput);
   if (pageReject !== null) return pageReject;
   if (
     input.includeSystem !== undefined &&
