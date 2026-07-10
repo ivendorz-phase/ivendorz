@@ -6,7 +6,7 @@
 - **Checkpoint SHA:** `e5225c8` (canonicalization) · `20928c1` (seeds + conformance) · `e9ff0b8` (module README/gate) — the review target is `e9ff0b8` · branch: `wave/2-core-platform`
 
 ## 1. Summary
-Seeded the 2 owner-ruled routing-governance staff slugs (catalog 43→45 = 36 tenant + 9 staff) and the 7 `identity.*` POLICY keys into `core.system_configuration`; unified the three byte-identical M1 duration parsers into one domain value-object (behavior-preserving); and ran the M1 module conformance gate (8C+8D+8E green). Full suite 381/31→381/33, zero regressions. The gate validated the full M1 surface INCLUDING the concurrent owner `_validation.ts` refactor (`1ff8ed0`) — confirmed green, no drift. The M1 module DoD is MET; the remaining close blockers are owner/Board-gated and surfaced (not decided) below.
+Seeded the 2 owner-ruled routing-governance staff slugs (catalog 43→45 = 36 tenant + 9 staff) and the 7 `identity.*` POLICY keys into `core.system_configuration`; unified the three byte-identical M1 duration parsers into one domain value-object (behavior-preserving); and ran the M1 module conformance gate (8C+8D+8E green). Full suite 368/31→381/33, zero regressions. The gate validated the full M1 surface INCLUDING the concurrent owner `_validation.ts` refactor (`1ff8ed0`) — confirmed green, no drift. The M1 module DoD is MET; the remaining close blockers are owner/Board-gated and surfaced (not decided) below.
 
 ## 2. Files changed
 **Added (7):**
