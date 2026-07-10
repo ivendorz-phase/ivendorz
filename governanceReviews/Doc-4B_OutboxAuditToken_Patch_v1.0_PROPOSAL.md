@@ -86,6 +86,16 @@ note deferred to the Board:
 - **Attribution — System.** `actor_type = 'system'` (realized lowercase `core.ActorType`),
   `actor_id = null`, `organization_id = null` (platform-scoped; `Doc-2 §9`/CR2). `ip_address`/
   `user_agent` = `null` (no HTTP caller). `timestamp` = the run time (append-primitive default).
+- **`Correlation: phase2-origin` — subsumed by run/batch (Review-A OBS, 2026-07-10).** The frozen
+  `§B6` audit block declares `Correlation: phase2-origin` (the per-event Phase-1 origin linkage, §17.2).
+  A **run-level** record cannot carry it, by construction: one run advances many Phase-1 origins (no
+  single linkage exists), the `core.audit_records` §9 field set (`Doc-2:679`) has **no**
+  correlation/reference_id column, and `core.append_audit_record.v1` (§A10) exposes **no** correlation
+  parameter. This is a direct, Board-authorized consequence of the run/batch granularity ruling — not a
+  dropped obligation: per-event forensic linkage remains fully recoverable from `core.outbox_events`
+  itself (each advanced row carries its own `status` + `dispatched_at`), and the run record adds the
+  "System executed dispatch/archive at T advancing N" fact on top. `Attribution` and `Mutation-Scope`
+  are unchanged; `Correlation` is **not applicable at run granularity** for these two workers.
 - **Append path + atomicity.** Written via `core.append_audit_record.v1` **only** (Doc-4B §A10),
   **on the worker's own transaction** (atomic with the row advances — §17.1 / D7 rule 5): if the
   append throws, the advances roll back (**no advancing run without its audit**); the append follows

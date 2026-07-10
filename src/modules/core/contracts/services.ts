@@ -81,7 +81,7 @@ export type DrainOutbox = (input?: DrainOutboxInput) => Promise<DrainOutboxResul
  * POLICY-bounded via `core.config_value_query.v1`), plus the reconciliation sweep. TRANSPORT ONLY:
  * coins NO domain event (§B6 Events-Produced: none). Appends ONE System-attributed audit record per
  * run that advanced ≥ 1 row (the realized [D-5] run/batch audit leg — Doc-4B_OutboxAuditToken_Patch_v1.0,
- * pending approval). Invoked by the Inngest outbox job (`inngest/functions`).
+ * Board-approved 2026-07-10). Invoked by the Inngest outbox job (`inngest/functions`).
  */
 export type DispatchOutboxEvents = (input?: OutboxDispatchInput) => Promise<OutboxDispatchResult>;
 
@@ -169,7 +169,7 @@ export const drainOutbox: DrainOutbox = (input) => drainOutboxImpl(input);
  * cross-module access; the contracts→infrastructure binding is same-module-legal — the canonical DDD
  * facade pattern). Emitter-agnostic + idempotent + forward-only; POLICY-bounded; coins no event. The
  * [D-5] run/batch audit leg is realized (one System audit record per advancing run —
- * Doc-4B_OutboxAuditToken_Patch_v1.0, pending approval).
+ * Doc-4B_OutboxAuditToken_Patch_v1.0, Board-approved 2026-07-10).
  */
 export const dispatchOutboxEvents: DispatchOutboxEvents = (input) =>
   dispatchOutboxEventsImpl(input);
