@@ -40,31 +40,13 @@
 import { prisma, Prisma, type DbExecutor } from "../../../../shared/db";
 import { uuidv7 } from "../../../../shared/ids";
 import type { ConfigValueQuery } from "@/modules/core/contracts";
+import { policyDurationToMs } from "../../domain/value-objects/policy-duration";
 import type { CommandDedupScope, StoredCommandResponse } from "../../contracts/types";
 
-/**
- * Parse a `[DC-5]` duration POLICY value → milliseconds. The SAME registered `<int><unit>` notation
- * interpreter as `create-delegation-grant.command.ts`'s `durationToMs` (a plain integer = seconds);
- * kept as a PRIVATE copy here because the durationToMs CANONICALIZATION is a W2-IDN-7 carry (the 6.5
- * packet: "durationToMs canonicalization binds IDN-7") — unification lands there, never ad-hoc here.
- * Throws on an unparseable value (no invented fallback window).
- */
-function windowToMs(value: unknown): number {
-  if (typeof value === "number" && Number.isFinite(value)) return value * 1000;
-  if (typeof value === "string") {
-    const m = /^(\d+)\s*([smhd])$/.exec(value.trim());
-    if (m !== null) {
-      const n = Number(m[1]);
-      const unitMs = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 }[
-        m[2] as "s" | "m" | "h" | "d"
-      ];
-      return n * unitMs;
-    }
-  }
-  throw new Error(
-    "command-dedup window POLICY value is not an interpretable duration (W2-IDN-7 seed).",
-  );
-}
+// The `[DC-5]` window duration is interpreted by the canonical `policyDurationToMs`
+// (`domain/value-objects/policy-duration.ts`) — the single source unifying the former three byte-identical
+// copies (W2-IDN-7 canonicalization; RV-0153 OBS-Δ3). The `"command-dedup window POLICY"` context label
+// preserves this call site's original throw message verbatim.
 
 export interface FindCommandDedupDeps {
   /** `core.config_value_query.v1` — resolves the `[DC-5]` window key (never a literal). */
@@ -116,7 +98,7 @@ export async function findCommandDedupRecord(
 
   // Window check — the `[DC-5]` POLICY duration, resolved at lookup time on the SAME executor.
   const cfg = await deps.configValueQuery({ key: windowPolicyKey }, db);
-  const windowMs = windowToMs(cfg.value);
+  const windowMs = policyDurationToMs(cfg.value, "command-dedup window POLICY");
   const now = deps.now?.() ?? new Date();
   if (row.executedAt.getTime() + windowMs <= now.getTime()) {
     return null; // post-window — Doc-5A §9.4 asserts no outcome; the caller re-executes.
@@ -154,7 +136,7 @@ export async function claimCommandDedupRecord(
   db: DbExecutor = prisma,
 ): Promise<"claimed" | "lost"> {
   const cfg = await deps.configValueQuery({ key: windowPolicyKey }, db);
-  const windowSeconds = windowToMs(cfg.value) / 1000;
+  const windowSeconds = policyDurationToMs(cfg.value, "command-dedup window POLICY") / 1000;
   const affected = await db.$executeRaw(Prisma.sql`
     INSERT INTO "identity"."command_dedup"
       ("id", "contract_id", "actor_user_id", "organization_id", "idempotency_key",

@@ -33,6 +33,7 @@ import {
   validatePermissionSetForIssue,
 } from "../../domain/policies/delegation-grant.policy";
 import { assertTransition } from "../../domain/state-machines/delegation-grant.state-machine";
+import { policyDurationToMs } from "../../domain/value-objects/policy-duration";
 import {
   DELEGATION_GRANT_ENTITY_TYPE,
   DelegationGrantAuditAction,
@@ -88,28 +89,6 @@ const err = (
 ): CreateDelegationGrantOutcome => ({ ok: false, error: { errorClass, errorCode, message } });
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-/** Parse the `identity.delegation_validity_default` POLICY value → milliseconds. Binds the Doc-3 v1.9
- *  registered `<int><unit>` duration notation (`365d`/`24h`/`1h`) by pointer; a plain integer is read as
- *  seconds. The canonical `value_jsonb` encoding is owned by the W2-IDN-7 seed + Doc-6B `value_type`
- *  semantics — this interpreter conforms to the registered notation, coining nothing. Throws on an
- *  unparseable value rather than inventing a fallback window. */
-function durationToMs(value: unknown): number {
-  if (typeof value === "number" && Number.isFinite(value)) return value * 1000;
-  if (typeof value === "string") {
-    const m = /^(\d+)\s*([smhd])$/.exec(value.trim());
-    if (m !== null) {
-      const n = Number(m[1]);
-      const unitMs = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 }[
-        m[2] as "s" | "m" | "h" | "d"
-      ];
-      return n * unitMs;
-    }
-  }
-  throw new Error(
-    `identity.delegation_validity_default value is not an interpretable duration (W2-IDN-7 seed).`,
-  );
-}
 
 /**
  * Issue a delegation grant (Doc-4C §C9). Must be invoked INSIDE `withActiveOrgContext` with the CONTROLLING
@@ -210,7 +189,9 @@ export async function createDelegationGrantCommand(
   let validTo = suppliedValidTo;
   if (validTo === null && input.validTo === undefined) {
     const cfg = await deps.configValueQuery({ key: DELEGATION_VALIDITY_DEFAULT_KEY }, db);
-    validTo = new Date(validFrom.getTime() + durationToMs(cfg.value));
+    validTo = new Date(
+      validFrom.getTime() + policyDurationToMs(cfg.value, "identity.delegation_validity_default"),
+    );
   }
 
   // (7) STATE — assert the Doc-2 §5.10 `draft → active` issue edge on the machine BEFORE the write.

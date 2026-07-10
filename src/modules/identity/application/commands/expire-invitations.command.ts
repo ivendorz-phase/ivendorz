@@ -29,6 +29,7 @@ import {
 } from "../../infrastructure/data/membership-lifecycle.repository";
 import { assertMembershipTransition } from "../../domain/state-machines/membership.state-machine";
 import { MEMBERSHIP_ENTITY_TYPE, MembershipAuditAction } from "../../domain/audit-actions";
+import { policyDurationToMs } from "../../domain/value-objects/policy-duration";
 import type { ExpireInvitationsResult } from "../../contracts/types";
 
 const DEFAULT_BATCH_SIZE = 100 as const;
@@ -37,27 +38,6 @@ const DEFAULT_BATCH_SIZE = 100 as const;
  *  §18.2). Read via `core.config_value_query.v1` — NEVER a hardcoded window literal. Seeded W2-IDN-7. */
 const MEMBERSHIP_INVITE_EXPIRY_WINDOW_KEY =
   "core.system_configuration.identity.membership_invite_expiry_window" as const;
-
-/** Parse the invite-window POLICY value → milliseconds. Binds the Doc-3 v1.9 registered `<int><unit>`
- *  duration notation (`7d`/`72h`) by pointer; a plain integer is read as seconds. The canonical `value_jsonb`
- *  encoding is owned by the W2-IDN-7 seed + Doc-6B `value_type` semantics — this interpreter conforms,
- *  coining nothing. Throws on an unparseable value rather than inventing a fallback window. */
-function durationToMs(value: unknown): number {
-  if (typeof value === "number" && Number.isFinite(value)) return value * 1000;
-  if (typeof value === "string") {
-    const m = /^(\d+)\s*([smhd])$/.exec(value.trim());
-    if (m !== null) {
-      const n = Number(m[1]);
-      const unitMs = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 }[
-        m[2] as "s" | "m" | "h" | "d"
-      ];
-      return n * unitMs;
-    }
-  }
-  throw new Error(
-    `identity.membership_invite_expiry_window value is not an interpretable duration (W2-IDN-7 seed).`,
-  );
-}
 
 export interface ExpireInvitationsDeps {
   appendAuditRecord: AppendAuditRecord;
@@ -86,7 +66,9 @@ export async function expireInvitationsCommand(
     // WINDOW — read the REAL POLICY value; derive the cutoff. Never a hardcoded window (an absent/unparseable
     // value throws → the sweep aborts rather than expiring on an invented window).
     const cfg = await deps.configValueQuery({ key: MEMBERSHIP_INVITE_EXPIRY_WINDOW_KEY }, tx);
-    const cutoff = new Date(now.getTime() - durationToMs(cfg.value));
+    const cutoff = new Date(
+      now.getTime() - policyDurationToMs(cfg.value, "identity.membership_invite_expiry_window"),
+    );
 
     const candidates = await findExpirableInvitations(cutoff, batchSize, tx);
     const swept: ExpirableInvitationRow[] = [];

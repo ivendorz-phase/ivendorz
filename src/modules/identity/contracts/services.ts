@@ -40,6 +40,10 @@ import {
   releaseCommandDedupRecord as releaseCommandDedupRecordImpl,
   type FindCommandDedupDeps,
 } from "../infrastructure/data/command-dedup.repository";
+// The unified POLICY-duration interpreter (W2-IDN-7 canonicalization) is consumed module-internally by
+// the delegation/invite commands + the dedup repository; re-exported here so the conformance suites can
+// reach it through the module's contracts surface (the test-access boundary — eslint `boundaries`).
+export { policyDurationToMs } from "../domain/value-objects/policy-duration";
 import {
   expireDelegationGrantsCommand,
   type ExpireDelegationGrantsDeps,
