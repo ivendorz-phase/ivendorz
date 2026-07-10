@@ -21,11 +21,14 @@ import { prisma } from "../../src/shared/db";
 //   (b) each is a `duration` and its value parses via the unified `policyDurationToMs` (ties the seed to
 //       the W2-IDN-7 canonicalization — a mis-seeded value would fail to interpret);
 //   (c) the EXACT reference-form constants the live consumers pass resolve (the §B.6 dedup windows);
-//   (d) exactly 7 `identity.*` keys exist (no extra coined, none missing).
+//   (d) exactly 7 `identity.*` keys exist (no extra coined, none missing);
+//   (e) each seeded value equals its Doc-3 v1.9 §3 registered ("Proposed start value") — RV-0160 B-F1
+//       value-conformance pin, so a value-drift (e.g. 24h→48h) can no longer ship green.
 //
 // Boundary-legal: imports only `@/modules/core/contracts` (the M0 read service), the M1 contract
-// surface, the M1 domain value-object under test, and `src/shared/*`. The 7 key NAMES below are
-// transcribed from Doc-3 v1.9 §3 (names only, no values) — nothing coined.
+// surface, the M1 domain value-object under test, and `src/shared/*`. The 7 key NAMES and their
+// registered VALUES below are transcribed verbatim from Doc-3 v1.9 §3 (a test cannot read the frozen
+// doc at runtime) — nothing coined; on any drift the frozen doc wins.
 
 /** The fixed Doc-4A §18.2 reference-form prefix (a namespace pointer, not a POLICY value). */
 const REF = "core.system_configuration.";
@@ -40,6 +43,23 @@ const REGISTERED_IDENTITY_KEYS = [
   "identity.delegation_expiry_sweep_cadence",
   "identity.ownership_succession_reminder_cadence",
 ] as const;
+
+/**
+ * The Doc-3 v1.9 §3 registered VALUE for each of the 7 keys — the "Proposed start value" column
+ * (Board-confirmed §3.1), transcribed verbatim from the frozen doc as the canonical `value_jsonb`
+ * duration string. A test cannot read the doc at runtime, so these are the frozen expectation encoded
+ * (RV-0160 B-F1). The `Record<…keys…>` type forces this map to cover EXACTLY the 7 registered keys —
+ * a missing/extra key is a compile error (fix-forward-sweeps-the-class). Nothing coined.
+ */
+const DOC3_REGISTERED_VALUES: Record<(typeof REGISTERED_IDENTITY_KEYS)[number], string> = {
+  "identity.command_dedup_window": "24h", // Doc-3 v1.9 §3 row 1 — Proposed start value **24h**
+  "identity.user_update_dedup_window": "24h", // Doc-3 v1.9 §3 row 2 — Proposed start value **24h**
+  "identity.membership_invite_dedup_window": "24h", // Doc-3 v1.9 §3 row 3 — Proposed start value **24h**
+  "identity.membership_invite_expiry_window": "14d", // Doc-3 v1.9 §3 row 4 — Proposed start value **14d**
+  "identity.delegation_validity_default": "365d", // Doc-3 v1.9 §3 row 5 — Proposed start value **365d**
+  "identity.delegation_expiry_sweep_cadence": "1h", // Doc-3 v1.9 §3 row 6 — Proposed start value **1h**
+  "identity.ownership_succession_reminder_cadence": "7d", // Doc-3 v1.9 §3 row 7 — Proposed start value **7d**
+};
 
 // Load the single INSERT from the W2-IDN-7 POLICY-key seed migration (its own on-disk SQL), so the
 // re-seed below runs the REAL migration content.
@@ -123,5 +143,32 @@ describe("W2-IDN-7 identity.* POLICY key seed (Doc-3 v1.9 §3 / Doc-6C §5-§6; 
     });
     expect(rows).toHaveLength(7);
     expect(new Set(rows.map((r) => r.key))).toEqual(new Set(REGISTERED_IDENTITY_KEYS));
+  });
+
+  it("each identity.* key's seeded value equals its Doc-3 v1.9 §3 registered value (all 7 pinned)", async () => {
+    // VALUE conformance (RV-0160 B-F1): the sibling assertions pin PRESENCE, `value_type` and
+    // interpretability, but not the registered VALUE — so a value-drift (e.g. seeding `48h` where Doc-3
+    // v1.9 §3 registers `24h`) would ship green. Pin every one of the 7 to its §3 registered value.
+    for (const registeredKey of REGISTERED_IDENTITY_KEYS) {
+      const expected = DOC3_REGISTERED_VALUES[registeredKey];
+
+      // (a) the value the migration actually persisted into `core.system_configuration` …
+      const row = await prisma.systemConfiguration.findUnique({
+        where: { key: registeredKey },
+        select: { valueJsonb: true },
+      });
+      expect(row, `seed row missing for ${registeredKey}`).not.toBeNull();
+      expect(
+        row!.valueJsonb,
+        `${registeredKey}: seeded value must equal its Doc-3 v1.9 §3 registered value`,
+      ).toEqual(expected);
+
+      // (b) … and the value the M0 read service resolves both equal the frozen registered value.
+      const result = await configValueQuery({ key: REF + registeredKey });
+      expect(
+        result.value,
+        `${registeredKey}: resolved value must equal its Doc-3 v1.9 §3 registered value`,
+      ).toEqual(expected);
+    }
   });
 });
