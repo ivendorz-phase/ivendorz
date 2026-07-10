@@ -263,6 +263,12 @@ This keeps the planning policy (tiers, abstraction, firewall) stable while the v
   disposition overturned. Author disposed B-1 (MINOR) / B-2 / B-3 **accept** → folded into
   v0.3; B-4/B-5 recorded as OBS (Doc-4K-patch-time notes). No BLOCKER/MAJOR; no Flag-and-Halt;
   no frozen conflict.
-- **Owed before ratification:** Board consideration. Both review lanes (Team-4 A, Team-5 B)
-  PASS at 0·0·0. This note coins nothing and is bound to the frozen corpus by pointer
-  throughout.
+- **2026-07-10 — BOARD CLOSE (owner): APPROVED** as a planning package (both lanes PASS at
+  0·0·0). This approval ratifies the *policy shape* — capability abstraction, default-tier
+  mapping, auto-selection policy, reserved-tier lane, and firewall constraints. It **does not**
+  make the note authoritative, does not authorize building M9, and is **not** a
+  provider/model commitment: `ESC-M9-01` (default-provider commitment) stays ADR-class,
+  deferred to M9 build under §8 human approval, and "default = Claude" (§2 P-2) remains
+  **non-binding**. `ESC-M9-02/03/04` remain open build-time items. The note stays
+  NON-AUTHORITATIVE under the frozen corpus; any post-approval change is an additive patch +
+  version bump.

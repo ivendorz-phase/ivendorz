@@ -1,6 +1,14 @@
 # iVendorz Confidentiality Charter
 
-**Status:** v0.2 — DRAFT (extracted per owner directive 2026-07-10; publication gated)
+**Status:** v0.2 — **CONTENT APPROVED** (owner Board close 2026-07-10; reviews ratified) ·
+**PUBLICATION still gated** (page stays `lastUpdated="Pending"` until an explicit publication go)
+**Board close (owner, 2026-07-10):** APPROVED — the charter text and both review-lane folds
+(Review-A RA-F1 vendor-scoping · Review-B RB-1 governance/compliance disclosure) are ratified.
+This document is now the **specification of record** for the Confidentiality Charter (it
+supersedes parent §5.1 for this content). Approval covers the **content and reviews only** —
+it does **not** by itself make the public page live/binding; flipping `lastUpdated` off
+"Pending" (removing the page's pending-review notice) is a **separate, explicit publication
+step** not taken here. Remains NON-AUTHORITATIVE (translates frozen rules; coins nothing).
 **Revision v0.2 (2026-07-10):** folded Team-5 Review-B RB-1 MINOR — the honesty note no
 longer claims moderation is the *only* reason an RFQ is seen outside invited vendors;
 it now discloses the narrow, audited governance/compliance staff access (`staff_super_admin`,
