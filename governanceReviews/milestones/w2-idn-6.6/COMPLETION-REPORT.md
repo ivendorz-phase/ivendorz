@@ -164,3 +164,35 @@ Before execution, the assignee confirms:
 **Judgment-call log — closing the un-logged call (per RV-0158):** the part-B-narrative claim ("two live enforcement points" / "the downstream `resolveActiveOrg` gate") was authored as an unlogged gloss alongside the correct code (the CODE revert was logged as §8 call 6; the surviving NARRATIVE was not). It is now **RETRACTED as false** and replaced by the frozen-faithful truth above — the switch is the SOLE live enforcement point; the general context resolution is membership-only (Doc-5C §3.3), which is REQUIRED by Doc-4C §C5. This aligns every §C8 comment with the as-built and with the already-correct `membership-participation.policy.ts:38-44` / `active-org.ts:49-55` docstrings.
 
 **Next gate:** A delta re-verify at `d1cb2a1` → Review-B ∥ Team-6 (pre-flag YES). The `[ESC-IDN-CTX-SUSPENDED-DOWNSTREAM]` Board completeness question is NON-gating (RV-0158 A5).
+
+---
+
+## RV-0158 F-B1 fix-forward amendment (additive — originals above untouched)
+
+**Provenance:** RV-0158 at `d1cb2a1` — **A-delta ✅ PASS** (F1 resolved, comment-only proven) · **Team-6 ✅ PASS** (0/0/0/0 + 2 OBS; tenant-boundary Inv #5 proven strict — S2.3 residual CONTAINED at the switch) · **Review-B 🟠 REVISION (F-B1 MINOR, accepted)**. Review-B's 5 sabotage probes confirmed the as-built CODE frozen-faithful — notably **probe (d): reinstating the reverted part-B org_status gate in `resolveActiveOrg` RED-lit ONLY the frozen-faithful resolver test (switch tests stayed green)** — TEST-PINNING the escalation's core (the resolver must NOT deny; §C5/§3.3). The gate failed solely on a **9th surviving F1-class comment OUTSIDE the F1 6-file set**, plus a root-cause process finding.
+
+**F-B1 (MINOR, accepted — truthful-comment, F1 parity):** `src/server/identity/index.ts:116-117` (the §C8 export-block header, added by `834ea78`, OUTSIDE the F1 6-file set → survived both the F1 fix and the A-delta's file-scoped grep) asserted "the RV-0150 OBS-B1 suspended-org denial's **live-path gate lives in `resolveActiveOrg`** (imported by these compositions)" — FALSE/opposite of as-built (the denial is in the SWITCH command; `resolveActiveOrg` is membership-only; the switch composition imports `resolveSelfUser`, NOT `resolveActiveOrg`), and it contradicted its own sibling `switch-active-organization.route-handler.ts:16-17`.
+
+**Patch (COMMENT-ONLY; ZERO code/test/behavior change): `docs(identity): W2-IDN-6.6 correct final part-B comment in server barrel + whole-surface sweep (RV-0158 F-B1) [checkpoint]` — `c53c531`.** The 3-line §C8 barrel header rewritten to the frozen-faithful truth (switch = SOLE org-not-suspended enforcement §C8; `resolveActiveOrg` membership-only §3.3, does NOT gate org_status, switch composition uses `resolveSelfUser`; residual `[ESC-IDN-CTX-SUSPENDED-DOWNSTREAM]`) — consistent with the 9 F1 sites. `git diff -U0` non-comment set EMPTY; suite **363/30**; tsc/ESLint/Prettier green. External `app/(public)/_components/landing/hero.tsx` left untouched.
+
+**THE WHOLE-SURFACE SWEEP (RV-0158 Review-B OBS-1 root-cause mandate — grep the ENTIRE 19-file WP surface + paraphrase variants, not enumerated sites). Post-fix result: ZERO false-narrative survivors.** Classification of every candidate hit:
+
+*Pass-1 — `never resolve | never reached | two live | two enforcement | org-status-aware`:* **0 hits** (all eliminated by F1 + F-B1).
+
+*Pass-2 — false-claim shapes (`(gate|denial|enforce) … (resolveActiveOrg|withActiveOrg)` and the inverse), after excluding correct negations:* **0 surviving false claims.**
+
+*Every `resolveActiveOrg` / `withActiveOrg` comment mention across the 19 files, classified:*
+| Site | Classification |
+|---|---|
+| `switch-active-organization.command.ts:22` · `switch-active-organization.route-handler.ts:16` · `services.ts:1149` · `services.ts:1193` · `active-context.route-handler.ts:4` · `get-active-context.query.ts:6` · `services.ts:1171` · `membership-participation.policy.ts:40` · `active-org.ts:55` | **CORRECT NEGATION** (F1-fixed / already-correct: "MEMBERSHIP-ONLY §3.3", "does NOT gate org_status", "escalated") |
+| **`src/server/identity/index.ts:116-117`** | **FALSE → FIXED this patch (F-B1)** |
+| `services.ts:304/326/399/452/650/760/774/787/901/926/938/950/1020/1031/1044/1056` (16× "MUST … INSIDE `withActiveOrgContext`") | **UNRELATED** — pre-existing 6.1/6.2/6.4/6.5 RLS-tx "invoke inside the tx" instructions; assert NO org_status/denial claim |
+| `context.repository.ts:47` · `list-my-organizations.route-handler.ts:7` | **UNRELATED** — the app-edge `resolveActiveOrg`/`resolveSelfUser` precedent for the self-anchored list read; no org_status claim |
+| `active-context.route-handler.ts:28` · `get-active-context.handler.ts:5` · `switch-active-organization.command.ts:19-24` (the "SOLE live enforcement point" body) | **CORRECT NEGATION** (F1-fixed) |
+| `tests/…:23/430/433` | **CORRECT** — describe the flag/conflict ("Gating org_status in `resolveActiveOrg` breaks that frozen lifecycle edge") |
+
+*Pass-3 — `lives in | enforced by | bound by | binds the | gate lives | imported by`:* the only §C8-relevant hit was `index.ts:117` (fixed); all other hits are frozen-field "bound by pointer" language or generic "the mapper/command lives in M1" placement notes — **UNRELATED.**
+
+**Confirmation:** no comment in the W2-IDN-6.6 surface states or implies the suspended-org denial/gate "lives in" / "is enforced by" / "is bound by" `resolveActiveOrg`/`withActiveOrg`/the context seam; the SWITCH is named as the sole enforcement point everywhere; every resolver mention is a correct membership-only negation or an unrelated RLS-tx/placement note. **Zero survivors — no 10th instance.**
+
+**Next gate:** combined A+B delta re-verify at `c53c531` (both are the comment-lens; Team-6 no re-entry — comment-only, no security behavior) → close.
