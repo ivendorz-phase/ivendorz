@@ -343,3 +343,107 @@ describe("W2-CORE-2 core.phase2_archive_dispatched_events.v1 — retention-bound
     expect((await readRow(id))!.status).toBe("archived"); // terminal — unchanged
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// W2-CORE-4 — the [D-5] outbox audit leg (RUN/BATCH granularity). Doc-4B_OutboxAuditToken_Patch_v1.0
+// (PROPOSED) + BOARD-DECISION-D5-OUTBOX-AUDIT_v1.1: each §B6 worker appends ONE System-attributed
+// immutable audit record per run that ADVANCED ≥ 1 row (Leg 3 dispatch success + Leg 5 archive; Leg 2
+// folded into the advance; Legs 1+4 carried, never written). Verified vs real Postgres.
+//
+// Token/entity strings are hardcoded expectations here — a TEST oracle asserting the frozen
+// serialization. The "named-constant, never a literal" rule (Board 2026-06-30) governs PRODUCTION code;
+// and eslint-plugin-boundaries forbids a test importing the M0 domain constant (a module internal —
+// tests reach only module-contracts/shared). Delta-counting scopes each assertion to its own run
+// (append-only `core.audit_records`; tests within a file run sequentially).
+const DISPATCH_RUN_ACTION = "outbox_events_dispatched" as const;
+const DISPATCH_RUN_ENTITY = "outbox_dispatch_run" as const;
+const ARCHIVE_RUN_ACTION = "outbox_events_archived" as const;
+const ARCHIVE_RUN_ENTITY = "outbox_archive_run" as const;
+
+async function countAudit(action: string): Promise<number> {
+  return prisma.auditRecord.count({ where: { action } });
+}
+
+async function latestAudit(action: string) {
+  return prisma.auditRecord.findFirst({ where: { action }, orderBy: { auditId: "desc" } });
+}
+
+describe("W2-CORE-4 [D-5] outbox audit leg — run/batch granularity (Doc-4B §B6 · Doc-4B_OutboxAuditToken_Patch_v1.0)", () => {
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
+  it("DISPATCH RUN: a pass that advances ≥ 1 row appends EXACTLY ONE System-attributed run-level audit record (count in new_value; not one-per-event)", async () => {
+    await seedPending(); // a fresh advanceable row → this run advances ≥ 1
+
+    const before = await countAudit(DISPATCH_RUN_ACTION);
+    const result = await dispatchOutboxEvents();
+    const after = await countAudit(DISPATCH_RUN_ACTION);
+
+    expect(result.dispatched).toBeGreaterThanOrEqual(1);
+    expect(after - before).toBe(1); // EXACTLY one run-level record regardless of rows advanced
+
+    const row = await latestAudit(DISPATCH_RUN_ACTION);
+    expect(row).not.toBeNull();
+    expect(row!.actorType).toBe("system"); // System-attributed (§B6 Actor: System)
+    expect(row!.actorId).toBeNull();
+    expect(row!.organizationId).toBeNull(); // platform-scoped; no active-org
+    expect(row!.entityType).toBe(DISPATCH_RUN_ENTITY); // the RUN is the audited unit, not a row
+    expect(typeof row!.entityId).toBe("string"); // a fresh per-run UUIDv7 correlation id
+    expect((row!.newValue as { dispatched: number }).dispatched).toBe(result.dispatched);
+  });
+
+  it("NOISE RULE: a fully-drained dispatch pass (0 advances) writes NO audit record even when dead-letter telemetry fires", async () => {
+    // A parked (dead-letter) row keeps deadLettered ≥ 1; it never advances (attempts ≥ max), so once the
+    // advanceable backlog is drained the next pass advances 0 while telemetry still fires — the exact
+    // "telemetry ≠ business audit" case (§B6/§17.1). Deterministic; no reliance on take:0 semantics.
+    const maxAttempts = await seededNumber(MAX_ATTEMPTS_KEY);
+    await seedPending({ attempts: maxAttempts, updatedAgoMs: 10 * 60_000 }); // parked, counts to DLQ
+
+    let guard = 0;
+    while ((await dispatchOutboxEvents()).dispatched > 0) {
+      if (++guard > 50) throw new Error("dispatch backlog did not drain within 50 passes");
+    }
+
+    const before = await countAudit(DISPATCH_RUN_ACTION);
+    const result = await dispatchOutboxEvents(); // a genuinely zero-advance pass
+    const after = await countAudit(DISPATCH_RUN_ACTION);
+
+    expect(result.dispatched).toBe(0);
+    expect(result.deadLettered).toBeGreaterThanOrEqual(1); // telemetry present…
+    expect(after - before).toBe(0); // …but NO audit record (noise rule)
+  });
+
+  it("ARCHIVE RUN: a pass that archives ≥ 1 row appends EXACTLY ONE System-attributed run-level audit record", async () => {
+    await seedDispatched(400 * 86_400_000); // a retention-elapsed dispatched row → archival advances
+
+    const before = await countAudit(ARCHIVE_RUN_ACTION);
+    const result = await archiveDispatchedEvents();
+    const after = await countAudit(ARCHIVE_RUN_ACTION);
+
+    expect(result.archived).toBeGreaterThanOrEqual(1);
+    expect(after - before).toBe(1);
+
+    const row = await latestAudit(ARCHIVE_RUN_ACTION);
+    expect(row).not.toBeNull();
+    expect(row!.actorType).toBe("system");
+    expect(row!.actorId).toBeNull();
+    expect(row!.organizationId).toBeNull();
+    expect(row!.entityType).toBe(ARCHIVE_RUN_ENTITY);
+    expect((row!.newValue as { archived: number }).archived).toBe(result.archived);
+  });
+
+  it("ARCHIVE NOISE RULE: a fully-drained archive pass (0 archived) writes NO audit record", async () => {
+    let guard = 0;
+    while ((await archiveDispatchedEvents()).archived > 0) {
+      if (++guard > 50) throw new Error("archive backlog did not drain within 50 passes");
+    }
+
+    const before = await countAudit(ARCHIVE_RUN_ACTION);
+    const result = await archiveDispatchedEvents();
+    const after = await countAudit(ARCHIVE_RUN_ACTION);
+
+    expect(result.archived).toBe(0);
+    expect(after - before).toBe(0);
+  });
+});
