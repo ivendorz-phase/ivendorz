@@ -33,12 +33,19 @@ touches any *boundary*:
 - a DB schema, migration semantics, or an RLS policy;
 - an **architecture** decision, module **ownership**, or a **governance invariant** (§8 forbids these to AI).
 
+**Renames are private-only.** A refactor may rename **private** symbols freely; it never renames a **public
+identifier** — a contract type, exported API, event name, route path, audit action identifier, permission slug, or
+state identifier. Those are boundaries; they change only through the design/patch path, never under this process.
+
 If in doubt about which side of the line a change sits on, treat it as boundary-affecting and escalate.
 
 ## 2. The rules (every refactor MUST satisfy)
 
-1. **Behavior in = behavior out.** Prove it, don't assert it. The existing test suite is the contract; it must be
-   **green before and green after**, with no test edited to accommodate new behavior. A test that *must* change
+1. **Behavior in = behavior out.** Prove it, don't assert it. The **same inputs produce the same outputs, state
+   transitions, events (and their ordering), audit records, persisted state, and any other externally observable
+   behavior — independent of internal implementation details such as timing.** The existing test suite provides **evidence** of preservation — necessary, not sufficient; published
+   contracts, frozen documents, and architectural invariants remain **authoritative** (§7). The suite must be
+   **green before and green after**, with no test edited to accommodate new behavior; a test that *must* change
    means behavior changed — that is not a refactor (§4).
 2. **Stay inside one module boundary.** A refactor never introduces cross-module table access, a cross-module FK,
    or an import of anything but another module's `contracts/`. One Module, One Owner (Golden Rule #2). Shared code
@@ -64,6 +71,25 @@ If in doubt about which side of the line a change sits on, treat it as boundary-
 8. **Small, reviewable, self-describing.** One refactor = one intent = one commit, `refactor(<scope>): …`. Keep
    pure-move/rename commits mechanically obvious (move without editing, then edit in a follow-up) so a reviewer can
    verify "no behavior change" by reading the diff, not by re-deriving it.
+9. **Preserve execution semantics.** A refactor must not alter **idempotency, deduplication, retry behavior,
+   transactional boundaries, or event/side-effect ordering.** These are especially load-bearing for command
+   handlers, workflows, and asynchronous execution paths (e.g. Inngest jobs) — the worked example's
+   `command-dedup.ts` *is* this surface; one dropped dedup key, changed `tx`
+   boundary, or reordered append silently changes semantics while the code "looks equivalent."
+10. **Performance changes are refactors only if behavior is identical.** A pure optimization qualifies only when it
+    preserves all observable behavior, contracts, ordering guarantees, and transactional semantics. The moment it
+    trades any of these for speed it is a behavior change — separate it out and review it on its own merits; "it's
+    just an optimization" is never a licence to alter observable results.
+
+**Refactor MUST-NOT (quick checklist — for agents).** A single refactor must not: add a feature flag · add
+configuration · change a default · change validation · change permissions/authorization · change a state
+transition · change event ordering or payloads · change audit behavior · change an API/wire payload or status ·
+introduce a `TODO`/stub behavior · rename a public identifier (§1). Any one of these is a behavior/boundary
+change, not a refactor — land it separately through the normal design/patch path.
+
+**When in doubt, separate the change.** If a commit mixes structural and behavioral edits, split it in two — the
+pure refactor first, the behavioral change second through its own review (Rules 6, 8). If you cannot tell which
+kind a change is, treat it as behavioral.
 
 ## 3. Red-flag gate — halt before refactoring if the change would…
 
@@ -87,9 +113,10 @@ document. A refactor that trips any of these has crossed the bright line (§1) a
 5. **Diff review — behavior-equivalence, not just taste.** Confirm the diff is structure-only: same call graph
    outcomes, same events, same envelopes, same DB effects. Net line-count usually **drops** (dedup); a growing
    diff on a "refactor" is a smell to explain.
-6. **Frontend refactors** additionally hold the design/motion contracts: reuse kit primitives and the shared
-   motion vocabulary — never re-implement a primitive or coin a one-off duration/easing while "cleaning up"
-   (that is duplication-as-architecture; see `/review-a-lens`, motion_standard.md).
+6. **Frontend refactors** additionally preserve **accessibility, keyboard behavior, focus management, and
+   ARIA/semantics**, and hold the design/motion contracts: reuse kit primitives and the shared motion vocabulary —
+   never re-implement a primitive or coin a one-off duration/easing while "cleaning up" (that is
+   duplication-as-architecture; see `/review-a-lens`, motion_standard.md).
 
 ## 5. Review & findings (Raise ≠ Accept)
 
