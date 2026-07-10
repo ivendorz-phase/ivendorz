@@ -58,6 +58,12 @@
   Doc-7B conformance).
 - **Lifecycle ownership:** Builder = Orchestrator session (owner-directed) · Review A =
   Team-4 lane · Review B = Team-5 lane · Board = owner.
+- **Key dates:** created 2026-07-10 (owner directive) / started 2026-07-10 / **closed
+  2026-07-10 (clean-gate close per the ratified self-close rule — A ✅ ∧ B ✅, B/M/M = 0/0/0
+  every firing gate at `13bbc26`; RV-0154)**. Board channel items at close (non-gating):
+  ① ratify the design_philosophy v1.1 §2.6 precedence amendment (F1) · ② optional additive
+  stack-table entry for framer-motion (F7) · ③ pre-existing prod-build static-export abort
+  stays on the Board agenda (RV-0140 class).
 
 ## Builder judgment calls (logged, none self-ratified)
 
@@ -169,4 +175,32 @@ PRE-EXISTING at parent (RV-0140 class, Board agenda; EPERM did not fire) · **OB
 `scroll-behavior` warning pre-existing (`d4ae19f`) · **OBS-3** stagger-on-hard-load LCP texture
 recorded (within the standard's documented ≤ ~400ms bound) · **OBS-4** dev-only chunk
 triplication, no action. Re-entry = **combined A-structural + B-runtime delta re-verify** at
-the F-B1 patch SHA (small-patch precedent).
+the F-B1 patch SHA (small-patch precedent). Fix-forward LANDED `13bbc26`
+(builder presence-verified live pre-review: within-group entrance + return latch + static hard
+load + zero errors).
+
+### Combined A-structural + B-runtime delta re-verify (fresh context) at `13bbc26` — ✅ PASS
+
+**0 BLOCKER · 0 MAJOR · 0 MINOR · 0 NIT · 2 OBS. F-B1 RESOLVED empirically:** within-group
+`/`→`/vendors` = 200ms opacity + 6px-rise entrance on the pathname-keyed wrapper, settling to
+`opacity: 1; transform: none` · deeper `/vendors`→`/vendors/[slug]` sampled mid-flight
+(6→1.27px) · cross-group `/`→`/login` not regressed · **shell preservation proven** (header
+node JS sentinel survives within-group nav) · return-to-initial latch works · reduced-motion =
+instant transform + 200ms opacity only · zero console/page/hydration errors. A-structural:
+templates composition-only per REPOSITORY_STRUCTURE §8; boundaries legal; no new `"use client"`
+on server files; PageTransition logic probed for holes (SSR-static, hydration-match,
+cross-group remount, strict-mode idempotence) — none at gating severity. **OBS-Δ1** render-time
+ref latch clear under concurrent-rendering discard = benign one-time replay, not producible by
+Next's router (recorded) · **OBS-Δ2** reduce-mode emits a 0.01ms WAAPI transform (stock FM
+`reducedMotion="user"`, perceptually static, conformant). Delta-hygiene caveat disclosed:
+parallel session landed out-of-scope `601d4ae` (W2-IDN-6.2) mid-review — all 7 delta paths
+byte-identical at HEAD. Gates green.
+
+### Close
+
+**RV-0154 gate roll-up at `13bbc26`: A ✅ (base 🟠 → F1–F5 fixed → delta PASS) ∧ B ✅ (base 🟠
+→ F-B1 fixed → combined delta PASS) — B/M/M = 0/0/0 on every firing gate → clean-gate close**
+(ratified self-close rule; no BLOCKER/REGRESSION/Flag-and-Halt/override fired). Carries:
+Board ①②③ (see Key dates) · vocabulary pass F6+N1 (deferred, non-gating) · future-watch F8 /
+OBS-3 / OBS-Δ1/Δ2 · Team-8 lesson: smoke tests must PRESENCE-assert the advertised behavior,
+not only error-absence (F-B1 escaped Dev and Review-A on an absence-only probe).
