@@ -206,3 +206,41 @@ F1 is a **behavior change on a T6-pre-flagged surface** (the bootstrap GUC windo
 ### Suite / gates at the patch
 
 Slice 16/16 (was 15 — +1 F1 pin) · delegation 18/18 · full suite **320 tests / 27 files** vs the RV-0155 review baseline **319/27** (delta = +1, the F1 pin; zero regressions) · tsc green · WP-surface ESLint/Prettier green.
+
+---
+
+## RV-0155 Review-B fold (additive — originals above untouched; test/report-only, ZERO production-code change)
+
+**Patch:** F-B1 (probe rebuilt interleave-real) + F-B2 + F-B4(a)/(b) ride-alongs + F-B3 disclosure. Delta files: `tests/integration/organization-wire-slice.test.ts` · this report. Production code untouched (attested: every `src/**` and `app/**` path byte-identical to `39de1d7`).
+
+### F-B1 — the CREATE race probe rebuilt (and the §6 highlight-3 claim corrected)
+
+**Concession:** §6 discrimination highlight 3 ("removing the claim leg … reddens the byte-equality") was **empirically false as written** at `39de1d7` — Review-B proved the prior probe GREEN 4/4 with the claim block deleted: its `sleep(5)` offset let the winner COMMIT before the contender's replay lookup, so the §9.3 stored-replay path satisfied byte-equality + one-org either way. The probe exercised the replay path, not the claim.
+
+**The rebuilt probe (the 6.5 delegation-create interleave shape, realized as a DB-lock hold because the create composition binds its M0 deps concretely — no production seam exists to inject a slow dependency, and adding one would be a production change):** a test HOLDER transaction pins the ORG `core.id_sequences` row `FOR UPDATE` (row pre-seeded via one committed allocation); the WINNER is fired and observably blocks INSIDE its command at the M0 allocator's row-locked UPDATE — **post-claim, pre-commit, demonstrably in-flight** (poll: ≥1 lock-waiting backend in this worker's own ephemeral DB); the CONTENDER is fired only then and observably reaches its own lock wait (poll: ≥2 waiting) — its replay lookup has **demonstrably completed** (a plain SELECT neither sees nor waits on the winner's uncommitted rows; the only thing a contender can wait ON is the claim's uncommitted unique tuple — or, in the red direction, the allocator itself); the holder then releases. Green direction: the contender blocks at the CLAIM, loses, returns the winner's stored §9.3 payload — byte-equal envelopes (incl. `reference_id` + `Location`), exactly ONE org, ONE audit row.
+
+**What the new probe proves:** Doc-4A §14.3's in-flight leg on this composition — a same-key replay arriving while the original is mid-transaction never begins a second execution — with the contender's pre-commit arrival OBSERVED, not assumed.
+
+**Red-direction verification (performed live, this patch):** the §14.3 claim block was deleted from `src/server/identity/create-organization.route-handler.ts` (sabotage) → the probe went **RED ×2 consecutive runs**, failing first at the byte-equality assertion — `AssertionError: expected { result: { …(4) }, …(1) } to deeply equal { result: { …(4) }, …(1) }` (`expect(wireJson(r2.body)).toEqual(wireJson(r1.body))` — two distinct envelopes/`reference_id`s = two executions; the one-org assertion reds behind it) → restored via `git checkout HEAD -- <file>` → hash-attested byte-clean (`git hash-object` = `0232b2956cc8ab577e32c6325e5342ef4c49e95d` = the HEAD blob, pre- and post-sabotage identical) → porcelain clean for the file → seed health green (catalog-seed suite 11/11) → slice 19/19 green post-restore.
+
+### F-B2 — recovery absent-target register branch
+
+New test: staff-path `admin_recover_ownership` against a nonexistent org id → `404` `NOT_FOUND` / `identity_org_not_found` — the register row's OWN branch exercised (previously reachable-but-untested).
+
+### F-B4 — the two defense-in-depth conjuncts discriminated
+
+(a) **Recovery, suspended-USER nominee:** nominee holds an ACTIVE membership but a SUSPENDED user → `422 identity_org_recovery_invalid`; nothing written (role unchanged, zero audit rows). This is the `nomineeUserStatus === "active"` conjunct in `admin-recover-ownership.command.ts` — previously no test failed if it were weakened; this one does. **Reading note (disclosed, not silent):** the dispatch phrased this leg "on transfer"; the named conjunct (`nomineeUserStatus === "active"`) exists ONLY in the recovery command (the frozen transfer REFERENCE leg names membership state, not user status), and the review-log F-B4 text names the "suspended-USER nominee leg" without a command. Realized on RECOVERY per the conjunct actually cited; if the coordinator intended a transfer-side REJECT of suspended-user nominees, that is a production behavior change — out of this pass's mandate (hand-back offer stands).
+
+(b) **Ownership actions never delegation-satisfiable:** an ALLOW-shaped `{ decision: "allow", satisfiedBy: "delegation" }` authorization result injected through the commands' `authorize` port is REJECTED by `transfer_ownership` AND `soft_delete_organization` (`403 identity_org_forbidden`; org untouched, Owner role unmoved, zero audits) — pinning the `satisfiedBy !== "membership"` ineligibility conjunct (Doc-2 §5.10: delegation never grants ownership-class actions). Weakening the conjunct to `decision === "allow"` alone turns both legs red.
+
+### F-B3 — reachability disclosure (§7 residuals + Appendix A footnotes, by amendment)
+
+**§7 self-severity amendment:** OBS count 3 → 5. New OBS-4: `soft_delete_organization`'s `identity_org_state_invalid` STATE leg is **wire-unreachable** — the only illegal source is `soft_deleted`, and a soft-deleted org's cascade has removed every live membership, so `withActiveOrg` can never resolve it as the caller's context (the wire collapses 404 first; the command-level STATE guard is defensive retention, the quota-class posture — §8 calls 9/15). New OBS-5: `restore_organization`'s losing-race STATE 409 (+`ETag`) leg is **race-only-reachable** (two in-window restores; the sequential wire path yields the stale-view VALIDATION 400 or success).
+
+**Appendix A footnotes (amendment text — the original table is NOT edited in place):**
+- *Row 8 (`soft_delete_organization`), "Illegal-edge leg" cell:* `identity_org_state_invalid` STATE 409 is realized at the command but **wire-unreachable** (see OBS-4); exercised only as rejected-status-unchanged defense in the slice's matrix test via the 404-collapse path.
+- *Row 9 (`restore_organization`), "Stale/losing leg" cell:* the losing-restore STATE 409 + `ETag` leg is **race-only-reachable**; the deterministic wire path surfaces the VALIDATION 400 stale-view leg.
+
+### Suite / gates at the patch
+
+Org slice **19/19** (was 16: the race probe REBUILT in place + 3 new tests — F-B2, F-B4a, F-B4b) · full suite **323 tests / 27 files** vs the Review-B baseline **320/27** (delta = +3; zero regressions) · tsc green · WP-surface ESLint/Prettier green · production `src/**`/`app/**` byte-identical to `39de1d7`.

@@ -7,6 +7,8 @@ import type { ensureProvisioned } from "../../src/server/auth";
 import { withActiveOrgContext, type ResolveStaffContext } from "../../src/server/context";
 import {
   createOrganization,
+  softDeleteOrganization,
+  transferOwnership,
   updateOrganizationProfile,
 } from "../../src/modules/identity/contracts";
 import { allocateHumanReference, appendAuditRecord } from "../../src/modules/core/contracts";
@@ -166,6 +168,34 @@ const adminDeps = (auth: string, k: string | null | undefined, staff?: ResolveSt
 });
 
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/** Poll `pg_stat_activity` (this worker's OWN ephemeral DB) until ≥ `min` backends are
+ *  lock-waiting — the interleave-real observability leg of the rebuilt create probe (RV-0155
+ *  F-B1; the outbox-hardening `waitUntilAnyBackendBlocked` idiom). */
+async function waitForLockWaiters(min: number, label: string): Promise<void> {
+  for (let i = 0; i < 400; i++) {
+    const rows = await prisma.$queryRaw<Array<{ waiting: number }>>`
+      SELECT count(*)::int AS waiting FROM pg_stat_activity
+      WHERE datname = current_database() AND wait_event_type = 'Lock' AND pid <> pg_backend_pid()`;
+    if ((rows[0]?.waiting ?? 0) >= min) return;
+    await sleep(10);
+  }
+  throw new Error(`interleave probe: never observed ${min} lock-waiting backend(s) (${label})`);
+}
+
+/** Poll until the ORG/`year` sequence row is EXCLUSIVELY HELD by the holder transaction (a
+ *  FOR UPDATE NOWAIT probe erroring 55P03 ⇒ held) — the winner may only be fired after this. */
+async function waitUntilSequenceRowHeld(year: number): Promise<void> {
+  for (let i = 0; i < 400; i++) {
+    try {
+      await prisma.$queryRaw`SELECT 1 FROM core.id_sequences WHERE entity_type = 'ORG' AND year = ${year} FOR UPDATE NOWAIT`;
+    } catch {
+      return; // 55P03 lock_not_available ⇒ the holder owns the row lock.
+    }
+    await sleep(10);
+  }
+  throw new Error("interleave probe: the holder never acquired the ORG sequence-row lock");
+}
 
 const createdOrgIds: string[] = [];
 const createdUserIds: string[] = [];
@@ -350,19 +380,66 @@ describe("W2-IDN-6.2 §C5 organization wired surface — 8C + 8E (real PostgreSQ
     expect(row.createdBy).toBe(caller.id);
   });
 
-  it("CREATE race (the RV-0150/RV-0153 claim idiom): two concurrent SAME-KEY creates → exactly ONE org; the loser returns the winner's stored §9.3 payload without executing", async () => {
+  it("CREATE race — interleave-real (RV-0155 F-B1; the 6.5 delegation-create shape): the WINNER's transaction is held open past its claim while the CONTENDER demonstrably passes its replay lookup; the contender blocks on the claim, LOSES, and returns the winner's stored §9.3 payload — with the claim leg deleted this probe REDS (two executions)", async () => {
+    // Doc-4A §14.3 (Pass4:159) verbatim: "A replay arriving while the original execution is still
+    // in-flight MUST NOT begin a second execution of the command's business logic … under all
+    // timing conditions." Interleave mechanics (the 6.5 slow-dependency shape, realized here as a
+    // DB-lock hold because the create composition binds its M0 deps concretely):
+    //   HOLDER (test tx)  — pins the ORG `core.id_sequences` row FOR UPDATE.
+    //   WINNER (T1)       — GUCs → lookup(miss) → CLAIMS the key → its command BLOCKS at the M0
+    //                       allocator's row-locked UPDATE (post-claim, pre-commit — in-flight).
+    //   CONTENDER (T2)    — fired only once T1 is OBSERVED lock-waiting: lookup(miss — T1's claim
+    //                       is uncommitted; a plain SELECT neither sees nor waits on it, so T2 has
+    //                       DEMONSTRABLY PASSED its replay lookup) → blocks AT THE CLAIM on T1's
+    //                       uncommitted unique tuple (the 2nd observed lock-waiter) → HOLDER
+    //                       releases → T1 commits → T2's claim returns "lost" → T2 re-reads and
+    //                       returns T1's stored payload WITHOUT ever executing its command.
+    // RED DIRECTION (claim block deleted from `create-organization.route-handler.ts`): T2's lookup
+    // still misses, but with no claim to block on its COMMAND runs and blocks at the SAME
+    // allocator lock (the same 2-waiter observable) → release → BOTH execute → TWO orgs, TWO
+    // reference_ids → the one-org and byte-equality assertions below go RED (verified live —
+    // report amendment "RV-0155 Review-B fold").
     const caller = await freshUser();
     const k = key();
+    const year = new Date().getUTCFullYear();
+
+    // The ORG/year sequence row must EXIST (committed) for the holder lock to have a row to hold
+    // (a first-ever allocation would INSERT it instead of blocking).
+    await allocateHumanReference({ entityType: "ORG", year }, prisma);
+
+    let releaseHolder!: () => void;
+    const holderGate = new Promise<void>((resolve) => (releaseHolder = resolve));
+    const holder = prisma.$transaction(
+      async (tx) => {
+        await tx.$queryRaw`SELECT next_value FROM core.id_sequences WHERE entity_type = 'ORG' AND year = ${year} FOR UPDATE`;
+        await holderGate;
+      },
+      { timeout: 30_000, maxWait: 10_000 },
+    );
+    await waitUntilSequenceRowHeld(year);
+
     const fire = () =>
-      handleCreateOrganization({ name: "Race Create Ltd" }, createDeps(caller.authUserId, k));
-    const [a, b] = await Promise.all([fire(), (async () => (await sleep(5), fire()))()]);
-    expect(a.status).toBe(201);
-    expect(b.status).toBe(201);
-    // Byte-equality (incl. reference_id) — the §9.3 stored-replay identity: one execution, two wires.
-    expect(wireJson(a.body)).toEqual(wireJson(b.body));
-    const orgId = (a.body as { result: { organizationId: string } }).result.organizationId;
+      handleCreateOrganization({ name: "Interleave Race Ltd" }, createDeps(caller.authUserId, k));
+    const p1 = fire();
+    await waitForLockWaiters(1, "winner at the allocator, post-claim"); // T1 is in-flight.
+    const p2 = fire();
+    await waitForLockWaiters(2, "contender past its lookup, blocked at the claim"); // T2 waited.
+    releaseHolder();
+    await holder;
+    const [r1, r2] = await Promise.all([p1, p2]);
+
+    // Both callers receive the SINGLE execution's outcome — byte-equal wire envelopes including
+    // the ORIGINAL reference_id and Location (RED under claim-deletion: two distinct envelopes).
+    expect(r1.status).toBe(201);
+    expect(r2.status).toBe(201);
+    expect(wireJson(r2.body)).toEqual(wireJson(r1.body));
+    expect(r2.headers?.Location).toBe(r1.headers?.Location);
+
+    // Exactly ONE org, ONE founding audit row (RED under claim-deletion: two of each).
+    const orgId = (r1.body as { result: { organizationId: string } }).result.organizationId;
     createdOrgIds.push(orgId);
-    expect(await prisma.organization.count({ where: { createdBy: caller.id } })).toBe(1);
+    const orgs = await prisma.organization.findMany({ where: { createdBy: caller.id } });
+    expect(orgs.map((o) => o.id)).toEqual([orgId]);
     expect(await orgAudits(orgId)).toHaveLength(1);
   });
 
@@ -1257,6 +1334,119 @@ describe("W2-IDN-6.2 §C5 organization wired surface — 8C + 8E (real PostgreSQ
     expect(recoveredOwners).toHaveLength(1);
     const audits = await orgAudits(org.id);
     expect(audits.filter((a) => a.action === "organization_ownership_recovered")).toHaveLength(1);
+  });
+
+  it("ADMIN-RECOVER absent target (RV-0155 F-B2): staff path with a nonexistent org id → the frozen 404 identity_org_not_found (its OWN register branch — not the non-staff 403, not a stale-view 400)", async () => {
+    const res = await handleAdminRecoverOwnership(
+      {
+        targetOrganizationId: "01920000-0000-7000-8000-000000d62efd",
+        newOwnerUserId: ADMIN_USER,
+        reasonCode: "r",
+        updatedAt: new Date(),
+      },
+      adminDeps(ADMIN_AUTH, key(), asStaff),
+    );
+    expect(res.status).toBe(404);
+    const body = res.body as { error: { error_class: string; error_code: string } };
+    expect(body.error.error_class).toBe("NOT_FOUND");
+    expect(body.error.error_code).toBe("identity_org_not_found");
+  });
+
+  it("ADMIN-RECOVER suspended-USER nominee (RV-0155 F-B4a): nominee membership ACTIVE but user SUSPENDED → 422 recovery_invalid — weakening the `nomineeUserStatus === 'active'` conjunct turns this red (an owner who cannot act cannot satisfy §5.5's result clause)", async () => {
+    const dormant = await freshUser({ status: "suspended" }); // no acting owner — recovery applies
+    const suspendedUserNominee = await freshUser({ status: "suspended" });
+    const org = await freshOrg({
+      tag: "RecoverB4a",
+      members: [
+        { userId: dormant.id, roleId: ownerRoleId },
+        // ACTIVE membership — the MEMBERSHIP-state conjunct passes; only the USER-status conjunct
+        // can reject this nominee (the previously-undiscriminated defense-in-depth leg).
+        { userId: suspendedUserNominee.id, roleId: officerRoleId, state: "active" },
+      ],
+    });
+    const res = await handleAdminRecoverOwnership(
+      {
+        targetOrganizationId: org.id,
+        newOwnerUserId: suspendedUserNominee.id,
+        reasonCode: "r",
+        updatedAt: org.updatedAt,
+      },
+      adminDeps(ADMIN_AUTH, key(), asStaff),
+    );
+    expect(res.status).toBe(422);
+    expect((res.body as { error: { error_code: string } }).error.error_code).toBe(
+      "identity_org_recovery_invalid",
+    );
+    // Nothing written: the nominee's membership keeps its role; no recovery audit row.
+    const nomineeRow = await prisma.membership.findFirstOrThrow({
+      where: { organizationId: org.id, userId: suspendedUserNominee.id },
+    });
+    expect(nomineeRow.roleId).toBe(officerRoleId);
+    expect(await orgAudits(org.id)).toHaveLength(0);
+  });
+
+  it("Ownership actions are NEVER delegation-satisfiable (RV-0155 F-B4b): an ALLOW-shaped `satisfiedBy: 'delegation'` decision is REJECTED by transfer AND soft-delete — weakening the `satisfiedBy !== 'membership'` conjunct turns this red (Doc-2 §5.10: delegation never grants ownership-class actions)", async () => {
+    const owner = await freshUser();
+    const member = await freshUser();
+    const org = await freshOrg({
+      tag: "DelegAllow",
+      members: [
+        { userId: owner.id, roleId: ownerRoleId },
+        { userId: member.id, roleId: officerRoleId },
+      ],
+    });
+    // The allow-shaped DELEGATION fixture: the injected authorization root AFFIRMS the slug but on
+    // the delegated granting path — the ineligibility conjunct alone must deny (fail-closed).
+    const delegationAllow = async () => ({ decision: "allow", satisfiedBy: "delegation" }) as const;
+
+    const transferTry = await withActiveOrgContext(
+      { userId: owner.id, activeOrgId: org.id, isPlatformStaff: false },
+      (tx) =>
+        transferOwnership(
+          {
+            targetOrganizationId: org.id,
+            newOwnerUserId: member.id,
+            reasonCode: "r",
+            updatedAt: org.updatedAt,
+          },
+          { userId: owner.id, activeOrgId: org.id },
+          { appendAuditRecord, authorize: delegationAllow },
+          tx,
+        ),
+    );
+    expect(transferTry.ok).toBe(false);
+    if (!transferTry.ok) {
+      expect(transferTry.error.errorClass).toBe("AUTHORIZATION");
+      expect(transferTry.error.errorCode).toBe("identity_org_forbidden");
+    }
+
+    const deleteTry = await withActiveOrgContext(
+      { userId: owner.id, activeOrgId: org.id, isPlatformStaff: false },
+      (tx) =>
+        softDeleteOrganization(
+          {
+            targetOrganizationId: org.id,
+            confirmation: true,
+            reason: "r",
+            updatedAt: org.updatedAt,
+          },
+          { userId: owner.id, activeOrgId: org.id },
+          { appendAuditRecord, authorize: delegationAllow },
+          tx,
+        ),
+    );
+    expect(deleteTry.ok).toBe(false);
+    if (!deleteTry.ok) {
+      expect(deleteTry.error.errorClass).toBe("AUTHORIZATION");
+      expect(deleteTry.error.errorCode).toBe("identity_org_forbidden");
+    }
+
+    // Nothing moved: org live+active, Owner role where it started, zero audit rows.
+    const orgRow = await reloadOrg(org.id);
+    expect(orgRow.orgStatus).toBe("active");
+    expect(orgRow.deletedAt).toBeNull();
+    expect(await activeOwnerCount(org.id)).toBe(1);
+    expect(await orgAudits(org.id)).toHaveLength(0);
   });
 
   // ════ F. 8E — the org machine THROUGH the wire (illegal edges rejected-status-unchanged) ════
