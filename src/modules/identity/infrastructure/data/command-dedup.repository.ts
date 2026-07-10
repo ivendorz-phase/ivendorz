@@ -21,12 +21,21 @@
 //   • POST-WINDOW: a stale row is OVERWRITTEN by the next execution (upsert on the scope key) —
 //     Doc-5A §9.4 asserts no post-window outcome; the overwrite is a bounded operational update of a
 //     non-authoritative cache.
-//   • CONCURRENT SAME-KEY overlap is assigned by the corpus to the CONCURRENCY model, not this
-//     store (Doc-5A §9.4 row 3: "Concurrent submission (overlapping in-flight on one resource) —
-//     handled by the concurrency model (§9.5)"); the commands' CAS legs own that race.
+//   • CONCURRENT SAME-KEY overlap: for mutations WITH a CAS/state-machine leg the corpus assigns
+//     the overlap to the CONCURRENCY model (Doc-5A §9.4 row 3) and those legs own it. For CREATE
+//     (no CAS leg, no uniqueness guard) the Doc-4A §14.3 IN-FLIGHT protection (Pass4:159 —
+//     "duplicate business outcomes … are prohibited under all timing conditions (completed,
+//     in-progress, or concurrent)") is realized by the PRE-EXECUTION CLAIM
+//     (`claimCommandDedupRecord`, RV-0153 F2): the composition claims the scope key BEFORE running
+//     the command; a concurrent same-key contender BLOCKS on the uncommitted claim's unique-index
+//     entry (PostgreSQL speculative-insertion wait), LOSES once the winner commits, and returns the
+//     winner's stored §9.3 payload — its own business logic never begins. The claim rides the SAME
+//     transaction as the business write, so a failed/aborted winner releases the key automatically
+//     (crash-safe rollback; no wedged key), and an error OUTCOME releases it explicitly
+//     (`releaseCommandDedupRecord`) so errors are never cached and never block a retry.
 //
-// The upsert is raw SQL on M1's OWN table because the scope key is a `UNIQUE NULLS NOT DISTINCT`
-// constraint Prisma cannot express (house pattern; NOT cross-schema SQL).
+// The upsert/claim is raw SQL on M1's OWN table because the scope key is a `UNIQUE NULLS NOT
+// DISTINCT` constraint Prisma cannot express (house pattern; NOT cross-schema SQL).
 
 import { prisma, Prisma, type DbExecutor } from "../../../../shared/db";
 import { uuidv7 } from "../../../../shared/ids";
@@ -65,6 +74,15 @@ export interface FindCommandDedupDeps {
 }
 
 /**
+ * The PENDING-claim sentinel `response_status` (RV-0153 F2). Never a real HTTP status. A claim row
+ * carries it between `claimCommandDedupRecord` and the completing `persistCommandDedupRecord` /
+ * releasing `releaseCommandDedupRecord` — all inside ONE transaction, so a COMMITTED pending row is
+ * unreachable by construction (rollback or explicit release cleans it); the lookup still skips it
+ * defensively (a pending row is never a replayable response).
+ */
+const CLAIM_PENDING_STATUS = 0;
+
+/**
  * Look up the stored response for `scope` WITHIN the POLICY window (Doc-4C §B.6 safe replay).
  * Returns `null` when no row exists or the row is post-window (the next execution overwrites it).
  *
@@ -92,6 +110,9 @@ export async function findCommandDedupRecord(
     },
   });
   if (row === null) return null;
+  if (row.responseStatus === CLAIM_PENDING_STATUS) {
+    return null; // a pending claim is never a replayable response (defensive — see the sentinel doc).
+  }
 
   // Window check — the `[DC-5]` POLICY duration, resolved at lookup time on the SAME executor.
   const cfg = await deps.configValueQuery({ key: windowPolicyKey }, db);
@@ -112,10 +133,75 @@ export async function findCommandDedupRecord(
 }
 
 /**
+ * CLAIM the scope key BEFORE executing a command (the Doc-4A §14.3 in-flight protection —
+ * RV-0153 F2; used by the create leg, which has no CAS/machine coverage). Must run on the SAME
+ * transaction executor the business write will use. Semantics:
+ *   - No row for the scope key → a PENDING claim row is inserted (uncommitted until the tx
+ *     commits) → `"claimed"`; the caller executes and completes the row via
+ *     `persistCommandDedupRecord` (or releases it on an error outcome).
+ *   - A CONCURRENT uncommitted claim/record holds the unique-index entry → this INSERT BLOCKS
+ *     (speculative-insertion wait) until that transaction resolves: winner committed → the
+ *     conditional reclaim below evaluates against a fresh within-window row → 0 rows → `"lost"`
+ *     (the caller re-reads and returns the winner's stored §9.3 payload — its business logic
+ *     never begins); winner aborted → the insert lands → `"claimed"`.
+ *   - A committed row already exists: within-window → `"lost"`; POST-window → the row is RECLAIMED
+ *     in place (reset to pending, `executed_at` re-anchored — the §9.4 post-window re-execution).
+ */
+export async function claimCommandDedupRecord(
+  scope: CommandDedupScope,
+  windowPolicyKey: string,
+  deps: FindCommandDedupDeps,
+  db: DbExecutor = prisma,
+): Promise<"claimed" | "lost"> {
+  const cfg = await deps.configValueQuery({ key: windowPolicyKey }, db);
+  const windowSeconds = windowToMs(cfg.value) / 1000;
+  const affected = await db.$executeRaw(Prisma.sql`
+    INSERT INTO "identity"."command_dedup"
+      ("id", "contract_id", "actor_user_id", "organization_id", "idempotency_key",
+       "response_status", "response_body", "response_headers", "executed_at", "created_at", "updated_at")
+    VALUES
+      (${uuidv7()}::uuid, ${scope.contractId}, ${scope.actorUserId}::uuid,
+       ${scope.organizationId}::uuid, ${scope.idempotencyKey},
+       ${CLAIM_PENDING_STATUS}, 'null'::jsonb, NULL, now(), now(), now())
+    ON CONFLICT ("contract_id", "actor_user_id", "organization_id", "idempotency_key")
+    DO UPDATE SET
+      "response_status"  = ${CLAIM_PENDING_STATUS},
+      "response_body"    = 'null'::jsonb,
+      "response_headers" = NULL,
+      "executed_at"      = now(),
+      "updated_at"       = now()
+    WHERE "command_dedup"."executed_at" + make_interval(secs => ${windowSeconds}::float8) <= now()
+  `);
+  return affected === 1 ? "claimed" : "lost";
+}
+
+/**
+ * RELEASE an unconsumed claim (error OUTCOME — the command returned `ok: false` without throwing,
+ * so the surrounding transaction will COMMIT). Deleting the pending row keeps two frozen rules
+ * true: errors are never cached (§9.6 retry stays live) and the key is never wedged for the window.
+ * A THROWN failure needs no release — the transaction rollback removes the claim.
+ */
+export async function releaseCommandDedupRecord(
+  scope: CommandDedupScope,
+  db: DbExecutor = prisma,
+): Promise<void> {
+  await db.commandDedup.deleteMany({
+    where: {
+      contractId: scope.contractId,
+      actorUserId: scope.actorUserId,
+      organizationId: scope.organizationId,
+      idempotencyKey: scope.idempotencyKey,
+      responseStatus: CLAIM_PENDING_STATUS, // only ever the pending claim — never a completed record
+    },
+  });
+}
+
+/**
  * Persist (upsert) the stored response for `scope` — called ONLY after a SUCCESSFUL execution, on
  * the SAME transaction executor as the business write wherever the composition owns the transaction
  * (the §14.3 joint rule: a replay must find the cache IFF the side effect committed). The upsert
- * overwrites a post-window row in place (bounded operational update; `executed_at` re-anchors).
+ * completes this transaction's own PENDING claim in place where one exists (the create leg), and
+ * overwrites a post-window row (bounded operational update; `executed_at` re-anchors).
  */
 export async function persistCommandDedupRecord(
   scope: CommandDedupScope,

@@ -367,3 +367,98 @@ verbatim re-read and are logged as judgment calls 1–3.)*
 every load-bearing bind is to the frozen text.)*
 ☑ Any uncertainty results in Flag-and-Halt. *(None met the F&H bar; all 21 frozen-text judgment
 calls are logged above FOR adjudication, none self-ratified.)*
+
+---
+
+## RV-0153 fix-forward amendment (2026-07-10 — additive; the sections above are unchanged)
+
+**Provenance:** RV-0153 Review-A at `96a31eb` — 🟠 0 BLOCKER · 2 MAJOR · 0 MINOR · 0 NIT · 4 OBS;
+19/21 judgment calls CONCUR. F1 (wire result-payload casing vs Doc-5A §3) = program-level
+Flag-and-Halt class, escalated on `ESC-WIRE-FIELD-CASING` with a Board packet — **NOT resolved
+here; every wire shape left exactly as-built per the coordinator's directive.** F2 (MAJOR,
+accepted) fixed forward below.
+
+### (a) F2 remedy — Doc-4A §14.3 in-flight protection on `create_delegation_grant`
+
+**Patch:** `fix(identity): W2-IDN-6.5 §14.3 in-flight create protection (RV-0153 F2) [checkpoint]`.
+Files: `src/modules/identity/infrastructure/data/command-dedup.repository.ts` (claim/release
+primitives + pending-sentinel + defensive pending-skip in the lookup) ·
+`src/modules/identity/contracts/services.ts` (claim/release facades) ·
+`src/server/identity/command-dedup.ts` (`claimStoredReplay`/`releaseStoredClaim` wrappers) ·
+`src/server/identity/create-delegation-grant.route-handler.ts` (the claim leg) ·
+`tests/integration/delegation-wire-slice.test.ts` (the two-racing-creates discriminating probe).
+
+**Design shape chosen (both coordinator-offered shapes fused): a PRE-EXECUTION CLAIM inside the
+business transaction + lose-the-claim re-read.** Doc-4A §14.3 (Pass4:159, re-read verbatim): "A
+replay arriving while the original execution is still in-flight MUST NOT begin a second execution
+of the command's business logic … duplicate business outcomes — a second state transition, a
+second audit record, a second outbox event — are prohibited under all timing conditions
+(completed, in-progress, or concurrent)." Realization: after the replay-lookup miss, the create
+composition INSERTs a PENDING claim row on the scope key (sentinel `response_status = 0`,
+`ON CONFLICT … DO UPDATE … WHERE executed_at + window <= now()` — the conditional reclaim keeps
+the §9.4 post-window re-execution alive while a WITHIN-WINDOW row can never be overwritten) —
+BEFORE the command runs, on the SAME transaction as the business write. A concurrent same-key
+contender blocks on the uncommitted claim's unique-index entry (PostgreSQL speculative-insertion
+wait), loses once the winner commits (`affected = 0`, transaction stays healthy — no exception),
+re-reads, and returns the winner's stored §9.3 payload; **its business logic never begins** (the
+§14.3 letter). Success → the existing persist completes the claim in place; error OUTCOME → the
+claim is explicitly released (errors stay uncached, the key never wedges); a THROWN failure rolls
+the claim back with the transaction (crash-safe — no wedged key, the reason the claim rides the
+business tx rather than a §14.3-literal pre-transaction write; the "before any transaction begins"
+sentence governs replay DETECTION, and §14.3 assigns the detection/handling mechanism to
+development documents — logged as call 22 below). A lost claim whose re-read resolves nothing is
+unreachable by construction (pending rows never commit) and FAILS CLOSED with a throw rather than
+risk a second execution.
+
+**Red-direction proof (verified live, red-then-green):** the racing-creates test was written and
+run BEFORE the fix, against the as-built `96a31eb` code path — observed RED (the byte-equality
+assertion failed: two executions produced two envelopes/reference_ids; under as-built it also
+fails on grant count 2, T2's reader invoked, and the winner's dedup record overwritten). After the
+claim landed: GREEN (15/15 wire slice). The test pins: exactly ONE grant · exactly ONE
+`delegation_grant_issued` audit · both callers byte-equal wire envelopes incl. the ORIGINAL
+`reference_id` + equal `Location` · the winner's injected M2 reader called exactly once · **the
+loser's reader called ZERO times** (its business logic never began). Interleave = the RV-0150
+serialization-test idiom (deliberate in-flight window via a slow injected reader + a 120 ms
+stagger); every scheduling order converges to the same assertions (non-flaky by construction).
+
+**Scope discipline held:** zero change to any frozen wire shape/register (F1 surfaces untouched);
+every OTHER mutation's CAS/machine coverage untouched (the claim is create-only; the lifecycle/
+§C4 legs keep their upheld §9.4-row-3 assignment); the §7.5 poisoning-guard scope-key semantics
+survive verbatim (the claim keys on the same contract × actor × org × key tuple).
+
+### (b) §8 judgment-call log amendments
+
+- **Call 9 — CONCESSION (RV-0153 F2 partial):** the §9.4-row-3 "concurrency model owns the
+  overlap" assignment was upheld for the CAS/machine-covered mutations but was INCOMPLETE for
+  create, which has no CAS leg — the §14.3 in-flight clause (Pass4:159) governs there and was
+  unrealized at `96a31eb`. Conceded and fixed forward (above).
+- **Call 22 (NEW — the F2 fix's design call, FOR adjudication):** pre-execution claim INSIDE the
+  business transaction (not a separate committed pre-transaction claim write). Frozen authority
+  re-read: Doc-4A §14.3 Pass4:157 ("applied at the application layer before any transaction
+  begins. A replay is detected and the stored result returned without initiating a new write
+  transaction") + Pass4:159 ("The specific detection and handling mechanism belongs in
+  development documents"). Reading: the pre-transaction sentence governs replay DETECTION (the
+  lookup — realized: a detected replay initiates no write); the in-flight mechanism is explicitly
+  development-owned. The same-tx claim was chosen over a committed pre-claim because a crash
+  between a COMMITTED pre-claim and its completion would wedge the key for the whole window,
+  whereas the same-tx claim self-releases on rollback — strictly safer, same §14.3 outcome. Not
+  F&H: no conflict; the mechanism choice is corpus-assigned to this layer.
+- **Call 23 (NEW):** pending-claim sentinel `response_status = 0` + defensive lookup skip +
+  error-outcome release. Not F&H: an internal store encoding (§2.5-class physical realization of
+  a development-owned mechanism); committed pending rows are unreachable by construction; the
+  release keeps the upheld success-only-caching call 7 true on the claim path.
+- **Call 7 — citation completion (RV-0153 disposition; reviewer's completion adopted):**
+  success-only caching is additionally grounded by Doc-4A §11.3 ("A validation failure has no
+  effect … no audit record of the business action") — a failed attempt is not an execution
+  outcome the §14.3 joint rule obligates the store to reproduce — alongside the already-cited
+  §14.7/§9.6 retry-liveness ground. The residual §14.4-row-1 ("after the original … failed
+  definitively" → "return stored result") ↔ §11.3/§14.7 frozen-internal tension is RV-0153 OBS-1,
+  an upstream additive candidate — not resolvable here.
+
+### (c) Suite state at the patch
+
+Full suite **301 tests / 26 files ALL PASS** vs the 300/26 reactivation baseline — delta = +1
+(the racing-creates probe), zero regressions. tsc 0 · ESLint clean · Prettier clean (WP surface).
+Next gate: Review-A delta re-verify at the patch SHA → Review-B ∥ Team-6 (pre-flag YES — F2 sits
+on the pre-flagged replay surface); 6.5 close additionally awaits the owner's F1 gating ruling
+(`ESC-WIRE-FIELD-CASING` Board packet §6 ask 2).

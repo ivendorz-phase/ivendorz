@@ -20,8 +20,10 @@
 import type { WireResponse } from "@/shared/http";
 import { configValueQuery } from "@/modules/core/contracts";
 import {
+  claimCommandDedupRecord,
   findCommandDedupRecord,
   persistCommandDedupRecord,
+  releaseCommandDedupRecord,
   type CommandDedupScope,
   type StoredCommandResponse,
 } from "@/modules/identity/contracts";
@@ -89,4 +91,29 @@ export async function persistWireReplay<T>(
 ): Promise<void> {
   if (wire.status < 200 || wire.status >= 300) return;
   await persistCommandDedupRecord(scope, wireToStored(wire), db);
+}
+
+/**
+ * §B.6 pre-execution CLAIM, production-wired (Doc-4A §14.3 in-flight protection — RV-0153 F2).
+ * Used by the CREATE leg (no CAS/machine coverage): claim the scope key on the business
+ * transaction BEFORE running the command. `"claimed"` → execute, then `persistWireReplay`
+ * (completes the claim) or `releaseStoredClaim` (error outcome). `"lost"` → a concurrent or
+ * committed within-window execution owns the key: re-read via `findStoredReplay` and return the
+ * winner's stored §9.3 payload — the caller's business logic MUST NOT begin.
+ */
+export async function claimStoredReplay(
+  scope: CommandDedupScope,
+  windowPolicyKey: string,
+  db?: DbExecutor,
+): Promise<"claimed" | "lost"> {
+  return claimCommandDedupRecord(scope, windowPolicyKey, { configValueQuery }, db);
+}
+
+/**
+ * §B.6 claim release, production-wired — for an ERROR OUTCOME after a successful claim (the
+ * transaction will still COMMIT, so the pending claim must not survive: errors are never cached
+ * and the key must not wedge). A THROWN failure needs no release (transaction rollback).
+ */
+export async function releaseStoredClaim(scope: CommandDedupScope, db?: DbExecutor): Promise<void> {
+  await releaseCommandDedupRecord(scope, db);
 }

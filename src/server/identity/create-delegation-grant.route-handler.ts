@@ -11,9 +11,11 @@
 //   3. `ensureProvisioned(session)` (house standard).
 //   4. `withActiveOrg(session, tx => …)` — the active org IS the controlling org (Invariant #5;
 //      unresolved context → the §6.6 `404` collapse). INSIDE the one transaction: §B.6 replay
-//      lookup (hit → the stored response, NO re-execution) → the M1 command (validate → authorize →
-//      write → audit, atomic) → wire mapping → §B.6 persist of a SUCCESSFUL response (same tx —
-//      the §14.3 joint rule holds by construction).
+//      lookup (hit → the stored response, NO re-execution) → the §14.3 PRE-EXECUTION CLAIM
+//      (RV-0153 F2 — create has no CAS leg; a lost claim returns the concurrent winner's stored
+//      payload WITHOUT executing) → the M1 command (validate → authorize → write → audit, atomic)
+//      → wire mapping → §B.6 persist of a SUCCESSFUL response / claim release on an error outcome
+//      (same tx — the §14.3 joint rule holds by construction, under all timing conditions).
 //
 // The M2 Vendor Service port (`vendorProfileControlReader`) is INJECTABLE; the production default is
 // ABSENT ⇒ the command FAILS CLOSED (`not_found` — M2 is not built in Wave 2; the DC-3 resolver
@@ -34,9 +36,11 @@ import {
 } from "@/modules/identity/contracts";
 import { authChallengeResponse, type WireResponse } from "@/shared/http";
 import {
+  claimStoredReplay,
   dedupScope,
   findStoredReplay,
   persistWireReplay,
+  releaseStoredClaim,
   type WireIdempotencyKey,
 } from "./command-dedup";
 
@@ -82,15 +86,43 @@ export async function handleCreateDelegationGrant(
   await deps.ensureProvisioned(session);
 
   const ran = await withActiveOrg(session, async (tx, context) => {
-    // §B.6 replay lookup (within-window same-key → the stored response; NO re-execution).
-    if (key !== undefined) {
+    const scope =
+      key !== undefined
+        ? dedupScope(CONTRACT_ID, context.userId, context.activeOrgId, key)
+        : undefined;
+
+    if (scope !== undefined) {
+      // §B.6 replay lookup (within-window same-key → the stored response; NO re-execution).
       const replay = await findStoredReplay<CreateDelegationGrantResult>(
-        dedupScope(CONTRACT_ID, context.userId, context.activeOrgId, key),
+        scope,
         COMMAND_DEDUP_WINDOW_KEY,
         tx,
       );
       if (replay !== null) {
         return replay;
+      }
+
+      // Doc-4A §14.3 IN-FLIGHT protection (Pass4:159; RV-0153 F2): CLAIM the key BEFORE the
+      // command. Create has no CAS/machine leg, so the claim is the single-execution guard —
+      // a concurrent same-key contender blocks on this transaction's uncommitted claim, LOSES
+      // once it commits, and returns the stored winner below; "a replay arriving while the
+      // original execution is still in-flight MUST NOT begin a second execution".
+      const claim = await claimStoredReplay(scope, COMMAND_DEDUP_WINDOW_KEY, tx);
+      if (claim === "lost") {
+        const winner = await findStoredReplay<CreateDelegationGrantResult>(
+          scope,
+          COMMAND_DEDUP_WINDOW_KEY,
+          tx,
+        );
+        if (winner !== null) {
+          return winner; // the §9.3 stored payload — this caller's business logic never began.
+        }
+        // Unreachable by construction: a lost claim implies a committed within-window record
+        // (pending rows never commit — claim/complete/release share one tx). Fail CLOSED rather
+        // than risk a second execution under one idempotency key (§14.3).
+        throw new Error(
+          "command-dedup: claim lost but no stored record resolved (unreachable; failing closed per Doc-4A §14.3).",
+        );
       }
     }
 
@@ -113,13 +145,17 @@ export async function handleCreateDelegationGrant(
     );
     const wire = mapCreateDelegationGrant(outcome);
 
-    // §B.6 persist — SUCCESS-ONLY, same tx as the audited write (the §14.3 joint rule).
-    if (outcome.ok && key !== undefined) {
-      await persistWireReplay(
-        dedupScope(CONTRACT_ID, context.userId, context.activeOrgId, key),
-        wire,
-        tx,
-      );
+    if (scope !== undefined) {
+      if (outcome.ok) {
+        // §B.6 persist — SUCCESS-ONLY, same tx as the audited write (the §14.3 joint rule);
+        // completes this transaction's own pending claim in place.
+        await persistWireReplay(scope, wire, tx);
+      } else {
+        // Error OUTCOME (no throw — the tx will commit): release the claim so the error is
+        // never cached and the key never wedges (§9.6 retry stays live). A THROWN failure
+        // rolls the claim back with the transaction.
+        await releaseStoredClaim(scope, tx);
+      }
     }
     return wire;
   });

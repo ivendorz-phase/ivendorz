@@ -31,8 +31,10 @@ import {
 import { getDelegationGrant as getDelegationGrantQuery } from "../application/queries/get-delegation-grant.query";
 import { listDelegationGrants as listDelegationGrantsQuery } from "../application/queries/list-delegation-grants.query";
 import {
+  claimCommandDedupRecord as claimCommandDedupRecordImpl,
   findCommandDedupRecord as findCommandDedupRecordImpl,
   persistCommandDedupRecord as persistCommandDedupRecordImpl,
+  releaseCommandDedupRecord as releaseCommandDedupRecordImpl,
   type FindCommandDedupDeps,
 } from "../infrastructure/data/command-dedup.repository";
 import {
@@ -375,7 +377,8 @@ export type FindCommandDedupRecord = (
 export const findCommandDedupRecord: FindCommandDedupRecord = (scope, windowPolicyKey, deps, db) =>
   findCommandDedupRecordImpl(scope, windowPolicyKey, deps, db);
 
-/** §B.6 replay persist — store a SUCCESSFUL execution's wire response (upsert on the scope key). */
+/** §B.6 replay persist — store a SUCCESSFUL execution's wire response (upsert on the scope key;
+ *  completes this transaction's own pending claim in place on the create leg). */
 export type PersistCommandDedupRecord = (
   scope: CommandDedupScope,
   stored: StoredCommandResponse,
@@ -383,6 +386,31 @@ export type PersistCommandDedupRecord = (
 ) => Promise<void>;
 export const persistCommandDedupRecord: PersistCommandDedupRecord = (scope, stored, db) =>
   persistCommandDedupRecordImpl(scope, stored, db);
+
+/** §B.6 pre-execution CLAIM (Doc-4A §14.3 in-flight protection — RV-0153 F2; the create leg).
+ *  `"claimed"` = this transaction owns the key and may execute; `"lost"` = a concurrent/committed
+ *  within-window execution owns it — re-read and return the stored winner, never execute. */
+export type ClaimCommandDedupRecord = (
+  scope: CommandDedupScope,
+  windowPolicyKey: string,
+  deps: FindCommandDedupDeps,
+  db?: DbExecutor,
+) => Promise<"claimed" | "lost">;
+export const claimCommandDedupRecord: ClaimCommandDedupRecord = (
+  scope,
+  windowPolicyKey,
+  deps,
+  db,
+) => claimCommandDedupRecordImpl(scope, windowPolicyKey, deps, db);
+
+/** §B.6 claim release (error OUTCOME only — the tx will commit; a thrown failure rolls back the
+ *  claim automatically). Keeps errors uncached and the key unwedged. */
+export type ReleaseCommandDedupRecord = (
+  scope: CommandDedupScope,
+  db?: DbExecutor,
+) => Promise<void>;
+export const releaseCommandDedupRecord: ReleaseCommandDedupRecord = (scope, db) =>
+  releaseCommandDedupRecordImpl(scope, db);
 
 /** `identity.expire_delegation_grant.v1` (Doc-4C §C9 · System) — the out-of-wire sweep expiring
  *  `active` AND `suspended` grants whose `valid_to` has lapsed (`Doc-2_Patch_v1.0.7` rule 1 — the

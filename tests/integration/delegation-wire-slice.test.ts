@@ -100,6 +100,10 @@ const readDeps = (authUserId: string) => ({
  *  in-process comparison serializes both sides exactly as the transport would. */
 const wireJson = (b: unknown): unknown => JSON.parse(JSON.stringify(b));
 
+/** A plain timer sleep — the deliberate interleave window the §14.3 race test uses (the RV-0150
+ *  serialization-test idiom) so the second request enters while the first is still in-flight. */
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
 const CREATE_INPUT = {
   representativeOrganizationId: REP_ORG,
   vendorProfileId: VENDOR_PROFILE,
@@ -264,6 +268,69 @@ describe("W2-IDN-6.5 §C9 delegation wired surface + §B.6 replay store — 8C (
     await prisma.delegationGrant.deleteMany({
       where: { id: { in: [grantId, otherBody.result.delegationGrantId] } },
     });
+  });
+
+  it("§14.3 IN-FLIGHT protection (RV-0153 F2): two RACING same-key creates — exactly ONE grant, ONE audit, both callers receive the byte-equal stored envelope, and the loser's business logic NEVER begins", async () => {
+    // Doc-4A §14.3 (Pass4:159) verbatim: "A replay arriving while the original execution is still
+    // in-flight MUST NOT begin a second execution of the command's business logic … duplicate
+    // business outcomes … are prohibited under all timing conditions (completed, in-progress, or
+    // concurrent)." The race shape (RV-0150 serialization-test idiom): T1 claims the key then
+    // stalls INSIDE its command (a slow M2 reader — post-claim, pre-commit); T2 enters that
+    // window, misses the lookup (T1 uncommitted), and hits the claim — where it must BLOCK on
+    // T1's uncommitted claim row, LOSE, re-read, and return T1's stored §9.3 payload WITHOUT ever
+    // running its own command. UNDER THE PRE-FIX (96a31eb) CODE this test goes RED on four
+    // independent assertions: T2's reader is called (its business logic ran), TWO grants exist,
+    // the bodies differ (two reference_ids), and the winner's dedup record is overwritten by the
+    // loser (red-direction verified live before the fix landed).
+    await prisma.delegationGrant.deleteMany({ where: { controllingOrganizationId: CTRL_ORG } });
+    const key = `iv-k-${uuidv7()}`;
+    let winnerReaderCalls = 0;
+    let loserReaderCalls = 0;
+    const slowWinnerReader: VendorProfileControlReader = async (vp, org) => {
+      winnerReaderCalls += 1;
+      await sleep(400); // hold the claim in-flight while T2 arrives
+      return control(vp, org);
+    };
+    const loserReader: VendorProfileControlReader = async (vp, org) => {
+      loserReaderCalls += 1;
+      return control(vp, org);
+    };
+    const run = (reader: VendorProfileControlReader) =>
+      handleCreateDelegationGrant(CREATE_INPUT, {
+        resolveSession: asSession(CTRL_AUTH),
+        ensureProvisioned: noProvision,
+        idempotencyKey: key,
+        vendorProfileControlReader: reader,
+      });
+
+    const p1 = run(slowWinnerReader);
+    await sleep(120); // T2 enters while T1 is in-flight (post-claim, pre-commit)
+    const p2 = run(loserReader);
+    const [r1, r2] = await Promise.all([p1, p2]);
+
+    // Both callers receive the SINGLE execution's outcome (§14.3: the in-flight original IS the
+    // execution for this key) — same status, byte-equal wire envelope incl. the ORIGINAL
+    // reference_id, same Location.
+    expect(r1.status).toBe(201);
+    expect(r2.status).toBe(201);
+    expect(wireJson(r2.body)).toEqual(wireJson(r1.body));
+    expect(r2.headers?.Location).toBe(r1.headers?.Location);
+
+    // Exactly ONE grant and ONE `delegation_grant_issued` audit row exist (joint-rule legs 1+2).
+    const grants = await prisma.delegationGrant.findMany({
+      where: { controllingOrganizationId: CTRL_ORG },
+    });
+    expect(grants).toHaveLength(1);
+    expect((await grantAudits(grants[0]!.id)).map((a) => a.action)).toEqual([
+      "delegation_grant_issued",
+    ]);
+
+    // The sharp §14.3 letter: the loser's business logic NEVER BEGAN — its injected M2 reader
+    // (the command's SCOPE/REFERENCE stage) was never invoked; the winner's ran exactly once.
+    expect(winnerReaderCalls).toBe(1);
+    expect(loserReaderCalls).toBe(0);
+
+    await prisma.delegationGrant.deleteMany({ where: { id: grants[0]!.id } });
   });
 
   it("CREATE wire §B.6 mandatory key: an ABSENT Idempotency-Key → 400 identity_delegation_invalid_input; nothing written", async () => {
