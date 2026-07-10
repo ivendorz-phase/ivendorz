@@ -18,7 +18,7 @@ import { LegalDocument, type LegalSection } from "../_components/legal-document"
 export const metadata = {
   title: "Confidentiality Charter — iVendorz",
   description:
-    "How iVendorz protects your procurement information: RFQs are never published, only invited vendors can see them, competitors never see each other's quotes, and your data never trains public AI.",
+    "How iVendorz protects your procurement information: RFQs are never published and reach only the vendors you invite, competitors never see each other's quotes, and your data never trains public AI models.",
 };
 
 const SECTIONS: LegalSection[] = [
@@ -61,14 +61,14 @@ const SECTIONS: LegalSection[] = [
     id: "no-ai-training",
     heading: "Your procurement data never trains public AI models",
     paragraphs: [
-      "Private RFQ content is excluded from AI training. Only anonymized, aggregate analytics are permitted.",
+      "Private RFQ content is never used to train public AI models. Only anonymized, aggregate analytics are permitted.",
     ],
   },
   {
     id: "you-own-your-data",
     heading: "Your organization owns its business data",
     paragraphs: [
-      "Your RFQs, quotations received, documents, and records belong to your organization — not to the platform.",
+      "Your RFQs, documents, and records belong to your organization — not to the platform.",
     ],
   },
   {

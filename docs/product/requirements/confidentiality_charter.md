@@ -1,6 +1,7 @@
 # iVendorz Confidentiality Charter
 
-**Status:** v0.2 — **PUBLISHED** (owner Board close + publication authorization 2026-07-10)
+**Status:** v0.3 — **PUBLISHED** (owner Board close + publication authorization 2026-07-10;
+post-publication corpus-fidelity corrections folded — see Revision v0.3)
 **Board close (owner, 2026-07-10):** APPROVED — the charter text and both review-lane folds
 (Review-A RA-F1 vendor-scoping · Review-B RB-1 governance/compliance disclosure) are ratified.
 This document is the **specification of record** for the Confidentiality Charter (it supersedes
@@ -11,6 +12,16 @@ parent §5.1 for this content).
 longer shows. Post-publication wording changes re-enter the review lanes (§B). Remains
 NON-AUTHORITATIVE (translates frozen rules; coins nothing) — publication makes the buyer-facing
 commitments live, it does not elevate this doc above the frozen corpus.
+**Revision v0.3 (2026-07-10):** post-publication wording changes (re-entered the review lanes
+per the publication rule) — folded fresh-context Review-A findings that landed after publication:
+**F1** SEO metadata reworded off the absolute "only invited vendors can see them" (SERP strips the
+honesty note) → distribution-framed "reach only the vendors you invite"; **F2** clause 6 body
+restored the frozen "public" qualifier ("never used to train public AI models" — ADR-013 bars only
+*public* AI-model training on private RFQ content, not all AI use); **F3** clause 7 dropped
+"quotations received" from the buyer-ownership list (ADR-013 assigns quotations to the Creator
+Organization = the vendor). Public `page.tsx` updated identically (doc↔page fidelity preserved).
+This resolves RB OBS-1 (clause-7). Owner ruled fix-forward 2026-07-10; Review-B re-run on the
+corrected live page.
 **Revision v0.2 (2026-07-10):** folded Team-5 Review-B RB-1 MINOR — the honesty note no
 longer claims moderation is the *only* reason an RFQ is seen outside invited vendors;
 it now discloses the narrow, audited governance/compliance staff access (`staff_super_admin`,
@@ -66,10 +77,11 @@ to treat it that way.
    vendor cannot detect it. Your private view never changes anyone's public standing.
 
 6. **Your procurement data never trains public AI models.** Private RFQ content is
-   excluded from AI training. Only anonymized, aggregate analytics are permitted.
+   never used to train public AI models. Only anonymized, aggregate analytics are
+   permitted.
 
-7. **Your organization owns its business data.** Your RFQs, quotations received,
-   documents, and records belong to your organization — not to the platform.
+7. **Your organization owns its business data.** Your RFQs, documents, and records
+   belong to your organization — not to the platform.
 
 8. **Your organization controls what leaves.** Submitting an RFQ is permission-gated
    within your organization's own roles, and you can require an internal approval step
@@ -111,7 +123,7 @@ after approval re-enter review.
 | 4 | Doc-7G §7.3 (Content Pass2 Patch v1.0.1) — own-outcome only, no competitive disclosure |
 | 5 | Invariant #11; M4 BC-OPS-1 buyer-private CRM; Doc-7G byte-equivalence rule |
 | 6 | ADR-013 AI Data Usage Rule |
-| 7 | ADR-013 data-ownership table |
+| 7 | ADR-013 data-ownership table (quotations owned by the **Creator Organization** = vendor; buyer-ownership claim scoped to RFQs/documents/records per Review-A F3) |
 | 8 | Doc-2 §9 RFQ internal approve/reject (org-conditional); M1 roles & delegation |
 | 9 | Money boundary — CLAUDE.md §1; Master System Architecture |
 | 10 | M0 audit; Invariant #8 — scoped per RA-F3/`ESC-TRUST-READAUDIT` (no read-audit claim) |
@@ -125,4 +137,4 @@ is buyer-configurable (open `ESC-TRUST-FIELD-DISCLOSURE`).
 
 ---
 
-*End — v0.2 PUBLISHED, 2026-07-10. Coins nothing; non-authoritative under the frozen corpus.*
+*End — v0.3 PUBLISHED, 2026-07-10. Coins nothing; non-authoritative under the frozen corpus.*
