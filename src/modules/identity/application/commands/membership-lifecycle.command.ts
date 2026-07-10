@@ -48,6 +48,7 @@
 
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
+import { UUID_PATTERN } from "./_validation";
 import {
   findMembershipInOrg,
   readMembershipUpdatedAt,
@@ -87,8 +88,6 @@ const LAST_OWNER_BLOCK_CODE = "identity_org_last_owner_block";
 
 /** `reason : string : optional` — bounded [realization convention] (the ADMIN_REASON precedent). */
 export const MEMBERSHIP_REASON_MAX_LENGTH = 500;
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The server-resolved request context (shared by the three lifecycle commands). */
 export interface MembershipLifecycleContext {

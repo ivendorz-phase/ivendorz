@@ -41,6 +41,7 @@
 // the audit `new_value`. Correlation both (request-scoped ip/user-agent carried).
 
 import { prisma } from "../../../../shared/db";
+import { UUID_PATTERN } from "./_validation";
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import {
   loadUserAccountRow,
@@ -87,9 +88,6 @@ const STATUS_CONFLICT_CODE = "identity_user_status_conflict";
 /** `reason : string : required : structured admin reason` — bounded [realization convention]
  *  (no corpus bound / POLICY key exists; Doc-5C §0.4 transport-level fix). */
 export const ADMIN_REASON_MAX_LENGTH = 500;
-
-/** RFC-4122 UUID shape — `user_id : uuid : required` (§C4; the path `{id}`, Doc-5A §5.4). */
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** SYNTAX validation (Doc-4A §11.2 category 1; §C4 field constraints). EXPORTED so the composition
  *  edge can honor the fixed category order for NON-staff callers too (SYNTAX → 400 BEFORE the

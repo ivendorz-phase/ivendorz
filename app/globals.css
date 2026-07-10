@@ -281,10 +281,7 @@
     --iv-container-md: 768px;
     --iv-container-lg: 1024px;
     --iv-container-xl: 1280px;
-    /* Realigned 1280→1440 to the ratified DP §2 / page_templates.md content-max (fixes prior drift;
-       wider global rhythm per owner 2026-07-10); gutters step to lg:px-8 on page containers. A width
-       beyond 1440 would exceed the ratified content cap and needs a DP additive patch. */
-    --iv-content-max: 1440px;
+    --iv-content-max: 1280px;
     /* Mega menu panel width cap (MEGA_MENU_ARCHITECTURE §9.3) — dedicated, does not repoint content-max. */
     --iv-mega-menu-max: 1440px;
     --iv-page-max: 1536px;

@@ -34,6 +34,7 @@
 // anonymization this action performs; Doc-2 §9 preamble redaction rule).
 
 import { prisma } from "../../../../shared/db";
+import { UUID_PATTERN } from "./_validation";
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import {
   anonymizeAndSoftDeleteUser,
@@ -82,9 +83,6 @@ const NOT_FOUND_CODE = "identity_user_not_found"; // §6.6 collapse code (frozen
 /** The recorded `delete_reason` for the departure tuple (a stable operational marker, not a coined
  *  business enum — Doc-2 §0.2 `delete_reason` is free text). */
 const DEPARTURE_DELETE_REASON = "self-deactivation (Doc-4C §C4 departure/anonymization)";
-
-/** RFC-4122 UUID shape for the path `{id}` (Doc-5A §5.4 — a malformed segment is SYNTAX, cat 1). */
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Deactivate (depart + anonymize) the session subject's account (Doc-4C §C4). Atomic: the status

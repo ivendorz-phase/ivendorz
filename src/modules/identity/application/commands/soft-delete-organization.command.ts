@@ -26,6 +26,7 @@
 
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
+import { UUID_PATTERN } from "./_validation";
 import {
   loadOrganizationRow,
   softDeleteOrganizationWithCascade,
@@ -53,8 +54,6 @@ const UPDATE_CONFLICT_CODE = "identity_org_update_conflict";
 
 /** `reason : string : required` — bounded [realization convention] (the house precedent). */
 export const DELETE_REASON_MAX_LENGTH = 500;
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The server-resolved request context (from the composition edge — never client input). */
 export interface SoftDeleteOrganizationContext {

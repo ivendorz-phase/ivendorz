@@ -41,6 +41,7 @@
 
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
+import { UUID_PATTERN } from "./_validation";
 import {
   findMembershipForInvitee,
   readMembershipUpdatedAt,
@@ -54,8 +55,6 @@ import type { AcceptInvitationInput, AcceptInvitationOutcome } from "../../contr
 const INVALID_INPUT_CODE = "identity_membership_invalid_input";
 const NOT_FOUND_CODE = "identity_membership_not_found";
 const STATE_INVALID_CODE = "identity_membership_state_invalid";
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The server-resolved request context (from the composition edge — never client input). */
 export interface AcceptInvitationContext {

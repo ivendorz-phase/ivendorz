@@ -29,6 +29,7 @@
 
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
+import { UUID_PATTERN } from "./_validation";
 import {
   findRestoreEligibleMembership,
   loadOrganizationRow,
@@ -48,8 +49,6 @@ const INVALID_INPUT_CODE = "identity_org_invalid_input";
 const FORBIDDEN_CODE = "identity_org_forbidden";
 const NOT_FOUND_CODE = "identity_org_not_found";
 const STATE_INVALID_CODE = "identity_org_state_invalid";
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The server-resolved request context — EXACTLY ONE leg is populated by the composition edge:
  *  the self leg (`userId`) or the admin leg (`admin`). Never client input. */

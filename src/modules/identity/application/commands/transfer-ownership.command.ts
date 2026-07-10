@@ -31,6 +31,7 @@
 
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
+import { UUID_PATTERN } from "./_validation";
 import {
   findOwnerSystemBundleRole,
   resolveOwnerRemovalFacts,
@@ -66,8 +67,6 @@ const UPDATE_CONFLICT_CODE = "identity_org_update_conflict";
 /** `reason_code : string : required : structured succession reason (Architecture §5.5)` — bounded
  *  [realization convention] (the `ADMIN_REASON_MAX_LENGTH` precedent). */
 export const SUCCESSION_REASON_MAX_LENGTH = 500;
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The server-resolved request context (from the composition edge — never client input). */
 export interface TransferOwnershipContext {

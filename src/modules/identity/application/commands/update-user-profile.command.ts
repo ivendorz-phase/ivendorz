@@ -30,6 +30,7 @@
 // `preferences_jsonb` from this wire until then.
 
 import { prisma, type DbExecutor } from "../../../../shared/db";
+import { UUID_PATTERN } from "./_validation";
 import {
   updateUserProfileFields,
   type UserProfilePatch,
@@ -59,9 +60,6 @@ export const DISPLAY_NAME_MAX_LENGTH = 120;
 
 /** E.164 (`phone : string : optional : E.164` — §C4): `+` then 2–15 digits, first non-zero (ITU). */
 const E164_PATTERN = /^\+[1-9]\d{1,14}$/;
-
-/** RFC-4122 UUID shape for the path `{id}` (Doc-5A §5.4 — a malformed segment is SYNTAX, cat 1). */
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** SYNTAX validation (Doc-4A §11.2 category 1; §C4 field constraints). Returns the failure message
  *  or `null`. `optional` ≠ `nullable` (Doc-4A §9.2): an explicit null is REJECTED — absence is the

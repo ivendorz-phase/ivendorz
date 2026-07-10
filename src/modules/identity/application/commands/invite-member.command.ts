@@ -39,6 +39,7 @@
 
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
+import { UUID_PATTERN } from "./_validation";
 import {
   findInvitableRole,
   findLiveMembershipForUserInOrg,
@@ -73,8 +74,6 @@ export const INVITE_DEPARTMENT_MAX_LENGTH = 200;
  *  for format only here", §C6 PassB:357). RFC-5321 total-length ceiling; shape check minimal. */
 export const INVITE_EMAIL_MAX_LENGTH = 320;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The tombstone `delete_reason` for a superseded `removed` row (free-text operational marker —
  *  Doc-2 §0.2; not a coined business enum). */

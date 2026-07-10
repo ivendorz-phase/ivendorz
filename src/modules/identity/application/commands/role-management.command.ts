@@ -35,6 +35,7 @@
 
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
+import { UUID_PATTERN } from "./_validation";
 import {
   composeRolePermissions,
   countLiveBoundMemberships,
@@ -76,7 +77,6 @@ const SYSTEM_PROTECTED_CODE = "identity_role_system_protected";
 const NAME_CONFLICT_CODE = "identity_role_name_conflict";
 const ROLE_IN_USE_CODE = "identity_role_in_use";
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const SLUG_PATTERN = /^[a-z][a-z0-9_]*$/;
 
 /** `reason : string : optional` (delete) — bounded [realization convention] (the ADMIN_REASON precedent). */

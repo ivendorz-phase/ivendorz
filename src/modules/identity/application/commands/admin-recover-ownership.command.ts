@@ -33,6 +33,7 @@
 // AI-notes) — enforced by the acting-owner precondition. Events: none (§8 — [DC-1]).
 
 import { prisma } from "../../../../shared/db";
+import { UUID_PATTERN } from "./_validation";
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { resolveOwnershipRecoveryFacts } from "../../infrastructure/data/membership-lifecycle.repository";
 import {
@@ -57,8 +58,6 @@ const FORBIDDEN_CODE = "identity_org_forbidden";
 const ORG_NOT_FOUND_CODE = "identity_org_not_found";
 const USER_NOT_FOUND_CODE = "identity_user_not_found";
 const RECOVERY_INVALID_CODE = "identity_org_recovery_invalid";
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The server-resolved ADMIN request context (from the composition edge — never client input). */
 export interface AdminRecoverOwnershipContext {

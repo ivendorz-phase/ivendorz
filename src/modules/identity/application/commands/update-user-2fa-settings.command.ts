@@ -25,6 +25,7 @@
 // makes this an edge case).
 
 import { prisma, type DbExecutor } from "../../../../shared/db";
+import { UUID_PATTERN } from "./_validation";
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { updateUser2faSettings } from "../../infrastructure/data/user-account.repository";
 import { USER_ENTITY_TYPE, UserAccountAuditAction } from "../../domain/audit-actions";
@@ -55,9 +56,6 @@ export interface UpdateUser2faSettingsDeps {
 const INVALID_INPUT_CODE = "identity_user_invalid_input";
 const UPDATE_CONFLICT_CODE = "identity_user_update_conflict";
 const NOT_FOUND_CODE = "identity_user_not_found"; // §6.6 collapse code (frozen §C4 user-domain code).
-
-/** RFC-4122 UUID shape for the path `{id}` (Doc-5A §5.4 — a malformed segment is SYNTAX, cat 1). */
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** SYNTAX validation (Doc-4A §11.2 category 1; §C4 field constraints). */
 function validateInput(input: UpdateUser2faSettingsInput): string | null {

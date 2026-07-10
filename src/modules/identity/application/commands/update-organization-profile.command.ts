@@ -26,6 +26,7 @@
 
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
+import { UUID_PATTERN } from "./_validation";
 import { updateOrganizationProfileFields } from "../../infrastructure/data/organization-lifecycle.repository";
 import { findActiveMembershipRoleName } from "../../infrastructure/data/buyer-profile.repository";
 import { ORGANIZATION_ENTITY_TYPE, OrganizationAuditAction } from "../../domain/audit-actions";
@@ -43,9 +44,6 @@ const UPDATE_CONFLICT_CODE = "identity_org_update_conflict";
 
 // [ESC-IDN-SLUG] INTERIM — Owner/Director authority (see header; the D7 buyer-profile precedent).
 const ORG_PROFILE_ADMIN_ROLE_NAMES: ReadonlySet<string> = new Set(["Owner", "Director"]);
-
-/** RFC-4122 UUID shape for the path `{id}` (Doc-5A §5.4 — a malformed segment is SYNTAX, cat 1). */
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The wire body's deferred §C5 fields (fail-closed — see header). Carried on the input seam as an
  *  opaque presence check so the reject is uniform wherever the composition maps the body. */

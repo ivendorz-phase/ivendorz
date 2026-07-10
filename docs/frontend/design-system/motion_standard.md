@@ -1,13 +1,12 @@
 # Motion Standard — Enterprise UI Animation
 
-**Status:** Living engineering standard **v1.1** (base v1.0 2026-07-10, owner-directed; **v1.1
-additive patch 2026-07-10** — adds §7 *Landing Page Ambient Motion Exception*, owner-authorized;
-no §1–§6 rule changed). Applies to **every team and agent** touching frontend code.
-Non-authoritative under the frozen corpus; visual design authority stays with Doc-7. This document
-governs *how things move* and is the **single source of truth for motion timing, easing, and
-animated-property rules**: it supersedes `design_philosophy.md` §2.6 wherever they conflict
-(recorded in that document's v1.1 amendment note; RV-0154 F1, **Board-ratified 2026-07-10**).
-Framer Motion is an approved frontend stack dependency (CLAUDE.md §2, additive patch v1.2).
+**Status:** Living engineering standard v1.0 (2026-07-10, owner-directed). Applies to **every
+team and agent** touching frontend code. Non-authoritative under the frozen corpus; visual
+design authority stays with Doc-7. This document governs *how things move* and is the **single
+source of truth for motion timing, easing, and animated-property rules**: it supersedes
+`design_philosophy.md` §2.6 wherever they conflict (recorded in that document's v1.1 amendment
+note; RV-0154 F1, **Board-ratified 2026-07-10**). Framer Motion is an approved frontend stack
+dependency (CLAUDE.md §2, additive patch v1.2).
 
 ---
 
@@ -107,48 +106,5 @@ the RV-0126 barrel-leak lesson). Import via `@/frontend/motion`.
       state/hover feedback per §1); sticky/layout-sensitive elements fade only.
 - [ ] Server-component kit contracts not broken by a `"use client"` addition for motion.
 - [ ] No bounce/spring/overshoot; nothing loops infinitely except skeleton/shimmer loading
-      states **or an approved §7 marketing ambient-motion surface**.
+      states.
 - [ ] Reduced-motion behavior verified (DevTools → Rendering → emulate reduced motion).
-- [ ] Any auto-motion is on a **public marketing surface only** and meets **all §7 mandatory
-      conditions** (slow; pause on hover/focus/touch; off under reduced-motion; manual controls
-      present; GPU transforms). Auto-motion on authenticated pages is prohibited (§7 cond. 9).
-
----
-
-## 7. Landing Page Ambient Motion Exception
-
-**Owner-authorized additive exception (2026-07-10).** A narrow carve-out to the §1 "no infinite
-loops" rule for **public marketing surfaces only** (e.g. Landing Page, Product Detail Page, Vendor
-Public Profile). It does **not** relax any other §1–§6 rule and does **not** establish a general
-motion pattern for the application.
-
-### Allowed
-
-- Auto-sliding image carousels.
-- Slow ambient auto-scroll sections intended for marketing presentation.
-- Motion must enhance discovery, not distract from interaction.
-
-### Mandatory conditions (all required)
-
-1. Motion must be slow and unobtrusive.
-2. Hover pauses the animation immediately.
-3. Keyboard focus pauses the animation.
-4. Touch interaction disables auto-motion while the user is interacting.
-5. Respect `prefers-reduced-motion`; disable all auto-motion when enabled.
-6. Manual controls (Previous/Next or indicators) must always be available.
-7. Animation must use GPU-friendly transforms (`transform: translate3d()` / `translateX/Y`) and
-   avoid layout-triggering properties.
-8. No flashing, bouncing, or attention-grabbing effects.
-9. Auto-motion is **prohibited on authenticated application pages** (Buyer, Vendor, Admin
-   dashboards) unless explicitly approved by the Architecture Board.
-10. This exception applies only to marketing/public pages and does not establish a general motion
-    pattern for the application.
-
-### Examples
-
-✅ **Allowed** — landing page hero image slider · product detail image gallery auto-slide · vendor
-public profile portfolio carousel · **landing RFQ preview ticker** (`rfq-preview-board.tsx`, slow
-vertical auto-scroll meeting all conditions above).
-
-❌ **Not allowed** — RFQ list auto-scroll in the Buyer Dashboard · infinite notification ticker in
-authenticated areas · auto-scrolling data tables or forms.

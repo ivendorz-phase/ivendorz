@@ -28,6 +28,7 @@
 // System (caller-driven write).
 
 import { prisma } from "../../../../shared/db";
+import { UUID_PATTERN } from "./_validation";
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import {
   loadOrganizationRow,
@@ -56,8 +57,6 @@ const STATUS_CONFLICT_CODE = "identity_org_status_conflict";
 
 /** `reason : string : required` — bounded [realization convention] (the 6.1 admin-reason precedent). */
 export const ORG_ADMIN_REASON_MAX_LENGTH = 500;
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The server-resolved ADMIN request context (from the composition edge — never client input). */
 export interface SetOrganizationStatusContext {
