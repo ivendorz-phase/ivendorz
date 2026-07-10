@@ -7,8 +7,9 @@ import { LegalDocument, type LegalSection } from "../_components/legal-document"
 // SCOPE: buyer-facing trust asset — the publishable text of the Confidentiality Charter
 // (source of record: docs/product/requirements/confidentiality_charter.md §A; the traceability
 // annex §C is internal and NOT rendered). Every commitment translates an already-frozen rule —
-// the page coins nothing and binds no Doc-5 contract. `lastUpdated` stays the token "Pending"
-// until the charter passes its publication review (the scaffold's pending-review notice applies).
+// the page coins nothing and binds no Doc-5 contract. PUBLISHED (owner Board close + publication
+// authorization 2026-07-10): `published` set + real `lastUpdated`, so the scaffold's pending-review
+// notice no longer renders. Wording changes after publication re-enter the review lanes.
 //
 // FIELD DISCIPLINE (charter annex §C guards): claims stay VENDOR-SCOPED — the moderation stage is
 // stated honestly, never denied (Review-A RA-F1); no "who accessed my RFQ" claim (ESC-TRUST-READAUDIT
@@ -106,7 +107,8 @@ export default function ConfidentialityCharterPage() {
     <LegalDocument
       title="Confidentiality Charter"
       intro="We built iVendorz knowing what an RFQ can reveal: product launches, expansion plans, equipment upgrades, capacity, budgets, preferred suppliers, sourcing strategy. That is confidential business intelligence — and the platform is engineered, not just promised, to treat it that way."
-      lastUpdated="Pending"
+      lastUpdated="10 July 2026"
+      published
       sections={SECTIONS}
     />
   );
