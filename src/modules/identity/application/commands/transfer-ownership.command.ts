@@ -32,6 +32,7 @@
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import { UUID_PATTERN } from "./_validation";
+import { buildUserAuditInput } from "./_audit";
 import {
   findOwnerSystemBundleRole,
   resolveOwnerRemovalFacts,
@@ -264,9 +265,7 @@ export async function transferOwnershipCommand(
   //     identity" — reason_code + approver recorded; Mutation-Scope `identity.organizations` +
   //     `identity.memberships` (ids/values only, Doc-6A §12).
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: ctx.activeOrgId,
       entityType: ORGANIZATION_ENTITY_TYPE,
       entityId: ctx.activeOrgId,
@@ -281,9 +280,7 @@ export async function transferOwnershipCommand(
         reason_code: input.reasonCode,
         approver_membership_id: approverMembershipId,
       },
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 

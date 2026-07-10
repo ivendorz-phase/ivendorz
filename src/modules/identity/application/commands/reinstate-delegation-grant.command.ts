@@ -29,6 +29,7 @@
 
 import { prisma, type DbExecutor } from "@/shared/db";
 import type { AppendAuditRecord } from "@/modules/core/contracts";
+import { buildUserAuditInput } from "./_audit";
 import {
   findActiveMembership,
   resolveGrantedTenantSlugs,
@@ -188,18 +189,14 @@ export async function reinstateDelegationGrantCommand(
   // (10) AUDIT — atomic with the write (SAME executor), via the M0 facade ONLY (a throw rolls the
   //      write back — D7 invariant 1). `delegation_grant_reinstated`, bound by pointer (header).
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: ctx.activeOrgId,
       entityType: DELEGATION_GRANT_ENTITY_TYPE,
       entityId: grant.id,
       action: DelegationGrantAuditAction.REINSTATED,
       oldValue: write.oldValue,
       newValue: write.newValue,
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 

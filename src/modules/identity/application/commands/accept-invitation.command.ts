@@ -42,6 +42,7 @@
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import { UUID_PATTERN } from "./_validation";
+import { buildUserAuditInput } from "./_audit";
 import {
   findMembershipForInvitee,
   readMembershipUpdatedAt,
@@ -150,18 +151,14 @@ export async function acceptInvitationCommand(
   // (6) AUDIT — the ENUMERATED §9 "membership accept" action, atomic (same tx; D7). USER-attributed
   //     (the invitee) — the §6.2a staff GUC is transport mechanism, never attribution.
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: row.organizationId,
       entityType: MEMBERSHIP_ENTITY_TYPE,
       entityId: row.id,
       action: MembershipAuditAction.ACCEPTED,
       oldValue: write.oldValue,
       newValue: write.newValue,
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 

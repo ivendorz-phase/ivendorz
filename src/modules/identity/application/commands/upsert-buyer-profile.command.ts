@@ -20,6 +20,7 @@
 
 import { prisma, type DbExecutor } from "@/shared/db";
 import type { AppendAuditRecord } from "@/modules/core/contracts";
+import { buildUserAuditInput } from "./_audit";
 import {
   findActiveMembershipRoleName,
   upsertActiveOrgBuyerProfile,
@@ -134,18 +135,14 @@ export async function upsertBuyerProfileCommand(
   //     action from the M1 constants. If this throws, the whole tx (incl. the write) rolls back (Invariant 1).
   const created = write.outcome === "created";
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: ctx.activeOrgId,
       entityType: BUYER_PROFILE_ENTITY_TYPE,
       entityId: write.id,
       action: created ? BuyerProfileAuditAction.CREATED : BuyerProfileAuditAction.UPDATED,
       oldValue: created ? null : write.oldValue,
       newValue: write.newValue,
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 

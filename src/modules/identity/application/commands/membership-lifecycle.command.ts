@@ -49,6 +49,7 @@
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import { UUID_PATTERN } from "./_validation";
+import { buildUserAuditInput } from "./_audit";
 import {
   findMembershipInOrg,
   readMembershipUpdatedAt,
@@ -242,9 +243,7 @@ async function membershipTransitionCore(
   // (8) AUDIT — atomic with the write (SAME tx; D7), via the M0 facade ONLY. Reason recorded when
   //     supplied (ids + meta only — Doc-6A §12).
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: ctx.activeOrgId,
       entityType: MEMBERSHIP_ENTITY_TYPE,
       entityId: row.id,
@@ -254,9 +253,7 @@ async function membershipTransitionCore(
         ...write.newValue,
         ...(spec.reason !== undefined ? { reason: spec.reason } : {}),
       },
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 

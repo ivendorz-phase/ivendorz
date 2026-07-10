@@ -26,6 +26,7 @@
 
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import { UUID_PATTERN } from "./_validation";
+import { buildUserAuditInput } from "./_audit";
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { updateUser2faSettings } from "../../infrastructure/data/user-account.repository";
 import { USER_ENTITY_TYPE, UserAccountAuditAction } from "../../domain/audit-actions";
@@ -148,18 +149,14 @@ export async function updateUser2faSettingsCommand(
   //     Old/new = the SETTINGS values (no secret exists in this column by construction — DC-4).
   //     Attribution: the acting USER; the org is the server-resolved audit-context anchor (D7 rule 8).
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: ctx.activeOrgId,
       entityType: USER_ENTITY_TYPE,
       entityId: ctx.userId,
       action: UserAccountAuditAction.TWO_FA_SETTINGS_UPDATED,
       oldValue: { two_fa: write.oldSettings },
       newValue: { two_fa: write.newSettings },
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 

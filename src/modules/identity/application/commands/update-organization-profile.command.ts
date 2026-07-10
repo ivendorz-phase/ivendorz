@@ -27,6 +27,7 @@
 import type { AppendAuditRecord } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import { UUID_PATTERN } from "./_validation";
+import { buildUserAuditInput } from "./_audit";
 import { updateOrganizationProfileFields } from "../../infrastructure/data/organization-lifecycle.repository";
 import { findActiveMembershipRoleName } from "../../infrastructure/data/buyer-profile.repository";
 import { ORGANIZATION_ENTITY_TYPE, OrganizationAuditAction } from "../../domain/audit-actions";
@@ -205,18 +206,14 @@ export async function updateOrganizationProfileCommand(
 
   // (5) AUDIT — `[ESC-IDN-AUDIT]` org-profile-change pointer (§C5 PassB:263), atomic (same tx; D7).
   await deps.appendAuditRecord(
-    {
-      actorId: ctx.userId,
-      actorType: "user",
+    buildUserAuditInput(ctx, {
       organizationId: ctx.activeOrgId,
       entityType: ORGANIZATION_ENTITY_TYPE,
       entityId: ctx.activeOrgId,
       action: OrganizationAuditAction.PROFILE_UPDATED,
       oldValue: write.oldValue,
       newValue: write.newValue,
-      ipAddress: ctx.ipAddress ?? null,
-      userAgent: ctx.userAgent ?? null,
-    },
+    }),
     db,
   );
 
