@@ -29,6 +29,9 @@
      barrel; **deliberately absent from the main `src/frontend/index.ts` barrel**).
   3. **`app/layout.tsx`** — body children wrapped in `<MotionProvider>`. **`app/template.tsx`
      (NEW)** — root template rendering `<PageTransition>` (App Router composition only).
+     *(Superseded by the Review-B F-B1 remedy: root template removed; per-route-group
+     `app/(public|app|auth)/template.tsx` + pathname-keyed PageTransition — see the Review-B
+     record below.)*
   4. **`tailwind.config.ts`** — `transitionDuration["250"]`, `iv-skeleton-pulse` keyframes,
      `iv-skeleton` composite animation (fade-in 200ms then 1.6s gentle pulse).
   5. **`app/globals.css`** — `iv-stagger-rise` / `iv-stagger-fade` parent utilities
@@ -123,3 +126,47 @@ F4/F5/F1). Clean-coverage record in the RV-0154 ledger entry.
 | F7 | OBS | framer-motion = binding stack element absent from the mirrored stack table | **Board channel at close** — owner may record the stack addition additively (CLAUDE.md §2 is frozen-mirrored; not editable here). |
 | F8 | OBS | Second (TS-resident) motion-token store vs Doc-7B BR3 single-mechanism intent | **Recorded future-watch** — technically necessary for FM; drift class countered by the F3 comment fix + this standard's token discipline. |
 | F9 | OBS | Post-nav `m.div` = transformed ancestor during entrance (fixed/sticky containing block); DOM asymmetry | **Routed to Review-B** (runtime verification duty; Radix portals escape via body). |
+
+### Review-A delta re-verify (fresh context) at `8bbce9f` — ✅ PASS on the delta
+
+**0 BLOCKER · 0 MAJOR · 0 MINOR · 1 NIT · 1 OBS.** F1–F5 all RESOLVED (verbatim + mechanical
+verification; FM `custom`-driven cap confirmed against installed motion-dom types; barrel still
+motion-free). **N1 (NIT, deferred → F6 pass):** the v1.1 amendment's closing attestation
+over-scopes — three easing tokens printed in §2.6 (`linear`/`in`/`accelerate`) were never
+declared in globals.css (pre-existing spec/impl gap). **N2 (OBS → Review-B):** FM reduced-motion
+fallback retains capped opacity-fade delays — within §5's documented fallback. Gates green
+(tsc/eslint/prettier). **A-gate MET at `8bbce9f`.**
+
+### Review-B (Team-5, fresh context) at `8bbce9f` — 🟠 REVISION
+
+**0 BLOCKER · 1 MAJOR · 0 MINOR · 0 NIT · 4 OBS.** PASS on: static gates · **isolated-worktree
+prod build** (real pnpm install; compiled fully; chunk ownership CLEAN — LazyMotion core
+14.1KB gz in exactly 2/256 manifest entries (`/layout` + `/template`), domAnimation 15.5KB gz
+as a genuine dynamic-import chunk referenced by zero routes, per-route chunk deltas ≤ ~100 B gz,
+shared-set delta +17.5KB gz; RV-0126 discipline holds) · runtime surfaces (hard-load static
+paint, stagger delays exact incl. the 200ms cap, reduced-motion F4 fix verified live, sheet
+0.25/0.2s, dropdown 0.15s, skeleton composite, button tap, **zero console/page/hydration
+errors**) · F9 clean at rest (no residual transform; sticky sticks post-nav).
+
+**F-B1 (MAJOR):** the root-template page transition **never fires on within-route-group
+navigations** (Next 15 remounts a template only when its direct child segment changes — the
+top-level route group). Empirically proven: `/`→`/vendors` and `/vendors`→`/vendors/[slug]`
+= zero FM animations, no wrapper at rest; control `/`→`/login` (cross-group) animated exactly
+to spec. The flagship deliverable was inert on the primary flows; the standard documented
+behavior that did not exist. Builder's smoke test verified error-absence, not
+animation-presence (recorded as a lesson).
+
+**Disposition (Orchestrator, 4-gate): F-B1 ACCEPTED** — valid (3-run WAAPI evidence + positive
+control); applicable (primary marketplace/workspace flows); best (deliver the advertised
+capability with a *smaller* blast radius); corpus-consistent (app/ composition-only preserved).
+**Remedy:** `PageTransition` re-keyed on `usePathname()` (module-flag hard-load skip retained;
+one-way latch so a return to the hard-load path also animates; search-param-only changes
+deliberately static) · root `app/template.tsx` REMOVED · per-route-group
+`app/(public|app|auth)/template.tsx` added BELOW each shell (chrome never remounts — improves
+on the root-template design, where cross-group navs remounted the whole shell) · standard §2/§3
+corrected to describe the real mechanism. **OBS-1** prod-build static-export abort = attributed
+PRE-EXISTING at parent (RV-0140 class, Board agenda; EPERM did not fire) · **OBS-2** dev
+`scroll-behavior` warning pre-existing (`d4ae19f`) · **OBS-3** stagger-on-hard-load LCP texture
+recorded (within the standard's documented ≤ ~400ms bound) · **OBS-4** dev-only chunk
+triplication, no action. Re-entry = **combined A-structural + B-runtime delta re-verify** at
+the F-B1 patch SHA (small-patch precedent).

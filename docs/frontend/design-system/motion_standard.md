@@ -34,7 +34,10 @@ surface is a review finding (duplication-as-architecture, Review-A lane).**
   - `fadeIn`, `fadeInRise`, `scaleIn`, `staggerContainer`, `staggerItem` — shared variants.
   - `<MotionProvider>` — LazyMotion (strict) + `MotionConfig reducedMotion="user"`; mounted once
     in the root layout. All motion components use `m.*` (never `motion.*` — strict mode enforces this).
-  - `<PageTransition>` — route-change entrance; wired via `app/template.tsx`.
+  - `<PageTransition>` — route-change entrance, keyed on the pathname; wired via the
+    per-route-group `template.tsx` files (`app/(public|app|auth)/template.tsx`), mounted BELOW
+    each shell so chrome never remounts. (A root template does not remount on within-group
+    navigations — RV-0154 F-B1; the pathname key, not template semantics, replays the entrance.)
   - `<FadeIn>`, `<Stagger>`, `<StaggerItem>` — entrance wrappers for **client** surfaces.
 - **CSS token layer** (Tailwind + `globals.css`) — for Server Components and Radix `data-state`
   animation:
@@ -52,7 +55,7 @@ surface is a review finding (duplication-as-architecture, Review-A lane).**
 
 | Surface | Layer | Why |
 |---|---|---|
-| Page transitions | Framer Motion (`app/template.tsx` → `<PageTransition>`) | needs route-remount awareness; skips the initial SSR paint (LCP-safe) |
+| Page transitions | Framer Motion (per-group `template.tsx` → `<PageTransition>`, pathname-keyed) | fires on every client navigation regardless of template remount semantics; skips the initial SSR paint (LCP-safe) |
 | Modal / Dialog, Drawer / Sheet, Dropdown, Popover open/close | **CSS `data-state` layer** on the Radix primitives | Radix owns the mount lifecycle; CSS keeps primitives server-friendly, zero extra JS, no `forceMount` hacks. Durations/easing use the same tokens, so motion is indistinguishable from the FM layer. **Do not retrofit `AnimatePresence` into Radix kit primitives.** |
 | Card / grid entrance | `iv-stagger-rise` on the container (already applied in `ResultsGrid`); `<FadeIn>`/`<Stagger>` on client surfaces | grids are Server Components by kit contract |
 | Table row appearance | `iv-stagger-fade` on `<tbody>` (already applied in `DataListTable`) | fade only — translate breaks `position: sticky` cells |
