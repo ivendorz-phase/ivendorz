@@ -220,6 +220,12 @@ pre-authorized deriving this from frozen text and flagged the halt condition, wh
 | W2-IDN-7 / M1 gate (OBS-1) | the `organization_workflow_settings` first-row provisioning has no §C11 contract and no org-create path writes it — decide the provisioning locus (org-create default row / seed / a future additive) so `update_workflow_settings` is reachable in production | future-watch |
 | Review-A (judgment-call #1) | adjudicate the "no field-value POLICY bound defined; consumed key = `[DC-5]` dedup window; not Flag-and-Halt" derivation vs the packet's "POLICY-bounded field validation" paraphrase | fold-in (review) |
 | `ESC-WIRE-FIELD-CASING` (🟥 owner-pending) | result payloads built in the ratified house shape; carried, not resolved | carried handle |
+| W2-IDN-7 / M1 conformance gate (RV-0159 F1) | the §C11 deferred pair `default_routing_mode`/`buyer_courtesy_options` (declared writable §C11:707/:718 but no Doc-6C §3.7 column) is realized fail-closed; the M1 gate/Board must rule realize-columns vs formal-defer (parity with the org-profile `ESC-IDN-ORG-PROFILE-FIELDS` deferred fields) | binding fold-in (IDN-7) |
+
+*RV-0159 F1 amendment (2026-07-10, report-only — no code/test change): appended the deferred-pair
+forward carry above (last row) per the accepted MINOR — precedent parity with the org-profile
+`ESC-IDN-ORG-PROFILE-FIELDS` carry (judgment-call #2 handled the pair fail-closed but did not forward it);
+the coordinator has also recorded this as a binding IDN-7 tracker obligation. Existing rows untouched.*
 
 *Board-ratified permanent section — the assignee confirms it held for the whole activation.*
 
