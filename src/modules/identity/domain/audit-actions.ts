@@ -286,3 +286,37 @@ export const RoleAuditAction = {
 } as const;
 
 export type RoleAuditActionToken = (typeof RoleAuditAction)[keyof typeof RoleAuditAction];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Organization workflow-settings audit action (W2-IDN-6.8 — the §C11 wired update command). Doc-2 §9
+// ENUMERATES the "Organization" domain action **"workflow settings change"** (line 686: "… ownership
+// change/succession, **workflow settings change**, subscription change, soft delete/restore") — so,
+// like the role/permission-change + membership-invite tokens, this write binds BY POINTER to an
+// ENUMERATED §9 action (NO `[ESC-IDN-AUDIT]` channel — the action is enumerated; and Doc-4C Appendix A
+// carries NO `A` marker on `update_workflow_settings`, only `DC-5`, PassB:792). The frozen §C11 Audit
+// declaration AUTHORS the bind (PassB:724: 'yes; Domain Organization "workflow settings change" (§9)').
+// The token STRING is the Doc-4C-class serialization; a future rename touches Doc-4C + this constant,
+// never Doc-2. Named CONSTANT — never a hardcoded literal (Board ruling 2026-06-30).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The audit `entity_type` for `identity.organization_workflow_settings` rows (Doc-4C §C11
+ *  Mutation-Scope `organization_workflow_settings`; the Doc-6C §3.7 entity). [logged judgment call —
+ *  the entity/table name is used verbatim: unlike `buyer_profiles`→`buyer_profile` (a count-plural),
+ *  the trailing "settings" is a collective noun with no natural singular, so the least-inventive
+ *  serialization is the frozen table/entity name unchanged — the buyer-profile "specific child
+ *  entity, not the aggregate root" precedent applied to a non-count-plural table name.] */
+export const WORKFLOW_SETTINGS_ENTITY_TYPE = "organization_workflow_settings" as const;
+
+/**
+ * Canonical organization-workflow-settings audit action — bound BY POINTER to the ENUMERATED Doc-2 §9
+ * "Organization" action "workflow settings change" (Doc-2 line 686; §C11 update Audit PassB:724). ONE
+ * §9 business action, ONE serialization token (the enumerated-action `role_*` / `membership_invited`
+ * precedent — a settings change is a single "changed" leg). Attribution: User (§17.3).
+ */
+export const WorkflowSettingsAuditAction = {
+  /** §9 Organization "workflow settings change" (enumerated); the `update_workflow_settings` leg (User). */
+  CHANGED: "workflow_settings_changed",
+} as const;
+
+export type WorkflowSettingsAuditActionToken =
+  (typeof WorkflowSettingsAuditAction)[keyof typeof WorkflowSettingsAuditAction];

@@ -1254,3 +1254,110 @@ export interface ListMyOrganizationsResult {
   items: MyOrganizationView[];
   pageInfo: { hasMore: boolean };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §C11 — Organization Workflow Settings (W2-IDN-6.8). The two Doc-5C §6.1 rows 34–35 contracts:
+//   `update_workflow_settings.v1`  PATCH /identity/organization_workflow_settings · 200  · User (active-org)
+//   `get_workflow_settings.v1`     GET   /identity/organization_workflow_settings · 200  · User (owning-org)
+// Active-org / owning-org singleton (one settings row per org — `ows_org_live_uq`; the active-org
+// context resolves the target, no path {id}). The ORG leg of FIXED/POLICY/ORG (Doc-4A §18.4 / Doc-3
+// §12.3). Field names/semantics owned by Doc-4C §C11 (verbatim) + the realized Doc-6C §3.7 column set;
+// bound by pointer, never re-authored. FIREWALL: identity writes NO governance signal (§C12.6 / §B.7).
+// Events: none ([DC-1]).
+//
+// WRITABLE-FIELD REALIZABILITY (report §8): §C11 declares SIX response/request fields; only the FOUR
+// with a Doc-6C §3.7 column are realizable (`rfq_approval_mode`, `approval_chain`, `financial_permissions`,
+// `notification_rules`). `default_routing_mode` and `buyer_courtesy_options` have NO realized column
+// (Doc-2 §10.2 line 723 / Doc-6C §3.7 DDL) — DEFERRED (fail-closed on write; `null` on read — the
+// `update_organization_profile` deferred-field precedent).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The `organization_workflow_settings` read projection (Doc-4C §C11 response `workflow_settings` object,
+ * PassB:707 — the SIX frozen keys) over the Doc-6C §3.7 row. The four jsonb/enum columns carry their
+ * values (shape owned upstream — opaque `unknown`); `defaultRoutingMode` / `buyerCourtesyOptions` are the
+ * two DEFERRED keys with no realized column (always `null` — the frozen six-key shape, no fabricated value).
+ */
+export interface WorkflowSettingsView {
+  /** Owning organization (the active-org / tenant anchor — Doc-2 §6). */
+  organizationId: string;
+  /** `rfq_approval_mode` (Doc-6C §3.7 enum; DB DEFAULT `none`). */
+  rfqApprovalMode: "none" | "single" | "multi_step";
+  /** `approval_chain` (Doc-6C §3.7 `approval_chain_jsonb`; list<object>); jsonb, shape owned upstream. */
+  approvalChain: unknown;
+  /** `financial_permissions` (Doc-6C §3.7 `financial_permissions_jsonb`; thresholds); jsonb, opaque. */
+  financialPermissions: unknown;
+  /** `notification_rules` (Doc-6C §3.7 `notification_rules_jsonb`); jsonb, shape owned upstream. */
+  notificationRules: unknown;
+  /** DEFERRED — no Doc-6C §3.7 column; always `null` (see the sub-domain header). */
+  defaultRoutingMode: null;
+  /** DEFERRED — no Doc-6C §3.7 column; always `null`. */
+  buyerCourtesyOptions: null;
+}
+
+/**
+ * Outcome of `identity.get_workflow_settings.v1` (Doc-4C §C11; Doc-5C §6.1 row 35; §6.3 non-disclosure).
+ * Active-org singleton read scoped by RLS. Absent / cross-tenant → `found: false` (the wire `404`
+ * collapse, indistinguishable from genuine absence). `updatedAt` is the current concurrency token the
+ * wire hands the client via `ETag` (for the update's REQUIRED `If-Match` — Doc-5C §6.4).
+ */
+export type GetWorkflowSettingsResult =
+  { found: true; settings: WorkflowSettingsView; updatedAt: Date } | { found: false };
+
+/** The two DEFERRED §C11 fields' wire-presence flags (no realized Doc-6C §3.7 column → fail-closed
+ *  VALIDATION when supplied — the `UpdateOrganizationProfileDeferredFields` precedent). */
+export interface UpdateWorkflowSettingsDeferredFields {
+  defaultRoutingModeSupplied?: boolean;
+  buyerCourtesyOptionsSupplied?: boolean;
+}
+
+/**
+ * Input to `identity.update_workflow_settings.v1` (Doc-4C §C11 PassB:718). The active org is the
+ * SERVER-RESOLVED tenant anchor (Invariant #5) and is NOT part of this input (active-org singleton). The
+ * four realizable fields are OPTIONAL (partial — an omitted field is unchanged, Doc-4A §9.2); `updatedAt`
+ * is the REQUIRED `If-Match` optimistic-concurrency token (§C11 `optimistic on updated_at`, PassB:723).
+ * `default_routing_mode` / `buyer_courtesy_options` presence is carried in `deferredFields` (fail-closed).
+ */
+export interface UpdateWorkflowSettingsInput {
+  /** `rfq_approval_mode : enum(none|single|multi_step) : optional` (Doc-6C §3.7 enum). */
+  rfqApprovalMode?: unknown;
+  /** `approval_chain : list<object> : optional` (jsonb; `null` clears). */
+  approvalChain?: unknown;
+  /** `financial_permissions : object : optional : thresholds` (jsonb; `null` clears). */
+  financialPermissions?: unknown;
+  /** `notification_rules : object : optional` (jsonb; `null` clears). */
+  notificationRules?: unknown;
+  /** The two DEFERRED §C11 fields' presence flags (fail-closed — no realized column). */
+  deferredFields?: UpdateWorkflowSettingsDeferredFields;
+  /** `updated_at : timestamp : required` — the §C11 optimistic token, from `If-Match` (Doc-5C §6.4). */
+  updatedAt: Date;
+}
+
+/** Result of a successful `update_workflow_settings` (§C11 response, PassB:719 — `organization_id ·
+ *  updated_at · reference_id`). `updatedAt` = the new optimistic-concurrency token. */
+export interface UpdateWorkflowSettingsResult {
+  organizationId: string;
+  updatedAt: Date;
+}
+
+/** Error outcome of `identity.update_workflow_settings.v1` (Doc-4C §C11 error register PassB:721;
+ *  classes per Doc-5A §6.2). */
+export interface WorkflowSettingsError {
+  /** Doc-5A §6.2 class → HTTP status (VALIDATION→400 · AUTHORIZATION→403 · NOT_FOUND→404 ·
+   *  BUSINESS→422 · CONFLICT→409). Only the classes the §C11 register authors are raised. */
+  errorClass: "VALIDATION" | "AUTHORIZATION" | "NOT_FOUND" | "BUSINESS" | "CONFLICT";
+  /** The frozen §C11 `identity_workflow_*` register code (PassB:721; never coined here). */
+  errorCode: string;
+  /** Human-safe, non-leaking message. */
+  message: string;
+  /**
+   * The settings row's CURRENT `updated_at` token — populated ONLY on the Doc-5A §9.5 stale-precondition
+   * CONFLICT leg so the wire mapper emits the `ETag` current-token header (§9.6 re-read-retry). Never on
+   * a VALIDATION/AUTHORIZATION/NOT_FOUND/BUSINESS rejection (the call-13 leg discipline).
+   */
+  currentUpdatedAt?: Date;
+}
+
+/** Outcome of `identity.update_workflow_settings.v1`. */
+export type UpdateWorkflowSettingsOutcome =
+  { ok: true; result: UpdateWorkflowSettingsResult } | { ok: false; error: WorkflowSettingsError };

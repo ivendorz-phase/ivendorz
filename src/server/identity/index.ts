@@ -132,3 +132,12 @@ export {
   type ListMyOrganizationsHandlerDeps,
   type ListMyOrganizationsWireInput,
 } from "./list-my-organizations.route-handler";
+
+// W2-IDN-6.8 — the §C11 Workflow-Settings wired surface (Doc-5C §6.1 rows 34–35, both contracts): the
+// active-org POLICY-bounded update (writes NO governance signal — the firewall) + the owning-org read.
+export {
+  handleGetWorkflowSettings,
+  handleUpdateWorkflowSettings,
+  type GetWorkflowSettingsHandlerDeps,
+  type UpdateWorkflowSettingsHandlerDeps,
+} from "./workflow-settings.route-handler";

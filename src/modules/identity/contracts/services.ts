@@ -170,6 +170,13 @@ import {
   type UpsertBuyerProfileContext,
   type UpsertBuyerProfileDeps,
 } from "../application/commands/upsert-buyer-profile.command";
+import { getWorkflowSettings as getWorkflowSettingsQuery } from "../application/queries/get-workflow-settings.query";
+import {
+  MANAGE_WORKFLOW_SETTINGS_SLUG,
+  updateWorkflowSettingsCommand,
+  type UpdateWorkflowSettingsContext,
+  type UpdateWorkflowSettingsDeps,
+} from "../application/commands/update-workflow-settings.command";
 import { getUser as getUserQuery } from "../application/queries/get-user.query";
 import { getOrganization as getOrganizationQuery } from "../application/queries/get-organization.query";
 import { getMembership as getMembershipQuery } from "../application/queries/get-membership.query";
@@ -246,6 +253,10 @@ import type {
   UpdateUserProfileOutcome,
   UpsertBuyerProfileInput,
   UpsertBuyerProfileOutcome,
+  GetWorkflowSettingsResult,
+  UpdateWorkflowSettingsInput,
+  UpdateWorkflowSettingsOutcome,
+  WorkflowSettingsView,
   SwitchActiveOrganizationInput,
   SwitchActiveOrganizationContext,
   SwitchActiveOrganizationOutcome,
@@ -1202,3 +1213,69 @@ export {
 } from "../api/switch-active-organization.handler";
 export { mapGetActiveContext } from "../api/get-active-context.handler";
 export { mapListMyOrganizations } from "../api/list-my-organizations.handler";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §C11 — Organization Workflow Settings WIRED surface (W2-IDN-6.8 — the FINAL wired §C sub-domain
+// before the M1 conformance gate). The two Doc-5C §6.1 contracts on their frozen routes:
+//   `update_workflow_settings.v1`  PATCH /identity/organization_workflow_settings · 200 · User (active-org)
+//   `get_workflow_settings.v1`     GET   /identity/organization_workflow_settings · 200 · User (owning-org)
+// The ORG leg of FIXED/POLICY/ORG (Doc-4A §18.4 / Doc-3 §12.3). The UPDATE is an AUDITED, ATOMIC write
+// (D7): the M0 `appendAuditRecord` is INJECTED by contract TYPE and binds to the ENUMERATED Doc-2 §9
+// "Organization" action "workflow settings change" (Doc-2 line 686; NO `[ESC-IDN-AUDIT]`). AUTHZ = the
+// REAL Doc-2 §7 slug `can_manage_workflow_settings` (O,D) via the wired `check_permission` root
+// (Delegation NOT eligible). CAS on `updated_at` (`If-Match`; NOT create-class — absent row →
+// `identity_workflow_not_found`, Doc-5C §6.2). The READ is owning-org/active-org-scoped + UNAUDITED; its
+// M3/M6 internal-service leg is OUT-OF-WIRE (Doc-5C §7.3). THE FIREWALL (Invariant #6 / §B.7 / §C12.6):
+// the update writes NO governance signal — proven signal-free by the 8E discriminating test. Zero §8
+// events ([DC-1]). Context/deps shapes re-exported for the composition edge (contracts-only).
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type { UpdateWorkflowSettingsContext, UpdateWorkflowSettingsDeps };
+
+// The frozen Doc-2 §7 slug binding (`can_manage_workflow_settings` — §C11 PassB:716 / Doc-2 line 633; a
+// catalog token by pointer) — face-exported so the composition edge and tests bind the SAME value.
+export { MANAGE_WORKFLOW_SETTINGS_SLUG };
+
+/**
+ * `identity.get_workflow_settings.v1` (Doc-4C §C11; Doc-5C §6.1 row 35; §6.3 non-disclosure) — the
+ * PUBLIC, contracts-only face over the private M1 read query. The owning/active-org workflow_settings
+ * singleton read, scoped by the SERVER-RESOLVED `activeOrgId` explicit anchor (app-layer primary —
+ * RV-0146; never client input). Absent → `found: false` (the wire `404` collapse). MUST be invoked
+ * INSIDE `withActiveOrgContext` (the `db` carries the RLS-backstop GUC).
+ */
+export type GetWorkflowSettings = (
+  activeOrgId: string,
+  db?: DbExecutor,
+) => Promise<GetWorkflowSettingsResult>;
+export const getWorkflowSettings: GetWorkflowSettings = (activeOrgId, db) =>
+  getWorkflowSettingsQuery(activeOrgId, db);
+
+/**
+ * `identity.update_workflow_settings.v1` (Doc-4C §C11; D7) — the PUBLIC, contracts-only face over the
+ * private M1 write command. Partial update of the active-org workflow settings under an `updated_at`
+ * CAS, appending the ENUMERATED §9 "workflow settings change" audit action ATOMICALLY. Writes NO
+ * governance signal (the firewall). The M0 `appendAuditRecord` is INJECTED by contract TYPE; MUST be
+ * invoked INSIDE `withActiveOrgContext`.
+ */
+export type UpdateWorkflowSettings = (
+  input: UpdateWorkflowSettingsInput,
+  ctx: UpdateWorkflowSettingsContext,
+  deps: UpdateWorkflowSettingsDeps,
+  db?: DbExecutor,
+) => Promise<UpdateWorkflowSettingsOutcome>;
+export const updateWorkflowSettings: UpdateWorkflowSettings = (input, ctx, deps, db) =>
+  updateWorkflowSettingsCommand(input, ctx, deps, db);
+
+// The M1 WIRE FACES for the §C11 workflow-settings contracts (outcome → Doc-5A envelope + §6.2 status) —
+// the One-Owner placement (M1 owns how its read/write become HTTP); the app-layer composition edge
+// consumes them via `@/modules/identity/contracts` (contracts-only).
+export {
+  mapGetWorkflowSettings,
+  mapUpdateWorkflowSettings,
+  workflowSettingsErrorResponse,
+  workflowSettingsInvalidInput,
+  workflowSettingsNotFoundCollapse,
+} from "../api/workflow-settings.handler";
+
+// Re-export the workflow-settings view type on the contracts surface (the wire mapper's result type).
+export type { WorkflowSettingsView };
