@@ -25,9 +25,14 @@ import {
 //   `staff_*` never assignable to an org role · permission set ⊆ the assignable catalog (unknown
 //   rejected) · never ownership-class · the 4 system bundles immutable (update/set-perms/delete
 //   reject them with `system_protected`, NEVER a 404) · `delete_role` = ADR-012 soft-delete (row
-//   retained, `deleted_at` set — never hard-deleted, Invariant #8) · the optimistic-CAS losing write
-//   (stale token → 400 + `ETag`; two contenders on one token → exactly one wins — DETERMINISTIC, no
-//   sleep-offset: roles carry no lock-based serialization). All vs REAL PostgreSQL through the
+//   retained, `deleted_at` set — never hard-deleted, Invariant #8) · optimistic concurrency — TWO
+//   DISTINCT legs (RV-0157 OBS-B3, kept distinct): a STALE ARRIVAL VIEW (body token ≠ live token) →
+//   VALIDATION 400 carrying NO `ETag`, vs a genuine LOSING CAS (token passed the arrival check but a
+//   concurrent write advanced the row) → VALIDATION 400 CARRYING the current token via `ETag`
+//   (§9.5/§9.6, call-13 leg). Two contenders on one token → exactly one wins — DETERMINISTIC, no
+//   sleep-offset (roles carry no lock-based serialization). The genuine losing-CAS→ETag carriage is
+//   not deterministically forced here (single-connection harness catches the loser pre-CAS; a
+//   2-connection force is logged future-watch, RV-0157 OBS-A). All vs REAL PostgreSQL through the
 //   composition surfaces ONLY (never module internals).
 
 const COMMAND_DEDUP_STORE_KEY = "identity.command_dedup_window";
@@ -285,6 +290,26 @@ describe("W2-IDN-6.4 §C7 role/permission wired surface — 8C + 8E (real Postgr
         )
       ).status,
     ).toBe(401);
+
+    // MINOR-B1 (RV-0157): pin `list_roles`' OWN frozen VALIDATION token `identity_role_invalid_input`
+    // (PassB:467) — its TWIN read `list_permissions` uses `identity_permission_invalid_input`, so the
+    // exact F1 failure-mode (a sibling's token) must be detectable on BOTH reads. Its VALIDATION leg is
+    // the handle-gated pagination + the bad `include_system` enum. NON-VACUOUS: this asserts the token
+    // string, so it would RED if `handleListRoles` emitted `identity_permission_invalid_input` (the F1
+    // bug class) — the same discipline as the list_permissions pin.
+    const badEnum = await handleListRoles({ includeSystem: "maybe" }, readDeps(owner.authUserId));
+    expect(badEnum.status).toBe(400);
+    expect(
+      (badEnum.body as { error: { error_class: string; error_code: string } }).error.error_class,
+    ).toBe("VALIDATION");
+    expect((badEnum.body as { error: { error_code: string } }).error.error_code).toBe(
+      "identity_role_invalid_input",
+    );
+    const pagedRoles = await handleListRoles({ pageSize: "10" }, readDeps(owner.authUserId));
+    expect(pagedRoles.status).toBe(400);
+    expect((pagedRoles.body as { error: { error_code: string } }).error.error_code).toBe(
+      "identity_role_invalid_input",
+    );
   });
 
   // ════ C. create_role — POST /identity/roles (create; §B.6 claim leg) ════
@@ -431,6 +456,38 @@ describe("W2-IDN-6.4 §C7 role/permission wired surface — 8C + 8E (real Postgr
     );
     expect(ok.status).toBe(201);
     createdRoleIds.push((ok.body as { result: { roleId: string } }).result.roleId);
+
+    // T6-OBS-5 (RV-0157): MIXED set (one VALID tenant slug + one staff slug) → the WHOLE set rejected
+    // 422 (never partially applied — the per-slug loop rejects on the first non-assignable and the
+    // command returns BEFORE the write). DB backstop: no role row + no staff row written.
+    const mixed = await handleCreateRole(
+      { name: "MixedForge", permissionSlugs: [VALID_TENANT_SLUG, STAFF_SLUG] },
+      writeDeps(owner.authUserId, key()),
+    );
+    expect(mixed.status).toBe(422);
+    expect((mixed.body as { error: { error_code: string } }).error.error_code).toBe(
+      "identity_permission_slug_unknown",
+    );
+    expect(await prisma.role.count({ where: { organizationId: org.id, name: "MixedForge" } })).toBe(
+      0,
+    );
+    expect(
+      await prisma.rolePermission.count({
+        where: { organizationId: org.id, permission: { space: "staff" } },
+      }),
+    ).toBe(0);
+
+    // T6-OBS-5: DUPLICATE-slug set — the realized behavior (createMany `skipDuplicates` on the
+    // (role_id, permission_id) PK) is ONE effective row, not a duplicate-key error → 201 with the slug
+    // present exactly once.
+    const dupSlugs = await handleCreateRole(
+      { name: "DupSlugBundle", permissionSlugs: [VALID_TENANT_SLUG, VALID_TENANT_SLUG] },
+      writeDeps(owner.authUserId, key()),
+    );
+    expect(dupSlugs.status).toBe(201);
+    const dupRoleId = (dupSlugs.body as { result: { roleId: string } }).result.roleId;
+    createdRoleIds.push(dupRoleId);
+    expect(await effectiveSlugs(dupRoleId)).toEqual([VALID_TENANT_SLUG]);
   });
 
   it("8E CREATE names: a RESERVED system-bundle name (Owner) → 409 identity_role_name_conflict; a DUPLICATE custom name → 409", async () => {
@@ -558,18 +615,24 @@ describe("W2-IDN-6.4 §C7 role/permission wired surface — 8C + 8E (real Postgr
   it("8E system-bundle immutability: update_role / set_role_permissions / delete_role targeting a SYSTEM bundle (Owner) are each rejected 422 identity_role_system_protected — a system bundle is VISIBLE (not a 404), and never mutated/soft-deleted", async () => {
     const owner = await freshUser();
     await freshOrg([{ userId: owner.id, roleId: ownerRoleId }]);
-    const now = new Date();
+    // OBS-B2 (RV-0157): pass the Owner bundle's REAL current `updated_at` (read first) — NOT a fresh
+    // `new Date()`. `systemBundleGuard` runs BEFORE the stale-view check, so with the REAL token the
+    // request reaches the guard on its merits (the 422 is the guard's, not an incidental stale-view
+    // 400) — and the "bundle untouched" backstop below fires INDEPENDENTLY: if the guard were removed,
+    // the valid-token mutation would proceed and this test would red on both the code AND the row.
+    const seedTok = (await reloadRole(ownerRoleId))!.updatedAt;
+    const seedComposition = await effectiveSlugs(ownerRoleId);
 
     const upd = await handleUpdateRole(
-      { roleId: ownerRoleId, name: "Hacked Owner", updatedAt: now },
+      { roleId: ownerRoleId, name: "Hacked Owner", updatedAt: seedTok },
       writeDeps(owner.authUserId, key()),
     );
     const setp = await handleSetRolePermissions(
-      { roleId: ownerRoleId, addSlugs: [VALID_TENANT_SLUG], updatedAt: now },
+      { roleId: ownerRoleId, addSlugs: [VALID_TENANT_SLUG], updatedAt: seedTok },
       writeDeps(owner.authUserId, key()),
     );
     const del = await handleDeleteRole(
-      { roleId: ownerRoleId, updatedAt: now },
+      { roleId: ownerRoleId, updatedAt: seedTok },
       writeDeps(owner.authUserId, key()),
     );
 
@@ -582,11 +645,14 @@ describe("W2-IDN-6.4 §C7 role/permission wired surface — 8C + 8E (real Postgr
         "identity_role_system_protected",
       );
     }
-    // The Owner system bundle is untouched: still live, still named "Owner", still org NULL.
+    // The Owner system bundle is untouched: still live, still named "Owner", still org NULL, its
+    // `updated_at` token AND its composition unchanged (the mutations were blocked, not applied).
     const ownerBundle = await reloadRole(ownerRoleId);
     expect(ownerBundle?.name).toBe("Owner");
     expect(ownerBundle?.deletedAt).toBeNull();
     expect(ownerBundle?.organizationId).toBeNull();
+    expect(ownerBundle?.updatedAt.getTime()).toBe(seedTok.getTime());
+    expect(await effectiveSlugs(ownerRoleId)).toEqual(seedComposition);
   });
 
   // ════ H. delete_role — DELETE /identity/roles/{id} (ADR-012 soft-delete; in-use guard) ════
