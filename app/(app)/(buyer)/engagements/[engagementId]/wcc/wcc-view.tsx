@@ -35,7 +35,7 @@ export function WccView({ data }: { data: WccData }) {
   ];
 
   return (
-    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6">
+    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6 lg:px-8">
       <Breadcrumbs
         items={[
           { label: "Engagements", href: "/engagements" },

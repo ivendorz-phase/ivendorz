@@ -35,7 +35,7 @@ import type { RfqCreateData } from "./rfq-form-models";
 /** Phase 8 — success page (presentation only; no RFQ is actually created this milestone). */
 function SubmittedState() {
   return (
-    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6">
+    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6 lg:px-8">
       <Card>
         <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
           <CheckCircle2 aria-hidden className="size-10 text-iv-success-base" />
@@ -69,7 +69,7 @@ export function RfqCreateView({ data }: { data: RfqCreateData }) {
   const submitting = submission === "submitting";
 
   return (
-    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6">
+    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6 lg:px-8">
       {/* Owner directive 2026-07-07: crumb points back to the Buyer Dashboard (was "RFQs"). */}
       <Breadcrumbs
         items={[{ label: "Dashboard", href: "/dashboard" }, { label: "New RFQ" }]}

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 420" role="img" aria-label="" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="ivBandBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1f3a"/>
+      <stop offset="0.55" stop-color="#12305c"/>
+      <stop offset="1" stop-color="#0e2547"/>
+    </linearGradient>
+    <radialGradient id="ivBandGlow" cx="0.82" cy="0.18" r="0.6">
+      <stop offset="0" stop-color="#f59e0b" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ivBandGlow2" cx="0.12" cy="0.9" r="0.55">
+      <stop offset="0" stop-color="#3b82f6" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="ivBandGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1600" height="420" fill="url(#ivBandBg)"/>
+  <rect width="1600" height="420" fill="url(#ivBandGrid)"/>
+  <rect width="1600" height="420" fill="url(#ivBandGlow)"/>
+  <rect width="1600" height="420" fill="url(#ivBandGlow2)"/>
+
+  <!-- Technical gauge motif (amber) -->
+  <g transform="translate(1240 210)" fill="none" stroke="#f59e0b" stroke-opacity="0.55">
+    <circle r="150" stroke-opacity="0.18" stroke-width="1.5"/>
+    <circle r="112" stroke-width="2"/>
+    <circle r="70" stroke-opacity="0.35" stroke-width="1.5"/>
+    <g stroke-width="2">
+      <line x1="112" y1="0" x2="132" y2="0"/>
+      <line x1="0" y1="-112" x2="0" y2="-132"/>
+      <line x1="-112" y1="0" x2="-132" y2="0"/>
+      <line x1="0" y1="112" x2="0" y2="132"/>
+    </g>
+    <path d="M0 -112 A112 112 0 0 1 97 56" stroke="#ffffff" stroke-opacity="0.8" stroke-width="3" stroke-linecap="round"/>
+    <circle r="7" fill="#f59e0b" stroke="none"/>
+  </g>
+
+  <!-- Blueprint measure lines with nodes -->
+  <g stroke="#ffffff" stroke-opacity="0.22" stroke-width="2">
+    <line x1="90" y1="150" x2="560" y2="150"/>
+    <line x1="90" y1="215" x2="470" y2="215"/>
+    <line x1="90" y1="280" x2="640" y2="280"/>
+  </g>
+  <g fill="#f59e0b" fill-opacity="0.9">
+    <circle cx="90" cy="150" r="5"/>
+    <circle cx="560" cy="150" r="5"/>
+    <circle cx="90" cy="215" r="5"/>
+    <circle cx="470" cy="215" r="5"/>
+    <circle cx="90" cy="280" r="5"/>
+    <circle cx="640" cy="280" r="5"/>
+  </g>
+
+  <!-- Connection network (right-of-center) -->
+  <g stroke="#93c5fd" stroke-opacity="0.4" stroke-width="1.5" fill="none">
+    <path d="M720 330 L840 250 L960 300 L1060 200"/>
+    <path d="M840 250 L900 140"/>
+  </g>
+  <g fill="#93c5fd" fill-opacity="0.85">
+    <circle cx="720" cy="330" r="5"/>
+    <circle cx="840" cy="250" r="6"/>
+    <circle cx="960" cy="300" r="5"/>
+    <circle cx="1060" cy="200" r="5"/>
+    <circle cx="900" cy="140" r="5"/>
+  </g>
+</svg>

@@ -333,6 +333,12 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        /* Vertical auto-scroll ticker — the content is rendered twice; -50% shifts exactly one set
+           for a seamless loop. GPU transform only (Motion Standard §4). Pausable via play-state. */
+        "iv-marquee-up": {
+          from: { transform: "translateY(0)" },
+          to: { transform: "translateY(-50%)" },
+        },
       },
       animation: {
         "iv-shimmer": "iv-shimmer 1.5s ease-in-out infinite",
@@ -347,6 +353,9 @@ const config: Config = {
           "iv-fade-in 200ms cubic-bezier(0,0,0.2,1) both, iv-skeleton-pulse 1.6s cubic-bezier(0.4,0,0.2,1) 200ms infinite",
         "iv-accordion-down": "iv-accordion-down 200ms cubic-bezier(0,0,0.2,1)",
         "iv-accordion-up": "iv-accordion-up 200ms cubic-bezier(0,0,0.2,1)",
+        /* Ambient ticker loop (like iv-shimmer/iv-pulse-brand) — slow + linear so it reads as a
+           calm live feed, never a flashy motion; paused on hover/focus, off under reduced-motion. */
+        "iv-marquee-up": "iv-marquee-up 40s linear infinite",
       },
 
       /* -----------------------------------------------------------------------

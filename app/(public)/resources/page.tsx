@@ -39,7 +39,7 @@ export default function ResourcesPage() {
 
       {/* Coming soon. */}
       <section className="bg-muted/30">
-        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-16 sm:px-6">
+        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-16 sm:px-6 lg:px-8">
           <EmptyState
             icon={<BookOpen aria-hidden="true" />}
             title="Resources are coming soon"

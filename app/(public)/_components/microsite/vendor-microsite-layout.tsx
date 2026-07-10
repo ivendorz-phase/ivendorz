@@ -27,7 +27,7 @@ export interface VendorMicrositeLayoutProps {
 
 export function VendorMicrositeLayout({ profile, authHref, children }: VendorMicrositeLayoutProps) {
   return (
-    <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-8 pb-24 sm:px-6 sm:pb-8">
+    <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-8 pb-24 sm:px-6 lg:px-8 sm:pb-8">
       <VendorBreadcrumb name={profile.name} />
       <div className="mt-4">
         <VendorMicrositeHeader profile={profile} authHref={authHref} />

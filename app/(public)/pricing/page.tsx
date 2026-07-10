@@ -23,7 +23,7 @@ export default function PricingPage() {
     <>
       {/* Marketing header. */}
       <section className="border-b border-border bg-background">
-        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-16 text-center sm:px-6 sm:py-20">
+        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-16 text-center sm:px-6 lg:px-8 sm:py-20">
           <h1 className="text-4xl font-extrabold tracking-tight text-iv-ink-heading sm:text-5xl">
             Simple, transparent pricing
           </h1>
@@ -36,7 +36,7 @@ export default function PricingPage() {
 
       {/* Plans. */}
       <section className="bg-muted/30">
-        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-14 sm:px-6">
+        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-14 sm:px-6 lg:px-8">
           <PricingPlans />
 
           <p className="mx-auto mt-8 max-w-2xl text-center text-sm text-muted-foreground">
@@ -48,7 +48,7 @@ export default function PricingPage() {
 
       {/* Closing CTA → sign-up. */}
       <section className="border-t border-border bg-background">
-        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-16 text-center sm:px-6">
+        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-16 text-center sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold tracking-tight text-iv-ink-heading sm:text-3xl">
             Ready to source with confidence?
           </h2>

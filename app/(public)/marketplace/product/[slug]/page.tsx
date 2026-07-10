@@ -83,7 +83,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const breadcrumb = detail.primaryCategoryPath;
 
   return (
-    <div className="mx-auto flex w-full max-w-[var(--iv-content-max)] flex-col gap-6 px-4 py-8 sm:px-6">
+    <div className="mx-auto flex w-full max-w-[var(--iv-content-max)] flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
       <nav
         aria-label="Breadcrumb"
         className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground"

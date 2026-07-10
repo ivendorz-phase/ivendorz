@@ -20,7 +20,7 @@ export default function PublicError({
   }, [error]);
 
   return (
-    <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-16 sm:px-6">
+    <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-16 sm:px-6 lg:px-8">
       <ErrorState
         errorClass="INTERNAL"
         message="An unexpected error occurred while loading this page."

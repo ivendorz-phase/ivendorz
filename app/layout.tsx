@@ -27,11 +27,11 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "iVendorz — Industrial Procurement OS for Bangladesh",
+    default: "iVendorz — Industrial Procurement HUB for Bangladesh",
     template: "%s | iVendorz",
   },
   description:
-    "iVendorz is the Industrial Procurement Operating System for Bangladesh — connecting buyers and vendors through structured RFQ, verified vendor discovery, and post-award workflow.",
+    "iVendorz is the Industrial Procurement HUB for Bangladesh — connecting buyers and vendors through structured RFQ, verified vendor discovery, and post-award workflow.",
   keywords: [
     "industrial procurement",
     "B2B marketplace",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "iVendorz",
-    title: "iVendorz — Industrial Procurement OS for Bangladesh",
+    title: "iVendorz — Industrial Procurement HUB for Bangladesh",
     description:
       "Connect with verified industrial vendors. Post RFQs, compare quotations, and manage the full procurement lifecycle on one platform.",
   },

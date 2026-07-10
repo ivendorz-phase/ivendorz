@@ -66,7 +66,7 @@ export default function HowItWorksPage() {
 
       {/* Governed flow — ordered-list stepper. */}
       <section className="bg-muted/30">
-        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-16 sm:px-6">
+        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-16 sm:px-6 lg:px-8">
           <ol className="grid grid-cols-1 gap-8 md:grid-cols-5 md:gap-4">
             {STEPS.map(({ icon: Icon, title, body }, i) => (
               <li
@@ -95,7 +95,7 @@ export default function HowItWorksPage() {
 
       {/* Closing CTA. */}
       <section className="border-t border-border bg-background">
-        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-16 text-center sm:px-6">
+        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-16 text-center sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold tracking-tight text-iv-ink-heading sm:text-3xl">
             Start your first RFQ
           </h2>

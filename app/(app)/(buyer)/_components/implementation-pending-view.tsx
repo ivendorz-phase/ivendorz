@@ -29,7 +29,7 @@ export function ImplementationPendingView({
   icon,
 }: ImplementationPendingViewProps) {
   return (
-    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6">
+    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6 lg:px-8">
       <Breadcrumbs items={breadcrumb} className="mb-4" />
       <PageHeader title={title} description={description} />
       <EmptyState

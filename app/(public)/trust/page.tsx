@@ -89,7 +89,7 @@ export default function TrustPage() {
 
       {/* Principles. */}
       <section className="border-t border-border bg-background">
-        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-14 sm:px-6">
+        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-14 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-2xl font-bold tracking-tight text-iv-ink-heading sm:text-3xl">
               How we keep trust honest
@@ -114,7 +114,7 @@ export default function TrustPage() {
 
       {/* Closing CTA. */}
       <section className="border-t border-border bg-muted/30">
-        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-16 text-center sm:px-6">
+        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-16 text-center sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold tracking-tight text-iv-ink-heading sm:text-3xl">
             Find verified suppliers
           </h2>

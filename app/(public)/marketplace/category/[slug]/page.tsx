@@ -109,7 +109,7 @@ export default async function CategoryPage({
   const rootSlug = trail[0]?.slug;
 
   return (
-    <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-8 sm:px-6">
+    <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-8 sm:px-6 lg:px-8">
       <header className="mb-6">
         <p className="text-sm text-muted-foreground">
           <Link href="/marketplace" className="rounded-sm hover:text-foreground hover:underline">

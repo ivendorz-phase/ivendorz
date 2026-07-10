@@ -85,7 +85,7 @@ export default async function ComparePage({
     <>
       {/* Intro. */}
       <section className="border-b border-border bg-background">
-        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-12 sm:px-6 sm:py-14">
+        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-12 sm:px-6 lg:px-8 sm:py-14">
           <h1 className="text-3xl font-extrabold tracking-tight text-iv-ink-heading sm:text-4xl">
             Compare vendors
           </h1>
@@ -97,7 +97,7 @@ export default async function ComparePage({
       </section>
 
       <section className="bg-muted/30">
-        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-10 sm:px-6">
+        <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-10 sm:px-6 lg:px-8">
           {selected.length === 0 ? (
             <EmptyState
               title="Add items to compare"

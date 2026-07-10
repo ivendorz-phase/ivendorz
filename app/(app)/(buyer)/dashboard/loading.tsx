@@ -5,7 +5,7 @@ import { DashboardSkeleton } from "../_components/dashboard-skeletons";
 
 export default function BuyerDashboardLoading() {
   return (
-    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6">
+    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6 lg:px-8">
       <DashboardSkeleton />
     </div>
   );

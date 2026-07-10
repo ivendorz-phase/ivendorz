@@ -56,7 +56,7 @@ export function AppShell({
 
         {vm.breadcrumb && vm.breadcrumb.length > 0 ? (
           <div className="border-b border-border bg-background">
-            <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-2 sm:px-6">
+            <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-2 sm:px-6 lg:px-8">
               <Breadcrumbs items={vm.breadcrumb} />
             </div>
           </div>
@@ -67,7 +67,7 @@ export function AppShell({
           <div className={cn("flex min-w-0 flex-1 flex-col", hasQuickBar && "pb-16 md:pb-0")}>
             {/* The shell owns the content container (mx-auto max-w-content + padding); pages render content. */}
             <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 focus:outline-none">
-              <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-6 sm:px-6">
+              <div className="mx-auto w-full max-w-[var(--iv-content-max)] px-4 py-6 sm:px-6 lg:px-8">
                 {children}
               </div>
             </main>

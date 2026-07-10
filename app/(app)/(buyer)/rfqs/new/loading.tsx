@@ -5,7 +5,7 @@ import { Skeleton } from "@/frontend/primitives/skeleton";
 
 export default function BuyerRfqCreateLoading() {
   return (
-    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6">
+    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6 lg:px-8">
       <Skeleton className="mb-4 h-4 w-40" />
       <Skeleton className="mb-2 h-8 w-80" />
       <Skeleton className="mb-6 h-4 w-96" />

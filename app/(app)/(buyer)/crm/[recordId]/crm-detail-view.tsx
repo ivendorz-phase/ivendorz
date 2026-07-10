@@ -48,7 +48,7 @@ export function CrmDetailView({ data }: { data: VendorCrmDetailData }) {
   ];
 
   return (
-    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6">
+    <div className="mx-auto max-w-[var(--iv-content-max)] p-4 sm:p-6 lg:px-8">
       <Breadcrumbs
         items={[{ label: "Vendor CRM", href: "/crm" }, { label: data.name }]}
         className="mb-4"
