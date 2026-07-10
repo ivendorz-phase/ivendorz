@@ -113,8 +113,11 @@ export {
 } from "./role.route-handler";
 
 // W2-IDN-6.6 — the §C8 Context / Active-Organization wired surface (Doc-5C §6.1 rows 29–31, all 3
-// contracts): the side-effect-free switcher + two self reads. The RV-0150 OBS-B1 suspended-org denial's
-// live-path gate lives in `src/server/context/resolveActiveOrg` (imported by these compositions).
+// contracts): the side-effect-free switcher + two self reads. The RV-0150 OBS-B1 suspended-org denial is
+// enforced SOLELY at the `switch` (§C8 BUSINESS `identity_context_state_invalid`, over the live org row);
+// `resolveActiveOrg` is MEMBERSHIP-ONLY (Doc-5C §3.3) and does NOT gate org_status (the switch composition
+// resolves the principal via `resolveSelfUser`, not `resolveActiveOrg`). Residual: the open
+// `[ESC-IDN-CTX-SUSPENDED-DOWNSTREAM]` Board completeness item.
 export {
   handleSwitchActiveOrganization,
   type SwitchActiveOrganizationHandlerDeps,
