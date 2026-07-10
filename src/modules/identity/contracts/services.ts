@@ -30,6 +30,9 @@ import {
 } from "../application/commands/reinstate-delegation-grant.command";
 import { getDelegationGrant as getDelegationGrantQuery } from "../application/queries/get-delegation-grant.query";
 import { listDelegationGrants as listDelegationGrantsQuery } from "../application/queries/list-delegation-grants.query";
+import { switchActiveOrganization as switchActiveOrganizationCommand } from "../application/commands/switch-active-organization.command";
+import { getActiveContext as getActiveContextQuery } from "../application/queries/get-active-context.query";
+import { listMyOrganizations as listMyOrganizationsQuery } from "../application/queries/list-my-organizations.query";
 import {
   claimCommandDedupRecord as claimCommandDedupRecordImpl,
   findCommandDedupRecord as findCommandDedupRecordImpl,
@@ -243,6 +246,12 @@ import type {
   UpdateUserProfileOutcome,
   UpsertBuyerProfileInput,
   UpsertBuyerProfileOutcome,
+  SwitchActiveOrganizationInput,
+  SwitchActiveOrganizationContext,
+  SwitchActiveOrganizationOutcome,
+  GetActiveContextResult,
+  ListMyOrganizationsInput,
+  ListMyOrganizationsResult,
 } from "./types";
 
 // Re-export the write-command's context/deps shapes on the contracts surface so the app-layer composition
@@ -1129,3 +1138,63 @@ export {
   resolveOwnershipRecoveryFacts,
   UnresolvableOwnerRoleError,
 } from "../infrastructure/data/membership-lifecycle.repository";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §C8 — Authorization & Active-Organization Context WIRED surface (W2-IDN-6.6). The three Doc-5C §6.1
+// context contracts on their frozen routes: the active-org SWITCHER (a side-effect-free CONTEXT SELECTOR
+// — no state, no audit, no event, no §B.6 store; idempotent BY NATURE, Doc-4C §C8 PassB:537–539) + two
+// SELF reads (`get_active_context`, `list_my_organizations`), UNAUDITED (§17.1). The switch's §C8 BUSINESS
+// precondition "org not suspended" (PassB:535; RV-0150 OBS-B1) and the downstream CONTEXT resolution
+// (`src/server/context/resolveActiveOrg`, Doc-5C §3.6 position 2 — UPSTREAM of §C3 AUTHZ) bind the SAME
+// domain predicate `organizationParticipatesInAccessFormula` (already re-exported on the contracts face).
+// Zero §8 events ([DC-1]).
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type { SwitchActiveOrganizationContext };
+
+/** `identity.switch_active_organization.v1` (Doc-4C §C8; Doc-5C §6.1 row 29 — `POST
+ *  /identity/active_context/switch_active_organization` · `200`). Validates the caller may adopt
+ *  `input.organizationId` as active context (active membership + org not suspended), from the
+ *  SERVER-RESOLVED principal `ctx.userId`. Side-effect-free (no write/audit/event/store). */
+export type SwitchActiveOrganization = (
+  input: SwitchActiveOrganizationInput,
+  ctx: SwitchActiveOrganizationContext,
+  db?: DbExecutor,
+) => Promise<SwitchActiveOrganizationOutcome>;
+export const switchActiveOrganization: SwitchActiveOrganization = (input, ctx, db) =>
+  switchActiveOrganizationCommand(input, ctx, db);
+
+/** `identity.get_active_context.v1` (Doc-4C §C8; Doc-5C §6.1 row 30 — `GET /identity/active_context`
+ *  · `200`). Projects the caller's OWN active context (org id + membership {state, role_id} +
+ *  effective_permission_summary from `check_permission` resolution). Invoke inside `withActiveOrg`
+ *  (the org-status-aware resolution); `found: false` ⇒ the `404` no-context collapse. Unaudited. */
+export type GetActiveContext = (
+  ctx: { userId: string; activeOrgId: string },
+  db?: DbExecutor,
+) => Promise<GetActiveContextResult>;
+export const getActiveContext: GetActiveContext = (ctx, db) => getActiveContextQuery(ctx, db);
+
+/** `identity.list_my_organizations.v1` (Doc-4C §C8; Doc-5C §6.1 row 31 — `GET /identity/organizations`
+ *  · `200`). Self-scoped list of the caller's memberships (`state_filter` active|all). Principal-scoped
+ *  (no active-org context needed — the switcher source list). Fail-closed pagination. Unaudited. */
+export type ListMyOrganizations = (
+  input: ListMyOrganizationsInput,
+  ctx: { userId: string },
+  db?: DbExecutor,
+) => Promise<ListMyOrganizationsResult>;
+export const listMyOrganizations: ListMyOrganizations = (input, ctx, db) =>
+  listMyOrganizationsQuery(input, ctx, db);
+
+// (The org-half participation predicate `organizationParticipatesInAccessFormula` — Doc-4C §C8 "org not
+// suspended"; Doc-2 §5.1 — is ALREADY re-exported on the contracts face above; the app-edge CONTEXT
+// resolution seam `src/server/context/resolveActiveOrg` binds the SAME rule the switch enforces, RV-0150
+// OBS-B1: one predicate, two live enforcement points.)
+
+// The M1 WIRE FACES for the §C8 context surface (outcome → Doc-5A envelope + §6.2 status) — the One-Owner
+// placement (M1 owns how its reads/command become HTTP); consumed by the app-layer edge (contracts-only).
+export {
+  contextInvalidInput,
+  mapSwitchActiveOrganization,
+} from "../api/switch-active-organization.handler";
+export { mapGetActiveContext } from "../api/get-active-context.handler";
+export { mapListMyOrganizations } from "../api/list-my-organizations.handler";

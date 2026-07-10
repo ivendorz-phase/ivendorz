@@ -29,9 +29,19 @@ export function membershipParticipatesInAccessFormula(state: MembershipState): b
 
 /**
  * True iff an organization in `orgStatus` participates (its members may act). ONLY `active` participates —
- * a `suspended` or `soft_deleted` org never satisfies participation (Doc-2 §5.1; Doc-4C §C11 "org not
- * suspended for the user's access"). Fail-closed for any non-`active` status. This composes with
+ * a `suspended` or `soft_deleted` org never satisfies participation (Doc-2 §5.1 org lifecycle; Doc-4C §C8
+ * `switch_active_organization` Validation Matrix, PassB:535 — "BUSINESS (org not suspended for the user's
+ * access)"). Fail-closed for any non-`active` status. This composes with
  * `membershipParticipatesInAccessFormula`: participation requires BOTH the org AND the membership `active`.
+ *
+ * This is the SINGLE STATEMENT of the org-half of the participation predicate. W2-IDN-6.6 binds it as the
+ * LIVE ENFORCEMENT of the `switch_active_organization` BUSINESS check (Doc-4C §C8 PassB:535 — you may not
+ * ADOPT a `suspended` org as active context). It is deliberately NOT bound in the general context
+ * resolution (`resolveActiveOrg`): Doc-5C §3.3 makes the general active-org predicate ACTIVE MEMBERSHIP
+ * only, and Doc-4C §C5 `soft_delete_organization` requires active-org context on a `suspended` org
+ * (`active|suspended → soft_deleted`). Gating org_status in the generic resolver would break that frozen
+ * lifecycle edge — the packet's downstream-gate obligation is escalated (`[ESC-IDN-CTX-SUSPENDED-DOWNSTREAM]`,
+ * W2-IDN-6.6 Handoff Note). The §C3 `check_permission` AUTHZ root correctly still never reads `org_status`.
  */
 export function organizationParticipatesInAccessFormula(orgStatus: OrganizationStatus): boolean {
   return orgStatus === "active";

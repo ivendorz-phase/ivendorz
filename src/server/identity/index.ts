@@ -111,3 +111,21 @@ export {
   type RoleReadHandlerDeps,
   type RoleWriteHandlerDeps,
 } from "./role.route-handler";
+
+// W2-IDN-6.6 — the §C8 Context / Active-Organization wired surface (Doc-5C §6.1 rows 29–31, all 3
+// contracts): the side-effect-free switcher + two self reads. The RV-0150 OBS-B1 suspended-org denial's
+// live-path gate lives in `src/server/context/resolveActiveOrg` (imported by these compositions).
+export {
+  handleSwitchActiveOrganization,
+  type SwitchActiveOrganizationHandlerDeps,
+  type SwitchActiveOrganizationWireInput,
+} from "./switch-active-organization.route-handler";
+export {
+  handleGetActiveContext,
+  type GetActiveContextHandlerDeps,
+} from "./active-context.route-handler";
+export {
+  handleListMyOrganizations,
+  type ListMyOrganizationsHandlerDeps,
+  type ListMyOrganizationsWireInput,
+} from "./list-my-organizations.route-handler";

@@ -1,9 +1,9 @@
-// Thin Next.js App Router entry for `POST /identity/organizations` —
-// `identity.create_organization.v1` (Doc-5C §4.1 row 5 → `201` + `Location`; User bootstrap, NO
-// active-org context; W2-IDN-6.2). ROUTING + COMPOSITION ONLY (REPOSITORY_STRUCTURE §8).
-//
-// NOTE: `GET /identity/organizations` (`identity.list_my_organizations.v1`) is the W2-IDN-6.6
-// context surface — deliberately NOT realized here (out of this WP's frozen scope).
+// Thin Next.js App Router entry for `/identity/organizations`:
+//   - `POST` → `identity.create_organization.v1` (Doc-5C §4.1 row 5 → `201` + `Location`; User bootstrap,
+//     NO active-org context; W2-IDN-6.2).
+//   - `GET`  → `identity.list_my_organizations.v1` (Doc-5C §6.1 row 31 → `200`; the principal-scoped
+//     switcher SOURCE list, server-scoped to the caller's memberships; W2-IDN-6.6).
+// ROUTING + COMPOSITION ONLY (REPOSITORY_STRUCTURE §8).
 //
 // BOUNDARY (REPOSITORY_STRUCTURE §9): imports `src/server/*` + module `contracts/` + `src/shared/*`
 // only — never a module internal. The body carries ONLY the declared §C5 fields (Doc-4A §9.7
@@ -12,7 +12,7 @@
 
 import { NextResponse } from "next/server";
 import { ensureProvisioned, resolveSupabaseSession } from "@/server/auth";
-import { handleCreateOrganization } from "@/server/identity";
+import { handleCreateOrganization, handleListMyOrganizations } from "@/server/identity";
 import type { CreateOrganizationInput } from "@/modules/identity/contracts";
 import { parseIdempotencyKey } from "@/shared/http";
 
@@ -69,6 +69,36 @@ export async function POST(request: Request): Promise<NextResponse> {
     ipAddress: request.headers.get("x-forwarded-for"),
     userAgent: request.headers.get("user-agent"),
   });
+
+  const headers = {
+    ...(wireHeaders ?? {}),
+    ...(status === 401 ? { "WWW-Authenticate": "Bearer" } : {}),
+  };
+  return NextResponse.json(responseBody, { status, headers });
+}
+
+/**
+ * `GET /identity/organizations` — `identity.list_my_organizations.v1` (W2-IDN-6.6). The principal-scoped
+ * list of the caller's memberships (`state_filter` active|all). Unauthenticated → `401`; listed → `200`;
+ * unregistered `page_size`/`cursor`/`sort` or bad `state_filter` → `400` (ESC-IDN-LIST-PAGESIZE fail-closed).
+ */
+export async function GET(request: Request): Promise<NextResponse> {
+  const url = new URL(request.url);
+  const q = url.searchParams;
+
+  const {
+    status,
+    body: responseBody,
+    headers: wireHeaders,
+  } = await handleListMyOrganizations(
+    {
+      ...(q.has("state_filter") ? { stateFilter: q.get("state_filter") ?? undefined } : {}),
+      ...(q.has("page_size") ? { pageSize: q.get("page_size") ?? undefined } : {}),
+      ...(q.has("cursor") ? { cursor: q.get("cursor") ?? undefined } : {}),
+      ...(q.has("sort") ? { sort: q.get("sort") ?? undefined } : {}),
+    },
+    { resolveSession: resolveSupabaseSession, ensureProvisioned },
+  );
 
   const headers = {
     ...(wireHeaders ?? {}),

@@ -1183,3 +1183,74 @@ export interface DeleteRoleResult {
 /** Outcome of `identity.delete_role.v1`. */
 export type DeleteRoleOutcome =
   { ok: true; result: DeleteRoleResult } | { ok: false; error: RoleError };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §C8 — Authorization & Active-Organization Context (W2-IDN-6.6; Doc-4C §C8 · Doc-5C §6)
+// The three context contracts: switch (command, side-effect-free) + two self reads. Field
+// names/semantics owned by Doc-4C §C8 (PassB:529–563); bound by pointer, never re-authored. Casing =
+// the ratified camelCase house shape (`ESC-WIRE-FIELD-CASING` 🟥 owner-pending — carried).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Input to `identity.switch_active_organization.v1` (Doc-4C §C8 PassB:533 — `organization_id : uuid :
+ *  required : target active org`). Server-validated against the caller's memberships (never trusted). */
+export interface SwitchActiveOrganizationInput {
+  organizationId: string;
+}
+
+/** The SERVER-RESOLVED principal for the switch (from `resolveSelfUser` — never a client-asserted actor;
+ *  Invariant #5). The switch owns no org context yet — it is establishing one. */
+export interface SwitchActiveOrganizationContext {
+  userId: string;
+}
+
+/** Result of a successful switch (frozen §C8 response, PassB:534 — `organization_id`, the server-validated
+ *  active context the client then carries in `Iv-Active-Organization`). */
+export interface SwitchActiveOrganizationResult {
+  organizationId: string;
+}
+
+/**
+ * Outcome of `identity.switch_active_organization.v1` (Doc-4C §C8 register, PassB:536). `not_found` = the
+ * caller holds no active membership in the target (or it is not a live org) → the NOT_FOUND collapse
+ * (`identity_context_not_found`). `state_invalid` = active member of a suspended org → BUSINESS
+ * (`identity_context_state_invalid`, the frozen "org not suspended"; RV-0150 OBS-B1).
+ */
+export type SwitchActiveOrganizationOutcome =
+  { ok: true; organizationId: string } | { ok: false; code: "not_found" | "state_invalid" };
+
+/** The active-context projection (Doc-4C §C8 `get_active_context` response, PassB:547 — the EXACT frozen
+ *  field set; `effective_permission_summary` = the resolved slugs from `check_permission` resolution). */
+export interface ActiveContextView {
+  organizationId: string;
+  /** The caller's membership in the active org — `state`, `role_id` (PassB:547). */
+  membership: { state: string; roleId: string };
+  /** Resolved tenant slugs for the active org (from `check_permission` resolution, not re-derived). */
+  effectivePermissionSummary: string[];
+}
+
+/** Outcome of `identity.get_active_context.v1`. `found: false` ⇒ no active context — the NOT_FOUND
+ *  collapse (`identity_context_not_found`, PassB:549). */
+export type GetActiveContextResult = { found: true; context: ActiveContextView } | { found: false };
+
+/** Input to `identity.list_my_organizations.v1` (Doc-4C §C8 PassB:557). `state_filter` (default `active`)
+ *  filters by MEMBERSHIP state; `cursor`/`page_size` are the fail-closed `[DC-5]` dimensions (rejected at
+ *  the wire — `ESC-IDN-LIST-PAGESIZE`). */
+export interface ListMyOrganizationsInput {
+  stateFilter?: "active" | "all";
+}
+
+/** One org row of `list_my_organizations` (frozen §C8 item projection, PassB:558 — `{ organization_id,
+ *  name, membership_state, role_id }`). */
+export interface MyOrganizationView {
+  organizationId: string;
+  name: string;
+  membershipState: string;
+  roleId: string;
+}
+
+/** Result of `identity.list_my_organizations.v1` — the self-scoped set + the Doc-5A §8.6 page_info
+ *  (fail-closed: `hasMore` always false; no cursor issued while `ESC-IDN-LIST-PAGESIZE` is open). */
+export interface ListMyOrganizationsResult {
+  items: MyOrganizationView[];
+  pageInfo: { hasMore: boolean };
+}
