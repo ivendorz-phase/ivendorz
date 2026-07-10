@@ -13,8 +13,11 @@
 - **Deliverable standard:** `docs/frontend/design-system/motion_standard.md` v1.0 — a NEW
   living engineering standard (non-authoritative under the frozen corpus; governs *how things
   move* only). Team/agent pointer added to `.claude/CLAUDE.md`; indexed in `docs/INDEX.md`.
-- **Reviewed-SHA record:** 🔵A round 1 dispatched 2026-07-10 at the checkpoint SHA recorded in
-  the review log (RV-0154). *(updated as legs land)*
+- **Reviewed-SHA record:** 🔵A round 1 2026-07-10 at `a824e77` (🟠 REVISION — 0 BLOCKER ·
+  1 MAJOR · 4 MINOR · 1 NIT · 3 OBS; all dispositioned, see the round-1 table below) ·
+  fix-forward F1–F5 landed at the checkpoint following `a824e77` → A delta re-verify →
+  Review-B at the patched SHA. *(updated as legs land; RV-0154 in
+  `project-management/review-log.md` is the authoritative ledger)*
 - **In scope (the delta, concretely):**
   1. **New dependency:** `framer-motion@12.42.2` (`package.json` + `pnpm-lock.yaml` real
      install + `package-lock.json` synced via `npm install --package-lock-only`).
@@ -100,3 +103,23 @@
 
 *(transcribed by the Orchestrator as legs land — see `project-management/review-log.md`
 RV-0154 for the authoritative ledger)*
+
+### Review-A round 1 (Team-4, fresh context) at `a824e77` — 🟠 REVISION
+
+**0 BLOCKER · 1 MAJOR · 4 MINOR · 1 NIT · 3 OBS. No Flag-and-Halt** (no frozen-corpus
+conflict). All 12 judgment calls CONCUR (calls 7/9/10 concur-with-qualification, folded into
+F4/F5/F1). Clean-coverage record in the RV-0154 ledger entry.
+
+**Dispositions (Orchestrator, Validate-Findings 4-gate):**
+
+| # | Sev | Finding (short) | Disposition |
+|---|-----|-----------------|-------------|
+| F1 | MAJOR | Standard conflicts with `design_philosophy.md` §2.6 (FINAL v1.0) with no precedence rule | **ACCEPTED** — valid (verbatim anchors verified); applicable (two binding living docs in conflict); best (one motion SSoT); corpus-consistent (design_philosophy is a self-declared non-authoritative companion whose §0 calls its values "legitimate proposals"; the owner's 2026-07-10 directive is the newer value-setting authority). Remedy: design_philosophy **v1.1 additive amendment** in §2.6 (precedence + superseded-row list, originals kept for the record) + precedence sentence in the standard's header. Surfaced to the Board at close for ratification. |
+| F2 | MINOR | "opacity+transform only" self-inconsistent with Button/kit paint transitions | **ACCEPTED** — rule split: movement = opacity/transform only; state/hover feedback may transition paint properties (color/background-color/border-color/box-shadow, filter on small elements); §1/§4.1/§6 aligned. |
+| F3 | MINOR | `tokens.ts` "mirrors the CSS layer" claim false (fast 0.15 vs 100ms); §2 sanctioned sub-floor `fast` | **ACCEPTED** — comment corrected (easings mirror exactly; durations pinned to the band, deliberately not the legacy named steps); §2 now marks `duration-fast` legacy/paint-feedback-only. |
+| F4 | MINOR | Reduced-motion guard leaves `animation-delay` alive → serialized offset pop-in for reduced-motion users | **ACCEPTED** — guard now zeroes `animation-delay`/`transition-delay`. |
+| F5 | MINOR | FM stagger uncapped; §4.4 blanket cap claim overstated | **ACCEPTED** — `MOTION_STAGGER {step: 0.03, cap: 0.2}` minted; `staggerItem` delay = `min(index × step, cap)` via `custom` (container's `staggerChildren` removed — uncappable by construction); `StaggerItem` gains `index` prop; `FadeIn.delay` clamped; §4.4 rewritten to match the construction. |
+| F6 | NIT | Entrance vocabulary triplication (`iv-slide-up` 8px/250 · `iv-enter-rise` 6px/200 · FM `fadeInRise`) + `.iv-skeleton` legacy-class name collision | **DEFERRED** (non-gating) — consolidation queued for the next vocabulary pass; legacy `.iv-*` block predates the kit. |
+| F7 | OBS | framer-motion = binding stack element absent from the mirrored stack table | **Board channel at close** — owner may record the stack addition additively (CLAUDE.md §2 is frozen-mirrored; not editable here). |
+| F8 | OBS | Second (TS-resident) motion-token store vs Doc-7B BR3 single-mechanism intent | **Recorded future-watch** — technically necessary for FM; drift class countered by the F3 comment fix + this standard's token discipline. |
+| F9 | OBS | Post-nav `m.div` = transformed ancestor during entrance (fixed/sticky containing block); DOM asymmetry | **Routed to Review-B** (runtime verification duty; Radix portals escape via body). |

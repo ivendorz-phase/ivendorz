@@ -903,8 +903,13 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    /* Delays must collapse too: the iv-stagger-* utilities use `both` fill + up-to-200ms
+       delays — an untouched delay would hold children invisible/offset and serialize a
+       pop-in for exactly the users who asked for less motion (RV-0154 F4). */
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
     scroll-behavior: auto !important;
   }
 }

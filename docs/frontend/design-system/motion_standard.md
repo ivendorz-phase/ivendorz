@@ -2,8 +2,10 @@
 
 **Status:** Living engineering standard v1.0 (2026-07-10, owner-directed). Applies to **every
 team and agent** touching frontend code. Non-authoritative under the frozen corpus; visual
-design authority stays with Doc-7 / `design_philosophy.md` — this document only governs *how
-things move*.
+design authority stays with Doc-7. This document governs *how things move* and is the **single
+source of truth for motion timing, easing, and animated-property rules**: it supersedes
+`design_philosophy.md` §2.6 wherever they conflict (recorded in that document's v1.1 amendment
+note; RV-0154 F1).
 
 ---
 
@@ -20,7 +22,7 @@ decorates.
 | Distance | Translations ≤ 8 px; scale within 0.95–1.0 |
 | Forbidden | Bounce, spring overshoot (`--iv-ease-spring` is legacy — do not use in new work), flashes, infinite attention-seeking loops, anything > 300 ms |
 | Accessibility | `prefers-reduced-motion` is respected globally (§5) — never opt out |
-| Performance | GPU-friendly properties **only**: `opacity` + `transform`. Never animate layout properties (`width`/`height`/`top`/`left`/`margin`/`padding`) except Radix accordion height (measured, contained). No layout thrashing. |
+| Performance | **Movement** (entrances, exits, position/size change): `opacity` + `transform` **only** (GPU-composited). **State/hover feedback** may additionally transition the cheap paint properties `color` / `background-color` / `border-color` / `box-shadow` (+ `filter` on small elements like buttons). **Never** animate layout properties (`width`/`height`/`top`/`left`/`margin`/`padding`) except Radix accordion height (measured, contained). No layout thrashing. |
 
 ## 2. Shared vocabulary — never duplicate
 
@@ -28,7 +30,7 @@ Reuse the shared variants/utilities. **Writing a new one-off duration, easing, o
 surface is a review finding (duplication-as-architecture, Review-A lane).**
 
 - **Framer Motion layer** — `src/frontend/motion/` (import from `@/frontend/motion`):
-  - `MOTION_DURATION` / `MOTION_EASE` — the numeric tokens.
+  - `MOTION_DURATION` / `MOTION_EASE` / `MOTION_STAGGER` — the numeric tokens.
   - `fadeIn`, `fadeInRise`, `scaleIn`, `staggerContainer`, `staggerItem` — shared variants.
   - `<MotionProvider>` — LazyMotion (strict) + `MotionConfig reducedMotion="user"`; mounted once
     in the root layout. All motion components use `m.*` (never `motion.*` — strict mode enforces this).
@@ -36,8 +38,11 @@ surface is a review finding (duplication-as-architecture, Review-A lane).**
   - `<FadeIn>`, `<Stagger>`, `<StaggerItem>` — entrance wrappers for **client** surfaces.
 - **CSS token layer** (Tailwind + `globals.css`) — for Server Components and Radix `data-state`
   animation:
-  - Durations `duration-150 / -200 / -250` (and named `fast/normal`); easing `ease-iv-out` /
+  - Durations `duration-150 / -200 / -250` for motion work; easing `ease-iv-out` /
     `ease-iv-in-out` (these also drive `tailwindcss-animate` animation duration/easing).
+    The legacy named steps (`duration-fast` = 100ms, `duration-normal` = 200ms) predate this
+    standard — `fast` sits **below** the 150ms floor and remains valid only for pre-existing
+    paint-feedback transitions, never for new movement.
   - Entrance utilities: `animate-iv-fade-in`, `animate-iv-slide-up`, `animate-iv-scale-in`.
   - Stagger choreography: `iv-stagger-rise` (grids/cards) and `iv-stagger-fade` (table rows) —
     apply to the **parent**; children animate with a capped 30 ms stagger.
@@ -62,14 +67,18 @@ the RV-0126 barrel-leak lesson). Import via `@/frontend/motion`.
 
 ## 4. Performance rules
 
-1. Animate `opacity`/`transform` only (GPU-composited). `filter` transitions are allowed on
-   small elements (buttons) only.
+1. Movement animates `opacity`/`transform` only (GPU-composited); state/hover feedback may
+   also transition the §1 paint properties; `filter` transitions are allowed on small elements
+   (buttons) only.
 2. No `layout`/`layoutId` FM props on list-sized collections; no `AnimatePresence` around large
    trees.
 3. Framer Motion is loaded through `LazyMotion` with lazily-imported `domAnimation` features —
    never import `motion` from `framer-motion` directly (use `m`); `strict` mode will throw.
-4. Stagger delays are capped (≤ ~200 ms total); entrance animations must never delay data
-   visibility beyond ~400 ms worst case.
+4. Stagger delays are hard-capped at 200 ms **by construction in both layers**: the CSS layer
+   pins every child from the 8th onward to `animation-delay: 200ms`; the FM layer computes
+   per-item delay as `min(index × MOTION_STAGGER.step, MOTION_STAGGER.cap)` (`StaggerItem
+   index` prop / `FadeIn delay` clamp). Entrance animations must never delay data visibility
+   beyond ~400 ms worst case.
 5. Never animate on scroll handlers; use CSS or IntersectionObserver-driven one-shot entrances
    if ever needed (Board-gate anything beyond that).
 
@@ -89,7 +98,8 @@ the RV-0126 barrel-leak lesson). Import via `@/frontend/motion`.
       inline one-off keyframes/variants.
 - [ ] `m.*` + LazyMotion (no full `motion` import; no new `framer-motion` import outside
       `src/frontend/motion/` unless it is a client surface using shared variants).
-- [ ] Only `opacity`/`transform` animated; sticky/layout-sensitive elements fade only.
+- [ ] Movement animates only `opacity`/`transform` (paint-property transitions allowed for
+      state/hover feedback per §1); sticky/layout-sensitive elements fade only.
 - [ ] Server-component kit contracts not broken by a `"use client"` addition for motion.
 - [ ] No bounce/spring/overshoot; nothing loops infinitely except skeleton/shimmer loading
       states.

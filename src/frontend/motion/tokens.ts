@@ -1,6 +1,8 @@
 // Kit motion tokens (Motion Standard §1 — docs/frontend/design-system/motion_standard.md).
-// The ONLY numeric motion values for Framer Motion work; mirrors the CSS layer
-// (--iv-duration-* / --iv-ease-* in globals.css) so both layers move identically.
+// The ONLY numeric motion values for Framer Motion work. Easings are exact mirrors of
+// --iv-ease-out / --iv-ease-in-out in globals.css. Durations are pinned to the standard's
+// 150–250ms band — deliberately NOT the legacy --iv-duration-* named steps ("fast" there is
+// 100ms, below the band floor; RV-0154 F3).
 import type { Transition } from "framer-motion";
 
 /** Durations in seconds (Framer Motion convention). The 150–250ms band is binding. */
@@ -24,3 +26,9 @@ export const MOTION_TRANSITION: Transition = {
   duration: MOTION_DURATION.base,
   ease: MOTION_EASE.out,
 };
+
+/** Stagger choreography: 30ms per item, hard-capped at 200ms total delay (§4.4). */
+export const MOTION_STAGGER = {
+  step: 0.03,
+  cap: 0.2,
+} as const;

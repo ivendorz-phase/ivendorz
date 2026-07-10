@@ -1,8 +1,8 @@
 # iVendorz — Design Philosophy & Design Tokens
 
 **Role:** Lead Product Designer + Frontend UI Engineer
-**Status:** **FINAL v1.0** — Foundational Design System (non-authoritative companion to the Doc-7 program)
-**Date:** 2026-06-29
+**Status:** **FINAL v1.1** — Foundational Design System (non-authoritative companion to the Doc-7 program)
+**Date:** 2026-06-29 · v1.1 additive amendment 2026-07-10 (§2.6 motion precedence — WP-MOTION-1, RV-0154 F1)
 **Supersedes:** DRAFT v0.1 (incorporates the Principal-Designer review: MAJOR-02…05, MINOR-01…10, and the missing-section set)
 
 ---
@@ -355,6 +355,17 @@ companion**: in light mode mainly by shadow + subtle border; in dark mode mainly
 ---
 
 ### 2.6 Motion & Animation
+
+> **AMENDMENT v1.1 (2026-07-10, owner-directed WP-MOTION-1 · RV-0154 F1):**
+> [`motion_standard.md`](motion_standard.md) is now the **single source of truth for motion
+> timing, easing, and animated-property rules**; on any conflict with this section, the Motion
+> Standard wins. Superseded rows/values below (kept for the record — do **not** apply to new
+> work): hover/focus at 200ms `ease-in-out` (now 150ms `ease-out`) · toast `ease-spring`
+> (spring/bounce retired for new work) · score/progress counters at 800ms (a data-display
+> animation now requires a Motion Standard exception ruling) · drawer 250–300ms (now capped at
+> 250ms) · the interactive ceiling of 500ms (now 300ms hard ceiling, 150–250ms working band) ·
+> page/route transition "fade 200ms" (now fade + 6px rise, client navigations only). The token
+> *names* and easing *values* in the CSS block below remain accurate as printed.
 
 ```css
 /* Duration */
