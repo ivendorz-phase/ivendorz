@@ -49,7 +49,9 @@ export function ResultsGrid({
 
   return (
     <div className={cn("flex flex-col gap-6", className)}>
-      <div className={cn("grid", columnsClassName)}>{children}</div>
+      {/* iv-stagger-rise: Motion Standard entrance — cards fade+rise with a capped stagger
+          (CSS-only; this stays a Server Component). */}
+      <div className={cn("iv-stagger-rise grid", columnsClassName)}>{children}</div>
       {footer ? <div>{footer}</div> : null}
     </div>
   );

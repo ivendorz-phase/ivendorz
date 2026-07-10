@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { BRAND_MARK_SRC } from "@/frontend/brand";
+import { MotionProvider } from "@/frontend/motion";
 import "./globals.css";
 
 /**
@@ -65,7 +66,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       className={`${inter.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <MotionProvider>{children}</MotionProvider>
+      </body>
     </html>
   );
 }

@@ -53,7 +53,8 @@ New here? Read [`README.md`](README.md) (documentation philosophy + ownership), 
 - **Components** — [`shared_conventions.md`](frontend/components/shared_conventions.md) ·
   [`shared_platform_component_registry.md`](frontend/components/shared_platform_component_registry.md)
 - **Design system** — [`design_philosophy.md`](frontend/design-system/design_philosophy.md) ·
-  [`page_templates.md`](frontend/design-system/page_templates.md)
+  [`page_templates.md`](frontend/design-system/page_templates.md) ·
+  [`motion_standard.md`](frontend/design-system/motion_standard.md) (binding animation standard — all teams/agents)
 
 ## Testing
 

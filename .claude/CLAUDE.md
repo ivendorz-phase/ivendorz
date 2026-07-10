@@ -52,6 +52,23 @@
 /review-a-lens      — Architecture conformance
 ```
 
+## Frontend Motion Standard — ALL teams & agents (owner directive 2026-07-10)
+
+Every animation in FE code follows **`docs/frontend/design-system/motion_standard.md`**:
+
+- Subtle & professional only — 150–250ms, easeOut/easeInOut, ≤8px translate, scale ≥0.95;
+  **no bounce/spring/flash**; respect `prefers-reduced-motion` (global guard exists).
+- **Reuse shared vocabulary, never duplicate**: Framer Motion variants/components from
+  `@/frontend/motion` (LazyMotion `m.*` only — never full `motion` import); CSS token layer
+  (`duration-150/200/250`, `ease-iv-out/-in-out`, `animate-iv-*`, `iv-stagger-*`) for
+  Server Components and Radix `data-state` surfaces.
+- GPU-friendly properties only (`opacity`/`transform`); never `AnimatePresence` inside Radix
+  kit primitives; never break a "Server-render-friendly (no hooks)" kit contract for motion.
+- Reviewers (Review-A/B): a one-off duration/easing/keyframe in a surface = duplication
+  finding; check the doc's §6 checklist.
+
+---
+
 ## Automation
 
 Hooks auto-run:

@@ -98,7 +98,9 @@ export function DataListTable<T>({
             ))}
           </tr>
         </thead>
-        <tbody>
+        {/* iv-stagger-fade: Motion Standard row entrance — fade only (a translate would break
+            the sticky first column); CSS-only, stays a Server Component. */}
+        <tbody className="iv-stagger-fade">
           {rows.map((row) => {
             const href = getRowHref?.(row);
             return (

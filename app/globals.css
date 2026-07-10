@@ -832,4 +832,79 @@
     scrollbar-width: thin;
     scrollbar-color: var(--iv-surface-border) transparent;
   }
+
+  /* -----------------------------------------------------------------------
+     MOTION STANDARD — ENTRANCE CHOREOGRAPHY
+     (docs/frontend/design-system/motion_standard.md §2/§3)
+     For SERVER-rendered surfaces (grids, tables): apply to the PARENT; children
+     enter with a capped 30ms stagger. GPU-only properties (opacity/transform).
+     Framer Motion equivalents for client surfaces live in src/frontend/motion/.
+  ----------------------------------------------------------------------- */
+  /* Fade + 6px rise — card grids and section stacks. */
+  .iv-stagger-rise > * {
+    animation: iv-enter-rise var(--iv-duration-normal) var(--iv-ease-out) both;
+  }
+  /* Fade only — table rows (a translate would break position:sticky cells). */
+  .iv-stagger-fade > * {
+    animation: iv-enter-fade var(--iv-duration-normal) var(--iv-ease-out) both;
+  }
+  .iv-stagger-rise > *:nth-child(2),
+  .iv-stagger-fade > *:nth-child(2) {
+    animation-delay: 30ms;
+  }
+  .iv-stagger-rise > *:nth-child(3),
+  .iv-stagger-fade > *:nth-child(3) {
+    animation-delay: 60ms;
+  }
+  .iv-stagger-rise > *:nth-child(4),
+  .iv-stagger-fade > *:nth-child(4) {
+    animation-delay: 90ms;
+  }
+  .iv-stagger-rise > *:nth-child(5),
+  .iv-stagger-fade > *:nth-child(5) {
+    animation-delay: 120ms;
+  }
+  .iv-stagger-rise > *:nth-child(6),
+  .iv-stagger-fade > *:nth-child(6) {
+    animation-delay: 150ms;
+  }
+  .iv-stagger-rise > *:nth-child(7),
+  .iv-stagger-fade > *:nth-child(7) {
+    animation-delay: 180ms;
+  }
+  /* Cap: everything from the 8th child enters together — a long list must never
+     serialize its own visibility (Motion Standard §4.4). */
+  .iv-stagger-rise > *:nth-child(n + 8),
+  .iv-stagger-fade > *:nth-child(n + 8) {
+    animation-delay: 200ms;
+  }
+}
+
+@keyframes iv-enter-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes iv-enter-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   REDUCED-MOTION GUARD (Motion Standard §5) — collapses every CSS animation and
+   transition to an imperceptible duration for users who ask for less motion.
+   Framer Motion is guarded separately via MotionConfig reducedMotion="user"
+   (src/frontend/motion/motion-provider.tsx). Kept last so it wins the cascade.
+--------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -268,6 +268,9 @@ const config: Config = {
         slow: "300ms",
         slower: "500ms",
         slowest: "800ms",
+        /* Motion Standard upper bound (drawers/sheets) — also drives animation-duration
+           via tailwindcss-animate. */
+        "250": "250ms",
       },
       transitionTimingFunction: {
         "iv-out": "cubic-bezier(0, 0, 0.2, 1)",
@@ -318,6 +321,10 @@ const config: Config = {
           "0%, 100%": { boxShadow: "0 0 0 0 rgba(99, 102, 241, 0.4)" },
           "50%": { boxShadow: "0 0 0 6px rgba(99, 102, 241, 0)" },
         },
+        "iv-skeleton-pulse": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.55" },
+        },
         "iv-accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
@@ -334,6 +341,10 @@ const config: Config = {
         "iv-slide-down": "iv-slide-down 250ms cubic-bezier(0,0,0.2,1) forwards",
         "iv-scale-in": "iv-scale-in 200ms cubic-bezier(0,0,0.2,1) forwards",
         "iv-pulse-brand": "iv-pulse-brand 2s ease-in-out infinite",
+        /* Skeleton = 200ms fade-in, then a gentle pulse (Motion Standard §3 — replaces the
+           abrupt animate-pulse pop-in; pulse starts after the fade owns the first 200ms). */
+        "iv-skeleton":
+          "iv-fade-in 200ms cubic-bezier(0,0,0.2,1) both, iv-skeleton-pulse 1.6s cubic-bezier(0.4,0,0.2,1) 200ms infinite",
         "iv-accordion-down": "iv-accordion-down 200ms cubic-bezier(0,0,0.2,1)",
         "iv-accordion-up": "iv-accordion-up 200ms cubic-bezier(0,0,0.2,1)",
       },

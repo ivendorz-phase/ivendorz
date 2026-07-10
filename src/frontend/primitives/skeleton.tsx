@@ -4,7 +4,8 @@ import * as React from "react";
 import { cn } from "../lib/cn";
 
 function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("animate-pulse rounded-md bg-muted", className)} {...props} />;
+  // Motion Standard: 200ms fade-in, then a gentle pulse — no abrupt pop-in.
+  return <div className={cn("animate-iv-skeleton rounded-md bg-muted", className)} {...props} />;
 }
 
 export { Skeleton };
