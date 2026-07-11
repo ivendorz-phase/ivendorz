@@ -74,3 +74,19 @@ export const SubscriptionAuditAction = {
   /** §9 Financial "subscription cancel" — an active subscription's `auto_renew` set to false (§HB-2.2). */
   CANCELLED: "subscription_cancelled",
 } as const;
+
+// ── W3-BILL-9 — BC-BILL-5 platform-invoice writes (Doc-4I §HB-5.1/§HB-5.2 §9). Mixed enumeration:
+//    "platform invoice created" IS enumerated in Doc-2 §9 Financial (line 687) → CREATED binds by pointer,
+//    NO ESC. An invoice STATUS transition (issued→paid|overdue|void) is NOT separately enumerated →
+//    [ESC-BILL-AUDIT] (nearest §9 Financial by pointer; no action invented — §HB-5.2 §9). Attribution is
+//    User (org self-serve / void) OR System (subscription/ad-driven / paid/overdue); org-scoped. ──
+
+/** The audit `entity_type` for a `billing.platform_invoices` mutation (Doc-4I §HB-5.1/2 §9). */
+export const PLATFORM_INVOICE_ENTITY_TYPE = "platform_invoices" as const;
+
+export const PlatformInvoiceAuditAction = {
+  /** §9 Financial "platform invoice created" (ENUMERATED — no [ESC-BILL-AUDIT]) — an invoice issued (§HB-5.1). */
+  CREATED: "platform_invoice_created",
+  /** [ESC-BILL-AUDIT] — an invoice status transition issued→paid|overdue|void (§HB-5.2; nearest §9 by pointer). */
+  STATUS_CHANGED: "platform_invoice_status_changed",
+} as const;

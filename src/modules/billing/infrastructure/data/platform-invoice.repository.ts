@@ -52,6 +52,80 @@ export interface InvoiceFilter {
   purpose?: InvoicePurpose;
 }
 
+/** Insert a platform invoice at `issued` (Doc-4I §HB-5.1). `humanRef` is the M0-allocated `INV-P-…`.
+ *  Returns the minted id. */
+export async function insertInvoice(
+  input: {
+    id: string;
+    humanRef: string;
+    organizationId: string;
+    purpose: InvoicePurpose;
+    amount: string;
+    currency: string;
+    subscriptionId?: string;
+    actorUserId: string | null;
+  },
+  db: DbExecutor,
+): Promise<void> {
+  await db.platformInvoice.create({
+    data: {
+      id: input.id,
+      humanRef: input.humanRef,
+      organizationId: input.organizationId,
+      purpose: input.purpose,
+      amount: input.amount,
+      currency: input.currency,
+      status: "issued",
+      ...(input.subscriptionId !== undefined ? { subscriptionId: input.subscriptionId } : {}),
+      ...(input.actorUserId !== null
+        ? { createdBy: input.actorUserId, updatedBy: input.actorUserId }
+        : {}),
+    },
+  });
+}
+
+/** Load an invoice's `{ organizationId, status }` for the `update_invoice_status` STATE/scope check.
+ *  `null` ⇒ absent. Scope (User-void branch: debtor-org match) is applied by the command. */
+export async function loadInvoiceHead(
+  invoiceId: string,
+  db: DbExecutor,
+): Promise<{ organizationId: string; status: InvoiceStatus } | null> {
+  const row = await db.platformInvoice.findFirst({
+    where: { id: invoiceId },
+    select: { organizationId: true, status: true },
+  });
+  if (row === null) return null;
+  return { organizationId: row.organizationId, status: row.status };
+}
+
+/** CAS: transition `status` from `expectedStatus` to `targetStatus` (Doc-4I §HB-5.2). When `organizationId`
+ *  is supplied (User-void branch) the debtor-org match is part of the CAS. Returns the affected-row count:
+ *  `1` ⇒ transitioned; `0` ⇒ a lost race (the row left `expectedStatus`) → the command maps that to CONFLICT. */
+export async function transitionInvoiceStatusCas(
+  input: {
+    invoiceId: string;
+    expectedStatus: InvoiceStatus;
+    targetStatus: InvoiceStatus;
+    organizationId?: string;
+    actorUserId: string | null;
+  },
+  db: DbExecutor,
+): Promise<number> {
+  const result = await db.platformInvoice.updateMany({
+    where: {
+      id: input.invoiceId,
+      status: input.expectedStatus,
+      ...(input.organizationId !== undefined ? { organizationId: input.organizationId } : {}),
+    },
+    data: {
+      status: input.targetStatus,
+      updatedAt: new Date(),
+      ...(input.actorUserId !== null ? { updatedBy: input.actorUserId } : {}),
+    },
+  });
+  return result.count;
+}
+
 /** Load ONE invoice (+ its payment records) scoped to the debtor org. `null` ⇒ absent OR cross-org (the
  *  `platform_invoices_tenant` RLS already scopes; the explicit `organizationId` filter is the twin) → NOT_FOUND. */
 export async function findInvoiceForOrg(

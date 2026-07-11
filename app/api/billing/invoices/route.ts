@@ -1,15 +1,61 @@
 // Thin Next.js App Router entry for `GET /billing/invoices` — `billing.list_platform_invoices.v1`
-// (Doc-5I §8 → `200`). REPOSITORY_STRUCTURE §8: ROUTING + COMPOSITION ONLY. Org-self (debtor) read; the
-// composition core owns session→401, the active-org + `can_view_billing` gate, and ALL SYNTAX (filter
-// allowlist, cursor, page_size). This route only extracts the Doc-5A §8 wire grammar. BOUNDARY (§9):
-// `src/server/*`.
+// (Doc-5I §8 → `200`) — and `POST /billing/invoices` — `billing.issue_platform_invoice.v1` (§8 → `201`).
+// REPOSITORY_STRUCTURE §8: ROUTING + COMPOSITION ONLY. Org-self (debtor); the composition core owns
+// session→401, the active-org + slug gate, and ALL SYNTAX. BOUNDARY (§9): `src/server/*`.
 
 import { NextResponse } from "next/server";
 import { ensureProvisioned, resolveSupabaseSession } from "@/server/auth";
-import { handleListPlatformInvoices } from "@/server/billing";
-import type { ListPlatformInvoicesRequest } from "@/modules/billing/contracts";
+import { handleIssuePlatformInvoice, handleListPlatformInvoices } from "@/server/billing";
+import type {
+  IssuePlatformInvoiceInput,
+  ListPlatformInvoicesRequest,
+} from "@/modules/billing/contracts";
 
 const FILTER_PARAM = /^filter\[(.+)\]$/;
+
+/** Snake_case wire body for `issue_platform_invoice` (Doc-4I §HB-5.1). Debtor org = server-resolved. */
+interface IssueInvoiceBody {
+  purpose?: unknown;
+  amount?: unknown;
+  currency?: unknown;
+  subscription_id?: unknown;
+}
+
+function toIssueInput(body: IssueInvoiceBody): IssuePlatformInvoiceInput {
+  return {
+    purpose: body.purpose as IssuePlatformInvoiceInput["purpose"],
+    // `amount` accepted as a string OR number (coerced to a decimal string; money-safe).
+    amount: typeof body.amount === "number" ? String(body.amount) : (body.amount as string),
+    currency: body.currency as string,
+    ...(body.subscription_id !== undefined
+      ? { subscriptionId: body.subscription_id as string }
+      : {}),
+  };
+}
+
+export async function POST(request: Request): Promise<NextResponse> {
+  let body: IssueInvoiceBody;
+  try {
+    body = (await request.json()) as IssueInvoiceBody;
+  } catch {
+    body = {};
+  }
+
+  const {
+    status,
+    body: responseBody,
+    headers: wireHeaders,
+  } = await handleIssuePlatformInvoice(toIssueInput(body), {
+    resolveSession: resolveSupabaseSession,
+    ensureProvisioned,
+    ipAddress: request.headers.get("x-forwarded-for"),
+    userAgent: request.headers.get("user-agent"),
+  });
+
+  const headers: Record<string, string> = { "Cache-Control": "no-store", ...(wireHeaders ?? {}) };
+  if (status === 401) headers["WWW-Authenticate"] = "Bearer";
+  return NextResponse.json(responseBody, { status, headers });
+}
 
 export async function GET(request: Request): Promise<NextResponse> {
   const url = new URL(request.url);

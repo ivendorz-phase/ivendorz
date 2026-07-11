@@ -44,9 +44,11 @@ export {
   type LeadCreditHandlerDeps,
 } from "./lead-credit.route-handler";
 
-// BC-BILL-5 platform invoicing (W3-BILL-8 reads pilot) — org-self debtor invoice reads.
+// BC-BILL-5 platform invoicing (W3-BILL-8 reads + W3-BILL-9 issue/update writes) — org-self debtor.
 export {
   handleGetPlatformInvoice,
   handleListPlatformInvoices,
+  handleIssuePlatformInvoice,
+  handleUpdateInvoiceStatus,
   type PlatformInvoiceHandlerDeps,
 } from "./platform-invoice.route-handler";

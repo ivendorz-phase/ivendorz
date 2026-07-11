@@ -634,3 +634,62 @@ export interface ListPlatformInvoicesResult {
  */
 export type ListPlatformInvoicesOutcome =
   { ok: true; result: ListPlatformInvoicesResult } | { ok: false; errorClass: "VALIDATION" };
+
+// ── BC-BILL-5 INVOICE WRITES (W3-BILL-9) — issue_platform_invoice (§HB-5.1) + update_invoice_status
+//    (§HB-5.2). Actor-branched (User wired leg + System in-process). `amount` = money string. ──
+
+/** The Doc-4A §12 error classes a BC-BILL-5 invoice write can raise (org-owned → NOT_FOUND collapse). */
+export type InvoiceWriteErrorClass =
+  | "VALIDATION"
+  | "AUTHORIZATION"
+  | "NOT_FOUND"
+  | "STATE"
+  | "CONFLICT"
+  | "REFERENCE"
+  | "BUSINESS"
+  | "DEPENDENCY"
+  | "SYSTEM";
+
+/** A BC-BILL-5 invoice-write failure (the in-process outcome; the handler maps it to the §6.2 status). */
+export interface InvoiceWriteError {
+  errorClass: InvoiceWriteErrorClass;
+  errorCode: string;
+  message: string;
+}
+
+/** `issue_platform_invoice` input (Doc-4I §HB-5.1). `organization_id` (debtor) is server-resolved (the
+ *  active org on the wired User leg), not a caller field. `amount` is a positive money string. */
+export interface IssuePlatformInvoiceInput {
+  purpose: PlatformInvoicePurpose;
+  amount: string;
+  currency: string;
+  subscriptionId?: string;
+}
+
+/** `issue_platform_invoice` success (Doc-4I §HB-5.1 output — `{ invoice_id, human_ref, status, amount, currency }`). */
+export interface IssuePlatformInvoiceResult {
+  invoiceId: string;
+  humanRef: string;
+  status: PlatformInvoiceStatus;
+  amount: string;
+  currency: string;
+}
+
+export type IssuePlatformInvoiceOutcome =
+  { ok: true; result: IssuePlatformInvoiceResult } | { ok: false; error: InvoiceWriteError };
+
+/** `update_invoice_status` input (Doc-4I §HB-5.2). `expected_status ∈ {issued, overdue}` = the CAS assertion. */
+export interface UpdateInvoiceStatusInput {
+  invoiceId: string;
+  targetStatus: "paid" | "overdue" | "void";
+  expectedStatus: "issued" | "overdue";
+}
+
+/** `update_invoice_status` success (Doc-4I §HB-5.2 output — `{ invoice_id, status }`). */
+export interface UpdateInvoiceStatusResult {
+  invoiceId: string;
+  status: PlatformInvoiceStatus;
+}
+
+export type UpdateInvoiceStatusOutcome =
+  { ok: true; result: UpdateInvoiceStatusResult } | { ok: false; error: InvoiceWriteError };

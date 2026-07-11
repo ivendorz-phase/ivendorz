@@ -139,10 +139,14 @@ export async function ensureRestrictedRlsRole(): Promise<void> {
     `GRANT SELECT ON billing.lead_credit_accounts, billing.lead_credit_transactions TO ${RESTRICTED_RLS_ROLE}`,
   );
   // W3-BILL-8 — BC-BILL-5 platform invoicing: SELECT proves `platform_invoices_tenant` (debtor-org reads)
-  // and `platform_payments_read` (org reads payments VIA the parent invoice). The issue/update writes +
-  // record_payment (staff/System) land next slice.
+  // and `platform_payments_read` (org reads payments VIA the parent invoice). W3-BILL-9 adds INSERT/UPDATE
+  // on `platform_invoices` so the issue/void write-fence is provable fail-closed (a cross-org INSERT/UPDATE
+  // hits the RLS WITH CHECK, not a bare permission-denied). record_payment (System) lands next slice.
   await prisma.$executeRawUnsafe(
-    `GRANT SELECT ON billing.platform_invoices, billing.platform_payments TO ${RESTRICTED_RLS_ROLE}`,
+    `GRANT SELECT, INSERT, UPDATE ON billing.platform_invoices TO ${RESTRICTED_RLS_ROLE}`,
+  );
+  await prisma.$executeRawUnsafe(
+    `GRANT SELECT ON billing.platform_payments TO ${RESTRICTED_RLS_ROLE}`,
   );
 }
 

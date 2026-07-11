@@ -179,3 +179,31 @@ export {
   invoiceViewForbidden,
   INVOICE_VIEW_FORBIDDEN,
 } from "../api/platform-invoice.handler";
+
+// ── BC-BILL-5 INVOICE WRITES (W3-BILL-9) — issue_platform_invoice + update_invoice_status (actor-branched;
+//    the User leg wired, the System leg in-process). record_payment (gateway callback) lands next slice. ──
+
+export {
+  issuePlatformInvoiceCommand as issuePlatformInvoice,
+  validateIssuePlatformInvoiceInput,
+} from "../application/commands/issue-platform-invoice.command";
+export type {
+  IssuePlatformInvoiceContext,
+  IssuePlatformInvoiceDeps,
+} from "../application/commands/issue-platform-invoice.command";
+export {
+  updateInvoiceStatusCommand as updateInvoiceStatus,
+  validateUpdateInvoiceStatusInput,
+} from "../application/commands/update-invoice-status.command";
+export type {
+  UpdateInvoiceStatusContext,
+  UpdateInvoiceStatusDeps,
+} from "../application/commands/update-invoice-status.command";
+export {
+  mapIssuePlatformInvoice,
+  mapUpdateInvoiceStatus,
+  invoiceWriteInvalidInput,
+  invoiceWriteForbidden,
+  INVOICE_WRITE_INVALID_INPUT,
+  INVOICE_WRITE_FORBIDDEN,
+} from "../api/platform-invoice.handler";
