@@ -13,12 +13,13 @@
 // as their frozen strings. Same convention the shipped M2 reads use (see
 // `src/modules/marketplace/contracts/types.ts`).
 //
-// RETIRED-PLAN VISIBILITY — deferred `[ESC-BILL-RETIRE-VIS]` (see `esc_registry.md`): Doc-5I §4 says
-// retired plans are visible to all authenticated users, but Doc-6I's `plans_public_read` RLS
-// (`deleted_at IS NULL`) hides soft-deleted (= retired) rows from non-staff. This slice reads the
-// RLS-visible NON-retired catalog (draft + active — the surface BOTH realizations agree on) and flags
-// the divergence rather than resolving it locally (CLAUDE.md §11). So `status` on these read surfaces
-// is only ever `draft` | `active` in practice.
+// RETIRED-PLAN VISIBILITY — `[ESC-BILL-RETIRE-VIS]` RESOLVED (owner ruling 2026-07-11; Doc-5I §4
+// corrected to match Doc-6I — `Doc-5I_RetiredVisibility_Patch_v1.0`): retired plans are visible to
+// **staff/admin only**; active + draft → authenticated users. These reads return the non-retired
+// catalog (`deleted_at IS NULL`, the `plans_public_read` set) to a non-staff caller — retired is hidden
+// (a normal user never reads a retired plan). So `status` on this non-staff surface is only ever
+// `draft` | `active`. The staff-facing retired-read WIRE path lands with DC-3 staff resolution (carried,
+// not a gap — the non-staff security fence is enforced here).
 
 /**
  * Plan lifecycle status (Doc-2 §3.8 `draft → active → retired`). DERIVED, never stored (Doc-2 §10.8:

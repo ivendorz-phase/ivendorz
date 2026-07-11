@@ -194,7 +194,7 @@ describe("billing.get_plan.v1 (wired) — Doc-4I §HB-1.4 / Doc-5I §4", () => {
     expect(plan.entitlements).toEqual([]); // no bundle
   });
 
-  it("404 for a RETIRED (soft-deleted) plan — non-retired scope (ESC-BILL-RETIRE-VIS interim)", async () => {
+  it("404 for a RETIRED (soft-deleted) plan — non-staff never reads retired (ESC-BILL-RETIRE-VIS ruled)", async () => {
     const { status, body } = await handleGetPlan(
       { planId: PLAN_RETIRED },
       { resolveSession: authed },

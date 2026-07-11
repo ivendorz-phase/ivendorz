@@ -7,8 +7,8 @@
 // `plan-status.policy.ts`'s `isPlanPubliclyVisible` (retired ⇒ hidden), matching the `plans_public_read`
 // RLS. For the list, this keeps the keyset "fetch N+1, trim" `has_more` math over the SAME visibility set
 // (Doc-5A §8.7). For the get, a retired/absent plan alike resolves to `null` (→ `404`, non-disclosure N/A —
-// the catalog is platform-owned, Doc-5I §3.6). The retired-visible-to-all divergence is deferred
-// `[ESC-BILL-RETIRE-VIS]` (see `esc_registry.md` / `contracts/types.ts`).
+// the catalog is platform-owned, Doc-5I §3.6). Retired = staff/admin only per the resolved
+// `[ESC-BILL-RETIRE-VIS]` ruling (owner 2026-07-11; `Doc-5I_RetiredVisibility_Patch_v1.0`).
 
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import type {

@@ -6,7 +6,7 @@
 // opaque cursor decodability) → non-retired scope. Sort is server-fixed `name` asc / `plan_id` tiebreak
 // (total order) — no client `sort` parameter. `status`/`is_active` filters narrow within the non-retired
 // (`deleted_at IS NULL`) surface; a `status=retired` filter provably matches nothing here (retired ⟺
-// soft-deleted — deferred `[ESC-BILL-RETIRE-VIS]`, `esc_registry.md`).
+// soft-deleted, visible to staff/admin only — resolved `[ESC-BILL-RETIRE-VIS]`, `esc_registry.md`).
 
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import { UUID_PATTERN } from "../../../../shared/ids";
