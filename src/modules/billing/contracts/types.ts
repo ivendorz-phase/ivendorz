@@ -314,3 +314,110 @@ export interface SubscriptionView {
 /** `get_subscription` result — the org's current subscription, or none (Doc-4I §HB-2.5). */
 export type GetSubscriptionResult =
   { found: true; subscription: SubscriptionView } | { found: false };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BC-BILL-2 COMPLETION (W3-BILL-5) — `cancel_subscription` (Doc-4I §HB-2.2) + `list_subscription_events`
+// (Doc-4I §HB-2.5) per Doc-5I §5. Both are ORG-SCOPED, User-only (Doc-5I §3.6 [ESC-BILL-ADMINSCOPE]):
+// cancel = `can_manage_billing` (Owner); list = `can_view_billing` (Owner, Delegate). `resolve_entitlements`
+// (Doc-4I §HB-2.4) is OUT-OF-WIRE (Doc-5I §10/R1) — an intra-module internal query (no HTTP surface); its
+// types live here only so the module's own BC-BILL-3 consumer + tests share one shape.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The Doc-4A §12 error classes a BC-BILL-2 subscription COMMAND can raise. Distinct from `PlanWriteError`:
+ * a subscription is ORG-OWNED, so a cross-org/absent id collapses to `NOT_FOUND` (§3.5 non-disclosure) —
+ * the catalog writes (platform-owned) never do. No `REFERENCE`/`BUSINESS` legs on cancel.
+ */
+export type SubscriptionWriteErrorClass =
+  "VALIDATION" | "AUTHORIZATION" | "NOT_FOUND" | "STATE" | "CONFLICT" | "DEPENDENCY" | "SYSTEM";
+
+/** A BC-BILL-2 subscription-command failure (the in-process outcome; the handler maps it to the §6.2 status). */
+export interface SubscriptionWriteError {
+  errorClass: SubscriptionWriteErrorClass;
+  errorCode: string;
+  message: string;
+}
+
+/** `cancel_subscription` input (Doc-4I §HB-2.2 — `subscription_id`; `expected_status` must be `active`,
+ *  the optimistic-concurrency assertion). Sets `auto_renew=false`; status stays `active` (no state edge). */
+export interface CancelSubscriptionInput {
+  subscriptionId: string;
+  expectedStatus: "active";
+}
+
+/** `cancel_subscription` success (Doc-4I §HB-2.2 / Doc-5I §5 — `{ subscription_id, status }`; `status`
+ *  stays `active` after cancel — `auto_renew` is now false, read the detail via `get_subscription`). */
+export interface CancelSubscriptionResult {
+  subscriptionId: string;
+  status: SubscriptionStatus;
+}
+
+export type CancelSubscriptionOutcome =
+  { ok: true; result: CancelSubscriptionResult } | { ok: false; error: SubscriptionWriteError };
+
+/** One `subscription_events` history item (Doc-4I §HB-2.5 `items` — `{ event_type, occurred_at }` verbatim).
+ *  `event_type` is the stored Doc-2 §10.8 domain value (`purchase|renew|expire|cancel`), rendered as-is —
+ *  Doc-5I §5.3's "e.g. purchased|activated|…" is an explicitly illustrative gloss, not the binding domain. */
+export interface SubscriptionEventItem {
+  eventType: "purchase" | "renew" | "expire" | "cancel";
+  occurredAt: string;
+}
+
+/** Doc-5A §8.6 page_info for the events list (camelCase result — Option B; `total_count` omitted). */
+export interface SubscriptionEventsPageInfo {
+  nextCursor?: string;
+  hasMore: boolean;
+}
+
+/** `list_subscription_events` request (Doc-4I §HB-2.5; Doc-5A §8 cursor/page_size grammar). */
+export interface ListSubscriptionEventsRequest {
+  subscriptionId: string;
+  cursor?: string;
+  pageSize?: number;
+}
+
+/** `list_subscription_events` result — the Doc-5A §8.6 list shape (items DESC by `occurred_at` + page_info). */
+export interface ListSubscriptionEventsResult {
+  items: SubscriptionEventItem[];
+  pageInfo: SubscriptionEventsPageInfo;
+}
+
+/**
+ * The application-level `list_subscription_events` outcome: success, a pre-lookup SYNTAX leg
+ * (`VALIDATION` — malformed `subscription_id`/`cursor`, out-of-bound `page_size`), or `NOT_FOUND` (the
+ * subscription is absent or belongs to another org — protected-fact collapse §3.5). `AUTHORIZATION`
+ * (`can_view_billing`) is resolved earlier at the composition edge, never in the query.
+ */
+export type ListSubscriptionEventsOutcome =
+  | { ok: true; result: ListSubscriptionEventsResult }
+  | { ok: false; errorClass: "VALIDATION" | "NOT_FOUND" };
+
+// ── `resolve_entitlements` (Doc-4I §HB-2.4) — OUT-OF-WIRE internal-service authority (Doc-5I §10/R1/R10). ──
+
+/** One resolved effective entitlement (Doc-4I §HB-2.4 output `entitlements[]` — `{ slug, type, value }`). */
+export interface ResolvedEntitlement {
+  slug: string;
+  type: EntitlementType;
+  /** The per-plan `plan_entitlements.value_jsonb` for the org's active-subscription plan (BL-CR4 — the gate
+   *  is the entitlement VALUE, never the plan name). */
+  value: PlanEntitlementValue;
+}
+
+/** `resolve_entitlements` input (Doc-4I §HB-2.4 — `organization_id`; optional single-slug narrow). */
+export interface ResolveEntitlementsInput {
+  organizationId: string;
+  entitlementSlug?: string;
+}
+
+/**
+ * `resolve_entitlements` result (Doc-4I §HB-2.4). `source` distinguishes the org's `active`-subscription
+ * plan bundle from the Basic profile (A-11) returned when the org has no `active` subscription. The Basic
+ * profile is a STATIC empty grant set — never a plan-name lookup (the billing firewall bars plan-name
+ * gating; Doc-2 §2 M7 / Invariant #10). Concrete Basic quota values, if ever needed, are a Doc-3 POLICY
+ * decision, not invented here.
+ */
+export interface ResolveEntitlementsResult {
+  organizationId: string;
+  entitlements: ResolvedEntitlement[];
+  source: "active_subscription" | "basic_profile";
+}

@@ -65,8 +65,12 @@ export const PlanEntitlementAuditAction = {
 /** The audit `entity_type` for a `billing.subscriptions` mutation (Doc-4I §HB-2.1 §9 `entity_type=subscriptions`). */
 export const SUBSCRIPTION_ENTITY_TYPE = "subscriptions" as const;
 
-/** Subscription audit actions — bound BY POINTER to the ENUMERATED Doc-2 §9 Financial "subscription purchase". */
+/** Subscription audit actions — bound BY POINTER to the ENUMERATED Doc-2 §9 Financial "subscription
+ *  purchase/renewal/cancel" (line 687). Purchase + cancel are BOTH enumerated → NO [ESC-BILL-AUDIT]
+ *  (unlike the catalog writes). User-attributed, org-scoped. */
 export const SubscriptionAuditAction = {
   /** §9 Financial "subscription purchase" — a subscription created at `pending_payment` (§HB-2.1). */
   PURCHASED: "subscription_purchased",
+  /** §9 Financial "subscription cancel" — an active subscription's `auto_renew` set to false (§HB-2.2). */
+  CANCELLED: "subscription_cancelled",
 } as const;

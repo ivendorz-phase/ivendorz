@@ -116,9 +116,33 @@ export type {
   PurchaseSubscriptionDeps,
 } from "../application/commands/purchase-subscription.command";
 export { getSubscription } from "../application/queries/get-subscription.query";
+
+// ── BC-BILL-2 COMPLETION (W3-BILL-5) — cancel (org-scoped write) + list_subscription_events (org-self read)
+//    + resolve_entitlements. `resolve_entitlements` (`billing.resolve_entitlements.v1`) is a bona-fide
+//    contract that is OUT-OF-WIRE (Doc-5I §10/R1 — no HTTP route in `app/api`); it is faced here like every
+//    other M7 contract, its IMPLEMENTATION consumed intra-module by BC-BILL-3 quota enforcement (DF: same
+//    module). BILLING FIREWALL (Doc-2 §2 M7 / Invariant #6): entitlement truth is for quota/feature gating
+//    only — NO other module may consume it to gate trust / eligibility / routing / matching (a review
+//    invariant, not a structural one). ──
+
+export {
+  cancelSubscriptionCommand as cancelSubscription,
+  validateCancelSubscriptionInput,
+} from "../application/commands/cancel-subscription.command";
+export type {
+  CancelSubscriptionContext,
+  CancelSubscriptionDeps,
+} from "../application/commands/cancel-subscription.command";
+export { listSubscriptionEvents } from "../application/queries/list-subscription-events.query";
+export { resolveEntitlements } from "../application/queries/resolve-entitlements.query";
+
 export {
   mapPurchaseSubscription,
   mapGetSubscription,
+  mapCancelSubscription,
+  mapListSubscriptionEvents,
+  subscriptionForbidden,
   SUBSCRIPTION_INVALID_INPUT,
   SUBSCRIPTION_FORBIDDEN,
+  SUBSCRIPTION_VIEW_FORBIDDEN,
 } from "../api/subscription.handler";

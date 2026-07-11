@@ -25,9 +25,11 @@ export {
   handleBundlePlanEntitlement,
 } from "./entitlement-catalog-write.route-handler";
 
-// BC-BILL-2 subscriptions (W3-BILL-4) — org-scoped purchase + org-self read.
+// BC-BILL-2 subscriptions (W3-BILL-4 purchase/get + W3-BILL-5 cancel/list_events) — org-scoped.
 export {
   handlePurchaseSubscription,
+  handleCancelSubscription,
   handleGetSubscription,
+  handleListSubscriptionEvents,
   type SubscriptionHandlerDeps,
 } from "./subscription.route-handler";

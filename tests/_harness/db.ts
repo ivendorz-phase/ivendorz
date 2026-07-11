@@ -117,8 +117,14 @@ export async function ensureRestrictedRlsRole(): Promise<void> {
   // W3-BILL-4 — BC-BILL-2 subscriptions: SELECT proves the `subscriptions_tenant` RLS scopes reads to the
   // org (tenant isolation). The `core.write_outbox_event` SECURITY DEFINER function needs only PUBLIC
   // EXECUTE (default) + core USAGE (granted above) — a tenant role invokes it without an outbox_events grant.
+  // W3-BILL-5 adds UPDATE on `subscriptions` so the cancel-write fence is provable fail-closed: a non-staff
+  // role in org B's context that attempts the cancel CAS on org A's subscription affects 0 rows (the RLS
+  // `USING`/`WITH CHECK` scopes it), not a bare permission-denied (the identity_authz full-CRUD precedent).
   await prisma.$executeRawUnsafe(
-    `GRANT SELECT ON billing.subscriptions, billing.subscription_events TO ${RESTRICTED_RLS_ROLE}`,
+    `GRANT SELECT, UPDATE ON billing.subscriptions TO ${RESTRICTED_RLS_ROLE}`,
+  );
+  await prisma.$executeRawUnsafe(
+    `GRANT SELECT ON billing.subscription_events TO ${RESTRICTED_RLS_ROLE}`,
   );
 }
 
