@@ -86,3 +86,36 @@ export interface PerformanceReviewTriggeredPayload {
   /** The frozen review-trigger reason (Doc-4G §G6.4). */
   triggerReason: "threshold_crossing" | "periodic_cadence" | "dispute_pattern";
 }
+
+// ── W3-TRUST-4b — BC-TRUST-2 Trust Scoring event (Doc-2 §8; Doc-4G §G5.1 §8) ────────────────────────────
+// The Trust Score aggregate OWNS `TrustScoreUpdated` (publisher of record = `compute_trust_score.v1`,
+// publish-on-change, SUPPRESSED while frozen — Doc-4G §H.7). The event NAME is bound BY POINTER to the Doc-2
+// §8 catalog (line 668: `trust | trust_scores | TrustScoreUpdated`) — NEVER coined here. The payload is THIN
+// (Doc-4A §16.5 — IDs + minimal metadata) and carries the PUBLIC `band` (Doc-2 §3.6 / line 344 "band published
+// unless frozen") so M2's directory read-model can rebuild — but NO numeric score (staff-only; never public/
+// in-event — Doc-4G §G5.3 / §16.3). Emitted via M0 `core.write_outbox_event.v1` IN THE SAME transaction as the
+// score/audit writes. `freeze_trust_score`/`reactivate_trust_score` (§G5.2) are DEFERRED with the freeze
+// lifecycle. Consumers (M2 directory band / M3 matching refresh) are OTHER modules — NOT built here.
+
+/** `TrustScoreUpdated` — Doc-2 §8 event name (bound by pointer; line 668). Emitted publish-on-change by compute. */
+export const TRUST_SCORE_UPDATED_EVENT = "TrustScoreUpdated" as const;
+
+/**
+ * The emitted `event_version` for `TrustScoreUpdated`. The corpus mandates `event_version ≥ 1` (Doc-4A §16.4)
+ * but pins NO value — `1` is the first-version REALIZATION DEFAULT (the `VendorTierChanged` / `PerformanceScore
+ * Updated` precedent; documented, NOT a coined frozen value). A payload-shape change bumps this via a patch.
+ */
+export const TRUST_EVENT_VERSION = 1 as const;
+
+/**
+ * THIN payload of `TrustScoreUpdated` (Doc-4G §G5.1 §8). `aggregate_id` = `vendorProfileId`. Carries the PUBLIC
+ * `band` (Doc-2 §3.6 "band published unless frozen") — safe metadata for M2's read-model rebuild — and carries
+ * NO numeric score (staff-only; never public — Doc-4G §G5.3 / §16.3). Property NAMES are camelCase (Doc-5A
+ * Option B); the numeric score never leaves the module in an event.
+ */
+export interface TrustScoreUpdatedPayload {
+  /** The vendor profile the score concerns (bare UUID → M2). = the outbox `aggregate_id`. */
+  vendorProfileId: string;
+  /** The PUBLIC trust band (Doc-2 §3.6). Text (Doc-6G §3.2.1 declares no band enum). NO numeric score is carried. */
+  band: string;
+}

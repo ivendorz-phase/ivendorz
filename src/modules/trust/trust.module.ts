@@ -6,6 +6,7 @@
 
 import {
   computePerformanceScore,
+  computeTrustScore,
   confirmVerifiedTier,
   downgradeVerifiedTier,
   establishVerifiedTier,
@@ -23,8 +24,13 @@ import {
  *  System services (W3-TRUST-4a; Doc-4G §G6.1/§G6.2/§G6.4): `ingestPerformanceInput` (sole writer of
  *  `performance_inputs`, idempotent, no event), `computePerformanceScore` (Not-Rated gate + publish-on-change
  *  `PerformanceScoreUpdated` + audit, atomic; the formula is an [ESC-TRUST-POLICY] interim plug), and
- *  `triggerPerformanceReview` (emit `PerformanceReviewTriggered` + audit, no score write). The admin HTTP
- *  commands, System timers, freeze/reactivate, and reads are DEFERRED; these are the functions they will call. */
+ *  `triggerPerformanceReview` (emit `PerformanceReviewTriggered` + audit, no score write). The BC-TRUST-2
+ *  Trust-Score System service (W3-TRUST-4b; Doc-4G §G5.1): `computeTrustScore` — reads Verification +
+ *  Performance + a neutral Fraud read-seam ONLY (INVARIANT to Financial Tier — Invariant #6), calls the
+ *  [ESC-TRUST-POLICY] interim formula plug (absence ≠ 0 → a NON-ZERO baseline; score ALWAYS 0–100), upserts the
+ *  head + history-iff-changed, and publishes-on-change `TrustScoreUpdated` (band-only, suppressed while frozen)
+ *  + one audit, atomically. The admin HTTP commands, System timers, freeze/reactivate, and reads are DEFERRED;
+ *  these are the functions they will call. */
 export const trustCommands = {
   requestVerification,
   establishVerifiedTier,
@@ -35,4 +41,5 @@ export const trustCommands = {
   ingestPerformanceInput,
   computePerformanceScore,
   triggerPerformanceReview,
+  computeTrustScore,
 };

@@ -24,9 +24,12 @@ import {
   ingestPerformanceInput as ingestPerformanceInputService,
   triggerPerformanceReview as triggerPerformanceReviewService,
 } from "../application/services/performance-score.service";
+import { computeTrustScore as computeTrustScoreService } from "../application/services/trust-score.service";
 import type {
   ComputePerformanceScoreInput,
   ComputePerformanceScoreOutcome,
+  ComputeTrustScoreInput,
+  ComputeTrustScoreOutcome,
   ConfirmVerifiedTierInput,
   DowngradeVerifiedTierInput,
   EstablishVerifiedTierInput,
@@ -42,6 +45,7 @@ import type {
   SuspendVerifiedTierInput,
   TriggerPerformanceReviewInput,
   TriggerPerformanceReviewOutcome,
+  TrustScoreDeps,
   VerifiedTierAdminContext,
   VerifiedTierDeps,
   VerifiedTierOutcome,
@@ -102,6 +106,23 @@ export {
   PERFORMANCE_EVENT_VERSION,
   type PerformanceScoreUpdatedPayload,
   type PerformanceReviewTriggeredPayload,
+} from "./events";
+
+// W3-TRUST-4b — the BC-TRUST-2 Trust-Score compute DTOs + the `TrustScoreUpdated` event surface, re-exported
+// so the DEFERRED production triggers / consumers (M2 directory band, M3 matching) build them via
+// `@/modules/trust/contracts`.
+export type {
+  ComputeTrustScoreInput,
+  ComputeTrustScoreOutcome,
+  ComputeTrustScoreResult,
+  ComputeTrustScoreError,
+  TrustScoreDeps,
+  TrustComputeTrigger,
+} from "./types";
+export {
+  TRUST_SCORE_UPDATED_EVENT,
+  TRUST_EVENT_VERSION,
+  type TrustScoreUpdatedPayload,
 } from "./events";
 
 // The stage-1 SYNTAX validator + its result→outcome mapper — surfaced so the composition edge runs SYNTAX
@@ -255,3 +276,23 @@ export const computePerformanceScore: ComputePerformanceScore = (input, deps, db
 /** Concrete `trust.trigger_performance_review.v1` facade. */
 export const triggerPerformanceReview: TriggerPerformanceReview = (input, deps, db) =>
   triggerPerformanceReviewService(input, deps, db);
+
+// ── W3-TRUST-4b — the BC-TRUST-2 Trust-Score compute facade (Doc-4G §G5.1) ─────────────────────────────
+// The PUBLIC, contracts-only face over the private M5 Trust-Score service. `compute_trust_score` is a System
+// contract (out-of-wire, no api/route); the live production triggers + consumers + freeze/reactivate + reads
+// are DEFERRED — this is the function they will call, invoked directly by tests. The M0 `appendAuditRecord` +
+// `writeOutboxEvent` are INJECTED by contract TYPE. MUST be invoked INSIDE a staff-scoped tx
+// (`app.is_platform_staff = true`) so the firewall-scoped input reads (verification_records +
+// performance_scores) + outbox INSERT + audit append are RLS-admitted (natural for the System actor).
+
+/** `trust.compute_trust_score.v1` (Doc-4G §G5.1) — compute + publish-on-change `TrustScoreUpdated` + audit
+ *  (System); reads Verification + Performance + Fraud ONLY (INVARIANT to Financial Tier — Invariant #6). */
+export type ComputeTrustScore = (
+  input: ComputeTrustScoreInput,
+  deps: TrustScoreDeps,
+  db?: DbExecutor,
+) => Promise<ComputeTrustScoreOutcome>;
+
+/** Concrete `trust.compute_trust_score.v1` facade (M5 contracts → M5 service). */
+export const computeTrustScore: ComputeTrustScore = (input, deps, db) =>
+  computeTrustScoreService(input, deps, db);

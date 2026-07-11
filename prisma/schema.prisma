@@ -573,17 +573,17 @@ enum VerificationDecisionType {
 // immutability trigger (frozen id/vendor_profile_id/created_at/created_by; DELETE blocked) live raw-SQL in
 // the migration (the house pattern). Columns/enum labels are [Doc-2 §10.6 / Doc-6G §3.1.3 binding].
 model VerifiedFinancialTier {
-  id              String            @id @db.Uuid
-  vendorProfileId String            @unique(map: "verified_financial_tiers_vendor_uq") @map("vendor_profile_id") @db.Uuid
+  id              String             @id @db.Uuid
+  vendorProfileId String             @unique(map: "verified_financial_tiers_vendor_uq") @map("vendor_profile_id") @db.Uuid
   tier            FinancialTier
   status          VerifiedTierStatus @default(pending_verification)
-  verifiedAt      DateTime?         @map("verified_at") @db.Timestamptz
-  nextReviewAt    DateTime?         @map("next_review_at") @db.Timestamptz
-  basisJsonb      Json?             @map("basis_jsonb") @db.JsonB
-  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt       DateTime          @updatedAt @map("updated_at") @db.Timestamptz
-  createdBy       String?           @map("created_by") @db.Uuid
-  updatedBy       String?           @map("updated_by") @db.Uuid
+  verifiedAt      DateTime?          @map("verified_at") @db.Timestamptz
+  nextReviewAt    DateTime?          @map("next_review_at") @db.Timestamptz
+  basisJsonb      Json?              @map("basis_jsonb") @db.JsonB
+  createdAt       DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy       String?            @map("created_by") @db.Uuid
+  updatedBy       String?            @map("updated_by") @db.Uuid
 
   @@map("verified_financial_tiers")
   @@schema("trust")
@@ -607,6 +607,60 @@ enum VerifiedTierStatus {
   expired
 
   @@map("verified_tier_status")
+  @@schema("trust")
+}
+
+// §3.2 — Trust Score (System-computed; freeze; per-update history) — Doc-6G §3.2 / Doc-4G PassB Part2
+// §G5/§H. W3-TRUST-4b realizes the head (`trust_scores`; `score smallint NOT NULL` 0–100 — UNLIKE
+// performance's NULLABLE Not-Rated; lifecycle computed|frozen; `band` text) + the append-only per-update
+// snapshot (`trust_score_history`). NO in-band write policy — the System Trust-scoring service writes via
+// owner-role/SECURITY DEFINER (Invariant #6). FIREWALL (Doc-6G §3.2.1; Invariant #6): NO column computed
+// from Financial Tier / Performance / Buyer-Vendor Status and NO cross-score FK — the score CONSUMES
+// `verification_records` + `performance_scores` + a fraud read-seam only, and NEVER `verified_financial_tiers`.
+// Absence-of-history is NEVER 0 (Doc-3 §12.1 FIXED): a no-input vendor gets a documented NON-ZERO interim
+// baseline (the formula plug's [ESC-TRUST-POLICY] concern). `vendor_profile_id` is a bare cross-module UUID
+// (→ M2; no FK). The index + immutability triggers + RLS + the ONE SD write function live raw-SQL in the
+// `trust_trust_scoring` migration; `ScoreFreezeState` is SHARED with the performance tables (declared once,
+// in `trust_performance_scoring` / below). Columns/enum labels [Doc-2 §10.6 / Doc-6G §3.2 binding]; [§2.5].
+
+// §3.2.1 — trust.trust_scores (head; score smallint NOT NULL 0–100; lifecycle computed|frozen; System-written)
+model TrustScore {
+  id                  String           @id @db.Uuid
+  vendorProfileId     String           @unique(map: "trust_scores_vendor_uq") @map("vendor_profile_id") @db.Uuid
+  score               Int              @db.SmallInt
+  band                String
+  trustFormulaVersion String           @map("trust_formula_version")
+  trustScoreUpdatedAt DateTime         @default(now()) @map("trust_score_updated_at") @db.Timestamptz
+  freezeState         ScoreFreezeState @default(none) @map("freeze_state")
+  freezeReason        String?          @map("freeze_reason")
+  frozenAt            DateTime?        @map("frozen_at") @db.Timestamptz
+  createdAt           DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy           String?          @map("created_by") @db.Uuid
+  updatedBy           String?          @map("updated_by") @db.Uuid
+
+  history TrustScoreHistory[]
+
+  @@map("trust_scores")
+  @@schema("trust")
+}
+
+// §3.2.2 — trust.trust_score_history (append-only; per-update snapshot; in-module FK → trust_scores)
+model TrustScoreHistory {
+  id                  String   @id @db.Uuid
+  trustScoreId        String   @map("trust_score_id") @db.Uuid
+  vendorProfileId     String   @map("vendor_profile_id") @db.Uuid
+  score               Int      @db.SmallInt
+  band                String
+  trustFormulaVersion String   @map("trust_formula_version")
+  snapshotAt          DateTime @default(now()) @map("snapshot_at") @db.Timestamptz
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+  createdBy           String?  @map("created_by") @db.Uuid
+
+  trustScore TrustScore @relation(fields: [trustScoreId], references: [id], map: "trust_score_history_score_fk")
+
+  @@index([vendorProfileId, snapshotAt], map: "trust_score_history_vendor_idx")
+  @@map("trust_score_history")
   @@schema("trust")
 }
 

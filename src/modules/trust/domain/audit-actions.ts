@@ -116,3 +116,38 @@ export const PerformanceScoreAuditAction = {
 
 export type PerformanceScoreAuditActionToken =
   (typeof PerformanceScoreAuditAction)[keyof typeof PerformanceScoreAuditAction];
+
+// ── W3-TRUST-4b — BC-TRUST-2 Trust Scoring audit tokens (Doc-4G §G5.1 §7 / §H.6; Doc-6G §3.2) ──────────
+//
+// The compute path binds BY POINTER to the SEPARATELY-ENUMERATED Doc-2 §9 Trust actions "recalculation" and
+// "formula version change" (Doc-4G §G5.1 §7 — both enumerated; Doc-2 §9 line 688). Because BOTH ARE
+// enumerated, their tokens carry NO `[ESC-TRUST-AUDIT]` — Doc-4G §H.6 is explicit: "No `[ESC-TRUST-AUDIT]` is
+// required for the BC-TRUST-2 mutations (all three audit actions are separately enumerated in §9)". (Trust
+// Score has only compute here; freeze/reactivate — the third enumerated action — is a DEFERRED WP.)
+// Audit-on-CHANGE only (Doc-4G §G5.1 §7 object scope = "trust_scores + appended trust_score_history row"; the
+// performance-score no-op precedent — no audit on an unchanged recompute). Attribution: System throughout
+// (Doc-4G §H.6 — computation is System-actor). Distinct token per aggregate (the performance-score precedent).
+//
+// The token STRING is the Doc-4G-class serialization; a future rename touches Doc-4G/Doc-6G + this constant,
+// never Doc-2. The object-scope entity type is SINGULAR (the identity/verified-tier/performance precedent) —
+// a realization choice, NOT a frozen constant.
+
+/** Audit `entity_type` for `trust.trust_scores` rows (object-scope; Doc-4G §G5.1 §7). */
+export const TRUST_SCORE_ENTITY_TYPE = "trust_score" as const;
+
+/**
+ * Trust Score audit actions — BOTH bind BY POINTER to a SEPARATELY-ENUMERATED Doc-2 §9 Trust action; NO
+ * `[ESC-TRUST-AUDIT]` (Doc-4G §H.6 explicit).
+ *   RECALCULATED            → Doc-2 §9 Trust "recalculation" (ENUMERATED — no ESC); every changed compute.
+ *   FORMULA_VERSION_CHANGED → Doc-2 §9 Trust "formula version change" (ENUMERATED — no ESC); a compute in which
+ *                             `trust_formula_version` changed on an existing head.
+ */
+export const TrustScoreAuditAction = {
+  /** §9 Trust "recalculation" (ENUMERATED — no ESC); the compute publish-on-change (System). */
+  RECALCULATED: "trust_score_recalculated",
+  /** §9 Trust "formula version change" (ENUMERATED — no ESC); a formula-version-change compute (System). */
+  FORMULA_VERSION_CHANGED: "trust_formula_version_changed",
+} as const;
+
+export type TrustScoreAuditActionToken =
+  (typeof TrustScoreAuditAction)[keyof typeof TrustScoreAuditAction];

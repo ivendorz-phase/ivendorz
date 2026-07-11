@@ -372,3 +372,70 @@ export interface TriggerPerformanceReviewError {
 export type TriggerPerformanceReviewOutcome =
   | { ok: true; result: TriggerPerformanceReviewResult }
   | { ok: false; error: TriggerPerformanceReviewError };
+
+// ── W3-TRUST-4b — BC-TRUST-2 Trust Scoring DTOs (Doc-4G §G5.1; Doc-6G §3.2) ────────────────────────────
+// The System compute-service (`compute_trust_score`) is exercised DIRECTLY by tests. The live Inngest
+// production triggers + event-consumption wiring, the reads (§G5.3 get band via M2 / list history staff), and
+// freeze/reactivate (§G5.2, Admin) are DEFERRED to later WPs. Field names/semantics owned by Doc-4G §G5 +
+// Doc-2 §3.6/§10.6; bound by pointer, never re-authored. Compute is System-actor (no slug; Doc-4G §H.3) — no
+// tenant body. FIREWALL (Invariant #6): the Trust Score CONSUMES Verification + Performance + Fraud only — it
+// is INVARIANT to Financial Tier (`verified_financial_tiers` is NEVER read) and to Buyer-Vendor Status.
+
+/** `compute_trust_score` trigger (Doc-4G §G5.1 §2 request schema; fixed — do not extend). NOTE: the Trust-Score
+ *  label is `input_signal_change` (NOT `input_change`, which is the Performance §G6.2 trigger). */
+export type TrustComputeTrigger =
+  | "input_signal_change"
+  | "scheduled_recalc"
+  | "formula_version_change";
+
+/** Input to `trust.compute_trust_score.v1` (Doc-4G §G5.1 §2 request schema; System trigger). The score is
+ *  COMPUTED, never supplied (Doc-4G §H.9a) — no caller score field. */
+export interface ComputeTrustScoreInput {
+  /** `vendor_profile_id : uuid : required` — bare cross-module UUID → M2 (no FK). */
+  vendorProfileId: string;
+  /** `trigger : enum<input_signal_change|scheduled_recalc|formula_version_change> : required`. */
+  trigger: TrustComputeTrigger;
+}
+
+/** Injected M0 surfaces for compute (audit + outbox — the publish-on-change emit + one audit; Doc-4G §G5.1).
+ *  Both are M0 TYPES from `@/modules/core/contracts` (the trust module imports NOTHING from M1/M2). */
+export interface TrustScoreDeps {
+  /** `core.append_audit_record.v1` (Doc-4B §B10), injected by contract TYPE. */
+  appendAuditRecord: AppendAuditRecord;
+  /** `core.write_outbox_event.v1` (Doc-4B §B10), injected by contract TYPE. */
+  writeOutboxEvent: WriteOutboxEvent;
+}
+
+/** Result of `compute_trust_score` (Doc-4G §G5.1 §3 internal effect). The numeric `score` is carried to the
+ *  System caller only (staff-only; NEVER public / in the `TrustScoreUpdated` event). */
+export interface ComputeTrustScoreResult {
+  /** The `trust_scores.id` (created on first compute, else the existing head). */
+  trustScoreId: string;
+  vendorProfileId: string;
+  /** 0–100 — ALWAYS a real score (Doc-6G §3.2.1 `score smallint NOT NULL`; NO Not-Rated; absence ≠ 0). */
+  score: number;
+  /** The PUBLIC band (Doc-2 §3.6). Text (Doc-6G §3.2.1 declares no band enum); always non-empty. */
+  band: string;
+  /** The current freeze state (compute never mutates it; publication is suppressed while `frozen`). */
+  freezeState: ScoreFreezeStateValue;
+  /** `true` iff this compute changed (score/band/formula) → a snapshot was appended + one audit written. */
+  changed: boolean;
+  /** `true` iff a `TrustScoreUpdated` event was published (changed AND not frozen). */
+  published: boolean;
+  /** The `trust_score_updated_at` / optimistic token (ISO-8601 UTC). */
+  updatedAt: string;
+}
+
+/** Error outcome of `compute_trust_score` (Doc-4G §G5.1 §9 error register; classes per Doc-4A §12). REFERENCE is
+ *  reserved (Doc-4A closed class set) — with the frozen absence-tolerance postures the pipeline emits only
+ *  VALIDATION in practice (absent inputs are TOLERATED, not a REFERENCE error). */
+export interface ComputeTrustScoreError {
+  errorClass: "VALIDATION" | "REFERENCE";
+  /** The interim `trust_trust_score_*` register code ([ESC-TRUST-CODE]). */
+  errorCode: string;
+  message: string;
+}
+
+export type ComputeTrustScoreOutcome =
+  | { ok: true; result: ComputeTrustScoreResult }
+  | { ok: false; error: ComputeTrustScoreError };
