@@ -126,6 +126,13 @@ export async function ensureRestrictedRlsRole(): Promise<void> {
   await prisma.$executeRawUnsafe(
     `GRANT SELECT ON billing.subscription_events TO ${RESTRICTED_RLS_ROLE}`,
   );
+  // W3-BILL-6 — BC-BILL-3 usage_ledger: SELECT proves `usage_ledger_tenant` scopes reads to the org;
+  // INSERT lets the write-fence gate observe the RLS WITH CHECK reject a cross-org insert (not a bare
+  // permission-denied) — the same full-grant discipline the other tenant tables use. (record_usage, the
+  // app writer, is deferred on [ESC-BILL-USAGE-ENTID]; this grant is for the DB-level RLS backstop only.)
+  await prisma.$executeRawUnsafe(
+    `GRANT SELECT, INSERT ON billing.usage_ledger TO ${RESTRICTED_RLS_ROLE}`,
+  );
 }
 
 /**

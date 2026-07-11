@@ -28,7 +28,7 @@ async function seedPlan(isActive = true): Promise<string> {
   await prisma.plan.create({
     data: {
       id,
-      name: `W3BILL5 plan ${id.slice(0, 8)}`,
+      name: `zzz_bill_${id.slice(0, 8)}`,
       billingCycle: "monthly",
       price: "1000",
       currency: "BDT",
@@ -291,9 +291,9 @@ describe("billing.resolve_entitlements.v1 (out-of-wire internal authority) — D
   it("resolves the active subscription's plan bundle (source active_subscription)", async () => {
     const plan = await seedPlan();
     const org = uuidv7();
-    const eBool = await seedEntitlement(`w3b5_bool_${uuidv7().slice(0, 8)}`, "boolean");
-    const eNum = await seedEntitlement(`w3b5_num_${uuidv7().slice(0, 8)}`, "numeric");
-    const eEnum = await seedEntitlement(`w3b5_enum_${uuidv7().slice(0, 8)}`, "enum_");
+    const eBool = await seedEntitlement(`w3b5_bool_${uuidv7()}`, "boolean");
+    const eNum = await seedEntitlement(`w3b5_num_${uuidv7()}`, "numeric");
+    const eEnum = await seedEntitlement(`w3b5_enum_${uuidv7()}`, "enum_");
     await prisma.planEntitlement.createMany({
       data: [
         { planId: plan, entitlementId: eBool, valueJsonb: true },
@@ -334,9 +334,9 @@ describe("billing.resolve_entitlements.v1 (out-of-wire internal authority) — D
   it("narrows to a single entitlement when entitlement_slug is supplied", async () => {
     const plan = await seedPlan();
     const org = uuidv7();
-    const keepSlug = `w3b5_keep_${uuidv7().slice(0, 8)}`;
+    const keepSlug = `w3b5_keep_${uuidv7()}`;
     const eKeep = await seedEntitlement(keepSlug, "numeric");
-    const eDrop = await seedEntitlement(`w3b5_drop_${uuidv7().slice(0, 8)}`, "boolean");
+    const eDrop = await seedEntitlement(`w3b5_drop_${uuidv7()}`, "boolean");
     await prisma.planEntitlement.createMany({
       data: [
         { planId: plan, entitlementId: eKeep, valueJsonb: 10 },

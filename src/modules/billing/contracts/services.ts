@@ -146,3 +146,12 @@ export {
   SUBSCRIPTION_FORBIDDEN,
   SUBSCRIPTION_VIEW_FORBIDDEN,
 } from "../api/subscription.handler";
+
+// ── BC-BILL-3 USAGE & QUOTA (W3-BILL-6) — `enforce_quota` (out-of-wire authority, consumed cross-module +
+//    intra-module) + `get_usage` (wired read). `record_usage` (the writer) is DEFERRED on
+//    `[ESC-BILL-USAGE-ENTID]`. `enforce_quota` is a QUOTA gate ONLY — the billing firewall (H.9/R5) bars any
+//    consumer from feeding `allowed` into routing/eligibility/trust/matching. ──
+
+export { enforceQuota } from "../application/queries/enforce-quota.query";
+export { getUsage } from "../application/queries/get-usage.query";
+export { mapGetUsage, usageViewForbidden, USAGE_VIEW_FORBIDDEN } from "../api/usage.handler";

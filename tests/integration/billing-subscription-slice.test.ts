@@ -28,7 +28,7 @@ async function seedPlan(isActive: boolean): Promise<string> {
   await prisma.plan.create({
     data: {
       id,
-      name: `W3BILL4 plan ${id.slice(0, 8)}`,
+      name: `zzz_bill_${id.slice(0, 8)}`,
       billingCycle: "monthly",
       price: "1000",
       currency: "BDT",

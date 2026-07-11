@@ -421,3 +421,79 @@ export interface ResolveEntitlementsResult {
   entitlements: ResolvedEntitlement[];
   source: "active_subscription" | "basic_profile";
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BC-BILL-3 USAGE & QUOTA (W3-BILL-6) — `enforce_quota` (Doc-4I §HB-3.2, OUT-OF-WIRE) + `get_usage`
+// (Doc-4I §HB-3.3 / Doc-5I §6, wired). `record_usage` (§HB-3.1, the writer) is DEFERRED on
+// `[ESC-BILL-USAGE-ENTID]` (the `usage_ledger.entitlement_id` NOT-NULL FK has no population path in the
+// frozen contract). `amount`/`limit`/`used`/`remaining` are QUOTA UNITS (numbers), never money (Doc-6I §3.3).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The metered-action source (Doc-2 §10.8 `usage_source`). */
+export type UsageSource = "rfq_response" | "lead_access" | "ad_launch";
+
+/** `enforce_quota` input (Doc-4I §HB-3.2 — `organization_id`, `quota_key`; optional `requested_amount`=1). */
+export interface EnforceQuotaInput {
+  organizationId: string;
+  quotaKey: string;
+  requestedAmount?: number;
+}
+
+/** `enforce_quota` decision (Doc-4I §HB-3.2 output verbatim). `allowed=false` is a QUOTA denial ONLY —
+ *  never a routing/eligibility/trust signal (moat/firewall). */
+export interface QuotaDecision {
+  allowed: boolean;
+  quotaKey: string;
+  limit: number;
+  used: number;
+  remaining: number;
+}
+
+/** `enforce_quota` outcome — the decision, or a SYNTAX leg. (No wire; the caller surfaces `QUOTA`.) */
+export type EnforceQuotaOutcome =
+  { ok: true; result: QuotaDecision } | { ok: false; errorClass: "VALIDATION" };
+
+/** One `get_usage` item (Doc-4I §HB-3.3 `items` — `{ quota_key, amount, period, source }`, camelCased). */
+export interface UsageItem {
+  quotaKey: string;
+  amount: number;
+  period: string | null;
+  source: UsageSource;
+}
+
+/** `get_usage` totals facet (Doc-4I §HB-3.3 `totals` — `{ quota_key, used }`; `quotaKey` echoes the filter,
+ *  `""` when unfiltered — [realization convention, disclosed]). */
+export interface UsageTotals {
+  quotaKey: string;
+  used: number;
+}
+
+/** Doc-5A §8.6 page_info for the usage list (camelCase result — Option B; `total_count` omitted). */
+export interface UsagePageInfo {
+  nextCursor?: string;
+  hasMore: boolean;
+}
+
+/** `get_usage` request (Doc-4I §HB-3.3 / Doc-5I §6.2). `filters` is the RAW `filter[*]` map (allowlist
+ *  `{ quota_key?, period? }`, validated in the query); `period` defaults to the current `YYYY-MM`. */
+export interface GetUsageRequest {
+  filters?: Record<string, string>;
+  cursor?: string;
+  pageSize?: number;
+}
+
+/** `get_usage` result — the Doc-4I §HB-3.3 list (items + totals facet + page_info). */
+export interface GetUsageResult {
+  items: UsageItem[];
+  totals: UsageTotals;
+  pageInfo: UsagePageInfo;
+}
+
+/**
+ * The application-level `get_usage` outcome: success, a SYNTAX leg (`VALIDATION` — undeclared filter,
+ * malformed `period`/`cursor`, out-of-bound `page_size`), or `BUSINESS` (a FUTURE `period` — Doc-5I §6.2).
+ * `AUTHORIZATION` (`can_view_billing`) resolves earlier at the composition edge; org = server-validated
+ * active org (never a caller `org_id` — Doc-5I §6.2).
+ */
+export type GetUsageOutcome =
+  { ok: true; result: GetUsageResult } | { ok: false; errorClass: "VALIDATION" | "BUSINESS" };

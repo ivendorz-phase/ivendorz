@@ -33,3 +33,6 @@ export {
   handleListSubscriptionEvents,
   type SubscriptionHandlerDeps,
 } from "./subscription.route-handler";
+
+// BC-BILL-3 usage & quota (W3-BILL-6) — org-self usage read (enforce_quota/record_usage are out-of-wire).
+export { handleGetUsage, type UsageHandlerDeps } from "./usage.route-handler";

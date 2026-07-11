@@ -514,6 +514,7 @@ model Entitlement {
   updatedBy    String?         @map("updated_by") @db.Uuid
 
   planEntitlements PlanEntitlement[]
+  usageLedger      UsageLedger[]
 
   @@unique([slug], map: "entitlements_slug_uq")
   @@map("entitlements")
@@ -613,5 +614,37 @@ enum SubscriptionEventType {
   cancel
 
   @@map("subscription_event_type")
+  @@schema("billing")
+}
+
+/// billing.usage_ledger (Doc-6I §3.3) — append-only quota metering; Controlling-Org attribution. W3-BILL-6
+/// realizes the table + the read authorities (enforce_quota/get_usage); the sole writer record_usage is
+/// deferred on [ESC-BILL-USAGE-ENTID] (entitlement_id NOT-NULL FK unpopulatable by the frozen contract).
+model UsageLedger {
+  id                String      @id @db.Uuid
+  entitlementId     String      @map("entitlement_id") @db.Uuid
+  organizationId    String      @map("organization_id") @db.Uuid
+  actingUserId      String?     @map("acting_user_id") @db.Uuid
+  consumingEntityId String?     @map("consuming_entity_id") @db.Uuid
+  quotaKey          String      @map("quota_key")
+  amount            Decimal     @db.Decimal
+  period            String?
+  source            UsageSource
+  createdAt         DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  createdBy         String?     @map("created_by") @db.Uuid
+
+  entitlement Entitlement @relation(fields: [entitlementId], references: [id], map: "usage_ledger_entitlement_fk")
+
+  @@index([organizationId, quotaKey, period], map: "usage_ledger_org_quota_idx")
+  @@map("usage_ledger")
+  @@schema("billing")
+}
+
+enum UsageSource {
+  rfq_response
+  lead_access
+  ad_launch
+
+  @@map("usage_source")
   @@schema("billing")
 }
