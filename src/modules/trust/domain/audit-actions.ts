@@ -74,3 +74,45 @@ export const VerifiedTierAuditAction = {
 
 export type VerifiedTierAuditActionToken =
   (typeof VerifiedTierAuditAction)[keyof typeof VerifiedTierAuditAction];
+
+// ── W3-TRUST-4a — Performance Scoring audit tokens (Doc-4G §G6.1/§G6.2/§G6.4 §7; Doc-6G §3.3) ──────────
+//
+// The compute path binds BY POINTER to the SEPARATELY-ENUMERATED Doc-2 §9 Trust actions "recalculation" and
+// "formula version change" (Doc-4G §G6.2 §7 — both enumerated). Because those two ARE enumerated, their
+// tokens carry NO `[ESC-TRUST-AUDIT]` (that marker is reserved for the Trust actions NOT separately enumerated
+// in §9, per Doc-4G §H.6). The ingestion + review-trigger actions are NOT separately enumerated → they carry
+// `[ESC-TRUST-AUDIT]` (interim: nearest §9 Trust action — "recalculation" — by pointer; channel Doc-2 §9
+// additive; NO action invented — Doc-4G §G6.1 §7 / §G6.4 §7 / §H.6). Attribution: System throughout.
+//
+// The token STRING is the Doc-4G-class serialization; a future rename touches Doc-4G/Doc-6G + this constant,
+// never Doc-2. Object-scope entity types are SINGULAR (the identity buyer_profile / verified-tier precedent) —
+// a realization choice, NOT a frozen constant.
+
+/** Audit `entity_type` for `trust.performance_scores` rows (object-scope; Doc-4G §G6.2 §7 / §G6.4 §7). */
+export const PERFORMANCE_SCORE_ENTITY_TYPE = "performance_score" as const;
+
+/** Audit `entity_type` for `trust.performance_inputs` rows (object-scope; Doc-4G §G6.1 §7). */
+export const PERFORMANCE_INPUT_ENTITY_TYPE = "performance_input" as const;
+
+/**
+ * Performance Score audit actions.
+ *   RECALCULATED             → Doc-2 §9 Trust "recalculation" (ENUMERATED — no ESC); every changed compute.
+ *   FORMULA_VERSION_CHANGED  → Doc-2 §9 Trust "formula version change" (ENUMERATED — no ESC); a compute in which
+ *                              `performance_formula_version` changed on an existing head.
+ *   INPUT_INGESTED           → `[ESC-TRUST-AUDIT]` (nearest §9 "recalculation" by pointer); a fresh
+ *                              `performance_inputs` append (never on an idempotent dedup no-op).
+ *   REVIEW_TRIGGERED         → `[ESC-TRUST-AUDIT]` (nearest §9 "recalculation" by pointer); a review-trigger.
+ */
+export const PerformanceScoreAuditAction = {
+  /** §9 Trust "recalculation" (ENUMERATED — no ESC); the compute publish-on-change (System). */
+  RECALCULATED: "performance_score_recalculated",
+  /** §9 Trust "formula version change" (ENUMERATED — no ESC); a formula-version-change compute (System). */
+  FORMULA_VERSION_CHANGED: "performance_formula_version_changed",
+  /** [ESC-TRUST-AUDIT] (nearest §9 "recalculation"); the `ingest_performance_input` append (System). */
+  INPUT_INGESTED: "performance_input_ingested",
+  /** [ESC-TRUST-AUDIT] (nearest §9 "recalculation"); the `trigger_performance_review` signal (System). */
+  REVIEW_TRIGGERED: "performance_review_triggered",
+} as const;
+
+export type PerformanceScoreAuditActionToken =
+  (typeof PerformanceScoreAuditAction)[keyof typeof PerformanceScoreAuditAction];

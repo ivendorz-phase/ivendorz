@@ -40,3 +40,49 @@ export interface VendorTierChangedPayload {
   /** The tier AFTER the change (A–E). Unchanged on confirm/suspend/expire (status-only change). */
   newTier: FinancialTier;
 }
+
+// ── W3-TRUST-4a — BC-TRUST-3 Performance Scoring events (Doc-2 §8; Doc-4G §G6.2/§G6.4 §8) ───────────────
+// The Performance Score aggregate owns `PerformanceScoreUpdated` (publisher of record =
+// `compute_performance_score.v1`, publish-on-change, SUPPRESSED while frozen) + `PerformanceReviewTriggered`
+// (publisher of record = `trigger_performance_review.v1`). Both event NAMES are bound BY POINTER to the Doc-2
+// §8 catalog — NEVER coined here. Payloads are THIN (Doc-4A §16.5 — IDs + minimal metadata; NO numeric score:
+// the score is staff-only, never public/in-event — Doc-4G §G6.5 / §16.3). Emitted via M0
+// `core.write_outbox_event.v1` IN THE SAME transaction as the score/audit writes. `PerformanceFrozen`
+// (§G6.3) is DEFERRED with freeze/reactivate. Consumers (M2 badge / M3 matching / M6 fan-out) are OTHER
+// modules — NOT built here.
+
+/** `PerformanceScoreUpdated` — Doc-2 §8 event name (bound by pointer). Emitted publish-on-change by compute. */
+export const PERFORMANCE_SCORE_UPDATED_EVENT = "PerformanceScoreUpdated" as const;
+
+/** `PerformanceReviewTriggered` — Doc-2 §8 event name (bound by pointer). Emitted by trigger_performance_review. */
+export const PERFORMANCE_REVIEW_TRIGGERED_EVENT = "PerformanceReviewTriggered" as const;
+
+/**
+ * The emitted `event_version` for both Performance-Score events. The corpus mandates `event_version ≥ 1`
+ * (Doc-4A §16.4) but pins NO value — `1` is the first-version REALIZATION DEFAULT (the `VendorTierChanged`
+ * precedent; documented, NOT a coined frozen value). A payload-shape change bumps this via an additive patch.
+ */
+export const PERFORMANCE_EVENT_VERSION = 1 as const;
+
+/**
+ * THIN payload of `PerformanceScoreUpdated` (Doc-4G §G6.2 §8). `aggregate_id` = `vendorProfileId`. Carries
+ * NO numeric score (staff-only; never public — Doc-4G §G6.5 / §16.3): only `rated` (false = Not Rated). Property
+ * NAMES are camelCase (Doc-5A Option B); the numeric score never leaves the module in an event.
+ */
+export interface PerformanceScoreUpdatedPayload {
+  /** The vendor profile the score concerns (bare UUID → M2). = the outbox `aggregate_id`. */
+  vendorProfileId: string;
+  /** `false` = Not Rated (below the min-threshold gate); the badge surfaces Not Rated, never 0. */
+  rated: boolean;
+}
+
+/**
+ * THIN payload of `PerformanceReviewTriggered` (Doc-4G §G6.4 §8). `aggregate_id` = `vendorProfileId`. Carries
+ * the trigger reason for staff attention; NO score value. Property NAMES camelCase (Doc-5A Option B).
+ */
+export interface PerformanceReviewTriggeredPayload {
+  /** The vendor profile the review concerns (bare UUID → M2). = the outbox `aggregate_id`. */
+  vendorProfileId: string;
+  /** The frozen review-trigger reason (Doc-4G §G6.4). */
+  triggerReason: "threshold_crossing" | "periodic_cadence" | "dispute_pattern";
+}

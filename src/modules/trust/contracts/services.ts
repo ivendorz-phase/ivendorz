@@ -19,16 +19,29 @@ import {
   expireVerifiedTier as expireVerifiedTierService,
   suspendVerifiedTier as suspendVerifiedTierService,
 } from "../application/services/verified-tier.service";
+import {
+  computePerformanceScore as computePerformanceScoreService,
+  ingestPerformanceInput as ingestPerformanceInputService,
+  triggerPerformanceReview as triggerPerformanceReviewService,
+} from "../application/services/performance-score.service";
 import type {
+  ComputePerformanceScoreInput,
+  ComputePerformanceScoreOutcome,
   ConfirmVerifiedTierInput,
   DowngradeVerifiedTierInput,
   EstablishVerifiedTierInput,
   ExpireVerifiedTierInput,
+  IngestPerformanceInputDeps,
+  IngestPerformanceInputInput,
+  IngestPerformanceInputOutcome,
+  PerformanceScoreDeps,
   RequestVerificationContext,
   RequestVerificationDeps,
   RequestVerificationInput,
   RequestVerificationOutcome,
   SuspendVerifiedTierInput,
+  TriggerPerformanceReviewInput,
+  TriggerPerformanceReviewOutcome,
   VerifiedTierAdminContext,
   VerifiedTierDeps,
   VerifiedTierOutcome,
@@ -58,6 +71,37 @@ export {
   VENDOR_TIER_CHANGED_EVENT,
   VENDOR_TIER_CHANGED_EVENT_VERSION,
   type VendorTierChangedPayload,
+} from "./events";
+
+// W3-TRUST-4a — the Performance-Score write-service DTOs + the two §8 event surfaces, re-exported so the
+// DEFERRED production triggers / consumers build them via `@/modules/trust/contracts`.
+export type {
+  IngestPerformanceInputInput,
+  IngestPerformanceInputDeps,
+  IngestPerformanceInputOutcome,
+  IngestPerformanceInputResult,
+  IngestPerformanceInputError,
+  ComputePerformanceScoreInput,
+  ComputePerformanceScoreOutcome,
+  ComputePerformanceScoreResult,
+  ComputePerformanceScoreError,
+  TriggerPerformanceReviewInput,
+  TriggerPerformanceReviewOutcome,
+  TriggerPerformanceReviewResult,
+  TriggerPerformanceReviewError,
+  PerformanceScoreDeps,
+  PerformanceInputTypeValue,
+  PerformanceSourceTypeValue,
+  ScoreFreezeStateValue,
+  PerformanceComputeTrigger,
+  PerformanceReviewReason,
+} from "./types";
+export {
+  PERFORMANCE_SCORE_UPDATED_EVENT,
+  PERFORMANCE_REVIEW_TRIGGERED_EVENT,
+  PERFORMANCE_EVENT_VERSION,
+  type PerformanceScoreUpdatedPayload,
+  type PerformanceReviewTriggeredPayload,
 } from "./events";
 
 // The stage-1 SYNTAX validator + its result→outcome mapper — surfaced so the composition edge runs SYNTAX
@@ -171,3 +215,43 @@ export const suspendVerifiedTier: SuspendVerifiedTier = (input, ctx, deps, db) =
 /** Concrete `trust.expire_verified_tier.v1` facade (System). */
 export const expireVerifiedTier: ExpireVerifiedTier = (input, deps, db) =>
   expireVerifiedTierService(input, deps, db);
+
+// ── W3-TRUST-4a — the BC-TRUST-3 Performance-Score write-service facades (Doc-4G §G6.1/§G6.2/§G6.4) ─────
+// The PUBLIC, contracts-only faces over the private M5 Performance-Score services. All three are System
+// contracts (out-of-wire, no api/route); the live production triggers + consumers are DEFERRED — these are the
+// functions they will call, invoked directly by tests. The M0 `appendAuditRecord` + `writeOutboxEvent` are
+// INJECTED by contract TYPE. MUST be invoked INSIDE a staff-scoped tx (`app.is_platform_staff = true`) so the
+// SD reads + outbox INSERT + audit append are RLS-admitted (natural for the System actor).
+
+/** `trust.ingest_performance_input.v1` (Doc-4G §G6.1) — sole writer of performance_inputs (System; emits no event). */
+export type IngestPerformanceInput = (
+  input: IngestPerformanceInputInput,
+  deps: IngestPerformanceInputDeps,
+  db?: DbExecutor,
+) => Promise<IngestPerformanceInputOutcome>;
+
+/** `trust.compute_performance_score.v1` (Doc-4G §G6.2) — compute + publish-on-change + audit (System). */
+export type ComputePerformanceScore = (
+  input: ComputePerformanceScoreInput,
+  deps: PerformanceScoreDeps,
+  db?: DbExecutor,
+) => Promise<ComputePerformanceScoreOutcome>;
+
+/** `trust.trigger_performance_review.v1` (Doc-4G §G6.4) — emit review-trigger + audit; no score write (System). */
+export type TriggerPerformanceReview = (
+  input: TriggerPerformanceReviewInput,
+  deps: PerformanceScoreDeps,
+  db?: DbExecutor,
+) => Promise<TriggerPerformanceReviewOutcome>;
+
+/** Concrete `trust.ingest_performance_input.v1` facade (M5 contracts → M5 service). */
+export const ingestPerformanceInput: IngestPerformanceInput = (input, deps, db) =>
+  ingestPerformanceInputService(input, deps, db);
+
+/** Concrete `trust.compute_performance_score.v1` facade. */
+export const computePerformanceScore: ComputePerformanceScore = (input, deps, db) =>
+  computePerformanceScoreService(input, deps, db);
+
+/** Concrete `trust.trigger_performance_review.v1` facade. */
+export const triggerPerformanceReview: TriggerPerformanceReview = (input, deps, db) =>
+  triggerPerformanceReviewService(input, deps, db);

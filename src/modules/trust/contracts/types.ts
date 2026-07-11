@@ -214,3 +214,161 @@ export interface VerifiedTierError {
 export type VerifiedTierOutcome =
   | { ok: true; result: VerifiedTierResult }
   | { ok: false; error: VerifiedTierError };
+
+// ── W3-TRUST-4a — BC-TRUST-3 Performance Scoring DTOs (Doc-4G §G6.1/§G6.2/§G6.4; Doc-6G §3.3) ──────────
+// The three System write-services (ingest / compute / trigger_review) are exercised DIRECTLY by tests. The
+// live Inngest production triggers + M4/M3 event-consumption wiring + the reads (§G6.5) + freeze/reactivate
+// (§G6.3, Admin 21.6) are DEFERRED to later WPs. Field names/semantics owned by Doc-4G §G6 + Doc-2 §10.6;
+// bound by pointer, never re-authored. All three are System-actor (no slug; Doc-4G §H.3) — no tenant body.
+
+/** The `trust.performance_input_type` value set (Doc-2 §10.6 / Doc-6G §3.3.3; fixed — do not extend). */
+export type PerformanceInputTypeValue =
+  | "response"
+  | "decline"
+  | "non_response"
+  | "delivery"
+  | "feedback"
+  | "dispute"
+  | "completion";
+
+/** The `trust.performance_source_type` value set (Doc-2 §10.6 / Doc-6G §3.3.3; fixed — do not extend). */
+export type PerformanceSourceTypeValue = "invitation" | "quotation" | "engagement" | "wcc";
+
+/** The `trust.score_freeze_state` value set (Doc-2 §10.6 / Doc-6G §3.3.1; fixed). */
+export type ScoreFreezeStateValue = "none" | "frozen";
+
+/** `compute_performance_score` trigger (Doc-4G §G6.2 request schema; fixed — do not extend). */
+export type PerformanceComputeTrigger =
+  | "input_change"
+  | "scheduled_recalc"
+  | "formula_version_change";
+
+/** `trigger_performance_review` reason (Doc-4G §G6.4 request schema; fixed — do not extend). */
+export type PerformanceReviewReason = "threshold_crossing" | "periodic_cadence" | "dispute_pattern";
+
+// ── ingest_performance_input.v1 (Doc-4G §G6.1) — sole writer of performance_inputs; emits NO event ──────
+
+/** Input to `trust.ingest_performance_input.v1` (Doc-4G §G6.1 request schema; System/internal-service). */
+export interface IngestPerformanceInputInput {
+  /** `vendor_profile_id : uuid : required` — bare cross-module UUID → M2 (no FK). */
+  vendorProfileId: string;
+  /** `source_type : enum : required` (Doc-2 §10.6 fixed set). */
+  sourceType: PerformanceSourceTypeValue;
+  /** `source_entity_id : uuid : required` — the invitation/quotation/engagement/wcc ref (bare UUID → M3/M4). */
+  sourceEntityId: string;
+  /** `input_type : enum : required` (Doc-2 §10.6 fixed set). */
+  inputType: PerformanceInputTypeValue;
+  /** `occurred_at : timestamptz : required` — when the operational fact occurred. */
+  occurredAt: Date;
+  /** `value_jsonb : jsonb : optional` (Doc-2 §10.6) — OPAQUE (dev-doc shape); persisted as-is. */
+  valueJsonb?: Record<string, unknown> | null;
+  /** `source_event_id : uuid : optional` — the Doc-2 §8 event id, for event-sourced dedup provenance. The
+   *  DB-enforced dedup is the `(source_type, source_entity_id, input_type)` UNIQUE (Doc-4G §G6.1 §10). */
+  sourceEventId?: string | null;
+}
+
+/** Injected M0 audit-write surface for ingestion (NO outbox — ingestion emits no event; Doc-4G §G6.1 §8). */
+export interface IngestPerformanceInputDeps {
+  /** `core.append_audit_record.v1` (Doc-4B §B10), injected by contract TYPE. */
+  appendAuditRecord: AppendAuditRecord;
+}
+
+/** Result of `ingest_performance_input` (Doc-4G §G6.1 §3 — no wire response; internal effect). */
+export interface IngestPerformanceInputResult {
+  /** The `performance_inputs.id` — the appended row, or (on a dedup replay) the pre-existing row. */
+  performanceInputId: string;
+  /** `false` on an idempotent dedup replay (NO new row, NO audit); `true` on a fresh append. */
+  created: boolean;
+}
+
+/** Error outcome of `ingest_performance_input` (Doc-4G §G6.1 error register; classes per Doc-4A §12). */
+export interface IngestPerformanceInputError {
+  /** VALIDATION→400 · BUSINESS→422 (Doc-4A §12). */
+  errorClass: "VALIDATION" | "BUSINESS";
+  /** The interim `trust_performance_*` register code ([ESC-TRUST-CODE]). */
+  errorCode: string;
+  message: string;
+}
+
+export type IngestPerformanceInputOutcome =
+  | { ok: true; result: IngestPerformanceInputResult }
+  | { ok: false; error: IngestPerformanceInputError };
+
+// ── compute_performance_score.v1 (Doc-4G §G6.2) — System; publisher of record for PerformanceScoreUpdated ─
+
+/** Input to `trust.compute_performance_score.v1` (Doc-4G §G6.2 request schema; System trigger). The score is
+ *  COMPUTED, never supplied (Doc-4G §H.9a). */
+export interface ComputePerformanceScoreInput {
+  vendorProfileId: string;
+  /** `trigger : enum<input_change|scheduled_recalc|formula_version_change> : required`. */
+  trigger: PerformanceComputeTrigger;
+}
+
+/** Injected M0 surfaces for compute (audit + outbox — the publish-on-change emit + one audit; Doc-4G §G6.2). */
+export interface PerformanceScoreDeps {
+  /** `core.append_audit_record.v1` (Doc-4B §B10), injected by contract TYPE. */
+  appendAuditRecord: AppendAuditRecord;
+  /** `core.write_outbox_event.v1` (Doc-4B §B10), injected by contract TYPE. */
+  writeOutboxEvent: WriteOutboxEvent;
+}
+
+/** Result of `compute_performance_score` (Doc-4G §G6.2 §3 internal effect; NOT the public badge — this
+ *  internal result carries the numeric score for the System caller; the public numeric `score` stays staff-only). */
+export interface ComputePerformanceScoreResult {
+  /** The `performance_scores.id` (created on first compute, else the existing head). */
+  performanceScoreId: string;
+  vendorProfileId: string;
+  /** 0–100, or NULL = Not Rated (below the min-threshold gate — never 0). */
+  score: number | null;
+  /** Interim `level` text (NULL while Not Rated). */
+  level: string | null;
+  /** The FROZEN min-threshold gate outcome (Doc-6G §3.3.1). `rated = !!score && minThresholdMet`. */
+  minThresholdMet: boolean;
+  /** `false` = Not Rated (score NULL; never surfaced as 0). */
+  rated: boolean;
+  /** The current freeze state (compute never mutates it; publication is suppressed while `frozen`). */
+  freezeState: ScoreFreezeStateValue;
+  /** `true` iff this compute changed (score/level/formula) → a snapshot was appended + one audit written. */
+  changed: boolean;
+  /** `true` iff a `PerformanceScoreUpdated` event was published (changed AND not frozen). */
+  published: boolean;
+  /** The `performance_score_updated_at` / optimistic token (ISO-8601 UTC). */
+  updatedAt: string;
+}
+
+export interface ComputePerformanceScoreError {
+  errorClass: "VALIDATION" | "REFERENCE";
+  errorCode: string;
+  message: string;
+}
+
+export type ComputePerformanceScoreOutcome =
+  | { ok: true; result: ComputePerformanceScoreResult }
+  | { ok: false; error: ComputePerformanceScoreError };
+
+// ── trigger_performance_review.v1 (Doc-4G §G6.4) — System; publisher of record for PerformanceReviewTriggered ─
+
+/** Input to `trust.trigger_performance_review.v1` (Doc-4G §G6.4 request schema; System trigger). No score write. */
+export interface TriggerPerformanceReviewInput {
+  vendorProfileId: string;
+  /** `trigger_reason : enum<threshold_crossing|periodic_cadence|dispute_pattern> : required`. */
+  triggerReason: PerformanceReviewReason;
+}
+
+/** Result of `trigger_performance_review` (Doc-4G §G6.4 §3 internal effect; a published event for staff attention). */
+export interface TriggerPerformanceReviewResult {
+  vendorProfileId: string;
+  triggerReason: PerformanceReviewReason;
+  /** Always `true` on success — the review event was published. NO score value written. */
+  triggered: boolean;
+}
+
+export interface TriggerPerformanceReviewError {
+  errorClass: "VALIDATION" | "REFERENCE";
+  errorCode: string;
+  message: string;
+}
+
+export type TriggerPerformanceReviewOutcome =
+  | { ok: true; result: TriggerPerformanceReviewResult }
+  | { ok: false; error: TriggerPerformanceReviewError };

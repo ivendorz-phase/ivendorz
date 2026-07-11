@@ -609,3 +609,106 @@ enum VerifiedTierStatus {
   @@map("verified_tier_status")
   @@schema("trust")
 }
+
+// §3.3 — Performance Scoring (System-computed; idempotent inputs; per-update history) — Doc-6G §3.3 /
+// Doc-4G PassB Part3 §G6/§H. W3-TRUST-4a realizes the head (`performance_scores`; NULLABLE score = Not
+// Rated below the 5-responses-OR-2-projects min-threshold gate — never 0), the append-only per-update
+// snapshot (`performance_score_history`), and the idempotent Operations/RFQ consumer inputs
+// (`performance_inputs`; dedup UNIQUE on (source_type, source_entity_id, input_type)). NO in-band write
+// policy — the System Performance-scoring service writes via owner-role/SECURITY DEFINER (Invariant #6).
+// FIREWALL (Doc-6G §3.3.1 line 84): components_jsonb carries performance inputs ONLY — no Financial Tier /
+// Trust Score / Buyer-Vendor Status column or FK. `vendor_profile_id`/`source_entity_id` are bare
+// cross-module UUIDs (→ M2/M3/M4; no FK). The 3 enums + indexes + immutability triggers + RLS + the SD
+// write functions live raw-SQL in the `trust_performance_scoring` migration. Columns/enum labels are
+// [Doc-2 §10.6 / Doc-6G §3.3 binding]; physical specifics [§2.5].
+
+// §3.3.1 — trust.performance_scores (head; NULLABLE score = Not Rated; min-threshold gate; System-written)
+model PerformanceScore {
+  id                        String           @id @db.Uuid
+  vendorProfileId           String           @unique(map: "performance_scores_vendor_uq") @map("vendor_profile_id") @db.Uuid
+  score                     Int?             @db.SmallInt
+  level                     String?
+  componentsJsonb           Json?            @map("components_jsonb") @db.JsonB
+  performanceFormulaVersion String           @map("performance_formula_version")
+  performanceScoreUpdatedAt DateTime         @default(now()) @map("performance_score_updated_at") @db.Timestamptz
+  freezeState               ScoreFreezeState @default(none) @map("freeze_state")
+  freezeReason              String?          @map("freeze_reason")
+  frozenAt                  DateTime?        @map("frozen_at") @db.Timestamptz
+  minThresholdMet           Boolean          @default(false) @map("min_threshold_met")
+  createdAt                 DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                 DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy                 String?          @map("created_by") @db.Uuid
+  updatedBy                 String?          @map("updated_by") @db.Uuid
+
+  history PerformanceScoreHistory[]
+
+  @@map("performance_scores")
+  @@schema("trust")
+}
+
+// §3.3.2 — trust.performance_score_history (append-only; per-update snapshot; in-module FK → performance_scores)
+model PerformanceScoreHistory {
+  id                        String   @id @db.Uuid
+  performanceScoreId        String   @map("performance_score_id") @db.Uuid
+  vendorProfileId           String   @map("vendor_profile_id") @db.Uuid
+  score                     Int?     @db.SmallInt
+  level                     String?
+  performanceFormulaVersion String   @map("performance_formula_version")
+  snapshotAt                DateTime @default(now()) @map("snapshot_at") @db.Timestamptz
+  createdAt                 DateTime @default(now()) @map("created_at") @db.Timestamptz
+  createdBy                 String?  @map("created_by") @db.Uuid
+
+  performanceScore PerformanceScore @relation(fields: [performanceScoreId], references: [id], map: "performance_score_history_score_fk")
+
+  @@map("performance_score_history")
+  @@schema("trust")
+}
+
+// §3.3.3 — trust.performance_inputs (append-only; idempotent Operations/RFQ consumer; dedup UNIQUE; NO SD-edit)
+model PerformanceInput {
+  id              String                @id @db.Uuid
+  vendorProfileId String                @map("vendor_profile_id") @db.Uuid
+  sourceEntityId  String                @map("source_entity_id") @db.Uuid
+  sourceType      PerformanceSourceType @map("source_type")
+  inputType       PerformanceInputType  @map("input_type")
+  occurredAt      DateTime              @map("occurred_at") @db.Timestamptz
+  valueJsonb      Json?                 @map("value_jsonb") @db.JsonB
+  createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz
+  createdBy       String?               @map("created_by") @db.Uuid
+
+  @@unique([sourceType, sourceEntityId, inputType], map: "performance_inputs_dedup_uq")
+  @@index([vendorProfileId, inputType, occurredAt], map: "performance_inputs_vendor_idx")
+  @@map("performance_inputs")
+  @@schema("trust")
+}
+
+enum ScoreFreezeState {
+  none
+  frozen
+
+  @@map("score_freeze_state")
+  @@schema("trust")
+}
+
+enum PerformanceInputType {
+  response
+  decline
+  non_response
+  delivery
+  feedback
+  dispute
+  completion
+
+  @@map("performance_input_type")
+  @@schema("trust")
+}
+
+enum PerformanceSourceType {
+  invitation
+  quotation
+  engagement
+  wcc
+
+  @@map("performance_source_type")
+  @@schema("trust")
+}
