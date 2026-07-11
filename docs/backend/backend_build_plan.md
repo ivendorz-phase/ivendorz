@@ -169,6 +169,87 @@ Each realizes an already-frozen schema (Doc-6x), API surface (Doc-5x), and Doc-8
 
 **Firewall guards asserted in every wave (never violated):** governance signals firewalled (Inv #6) · billing firewall · blacklist-undetectable / non-disclosure (Inv #11) · Admin-decides–owning-module-owns · AI-suggests–modules-decide (Inv #12) · money-record boundary.
 
+### Wave 3 — first WP detailed (M2 pilot slice); M5/M6/M7 detailed at their own start
+
+#### `W3-MKT-1` — Public vendor microsite pilot slice: slug resolution + profile read
+- **Objective:** wire the already-shipped public FE route `app/(public)/vendors/[slug]/` (P-PUB-13)
+  to a real backend read, proving the M2 read-path shape before the rest of Wave 3 scales out.
+- **Frozen authority:** Doc-6D Pass1/Pass2 (`vendor_profiles`, category-assignment tables) ·
+  `Doc-6D_VendorSlugSubdomain_Patch_v1.0.1` (`slug` format law + `vendor_slug_history`) ·
+  `Doc-4D_Content_v1.0_PassB_Discovery.md` (`get_public_vendor_profile.v1`, pre-existing) ·
+  `Doc-4D_VendorSlugResolve_Patch_v1.0.4` + `Doc-5D_VendorSlugResolve_Patch_v1.0.2` (new
+  `resolve_vendor_slug.v1` contract + wire, folded 2026-07-11, resolves
+  `[ESC-MKT-SLUG-RESOLVE]`).
+- **Inputs:** M0 (POLICY reads) + M1 (none required — both reads are anonymous, no active-org).
+- **Outputs:** `marketplace.vendor_profiles` + category-join table + `marketplace.vendor_slug_history`
+  (schema); `domain/policies/vendor-visibility.policy.ts` (the single shared visibility predicate);
+  two repositories, two queries, one facade, two wire handlers, two app-composition functions +
+  one composed FE-facing seam (`resolve-public-vendor.ts`); two `app/api/marketplace/*` routes;
+  `app/(public)/vendors/[slug]/get-vendor.ts` rewired off its mock.
+- **Dependencies:** none blocking (M2 depends only on M0+M1, both delivered Wave 2).
+- **Files:** `prisma/schema.prisma` + migration `20260711100000_marketplace_vendor_slug_pilot` ·
+  `src/modules/marketplace/{domain,infrastructure,application,contracts,api}/*` ·
+  `src/server/marketplace/*` · `app/api/marketplace/vendor_slug_resolutions/[slug]/route.ts` ·
+  `app/api/marketplace/public_vendor_profiles/[id]/route.ts` ·
+  `app/(public)/vendors/[slug]/get-vendor.ts`.
+- **Acceptance / Doc-8:** 8C (contract/API, both new + pre-existing wire shapes) · 8D (schema +
+  public/anonymous RLS) · 8E (Invariant #1 capability matrix as flags · Invariant #11 non-disclosure
+  byte-equivalence, including the two-hop migrated-then-hidden case).
+- **Required tests:** `tests/integration/resolve-vendor-slug-slice.test.ts` (13, incl. the
+  soft-deleted/suspended two-hop cases and the genuine multi-hop A→B→C fixture added at review) +
+  `tests/integration/get-public-vendor-profile-slice.test.ts` (13) — both green against real
+  Postgres (412/412 full suite, no regressions, 2026-07-11).
+- **DTO-conformance fix (carried, pre-existing defect, corrected as part of this WP):**
+  `PublicVendorProfileView` dropped `declaredTier`/`vendorTypePreset` — neither is in the frozen
+  `get_public_vendor_profile.v1` public projection (`name, human_ref, capability_flags, geography,
+  categories, TrustIndicators, profile-experience`).
+- **Deferred — explicit gate, not silent narrowing:** the frozen projection's `TrustIndicators`
+  (M5 read-model, DD-1 — M5 doesn't exist until its own Wave-3 WP) and "published
+  profile-experience" (a richer follow-on) are **not** realized by this WP. Both must be picked up
+  by a named follow-on M2 WP before Doc-8 gate 8C is considered complete for the full
+  `get_public_vendor_profile.v1` contract — this WP only closes the identifier-resolution +
+  core-projection slice.
+  **FE-split-brain consequence (Review-B, recorded precisely, not just as "deferred fields"):**
+  until `list_vendor_directory` / product / microsite-content reads are ALSO wired (out of scope
+  for this WP), the public vendor microsite (`app/(public)/vendors/[slug]/`) is **functionally
+  inconsistent for any real (non-seed) vendor**. The profile header/capability/geography now render
+  from the real DB via this WP's wired reads, but `generateMetadata` (page `<title>`/canonical/OG)
+  on every page, and the products/showcase sections on the home + products + projects pages, still
+  render from the static 8-vendor `_components/discovery/seed.ts` — which will show EMPTY or WRONG
+  content (falling back to a generic "Vendor · iVendorz" title, or no products/projects at all) for
+  any vendor that exists in the real DB but is not one of the 8 seeded vendors. This is a known,
+  accepted gap for this pilot slice, not a regression to fix here.
+- **Review outcome (`Wave_Template_v1.0` lifecycle, 2026-07-11):** self-verify →
+  Review-A (architecture/governance) + Review-B (quality/adversarial) + Team-6 (security) ran as
+  three independent fresh-context passes against the stable diff. Review-A: 0 BLOCKER · 1 MAJOR
+  (downgraded to a defensive-hardening fix after independently confirming this repo's app-layer
+  Prisma connection is privileged/RLS-bypassing by design, matching the precedent in
+  `governanceReviews/milestones/w2-idn-7/TEAM-6.md` — not a live disclosure bug) · 1 MINOR. Review-B:
+  1 MAJOR (an illusory multi-hop migration test that would pass even with a real regression — fixed
+  with a genuine A→B→C fixture) · 3 MINOR · 1 NIT. Team-6: 0 BLOCKER · 2 MAJOR, both **pre-existing
+  frozen-architecture gaps this WP realizes but did not introduce** — carried as
+  `[ESC-MKT-HUMANREF-ENUM]` and `[ESC-MKT-RATELIMIT-ENFORCE]` (`esc_registry.md`), owner-ruled
+  non-blocking 2026-07-11 · 2 MINOR (recorded, one already well-mitigated by design, one fixed —
+  explicit `dynamic = 'force-dynamic'` + `Cache-Control: no-store`). All code-fixable findings
+  applied; full suite re-verified green (412/412) after fixes.
+- **Done:** Build Artifact Checklist (read-only shape-exception: no `domain/` state, no audit,
+  no `§8` event on either contract) · tsc/eslint/prettier clean · zero `[ESC-*]` left unresolved in
+  the merged path except the four explicitly-carried, explicitly out-of-scope items below ·
+  zero regressions in the pre-existing suite · BLOCKER=MAJOR=MINOR=0 in the merged path (CLAUDE.md
+  §13 gate) once the four carried ESCs are excluded per their owner-ruled non-blocking disposition.
+- **Build owner:** `ivendorz-implementer` agent, dispatched 2026-07-11, branch `wave/3-marketplace`.
+  **Committed to `wave/3-marketplace` 2026-07-11 — NOT merged to `main`** (owner ruling: Wave 3 has
+  three more parallel modules — M5/M6/M7 — not yet started; the wave branch merges to `main` at
+  Wave 3's full exit gate, mirroring the Wave-2 precedent, not per-WP).
+
+**Carried non-blocking items to resolve or channel at the next M2 WP (or Board, for the two
+program-wide items):** the deferred `trust_indicators`/`profile_experience` projection fields
+above; `[ESC-MKT-SUBDOMAIN-MIGRATE]` (the M8-mediated slug-migration write, still open);
+`[ESC-7G-SLUG-MKT]` (custom-domain Doc-5D grounding, still open, unrelated to this WP);
+`[ESC-MKT-HUMANREF-ENUM]` (sequential `human_ref` enumeration via gap analysis — program-wide, not
+M2-specific, Board disposition needed); `[ESC-MKT-RATELIMIT-ENFORCE]` (zero enforced rate limiting
+on any Marketplace public read — program-wide, pre-existing since `get_public_product_detail.v1`).
+
 ---
 
 ## 6. Per-WP execution lifecycle (Wave_Template_v1.0, binding)
