@@ -460,3 +460,106 @@ model CommandDedup {
   @@map("command_dedup")
   @@schema("identity")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M5 — Trust & Verification (`trust`) — Doc-6G (Content Pass-1, FROZEN)
+//
+// W3-TRUST-1 (`trust_verification_substrate`) realizes the BC-TRUST-1 Verification
+// grouping (Doc-6G §3.1): `verification_records` (§3.1.1; polymorphic subject,
+// platform-internal, column-scoped immutability) + `verification_decisions`
+// (§3.1.2; append-only, Admin-decides/Trust-owns) and their 4 enums.
+//
+// Columns/enum labels are [Doc-2 binding] (verbatim Doc-2 §10.6 / Doc-6G §3.1);
+// physical types/names are [§2.5] realization choices, tagged in Doc-6G. The
+// column-scoped/append-only immutability triggers (via M0's shared-kernel
+// `core.raise_immutable_violation`), the partial work-queue index, the in-module
+// FK, and the platform-internal RLS are realized as raw SQL in the
+// `trust_verification_substrate` migration (Doc-6G §3.x; tables/columns managed by
+// Prisma). Deferred (NOT this WP): `verified_financial_tiers` (§3.1.3) + the
+// Trust/Performance scores (Doc-6G Pass-2/3). No cross-schema FK — `subject_id`,
+// `requested_by`, `verification_task_id`, `created_by`/`updated_by` are bare UUIDs.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// §3.1.1 — trust.verification_records (§5.6; polymorphic subject; platform-internal; NO SD)
+model VerificationRecord {
+  id                   String                  @id @db.Uuid
+  subjectId            String                  @map("subject_id") @db.Uuid
+  subjectType          VerificationSubjectType @map("subject_type")
+  verificationType     VerificationType        @map("verification_type")
+  state                VerificationState       @default(requested)
+  evidenceDocumentRefs String[]                @default([]) @map("evidence_document_refs") @db.Uuid
+  requestedBy          String?                 @map("requested_by") @db.Uuid
+  expiresAt            DateTime?               @map("expires_at") @db.Timestamptz
+  createdAt            DateTime                @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime                @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy            String?                 @map("created_by") @db.Uuid
+  updatedBy            String?                 @map("updated_by") @db.Uuid
+
+  decisions VerificationDecision[]
+
+  @@map("verification_records")
+  @@schema("trust")
+}
+
+enum VerificationSubjectType {
+  vendor_profile
+  organization
+  capacity
+  declared_tier
+
+  @@map("verification_subject_type")
+  @@schema("trust")
+}
+
+enum VerificationType {
+  contact
+  business
+  factory
+  organization
+  tier
+  capacity
+
+  @@map("verification_type")
+  @@schema("trust")
+}
+
+enum VerificationState {
+  requested
+  in_review
+  approved
+  rejected
+  expired
+  revoked
+
+  @@map("verification_state")
+  @@schema("trust")
+}
+
+// §3.1.2 — trust.verification_decisions (append-only; Admin decides, Trust owns; in-module FK; NO SD)
+model VerificationDecision {
+  id                   String                   @id @db.Uuid
+  verificationRecordId String                   @map("verification_record_id") @db.Uuid
+  decidedBy            String?                  @map("decided_by") @db.Uuid
+  verificationTaskId   String?                  @map("verification_task_id") @db.Uuid
+  decision             VerificationDecisionType
+  reason               String?
+  decidedAt            DateTime                 @default(now()) @map("decided_at") @db.Timestamptz
+  createdAt            DateTime                 @default(now()) @map("created_at") @db.Timestamptz
+  createdBy            String?                  @map("created_by") @db.Uuid
+
+  verificationRecord VerificationRecord @relation(fields: [verificationRecordId], references: [id], map: "verification_decisions_record_fk")
+
+  @@map("verification_decisions")
+  @@schema("trust")
+}
+
+enum VerificationDecisionType {
+  approve
+  reject
+  confirm
+  downgrade
+  request_info
+
+  @@map("verification_decision")
+  @@schema("trust")
+}
