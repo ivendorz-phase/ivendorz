@@ -563,3 +563,49 @@ enum VerificationDecisionType {
   @@map("verification_decision")
   @@schema("trust")
 }
+
+// §3.1.3 — trust.verified_financial_tiers (System-written; emits VendorTierChanged; NO in-band write
+// policy — the System verification service writes via owner-role/SECURITY DEFINER; `Declared`-only =
+// absence of a row). W3-TRUST-3 realizes this (substrate + SD write functions + immutability + RLS in the
+// `trust_verified_financial_tiers` migration). `vendor_profile_id` is a bare cross-module UUID → M2 (no FK);
+// `tier` uses the MODULE-OWNED `trust.financial_tier` (NOT a cross-schema ref to marketplace.financial_tier).
+// The FULL unique index on vendor_profile_id + the partial review-sweep index + the column-scoped
+// immutability trigger (frozen id/vendor_profile_id/created_at/created_by; DELETE blocked) live raw-SQL in
+// the migration (the house pattern). Columns/enum labels are [Doc-2 §10.6 / Doc-6G §3.1.3 binding].
+model VerifiedFinancialTier {
+  id              String            @id @db.Uuid
+  vendorProfileId String            @unique(map: "verified_financial_tiers_vendor_uq") @map("vendor_profile_id") @db.Uuid
+  tier            FinancialTier
+  status          VerifiedTierStatus @default(pending_verification)
+  verifiedAt      DateTime?         @map("verified_at") @db.Timestamptz
+  nextReviewAt    DateTime?         @map("next_review_at") @db.Timestamptz
+  basisJsonb      Json?             @map("basis_jsonb") @db.JsonB
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy       String?           @map("created_by") @db.Uuid
+  updatedBy       String?           @map("updated_by") @db.Uuid
+
+  @@map("verified_financial_tiers")
+  @@schema("trust")
+}
+
+enum FinancialTier {
+  A
+  B
+  C
+  D
+  E
+
+  @@map("financial_tier")
+  @@schema("trust")
+}
+
+enum VerifiedTierStatus {
+  pending_verification
+  verified
+  suspended
+  expired
+
+  @@map("verified_tier_status")
+  @@schema("trust")
+}
