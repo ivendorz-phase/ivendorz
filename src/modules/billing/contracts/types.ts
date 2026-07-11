@@ -497,3 +497,55 @@ export interface GetUsageResult {
  */
 export type GetUsageOutcome =
   { ok: true; result: GetUsageResult } | { ok: false; errorClass: "VALIDATION" | "BUSINESS" };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BC-BILL-4 LEAD CREDITS (W3-BILL-7 reads pilot) — `get_lead_balance` + `list_lead_transactions`
+// (Doc-4I §HB-4.2 / Doc-5I §7, wired). The credit/debit WRITES (§HB-4.1) land in the next slice.
+// `balance`/`amount` are lead CREDITS (numbers), never money (Doc-6I §3.4 / BL-CR7).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A lead-credit movement direction (Doc-2 §10.8 `lead_credit_txn_type`). */
+export type LeadCreditDirection = "credit" | "debit";
+
+/** `get_lead_balance` result (Doc-4I §HB-4.2 output — `{ organization_id, balance }`). Org-self, always
+ *  resolves — `balance` is `0` when the org has no lead-credit account yet. */
+export interface LeadBalanceView {
+  organizationId: string;
+  balance: number;
+}
+
+/** One `list_lead_transactions` item (Doc-4I §HB-4.2 `items` — `{ transaction_id, direction, amount,
+ *  source_invoice_id, occurred_at }`, camelCased). `occurredAt` = the txn `created_at` (Doc-6I §3.4). */
+export interface LeadTransactionItem {
+  transactionId: string;
+  direction: LeadCreditDirection;
+  amount: number;
+  sourceInvoiceId: string | null;
+  occurredAt: string;
+}
+
+/** Doc-5A §8.6 page_info for the lead-transactions list (camelCase — Option B; `total_count` omitted). */
+export interface LeadTransactionsPageInfo {
+  nextCursor?: string;
+  hasMore: boolean;
+}
+
+/** `list_lead_transactions` request (Doc-4I §HB-4.2; Doc-5A §8 cursor/page_size grammar). */
+export interface ListLeadTransactionsRequest {
+  cursor?: string;
+  pageSize?: number;
+}
+
+/** `list_lead_transactions` result — the Doc-5A §8.6 list shape (items DESC by `occurred_at` + page_info). */
+export interface ListLeadTransactionsResult {
+  items: LeadTransactionItem[];
+  pageInfo: LeadTransactionsPageInfo;
+}
+
+/**
+ * The application-level `list_lead_transactions` outcome: success or a SYNTAX leg (`VALIDATION` — malformed
+ * `cursor`, out-of-bound `page_size`). `AUTHORIZATION` (`can_view_billing`) resolves at the composition; org
+ * = server-validated active org (never a caller `org_id`).
+ */
+export type ListLeadTransactionsOutcome =
+  { ok: true; result: ListLeadTransactionsResult } | { ok: false; errorClass: "VALIDATION" };

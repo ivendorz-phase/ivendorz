@@ -155,3 +155,15 @@ export {
 export { enforceQuota } from "../application/queries/enforce-quota.query";
 export { getUsage } from "../application/queries/get-usage.query";
 export { mapGetUsage, usageViewForbidden, USAGE_VIEW_FORBIDDEN } from "../api/usage.handler";
+
+// ── BC-BILL-4 LEAD CREDITS (W3-BILL-7 reads pilot) — get_lead_balance + list_lead_transactions (org-self
+//    reads). The credit/debit writes (§HB-4.1) land in the next slice. ──
+
+export { getLeadBalance } from "../application/queries/get-lead-balance.query";
+export { listLeadTransactions } from "../application/queries/list-lead-transactions.query";
+export {
+  mapGetLeadBalance,
+  mapListLeadTransactions,
+  leadViewForbidden,
+  LEAD_VIEW_FORBIDDEN,
+} from "../api/lead-credit.handler";

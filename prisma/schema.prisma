@@ -648,3 +648,48 @@ enum UsageSource {
   @@map("usage_source")
   @@schema("billing")
 }
+
+/// billing.lead_credit_accounts (Doc-6I §3.4) — org lead-credit balance head (one live per org). W3-BILL-7
+/// realizes the table + the reads (get_lead_balance/list_lead_transactions); credit/debit writes next slice.
+model LeadCreditAccount {
+  id             String    @id @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  balance        Decimal   @default(0) @db.Decimal
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy      String?   @map("created_by") @db.Uuid
+  updatedBy      String?   @map("updated_by") @db.Uuid
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy      String?   @map("deleted_by") @db.Uuid
+  deleteReason   String?   @map("delete_reason")
+
+  transactions LeadCreditTransaction[]
+
+  @@map("lead_credit_accounts")
+  @@schema("billing")
+}
+
+/// billing.lead_credit_transactions (Doc-6I §3.4) — append-only credit/debit ledger (source of truth).
+/// `source_invoice_id` → platform_invoices FK is DEFERRED to BC-BILL-5 (nullable column only for now).
+model LeadCreditTransaction {
+  id                  String            @id @db.Uuid
+  leadCreditAccountId String            @map("lead_credit_account_id") @db.Uuid
+  txnType             LeadCreditTxnType @map("txn_type")
+  amount              Decimal           @db.Decimal
+  sourceInvoiceId     String?           @map("source_invoice_id") @db.Uuid
+  createdAt           DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  createdBy           String?           @map("created_by") @db.Uuid
+
+  account LeadCreditAccount @relation(fields: [leadCreditAccountId], references: [id], map: "lead_credit_transactions_account_fk")
+
+  @@map("lead_credit_transactions")
+  @@schema("billing")
+}
+
+enum LeadCreditTxnType {
+  credit
+  debit
+
+  @@map("lead_credit_txn_type")
+  @@schema("billing")
+}

@@ -133,6 +133,11 @@ export async function ensureRestrictedRlsRole(): Promise<void> {
   await prisma.$executeRawUnsafe(
     `GRANT SELECT, INSERT ON billing.usage_ledger TO ${RESTRICTED_RLS_ROLE}`,
   );
+  // W3-BILL-7 — BC-BILL-4 lead credits: SELECT proves the `lead_credit_*_tenant` RLS scopes reads to the
+  // org (account head + the parent-anchored transactions ledger). Writes (credit/debit) land next slice.
+  await prisma.$executeRawUnsafe(
+    `GRANT SELECT ON billing.lead_credit_accounts, billing.lead_credit_transactions TO ${RESTRICTED_RLS_ROLE}`,
+  );
 }
 
 /**
