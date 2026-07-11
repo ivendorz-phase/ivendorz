@@ -781,3 +781,73 @@ enum PaymentStatus {
   @@map("payment_status")
   @@schema("billing")
 }
+
+/// billing.reward_accounts (Doc-6I §3.6) — org reward-POINTS balance head (one live per org). W3-BILL-11
+/// realizes the table + the reads (get_reward_balance/list_referrals); credit_reward writes land next slice.
+model RewardAccount {
+  id             String    @id @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  balance        Decimal   @default(0) @db.Decimal
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy      String?   @map("created_by") @db.Uuid
+  updatedBy      String?   @map("updated_by") @db.Uuid
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy      String?   @map("deleted_by") @db.Uuid
+  deleteReason   String?   @map("delete_reason")
+
+  transactions RewardTransaction[]
+
+  @@map("reward_accounts")
+  @@schema("billing")
+}
+
+/// billing.reward_transactions (Doc-6I §3.6) — append-only points credit/debit ledger (source of truth).
+model RewardTransaction {
+  id              String         @id @db.Uuid
+  rewardAccountId String         @map("reward_account_id") @db.Uuid
+  txnType         RewardTxnType  @map("txn_type")
+  amount          Decimal        @db.Decimal
+  reason          String?
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  createdBy       String?        @map("created_by") @db.Uuid
+
+  account RewardAccount @relation(fields: [rewardAccountId], references: [id], map: "reward_transactions_account_fk")
+
+  @@map("reward_transactions")
+  @@schema("billing")
+}
+
+/// billing.referrals (Doc-6I §3.6) — referral tracking; state pending→qualified→rewarded (NO SD). Anchored
+/// on the REFERRER org. W3-BILL-11 realizes the table + list_referrals; track/advance writes land next slice.
+model Referral {
+  id                     String        @id @db.Uuid
+  referrerOrganizationId String        @map("referrer_organization_id") @db.Uuid
+  referredOrganizationId String?       @map("referred_organization_id") @db.Uuid
+  state                  ReferralState @default(pending)
+  createdAt              DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy              String?       @map("created_by") @db.Uuid
+  updatedBy              String?       @map("updated_by") @db.Uuid
+
+  @@index([referrerOrganizationId, state], map: "referrals_referrer_idx")
+  @@map("referrals")
+  @@schema("billing")
+}
+
+enum RewardTxnType {
+  credit
+  debit
+
+  @@map("reward_txn_type")
+  @@schema("billing")
+}
+
+enum ReferralState {
+  pending
+  qualified
+  rewarded
+
+  @@map("referral_state")
+  @@schema("billing")
+}

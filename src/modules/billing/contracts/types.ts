@@ -709,3 +709,53 @@ export interface RecordPaymentInput {
 /** `record_payment` outcome — `Response: none` (21.5 System): success carries no payload; failure is the
  *  §12 envelope (VALIDATION / STATE / REFERENCE / DEPENDENCY / SYSTEM). */
 export type RecordPaymentOutcome = { ok: true } | { ok: false; error: InvoiceWriteError };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BC-BILL-6 REWARDS & REFERRALS (W3-BILL-11 reads pilot) — `get_reward_balance` + `list_referrals`
+// (Doc-4I §HB-6.3 / Doc-5I §9, wired). The credit_reward / track_referral / advance_referral WRITES land in
+// the next slice. `balance`/`amount` are reward POINTS (numbers), never money (Doc-6I §3.6 / BL-CR10).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Referral lifecycle state (Doc-2 §10.8 `referral_state`). */
+export type ReferralState = "pending" | "qualified" | "rewarded";
+
+/** `get_reward_balance` result (Doc-4I §HB-6.3 — `{ organization_id, balance }`). Org-self, always resolves
+ *  — `balance` is `0` when the org has no reward account yet. */
+export interface RewardBalanceView {
+  organizationId: string;
+  balance: number;
+}
+
+/** One `list_referrals` item (Doc-4I §HB-6.3 `items` — `{ referral_id, referred_organization_id, state }`).
+ *  `referredOrganizationId` is nullable (a referral whose referred org is not yet resolved). */
+export interface ReferralItem {
+  referralId: string;
+  referredOrganizationId: string | null;
+  state: ReferralState;
+}
+
+/** Doc-5A §8.6 page_info for the referrals list (camelCase — Option B; `total_count` omitted). */
+export interface ReferralsPageInfo {
+  nextCursor?: string;
+  hasMore: boolean;
+}
+
+/** `list_referrals` request (Doc-4I §HB-6.3; Doc-5A §8 cursor/page_size grammar). */
+export interface ListReferralsRequest {
+  cursor?: string;
+  pageSize?: number;
+}
+
+/** `list_referrals` result — the Doc-5A §8.6 list shape (items DESC by `created_at` + page_info). */
+export interface ListReferralsResult {
+  items: ReferralItem[];
+  pageInfo: ReferralsPageInfo;
+}
+
+/**
+ * The application-level `list_referrals` outcome: success or a SYNTAX leg (`VALIDATION` — malformed
+ * `cursor`, out-of-bound `page_size`). `AUTHORIZATION` (`can_view_billing`) resolves at the composition;
+ * org = server-validated active org (the referrer Controlling Org; never a caller `org_id`).
+ */
+export type ListReferralsOutcome =
+  { ok: true; result: ListReferralsResult } | { ok: false; errorClass: "VALIDATION" };

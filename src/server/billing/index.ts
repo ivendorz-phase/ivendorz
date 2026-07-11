@@ -52,3 +52,10 @@ export {
   handleUpdateInvoiceStatus,
   type PlatformInvoiceHandlerDeps,
 } from "./platform-invoice.route-handler";
+
+// BC-BILL-6 rewards & referrals (W3-BILL-11 reads pilot) — org-self balance + referral reads.
+export {
+  handleGetRewardBalance,
+  handleListReferrals,
+  type RewardHandlerDeps,
+} from "./reward.route-handler";

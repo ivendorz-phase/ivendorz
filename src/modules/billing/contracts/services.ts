@@ -215,3 +215,15 @@ export {
   validateRecordPaymentInput,
 } from "../application/commands/record-payment.command";
 export type { RecordPaymentDeps } from "../application/commands/record-payment.command";
+
+// ── BC-BILL-6 REWARDS & REFERRALS (W3-BILL-11 reads pilot) — get_reward_balance + list_referrals (org-self
+//    reads). The credit_reward / track_referral / advance_referral writes land in the next slice. ──
+
+export { getRewardBalance } from "../application/queries/get-reward-balance.query";
+export { listReferrals } from "../application/queries/list-referrals.query";
+export {
+  mapGetRewardBalance,
+  mapListReferrals,
+  rewardViewForbidden,
+  REWARD_VIEW_FORBIDDEN,
+} from "../api/reward.handler";

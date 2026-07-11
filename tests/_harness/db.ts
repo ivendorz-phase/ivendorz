@@ -151,6 +151,11 @@ export async function ensureRestrictedRlsRole(): Promise<void> {
   await prisma.$executeRawUnsafe(
     `GRANT SELECT, INSERT ON billing.platform_payments TO ${RESTRICTED_RLS_ROLE}`,
   );
+  // W3-BILL-11 — BC-BILL-6 rewards & referrals: SELECT proves `reward_accounts_tenant` / `referrals_tenant`
+  // (org/referrer scoping) + the parent-anchored `reward_transactions`. Writes (credit/track/advance) next slice.
+  await prisma.$executeRawUnsafe(
+    `GRANT SELECT ON billing.reward_accounts, billing.reward_transactions, billing.referrals TO ${RESTRICTED_RLS_ROLE}`,
+  );
 }
 
 /**
