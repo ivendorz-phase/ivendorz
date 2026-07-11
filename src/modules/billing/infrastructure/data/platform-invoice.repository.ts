@@ -211,3 +211,56 @@ export async function findInvoicesPage(
     createdAt: r.createdAt,
   }));
 }
+
+// ── W3-BILL-10 — BC-BILL-5 `record_payment` (§HB-5.3) gateway-callback writes over `platform_payments`. ──
+
+/** Find the payment for `(platform_invoice_id, gateway_ref)` — the idempotency/lookup key. `null` ⇒ first
+ *  callback for this reference. */
+export async function findPaymentByGatewayRef(
+  platformInvoiceId: string,
+  gatewayRef: string,
+  db: DbExecutor,
+): Promise<{ id: string; status: PaymentStatus } | null> {
+  const row = await db.platformPayment.findFirst({
+    where: { platformInvoiceId, gatewayRef },
+    select: { id: true, status: true },
+  });
+  return row === null ? null : { id: row.id, status: row.status };
+}
+
+/** Insert a `platform_payments` row at `status` (Doc-4I §HB-5.3 — the first callback for a `gateway_ref`). */
+export async function insertPayment(
+  input: {
+    id: string;
+    platformInvoiceId: string;
+    gateway: PaymentGateway;
+    gatewayRef: string;
+    status: PaymentStatus;
+  },
+  db: DbExecutor,
+): Promise<void> {
+  await db.platformPayment.create({
+    data: {
+      id: input.id,
+      platformInvoiceId: input.platformInvoiceId,
+      gateway: input.gateway,
+      gatewayRef: input.gatewayRef,
+      status: input.status,
+    },
+  });
+}
+
+/** CAS: transition a payment `status` from `expectedStatus` to `targetStatus` (Doc-4I §HB-5.3). Returns the
+ *  affected count (`1` ⇒ transitioned; `0` ⇒ raced). `gateway`/identity stay frozen (immutability trigger). */
+export async function transitionPaymentStatusCas(
+  paymentId: string,
+  expectedStatus: PaymentStatus,
+  targetStatus: PaymentStatus,
+  db: DbExecutor,
+): Promise<number> {
+  const result = await db.platformPayment.updateMany({
+    where: { id: paymentId, status: expectedStatus },
+    data: { status: targetStatus, updatedAt: new Date() },
+  });
+  return result.count;
+}

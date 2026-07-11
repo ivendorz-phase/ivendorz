@@ -145,8 +145,11 @@ export async function ensureRestrictedRlsRole(): Promise<void> {
   await prisma.$executeRawUnsafe(
     `GRANT SELECT, INSERT, UPDATE ON billing.platform_invoices TO ${RESTRICTED_RLS_ROLE}`,
   );
+  // W3-BILL-10 — record_payment writes are STAFF/System only (`platform_payments_admin` FOR ALL). INSERT
+  // grant so the write-fence gate proves a non-staff INSERT hits the RLS WITH CHECK (rejection), not a bare
+  // permission-denied; SELECT proves `platform_payments_read` (org read via the parent invoice).
   await prisma.$executeRawUnsafe(
-    `GRANT SELECT ON billing.platform_payments TO ${RESTRICTED_RLS_ROLE}`,
+    `GRANT SELECT, INSERT ON billing.platform_payments TO ${RESTRICTED_RLS_ROLE}`,
   );
 }
 

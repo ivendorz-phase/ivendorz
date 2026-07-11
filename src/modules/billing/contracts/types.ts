@@ -693,3 +693,19 @@ export interface UpdateInvoiceStatusResult {
 
 export type UpdateInvoiceStatusOutcome =
   { ok: true; result: UpdateInvoiceStatusResult } | { ok: false; error: InvoiceWriteError };
+
+// ── BC-BILL-5 `record_payment` (W3-BILL-10) — OUT-OF-WIRE gateway callback (§HB-5.3 / Doc-5I §10/R8).
+//    System actor; writes/transitions `platform_payments`; on `succeeded` drives the invoice → paid.
+//    NOT a §8 event. `Response: none` — the outcome carries no result payload. ──
+
+/** `record_payment` input (Doc-4I §HB-5.3). `gateway_ref` is the provider reference (idempotency key). */
+export interface RecordPaymentInput {
+  invoiceId: string;
+  gateway: PlatformPaymentGateway;
+  gatewayRef: string;
+  targetStatus: "succeeded" | "failed" | "refunded";
+}
+
+/** `record_payment` outcome — `Response: none` (21.5 System): success carries no payload; failure is the
+ *  §12 envelope (VALIDATION / STATE / REFERENCE / DEPENDENCY / SYSTEM). */
+export type RecordPaymentOutcome = { ok: true } | { ok: false; error: InvoiceWriteError };

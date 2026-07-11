@@ -90,3 +90,17 @@ export const PlatformInvoiceAuditAction = {
   /** [ESC-BILL-AUDIT] — an invoice status transition issued→paid|overdue|void (§HB-5.2; nearest §9 by pointer). */
   STATUS_CHANGED: "platform_invoice_status_changed",
 } as const;
+
+// ── W3-BILL-10 — BC-BILL-5 `record_payment` (§HB-5.3 §9). Doc-2 §9 Financial enumerates BOTH "payment
+//    status change" AND "refund" (line 687) → these bind by pointer, NO [ESC-BILL-AUDIT]. System-attributed
+//    (gateway callback; actorId null); org-scoped to the invoice's debtor org. ──
+
+/** The audit `entity_type` for a `billing.platform_payments` mutation (Doc-4I §HB-5.3 §9). */
+export const PLATFORM_PAYMENT_ENTITY_TYPE = "platform_payments" as const;
+
+export const PlatformPaymentAuditAction = {
+  /** §9 Financial "payment status change" — a payment reached succeeded/failed (§HB-5.3). */
+  STATUS_CHANGED: "payment_status_changed",
+  /** §9 Financial "refund" — a payment was refunded (§HB-5.3). */
+  REFUNDED: "payment_refunded",
+} as const;

@@ -2,7 +2,12 @@ import "../_harness/env"; // load the ephemeral test-DB env per worker (Doc-8B �
 import { beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "../../src/shared/db";
 import { uuidv7 } from "../../src/shared/ids";
-import { issuePlatformInvoice, updateInvoiceStatus } from "../../src/modules/billing/contracts";
+import {
+  issuePlatformInvoice,
+  updateInvoiceStatus,
+  type IssuePlatformInvoiceInput,
+  type UpdateInvoiceStatusInput,
+} from "../../src/modules/billing/contracts";
 import { allocateHumanReference, appendAuditRecord } from "../../src/modules/core/contracts";
 import { asRestrictedRole, ensureRestrictedRlsRole } from "../_harness/db";
 
@@ -46,16 +51,16 @@ describe("billing.issue_platform_invoice.v1 (command) — Doc-4I §HB-5.1", () =
   it("VALIDATION on a bad purpose / non-positive amount / bad currency", async () => {
     const org = uuidv7();
     const user = uuidv7();
-    // @ts-expect-error deliberately illegal purpose
-    expect(
-      (
-        await issuePlatformInvoice(
-          { purpose: "nope", amount: "100", currency: "BDT" },
-          issueCtx(org, user),
-          ISSUE_DEPS,
-        )
-      ).ok,
-    ).toBe(false);
+    // A type-invalid purpose, cast to exercise the runtime SYNTAX guard (a prettier-robust alternative to a
+    // ts-expect-error directive, whose placement line-wrapping can break).
+    const badPurpose = {
+      purpose: "nope",
+      amount: "100",
+      currency: "BDT",
+    } as unknown as IssuePlatformInvoiceInput;
+    expect((await issuePlatformInvoice(badPurpose, issueCtx(org, user), ISSUE_DEPS)).ok).toBe(
+      false,
+    );
     expect(
       (
         await issuePlatformInvoice(
@@ -151,15 +156,14 @@ describe("billing.issue_platform_invoice.v1 (command) — Doc-4I §HB-5.1", () =
 
 describe("billing.update_invoice_status.v1 (command) — Doc-4I §HB-5.2", () => {
   it("VALIDATION on a bad target/expected status", async () => {
-    // @ts-expect-error illegal target
+    const badTarget = {
+      invoiceId: uuidv7(),
+      targetStatus: "nope",
+      expectedStatus: "issued",
+    } as unknown as UpdateInvoiceStatusInput;
     expect(
-      (
-        await updateInvoiceStatus(
-          { invoiceId: uuidv7(), targetStatus: "nope", expectedStatus: "issued" },
-          issueCtx(uuidv7(), uuidv7()),
-          { appendAuditRecord },
-        )
-      ).ok,
+      (await updateInvoiceStatus(badTarget, issueCtx(uuidv7(), uuidv7()), { appendAuditRecord }))
+        .ok,
     ).toBe(false);
   });
 

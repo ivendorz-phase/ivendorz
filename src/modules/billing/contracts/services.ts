@@ -207,3 +207,11 @@ export {
   INVOICE_WRITE_INVALID_INPUT,
   INVOICE_WRITE_FORBIDDEN,
 } from "../api/platform-invoice.handler";
+
+// record_payment (§HB-5.3) — OUT-OF-WIRE gateway callback (Doc-5I §10/R8): no route/composition; consumed
+// in-process by the gateway-callback handler (future infra). Faced here for that consumer + tests.
+export {
+  recordPaymentCommand as recordPayment,
+  validateRecordPaymentInput,
+} from "../application/commands/record-payment.command";
+export type { RecordPaymentDeps } from "../application/commands/record-payment.command";
