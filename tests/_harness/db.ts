@@ -108,12 +108,11 @@ export async function ensureRestrictedRlsRole(): Promise<void> {
   // proves `plans_admin` fail-closed: a non-staff role's INSERT hits the RLS WITH CHECK (rejection), not a
   // bare permission-denied (the identity_authz full-CRUD-grant precedent). Entitlements/plan_entitlements
   // stay SELECT-only (their writes land with W3-BILL-3).
+  // W3-BILL-3 adds INSERT/UPDATE on `entitlements` + `plan_entitlements` so their `*_admin` write
+  // policies are provable fail-closed (a non-staff INSERT hits the RLS WITH CHECK, not a permission-denied).
   await prisma.$executeRawUnsafe(`GRANT USAGE ON SCHEMA billing TO ${RESTRICTED_RLS_ROLE}`);
   await prisma.$executeRawUnsafe(
-    `GRANT SELECT ON billing.entitlements, billing.plan_entitlements TO ${RESTRICTED_RLS_ROLE}`,
-  );
-  await prisma.$executeRawUnsafe(
-    `GRANT SELECT, INSERT, UPDATE ON billing.plans TO ${RESTRICTED_RLS_ROLE}`,
+    `GRANT SELECT, INSERT, UPDATE ON billing.plans, billing.entitlements, billing.plan_entitlements TO ${RESTRICTED_RLS_ROLE}`,
   );
 }
 

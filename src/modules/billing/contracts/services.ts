@@ -73,3 +73,34 @@ export {
   planWriteInvalidInput,
   planWriteForbidden,
 } from "../api/plan-catalog-write.handler";
+
+// ── BC-BILL-1 ENTITLEMENT-CATALOG + BUNDLE WRITES (W3-BILL-3) — command facades + validators + wire faces. ──
+
+export {
+  createEntitlementCommand as createEntitlement,
+  validateCreateEntitlementInput,
+} from "../application/commands/create-entitlement.command";
+export {
+  updateEntitlementCommand as updateEntitlement,
+  validateUpdateEntitlementInput,
+} from "../application/commands/update-entitlement.command";
+export {
+  bundlePlanEntitlementCommand as bundlePlanEntitlement,
+  validateBundlePlanEntitlementInput,
+} from "../application/commands/bundle-plan-entitlement.command";
+
+export {
+  mapCreateEntitlement,
+  mapUpdateEntitlement,
+  mapBundlePlanEntitlement,
+  catalogWriteInvalidInput,
+  catalogWriteForbidden,
+} from "../api/entitlement-catalog-write.handler";
+
+// The wire error codes the composition edge passes to the generic catalog-write builders (§HB-1.2/1.3).
+export {
+  ENTITLEMENT_WRITE_INVALID_INPUT,
+  ENTITLEMENT_WRITE_FORBIDDEN,
+  BUNDLE_WRITE_INVALID_INPUT,
+  BUNDLE_WRITE_FORBIDDEN,
+} from "../application/commands/_catalog-write";

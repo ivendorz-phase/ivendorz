@@ -14,6 +14,16 @@ export const PLAN_WRITE_ILLEGAL_STATE = "billing_plan_illegal_state";
 export const PLAN_WRITE_CONFLICT = "billing_plan_conflict";
 export const PLAN_WRITE_REFERENCE = "billing_plan_reference";
 
+// W3-BILL-3 — entitlement-catalog + plan→entitlement-bundle write codes (same `billing_<domain>_<code>` form).
+export const ENTITLEMENT_WRITE_INVALID_INPUT = "billing_entitlement_invalid_input";
+export const ENTITLEMENT_WRITE_FORBIDDEN = "billing_entitlement_forbidden";
+export const ENTITLEMENT_WRITE_SLUG_CONFLICT = "billing_entitlement_slug_conflict"; // BUSINESS (dup slug)
+export const ENTITLEMENT_WRITE_CONFLICT = "billing_entitlement_conflict";
+export const ENTITLEMENT_WRITE_REFERENCE = "billing_entitlement_reference";
+export const BUNDLE_WRITE_INVALID_INPUT = "billing_bundle_invalid_input";
+export const BUNDLE_WRITE_FORBIDDEN = "billing_bundle_forbidden";
+export const BUNDLE_WRITE_REFERENCE = "billing_bundle_reference";
+
 /** Realization ceilings [disclosed] — the frozen fields declare no numeric bound; an unbounded write is a
  *  storage/DoS hazard (the M1 `ADMIN_REASON_MAX_LENGTH` / `ROLE_NAME_MAX_LENGTH` precedent). */
 export const PLAN_NAME_MAX_LENGTH = 200;
@@ -61,8 +71,9 @@ export async function pinStaffContext(tx: StaffGucTx, adminUserId: string): Prom
 }
 
 /** Assemble the Admin-attributed audit input for a platform-owned catalog write (`organization_id` null —
- *  no org context, §5.6). The COMMAND chooses the action/entity/diff (D7 — never defaulted here). */
-export function buildPlanAuditInput(
+ *  no org context, §5.6). Generic across BC-BILL-1 catalog entities (plans / entitlements / plan_entitlements).
+ *  The COMMAND chooses the action/entity/diff (D7 — never defaulted here). */
+export function buildCatalogAuditInput(
   ctx: AdminCatalogContext,
   facts: {
     entityType: string;
@@ -85,6 +96,9 @@ export function buildPlanAuditInput(
     userAgent: ctx.userAgent ?? null,
   };
 }
+
+/** Back-compat alias — the plan-lifecycle commands (W3-BILL-2) import this name; identical function. */
+export const buildPlanAuditInput = buildCatalogAuditInput;
 
 /** Build a failure outcome (the in-process shape; the wire handler maps class → §6.2 status). */
 export function catalogErr(
@@ -121,4 +135,24 @@ export function isValidPrice(v: unknown): v is string {
 }
 export function isValidCurrency(v: unknown): v is string {
   return typeof v === "string" && CURRENCY_PATTERN.test(v);
+}
+
+// ── Entitlement-catalog validators (W3-BILL-3; Doc-4I §HB-1.3 / Doc-6I §3.1.2) ──
+const ENTITLEMENT_TYPES = new Set(["boolean", "numeric", "enum"]);
+const SLUG_PATTERN = /^[a-z][a-z0-9_]*$/; // lower_snake_case (the M1 permission-slug convention)
+export const ENTITLEMENT_SLUG_MAX_LENGTH = 200;
+
+export function isValidEntitlementType(v: unknown): v is "boolean" | "numeric" | "enum" {
+  return typeof v === "string" && ENTITLEMENT_TYPES.has(v);
+}
+export function validateEntitlementSlug(slug: unknown): string | null {
+  if (
+    typeof slug !== "string" ||
+    slug.length === 0 ||
+    slug.length > ENTITLEMENT_SLUG_MAX_LENGTH ||
+    !SLUG_PATTERN.test(slug)
+  ) {
+    return "slug is required (a lower_snake_case identifier).";
+  }
+  return null;
 }

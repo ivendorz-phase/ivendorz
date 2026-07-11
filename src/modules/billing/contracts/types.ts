@@ -146,7 +146,14 @@ export type ListPlansOutcome = ListPlansResult | { invalidInput: true };
 
 /** The Doc-4A §12 error classes a BC-BILL-1 catalog write can raise (module-outcome shape). */
 export type PlanWriteErrorClass =
-  "VALIDATION" | "AUTHORIZATION" | "STATE" | "CONFLICT" | "REFERENCE" | "DEPENDENCY" | "SYSTEM";
+  | "VALIDATION"
+  | "AUTHORIZATION"
+  | "STATE"
+  | "CONFLICT"
+  | "REFERENCE"
+  | "BUSINESS"
+  | "DEPENDENCY"
+  | "SYSTEM";
 
 /** A BC-BILL-1 catalog-write failure (the in-process outcome; the handler maps it to the §6.2 status). */
 export interface PlanWriteError {
@@ -211,3 +218,56 @@ export interface RetirePlanInput {
 
 export type RetirePlanOutcome =
   { ok: true; result: PlanLifecycleResult } | { ok: false; error: PlanWriteError };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BC-BILL-1 ENTITLEMENT-CATALOG + BUNDLE WRITES (W3-BILL-3) — `create_entitlement` / `update_entitlement`
+// (Doc-4I §HB-1.3) + `bundle_plan_entitlement` (Doc-4I §HB-1.2), per Doc-5I §4. Platform-staff (Admin)
+// audited writes; no org scope, no §8 event; `[ESC-BILL-SLUG]` authority; `[ESC-BILL-AUDIT]` audit. The
+// error/failure shape is the shared `PlanWriteError` (BUSINESS = the duplicate-slug leg).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** `create_entitlement` input (Doc-4I §HB-1.3 — `slug` UNIQUE; `type`; optional `default_value`). */
+export interface CreateEntitlementInput {
+  slug: string;
+  type: EntitlementType;
+  /** Default per type (presence/shape only — Doc-4I §HB-1.3). Any JSON value; omitted = null. */
+  defaultValue?: unknown;
+}
+
+/** The shared entitlement write output (Doc-5I §4 — `{ entitlement_id, slug, type }`). */
+export interface EntitlementView {
+  entitlementId: string;
+  slug: string;
+  type: EntitlementType;
+}
+
+export type CreateEntitlementOutcome =
+  { ok: true; result: EntitlementView } | { ok: false; error: PlanWriteError };
+
+/** `update_entitlement` input (Doc-4I §HB-1.3 — mutate `type`/`default_value`; `slug` is immutable identity).
+ *  Both fields optional (omitted = unchanged). No concurrency token in the frozen wire (Doc-5I §4). */
+export interface UpdateEntitlementInput {
+  entitlementId: string;
+  type?: EntitlementType;
+  defaultValue?: unknown;
+}
+
+export type UpdateEntitlementOutcome =
+  { ok: true; result: EntitlementView } | { ok: false; error: PlanWriteError };
+
+/** `bundle_plan_entitlement` input (Doc-4I §HB-1.2 — PK `plan_id`+`entitlement_id`; `value_jsonb` required). */
+export interface BundlePlanEntitlementInput {
+  planId: string;
+  entitlementId: string;
+  /** The per-plan bundle value (presence required; any JSON value — Doc-4I §HB-1.2). */
+  valueJsonb: unknown;
+}
+
+/** `bundle_plan_entitlement` output (Doc-5I §4 — `{ plan_id, entitlement_id }`). */
+export interface BundlePlanEntitlementResult {
+  planId: string;
+  entitlementId: string;
+}
+
+export type BundlePlanEntitlementOutcome =
+  { ok: true; result: BundlePlanEntitlementResult } | { ok: false; error: PlanWriteError };

@@ -37,7 +37,7 @@ Precedence: non-authoritative; on conflict the frozen corpus wins.
 | **`ESC-RFQ-POLICY`** / **`ESC-OPS-POLICY`** | Some idempotency dedup-window POLICY keys not yet registered | Use the named POLICY key once registered; never a UI literal | Additive Doc-3 §12.2 patch (Board) |
 | **`ESC-RFQ-SLUG`** ✅ **RESOLVED 2026-07-10** | No dedicated routing-governance staff slug — Doc-4E §E6.5/§E6.6 + H.3 (`Doc-4E_PassB_Part3_v1.0_FROZEN.md`) and `Doc-5E_SERIES_FROZEN_v1.0.md:78` bound `staff_super_admin` as "nearest enumerated" (break-glass, never a standing team grant); raised by Doc-4E Pass-A Hard Review PA-05; blocked standing authorization for P-ADM-19/20/21 | **Ruling:** two slugs registered in Doc-2 §7 (read/write split) — `staff_can_view_routing` (routing/matching governance reads — monitor, never decide) + `staff_can_manage_routing` (`rfq.assist_routing.v1` + `rfq.manage_routing_rule.v1`, §3.6 forbidden-actions wall); `staff_super_admin` stays break-glass superset. Instrument: `generatedDocs/Doc-2_Patch_v1.0.8.md` (PATCH-D2-07, Authority-Map-registered). Full record: `governanceReviews/BOARD-DECISION-RFQ-SLUG_v1.0.md`. **Carried realization:** ✅ **catalog seed + Doc-6C count overlay (43→45 = 36+9) DONE @ W2-IDN-7** (`Doc-6C_Patch_v1.0.3` Authority-Map-registered; migration `20260710160000_identity_routing_slugs_seed`, +2 staff slugs on ZERO bundles per Inv#2; RV-0160 A+T6+B clean-gate close 2026-07-10 at `c562e7f`); **still carried:** Doc-4E/Doc-5E binding flips @ W4; P-ADM-19/20/21 wiring stays Wave-5 gated | Human Architecture Board — ruled (owner, 2026-07-10) |
 
-### Billing / Monetization (M7 — W3-BILL-1/2, 2026-07-11)
+### Billing / Monetization (M7 — W3-BILL-1/2/3, 2026-07-11)
 
 | Handle | Gap | Interim | Channel |
 |---|---|---|---|

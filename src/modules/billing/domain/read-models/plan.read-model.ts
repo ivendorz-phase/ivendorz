@@ -18,6 +18,11 @@ export function entitlementTypeToWire(type: EntitlementTypeClient): EntitlementT
   return type === "enum_" ? "enum" : type;
 }
 
+/** Map the Doc-4I wire entitlement type to the Prisma-client value (`enum` → `enum_`) — write side (W3-BILL-3). */
+export function entitlementTypeToClient(type: EntitlementType): EntitlementTypeClient {
+  return type === "enum" ? "enum_" : type;
+}
+
 /** One bundled entitlement as read for `get_plan` (the `plan_entitlements` ⋈ `entitlements` join row). */
 export interface PlanEntitlementRowReadModel {
   /** PK (UUIDv7) of the `entitlements` row. */

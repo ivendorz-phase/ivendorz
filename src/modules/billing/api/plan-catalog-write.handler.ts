@@ -24,8 +24,9 @@ import {
   PLAN_WRITE_INVALID_INPUT,
 } from "../application/commands/_catalog-write";
 
-/** Map a command failure to the Doc-5A §6.1 error envelope + §6.2 status. Only DEPENDENCY/SYSTEM retry. */
-function mapWriteError(error: PlanWriteError): WireResponse<never> {
+/** Map a command failure to the Doc-5A §6.1 error envelope + §6.2 status. Only DEPENDENCY/SYSTEM retry.
+ *  Shared across the plan + entitlement + bundle write handlers (W3-BILL-2/3). */
+export function mapWriteError(error: PlanWriteError): WireResponse<never> {
   return errorResponse({
     error_class: error.errorClass,
     error_code: error.errorCode,

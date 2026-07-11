@@ -17,3 +17,10 @@ export {
   handleRetirePlan,
   type CatalogWriteHandlerDeps,
 } from "./plan-catalog-write.route-handler";
+
+// BC-BILL-1 Admin entitlement-catalog + bundle writes (W3-BILL-3).
+export {
+  handleCreateEntitlement,
+  handleUpdateEntitlement,
+  handleBundlePlanEntitlement,
+} from "./entitlement-catalog-write.route-handler";

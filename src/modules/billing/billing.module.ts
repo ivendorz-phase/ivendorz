@@ -6,10 +6,13 @@
 
 import {
   activatePlan,
+  bundlePlanEntitlement,
+  createEntitlement,
   createPlan,
   getPlan,
   listPlans,
   retirePlan,
+  updateEntitlement,
   updatePlan,
 } from "./contracts/services";
 
@@ -19,10 +22,14 @@ export const billingQueries = {
   listPlans,
 };
 
-/** The M7 write surface realized so far (W3-BILL-2 — the BC-BILL-1 Admin plan-catalog lifecycle writes). */
+/** The M7 write surface realized so far (W3-BILL-2 plan lifecycle + W3-BILL-3 entitlement/bundle — the
+ *  complete BC-BILL-1 Admin catalog write surface). */
 export const billingCommands = {
   createPlan,
   activatePlan,
   updatePlan,
   retirePlan,
+  createEntitlement,
+  updateEntitlement,
+  bundlePlanEntitlement,
 };

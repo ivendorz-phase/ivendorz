@@ -34,3 +34,25 @@ export const PlanCatalogAuditAction = {
 
 export type PlanCatalogAuditActionToken =
   (typeof PlanCatalogAuditAction)[keyof typeof PlanCatalogAuditAction];
+
+// ── W3-BILL-3 — entitlement-catalog + plan→entitlement-bundle audit (same [ESC-BILL-AUDIT] bind-by-pointer
+//    to Doc-2 §9 Platform "service-role sensitive operations"; Admin-attributed; no action invented). ──
+
+/** The audit `entity_type` for a `billing.entitlements` catalog mutation (Doc-4I §HB-1.3 §9). */
+export const ENTITLEMENT_ENTITY_TYPE = "entitlements" as const;
+/** The audit `entity_type` for a `billing.plan_entitlements` bundle mutation (Doc-4I §HB-1.2 §9). */
+export const PLAN_ENTITLEMENT_ENTITY_TYPE = "plan_entitlements" as const;
+
+/** Entitlement-catalog audit actions (§9 Platform "service-role sensitive operations" by pointer). */
+export const EntitlementCatalogAuditAction = {
+  /** An entitlement defined (§HB-1.3 create). */
+  CREATED: "entitlement_created",
+  /** An entitlement's `type`/`default_value` updated (§HB-1.3 update). */
+  UPDATED: "entitlement_updated",
+} as const;
+
+/** Plan→entitlement bundle audit actions (§9 Platform "service-role sensitive operations" by pointer). */
+export const PlanEntitlementAuditAction = {
+  /** A plan↔entitlement bundle upserted (§HB-1.2). */
+  BUNDLED: "plan_entitlement_bundled",
+} as const;
