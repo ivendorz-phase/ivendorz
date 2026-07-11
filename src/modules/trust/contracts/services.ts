@@ -25,15 +25,27 @@ import {
   triggerPerformanceReview as triggerPerformanceReviewService,
 } from "../application/services/performance-score.service";
 import { computeTrustScore as computeTrustScoreService } from "../application/services/trust-score.service";
+import {
+  actionFraudSignal as actionFraudSignalService,
+  createFraudSignal as createFraudSignalService,
+  dismissFraudSignal as dismissFraudSignalService,
+  reviewFraudSignal as reviewFraudSignalService,
+} from "../application/services/fraud-signal.service";
 import type {
   ComputePerformanceScoreInput,
   ComputePerformanceScoreOutcome,
   ComputeTrustScoreInput,
   ComputeTrustScoreOutcome,
   ConfirmVerifiedTierInput,
+  CreateFraudSignalInput,
+  CreateFraudSignalOutcome,
   DowngradeVerifiedTierInput,
   EstablishVerifiedTierInput,
   ExpireVerifiedTierInput,
+  FraudSignalActorContext,
+  FraudSignalDeps,
+  FraudSignalTriageInput,
+  FraudSignalTriageOutcome,
   IngestPerformanceInputDeps,
   IngestPerformanceInputInput,
   IngestPerformanceInputOutcome,
@@ -296,3 +308,81 @@ export type ComputeTrustScore = (
 /** Concrete `trust.compute_trust_score.v1` facade (M5 contracts → M5 service). */
 export const computeTrustScore: ComputeTrustScore = (input, deps, db) =>
   computeTrustScoreService(input, deps, db);
+
+// ── W3-TRUST-4c — the BC-TRUST-4 Fraud & Risk Signal write-lifecycle facades (Doc-4G §G7.1/§G7.2) ───────
+// The PUBLIC, contracts-only faces over the private M5 fraud-signal service. This is an IN-BAND
+// AUDITED-WRITE aggregate — each writes `fraud_signals` + appends ONE `[ESC-TRUST-AUDIT]` audit atomically
+// on the caller's tx; NO event (Doc-4G §H.7 — Doc-2 §8 has no Trust fraud event); NO SD (Doc-6G §3.4);
+// firewall (mutates no score/verification/tier; never a ban — Doc-4G §H.9b/c). The §G7.3 staff reads, the
+// Admin HTTP wiring, and the `staff_can_ban` composition-edge authz are DEFERRED — these are the functions
+// they will call, invoked directly by tests. The M0 `appendAuditRecord` is INJECTED by contract TYPE (NO
+// `writeOutboxEvent`). MUST be invoked INSIDE a staff-scoped tx (`app.is_platform_staff = true`) so the
+// in-band `fraud_signals` write + the audit append are RLS-admitted (natural for the Admin/System actor).
+
+/** The re-exported fraud-signal DTOs (create + triage; actor context; deps) so the DEFERRED Admin command /
+ *  System detector (and consumers) build them via `@/modules/trust/contracts`. */
+export type {
+  CreateFraudSignalInput,
+  CreateFraudSignalResult,
+  CreateFraudSignalOutcome,
+  FraudSignalTriageInput,
+  FraudSignalTriageResult,
+  FraudSignalTriageOutcome,
+  FraudSignalActorContext,
+  FraudSignalDeps,
+  FraudSignalError,
+  FraudSignalStateValue,
+} from "./types";
+
+// The Doc-2 §7 platform-staff AUTHZ slug (bound by pointer) — surfaced so the DEFERRED composition edge
+// references ONE source (staff-reported create + all triage; System-detected create carries no slug).
+export { STAFF_CAN_BAN_SLUG } from "../domain/fraud-signal.constants";
+
+/** `trust.create_fraud_signal.v1` (Doc-4G §G7.1) — open a fraud signal (System-detected or staff-reported);
+ *  IN-BAND write + ONE audit, atomic; idempotent on the detection key; NO event. */
+export type CreateFraudSignal = (
+  input: CreateFraudSignalInput,
+  ctx: FraudSignalActorContext,
+  deps: FraudSignalDeps,
+  db?: DbExecutor,
+) => Promise<CreateFraudSignalOutcome>;
+
+/** `trust.review_fraud_signal.v1` (Doc-4G §G7.2) — open → reviewed (Admin). */
+export type ReviewFraudSignal = (
+  input: FraudSignalTriageInput,
+  ctx: FraudSignalActorContext,
+  deps: FraudSignalDeps,
+  db?: DbExecutor,
+) => Promise<FraudSignalTriageOutcome>;
+
+/** `trust.action_fraud_signal.v1` (Doc-4G §G7.2) — reviewed → actioned, terminal (Admin). */
+export type ActionFraudSignal = (
+  input: FraudSignalTriageInput,
+  ctx: FraudSignalActorContext,
+  deps: FraudSignalDeps,
+  db?: DbExecutor,
+) => Promise<FraudSignalTriageOutcome>;
+
+/** `trust.dismiss_fraud_signal.v1` (Doc-4G §G7.2) — reviewed → dismissed, terminal (Admin). */
+export type DismissFraudSignal = (
+  input: FraudSignalTriageInput,
+  ctx: FraudSignalActorContext,
+  deps: FraudSignalDeps,
+  db?: DbExecutor,
+) => Promise<FraudSignalTriageOutcome>;
+
+/** Concrete `trust.create_fraud_signal.v1` facade (M5 contracts → M5 service). */
+export const createFraudSignal: CreateFraudSignal = (input, ctx, deps, db) =>
+  createFraudSignalService(input, ctx, deps, db);
+
+/** Concrete `trust.review_fraud_signal.v1` facade. */
+export const reviewFraudSignal: ReviewFraudSignal = (input, ctx, deps, db) =>
+  reviewFraudSignalService(input, ctx, deps, db);
+
+/** Concrete `trust.action_fraud_signal.v1` facade. */
+export const actionFraudSignal: ActionFraudSignal = (input, ctx, deps, db) =>
+  actionFraudSignalService(input, ctx, deps, db);
+
+/** Concrete `trust.dismiss_fraud_signal.v1` facade. */
+export const dismissFraudSignal: DismissFraudSignal = (input, ctx, deps, db) =>
+  dismissFraudSignalService(input, ctx, deps, db);

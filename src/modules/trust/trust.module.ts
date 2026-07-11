@@ -5,14 +5,18 @@
 // layers directly.
 
 import {
+  actionFraudSignal,
   computePerformanceScore,
   computeTrustScore,
   confirmVerifiedTier,
+  createFraudSignal,
+  dismissFraudSignal,
   downgradeVerifiedTier,
   establishVerifiedTier,
   expireVerifiedTier,
   ingestPerformanceInput,
   requestVerification,
+  reviewFraudSignal,
   suspendVerifiedTier,
   triggerPerformanceReview,
 } from "./contracts/services";
@@ -29,8 +33,14 @@ import {
  *  Performance + a neutral Fraud read-seam ONLY (INVARIANT to Financial Tier — Invariant #6), calls the
  *  [ESC-TRUST-POLICY] interim formula plug (absence ≠ 0 → a NON-ZERO baseline; score ALWAYS 0–100), upserts the
  *  head + history-iff-changed, and publishes-on-change `TrustScoreUpdated` (band-only, suppressed while frozen)
- *  + one audit, atomically. The admin HTTP commands, System timers, freeze/reactivate, and reads are DEFERRED;
- *  these are the functions they will call. */
+ *  + one audit, atomically. The BC-TRUST-4 Fraud & Risk Signal write-lifecycle (W3-TRUST-4c; Doc-4G
+ *  §G7.1/§G7.2): `createFraudSignal` (System-detected or staff-reported; IN-BAND dedup check-then-insert + ONE
+ *  `[ESC-TRUST-AUDIT]` audit, atomic; idempotent on the detection key; NO event, NO SD) and the three triage
+ *  transitions `reviewFraudSignal` (open→reviewed) / `actionFraudSignal` (reviewed→actioned) /
+ *  `dismissFraudSignal` (reviewed→dismissed) — each an in-band optimistic state write + ONE audit, atomic;
+ *  the firewall holds (mutates no score/verification/tier; never a ban — the ban is Admin's, DG-5). The admin
+ *  HTTP commands, System timers, freeze/reactivate, the fraud reads + `staff_can_ban` comp-edge authz, and
+ *  the fraud→verification revocation effect are DEFERRED; these are the functions they will call. */
 export const trustCommands = {
   requestVerification,
   establishVerifiedTier,
@@ -42,4 +52,8 @@ export const trustCommands = {
   computePerformanceScore,
   triggerPerformanceReview,
   computeTrustScore,
+  createFraudSignal,
+  reviewFraudSignal,
+  actionFraudSignal,
+  dismissFraudSignal,
 };

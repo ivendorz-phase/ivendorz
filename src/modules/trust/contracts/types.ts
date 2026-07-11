@@ -439,3 +439,117 @@ export interface ComputeTrustScoreError {
 export type ComputeTrustScoreOutcome =
   | { ok: true; result: ComputeTrustScoreResult }
   | { ok: false; error: ComputeTrustScoreError };
+
+// ── W3-TRUST-4c — BC-TRUST-4 Fraud & Risk Signal DTOs (Doc-4G §G7.1/§G7.2; Doc-6G §3.4) ─────────────────
+// The write-lifecycle services (create System/Admin, review, action, dismiss) are exercised DIRECTLY by
+// tests. DEFERRED: the §G7.3 staff reads (NOT_FOUND-collapse is RLS-backed already), the Admin HTTP wiring +
+// the `staff_can_ban` composition-edge authz (WP2 precedent — authz lives at `src/server`, not in the
+// module), the fraud→`verification_records` revocation effect, and the detection rules. Field names/semantics
+// owned by Doc-4G §G7 + Doc-2 §10.6; bound by pointer, never re-authored.
+//
+// FIREWALL (Invariant #6; Doc-4G §H.9b/c): a fraud signal records an INDICATOR and mutates NO Trust Score /
+// Performance Score / Verification / Financial Tier; it NEVER issues a ban (that is Admin's, DG-5). The
+// service writes `fraud_signals` (+ audit) and NOTHING else. NO EVENT (Doc-4G §H.7 — Doc-2 §8 has no Trust
+// fraud event): the injected dep is `appendAuditRecord` ONLY (no `writeOutboxEvent`).
+//
+// COIN NOTHING: `subjectType`/`signalType`/`severity` are TEXT (Doc-2 §10.6 declares no value set) —
+// validated NON-EMPTY, no fixed enum minted. `detectionRef`/`triageNote` are request fields with NO DB column
+// (Doc-4G §H.10) — they ride the audit `newValue`, never persisted as a fraud_signals column.
+
+/** The `trust.fraud_signal_state` value set (Doc-2 §10.6 / Doc-6G §3.4; entry `open`; `actioned`/`dismissed`
+ *  terminal — Doc-4G §H.5). Do not extend. */
+export type FraudSignalStateValue = "open" | "reviewed" | "actioned" | "dismissed";
+
+/** The acting-actor context for a fraud-signal mutation. System-detected create ⇒ `actorType='system'`,
+ *  `actorId=null` (no slug; Doc-4A §5.2). Staff-reported create + ALL triage ⇒ `actorType='admin'`,
+ *  `actorId`=the acting staff user id (the `reported_by`/`updated_by` + Doc-2 §9 attribution). The
+ *  `staff_can_ban` AUTHZ is performed at the DEFERRED composition edge BEFORE the service runs (WP2 precedent);
+ *  this context carries only the actor attribution. */
+export interface FraudSignalActorContext {
+  /** `system` = system-detected (no slug); `admin` = staff-reported / staff triage (`staff_can_ban`, deferred). */
+  actorType: "system" | "admin";
+  /** The acting `identity.users` staff id, or `null` for the System detector. */
+  actorId: string | null;
+}
+
+/** Injected Module 0 contract service — the ONLY audit-write surface. NO `writeOutboxEvent`: BC-TRUST-4 emits
+ *  NO event (Doc-4G §H.7 — Doc-2 §8 has no Trust fraud event). Every mutation is state + ONE audit only. */
+export interface FraudSignalDeps {
+  /** `core.append_audit_record.v1` (Doc-4B §B10), injected by the contract TYPE (`@/modules/core/contracts`). */
+  appendAuditRecord: AppendAuditRecord;
+}
+
+/** Input to `trust.create_fraud_signal.v1` (Doc-4G §G7.1 request schema). `reported_by`/`created_by` are set
+ *  from the ACTOR context — NOT caller-supplied. Entry state `open`. */
+export interface CreateFraudSignalInput {
+  /** `subject_id : uuid : required` (Doc-4G §G7.1) — the suspected entity; a bare cross-module UUID (no FK). */
+  subjectId: string;
+  /** `subject_type : text : required` (Doc-2 §10.6) — polymorphic discriminator; TEXT (validated NON-EMPTY;
+   *  no fixed enum coined — membership `[ESC]`-deferred). */
+  subjectType: string;
+  /** `signal_type : text : required` (Doc-2 §10.6) — TEXT (validated NON-EMPTY; no fixed enum coined). */
+  signalType: string;
+  /** `severity : text : required` (Doc-2 §10.6) — TEXT (validated NON-EMPTY; no fixed enum coined). */
+  severity: string;
+  /** `detection_ref : jsonb : optional` (Doc-4G §G7.1) — the detection input/evidence ref (OPAQUE, dev-doc
+   *  shape). NO DB column (Doc-4G §H.10) — carried in the audit `newValue`, never persisted on the row. */
+  detectionRef?: Record<string, unknown> | null;
+}
+
+/** Result of `create_fraud_signal` (Doc-4G §G7.1 §3 internal effect; `reference_id` rides the deferred HTTP
+ *  envelope, not `result`). Property names camelCase (Doc-5A Option B). */
+export interface CreateFraudSignalResult {
+  /** The `fraud_signals.id` — the created row, or (on an idempotent dedup) the pre-existing live signal. */
+  fraudSignalId: string;
+  /** The signal state (`open` on a fresh create; the existing state on a dedup). */
+  state: FraudSignalStateValue;
+  /** `false` on an idempotent dedup replay (a live signal already existed → NO new row, NO audit). */
+  created: boolean;
+  /** The row's `updated_at` (ISO-8601 UTC) — the caller's optimistic token for a later triage. */
+  updatedAt: string;
+}
+
+/** Input to `trust.review_fraud_signal.v1` / `action_fraud_signal.v1` / `dismiss_fraud_signal.v1` (Doc-4G
+ *  §G7.2 request schema). */
+export interface FraudSignalTriageInput {
+  /** `fraud_signal_id : uuid : required` — the target signal. */
+  fraudSignalId: string;
+  /** `expected_revision` (Doc-4G §G7.2) realized against `updated_at` (the WP3 optimistic-token precedent).
+   *  Omit ⇒ use the current row's token. */
+  expectedUpdatedAt?: Date | null;
+  /** `triage_note : text : optional` (Doc-4G §G7.2) — reviewer note. NO DB column (Doc-4G §H.10) — carried in
+   *  the audit `newValue`, never persisted on the row. */
+  triageNote?: string | null;
+}
+
+/** Result of an applied triage transition (Doc-4G §G7.2 §3 internal effect). Property names camelCase. */
+export interface FraudSignalTriageResult {
+  fraudSignalId: string;
+  /** The state after the transition (`reviewed` | `actioned` | `dismissed`). */
+  state: FraudSignalStateValue;
+  /** The NEW `updated_at` (ISO-8601 UTC) — the caller's next `expected_revision` optimistic token. */
+  updatedAt: string;
+}
+
+/** Error outcome of a fraud-signal mutation (Doc-4G §G7.1/§G7.2 error register; classes per Doc-5A §6.2). The
+ *  `errorCode` strings are the interim `trust_fraud_signal_*` register ([ESC-TRUST-CODE]). Create emits only
+ *  VALIDATION in-scope (the stage-7 subject REFERENCE resolution is DEFERRED, the WP3 precedent); triage adds
+ *  NOT_FOUND / STATE / CONFLICT. */
+export interface FraudSignalError {
+  /** Doc-5A §6.2 class → HTTP status (VALIDATION→400 · NOT_FOUND→404 · STATE/CONFLICT→409). */
+  errorClass: "VALIDATION" | "NOT_FOUND" | "STATE" | "CONFLICT";
+  /** The interim `trust_fraud_signal_*` register code ([ESC-TRUST-CODE]). */
+  errorCode: string;
+  /** Human-safe, non-leaking message. */
+  message: string;
+}
+
+/** Outcome of `trust.create_fraud_signal.v1`. `ok:true` ⇒ a fresh `open` signal OR an idempotent dedup. */
+export type CreateFraudSignalOutcome =
+  | { ok: true; result: CreateFraudSignalResult }
+  | { ok: false; error: FraudSignalError };
+
+/** Outcome of a fraud-signal triage transition (review/action/dismiss). */
+export type FraudSignalTriageOutcome =
+  | { ok: true; result: FraudSignalTriageResult }
+  | { ok: false; error: FraudSignalError };

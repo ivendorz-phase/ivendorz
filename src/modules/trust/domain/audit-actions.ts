@@ -151,3 +151,49 @@ export const TrustScoreAuditAction = {
 
 export type TrustScoreAuditActionToken =
   (typeof TrustScoreAuditAction)[keyof typeof TrustScoreAuditAction];
+
+// ── W3-TRUST-4c — BC-TRUST-4 Fraud & Risk Signal audit tokens (Doc-4G §G7.1/§G7.2 §7; Doc-6G §3.4) ─────
+//
+// The Doc-2 §9 Trust domain enumerates NO fraud-signal action (line 688 — "verification request/decision/
+// revoke/expiry, trust/performance freeze + reactivation, recalculation, formula version change, admin tier
+// override"; no fraud action). Therefore EVERY BC-TRUST-4 mutation (create/review/action/dismiss) carries
+// `[ESC-TRUST-AUDIT]` — the interim binds the nearest §9 Trust action BY POINTER (channel Doc-2 §9 additive;
+// NO §9 action invented — Doc-4G §H.6 / §G7.1 §7 / §G7.2 §7). The per-transition SPECIFIC serialization token
+// below is the Doc-4G-class serialization (a future rename touches Doc-4G/Doc-6G + this constant, never
+// Doc-2). DISTINCT tokens per transition so the immutable ledger records exactly WHAT happened (the identity/
+// verified-tier distinct-token precedent). Attribution (Doc-4G §H.6 / §G7): System for a system-detected
+// create; Admin for a staff-reported create and ALL triage (review/action/dismiss).
+//
+// There is NO event (Doc-2 §8 has no Trust fraud event — Doc-4G §H.7); each mutation is state + THIS audit
+// only. The request fields `detection_ref` (create) / `triage_note` (triage) have NO DB column (Doc-4G §H.10)
+// — they are carried in the audit `newValue`, never persisted as a fraud_signals column.
+
+/**
+ * The audit `entity_type` for `trust.fraud_signals` rows (object-scope; Doc-4G §G7.1 §7 / §G7.2 §7 — "Object
+ * scope `fraud_signals` row"). Singular per the identity buyer_profile / verified-tier / score precedent — a
+ * realization choice, NOT a frozen constant.
+ */
+export const FRAUD_SIGNAL_ENTITY_TYPE = "fraud_signal" as const;
+
+/**
+ * Canonical fraud-signal audit actions — the specific serialization tokens per mutation, each carried
+ * `[ESC-TRUST-AUDIT]` (Doc-2 §9 enumerates no fraud action → nearest §9 Trust action by pointer; Doc-4G
+ * §H.6 / §G7.1 §7 / §G7.2 §7).
+ *   CREATED   → `fraud_signal_created`   (absence → open; System or Admin)
+ *   REVIEWED  → `fraud_signal_reviewed`  (open → reviewed; Admin)
+ *   ACTIONED  → `fraud_signal_actioned`  (reviewed → actioned, terminal; Admin)
+ *   DISMISSED → `fraud_signal_dismissed` (reviewed → dismissed, terminal; Admin)
+ */
+export const FraudSignalAuditAction = {
+  /** [ESC-TRUST-AUDIT] (nearest §9 Trust by pointer) — the create leg (System or Admin). */
+  CREATED: "fraud_signal_created",
+  /** [ESC-TRUST-AUDIT] — the `review` triage (open → reviewed; Admin). */
+  REVIEWED: "fraud_signal_reviewed",
+  /** [ESC-TRUST-AUDIT] — the `action` triage (reviewed → actioned; Admin). */
+  ACTIONED: "fraud_signal_actioned",
+  /** [ESC-TRUST-AUDIT] — the `dismiss` triage (reviewed → dismissed; Admin). */
+  DISMISSED: "fraud_signal_dismissed",
+} as const;
+
+export type FraudSignalAuditActionToken =
+  (typeof FraudSignalAuditAction)[keyof typeof FraudSignalAuditAction];

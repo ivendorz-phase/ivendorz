@@ -766,3 +766,43 @@ enum PerformanceSourceType {
   @@map("performance_source_type")
   @@schema("trust")
 }
+
+// §3.4 — trust.fraud_signals (platform-internal; polymorphic subject; admin/System FOR ALL — NO SD; emits
+// NO event — Doc-2 §8 has no Trust fraud event). W3-TRUST-4c realizes the BC-TRUST-4 aggregate (substrate +
+// in-band audited-write lifecycle in the `trust_fraud_signals` migration + the M5 fraud-signal service).
+// `subject_id`/`reported_by`/`created_by`/`updated_by` are bare cross-module UUIDs (Doc-2 §0.3; no FK).
+// `subjectType`/`signalType`/`severity` are TEXT — Doc-2 §10.6 declares no value set (validated non-empty in
+// the app layer; membership `[ESC]`-deferred, no fixed enum coined). NO CHECK, NO business UNIQUE, and NO
+// detection_ref/triage_note column (Doc-4G §H.10 — Pass-B introduces no column; the request fields
+// detection_ref/triage_note ride the immutable AUDIT `newValue`). The 2 indexes + the column-scoped
+// immutability trigger (identity + creation facts frozen; DELETE blocked) + the `fraud_signals_admin FOR ALL`
+// RLS live raw-SQL in the migration (the house pattern). Columns/enum labels [Doc-2 §10.6 / Doc-6G §3.4 binding].
+model FraudSignal {
+  id          String          @id @db.Uuid
+  subjectId   String          @map("subject_id") @db.Uuid
+  subjectType String          @map("subject_type")
+  reportedBy  String?         @map("reported_by") @db.Uuid
+  signalType  String          @map("signal_type")
+  severity    String
+  state       FraudSignalState @default(open)
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy   String?         @map("created_by") @db.Uuid
+  updatedBy   String?         @map("updated_by") @db.Uuid
+
+  // Indexes (subject lookup + the partial `open/reviewed` work-queue) live raw-SQL in the
+  // `trust_fraud_signals` migration (the WP1 verification_records precedent — partial predicates are
+  // not expressible via Prisma `@@index`; kept in one place, the migration).
+  @@map("fraud_signals")
+  @@schema("trust")
+}
+
+enum FraudSignalState {
+  open
+  reviewed
+  actioned
+  dismissed
+
+  @@map("fraud_signal_state")
+  @@schema("trust")
+}
