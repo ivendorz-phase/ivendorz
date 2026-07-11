@@ -227,3 +227,40 @@ export {
   rewardViewForbidden,
   REWARD_VIEW_FORBIDDEN,
 } from "../api/reward.handler";
+
+// ── BC-BILL-6 WRITES (W3-BILL-12) — credit_reward + track_referral + advance_referral (actor-branched;
+//    User leg wired, System leg in-process). ──
+
+export {
+  creditRewardCommand as creditReward,
+  validateCreditRewardInput,
+} from "../application/commands/credit-reward.command";
+export type {
+  CreditRewardContext,
+  CreditRewardDeps,
+} from "../application/commands/credit-reward.command";
+export {
+  trackReferralCommand as trackReferral,
+  validateTrackReferralInput,
+} from "../application/commands/track-referral.command";
+export type {
+  TrackReferralContext,
+  TrackReferralDeps,
+} from "../application/commands/track-referral.command";
+export {
+  advanceReferralCommand as advanceReferral,
+  validateAdvanceReferralInput,
+} from "../application/commands/advance-referral.command";
+export type {
+  AdvanceReferralContext,
+  AdvanceReferralDeps,
+} from "../application/commands/advance-referral.command";
+export {
+  mapCreditReward,
+  mapTrackReferral,
+  mapAdvanceReferral,
+  rewardWriteInvalidInput,
+  rewardWriteForbidden,
+  REWARD_WRITE_INVALID_INPUT,
+  REWARD_WRITE_FORBIDDEN,
+} from "../api/reward.handler";

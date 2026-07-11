@@ -759,3 +759,81 @@ export interface ListReferralsResult {
  */
 export type ListReferralsOutcome =
   { ok: true; result: ListReferralsResult } | { ok: false; errorClass: "VALIDATION" };
+
+// ── BC-BILL-6 WRITES (W3-BILL-12) — credit_reward (§HB-6.1) + track_referral / advance_referral (§HB-6.2).
+//    Actor-branched (User leg wired, System in-process). points = reward POINTS (numbers). ──
+
+/** The Doc-4A §12 error classes a BC-BILL-6 write can raise (org-owned → NOT_FOUND collapse). */
+export type RewardWriteErrorClass =
+  | "VALIDATION"
+  | "AUTHORIZATION"
+  | "NOT_FOUND"
+  | "STATE"
+  | "CONFLICT"
+  | "REFERENCE"
+  | "BUSINESS"
+  | "DEPENDENCY"
+  | "SYSTEM";
+
+/** A BC-BILL-6 write failure (the in-process outcome; the handler maps it to the §6.2 status). */
+export interface RewardWriteError {
+  errorClass: RewardWriteErrorClass;
+  errorCode: string;
+  message: string;
+}
+
+/** Reward movement direction (Doc-2 §10.8 — `credit` = milestone/System, `redeem` = org redemption). */
+export type RewardDirection = "credit" | "redeem";
+
+/** Reward reason (Doc-4I §HB-6.1). `redemption` is the User (redeem) leg; the rest are System milestones. */
+export type RewardReason = "profile_completion" | "review" | "completion" | "redemption";
+
+/** `credit_reward` input (Doc-4I §HB-6.1). `organization_id` (debtor) + `source_event_id` are server-set
+ *  via the ctx; on the wired User leg `direction=redeem`/`reason=redemption` are server-set (body = `{points}`). */
+export interface CreditRewardInput {
+  direction: RewardDirection;
+  points: number;
+  reason: RewardReason;
+}
+
+/** `credit_reward` success (Doc-4I §HB-6.1 — `{ transaction_id, organization_id, direction, points, balance }`). */
+export interface CreditRewardResult {
+  transactionId: string;
+  organizationId: string;
+  direction: RewardDirection;
+  points: number;
+  balance: number;
+}
+
+export type CreditRewardOutcome =
+  { ok: true; result: CreditRewardResult } | { ok: false; error: RewardWriteError };
+
+/** `track_referral` input (Doc-4I §HB-6.2). `referrer_organization_id` = the active org (server-set). */
+export interface TrackReferralInput {
+  referredOrganizationId: string;
+}
+
+/** `track_referral` success (Doc-4I §HB-6.2 — `{ referral_id, state }`; state is `pending`). */
+export interface TrackReferralResult {
+  referralId: string;
+  state: ReferralState;
+}
+
+export type TrackReferralOutcome =
+  { ok: true; result: TrackReferralResult } | { ok: false; error: RewardWriteError };
+
+/** `advance_referral` input (Doc-4I §HB-6.2). `expected_state ∈ {pending, qualified}` = the CAS assertion. */
+export interface AdvanceReferralInput {
+  referralId: string;
+  targetState: "qualified" | "rewarded";
+  expectedState: "pending" | "qualified";
+}
+
+/** `advance_referral` success (Doc-4I §HB-6.2 — `{ referral_id, state }`). */
+export interface AdvanceReferralResult {
+  referralId: string;
+  state: ReferralState;
+}
+
+export type AdvanceReferralOutcome =
+  { ok: true; result: AdvanceReferralResult } | { ok: false; error: RewardWriteError };

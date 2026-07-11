@@ -104,3 +104,26 @@ export const PlatformPaymentAuditAction = {
   /** §9 Financial "refund" — a payment was refunded (§HB-5.3). */
   REFUNDED: "payment_refunded",
 } as const;
+
+// ── W3-BILL-12 — BC-BILL-6 reward/referral writes (Doc-4I §HB-6.1/§HB-6.2 §9). Reward/referral movements are
+//    NOT separately enumerated in Doc-2 §9 → `[ESC-BILL-AUDIT]` (nearest §9 by pointer; no action invented).
+//    Attribution User (org redemption / referral self-serve) OR System (milestone); org-scoped. ──
+
+/** The audit `entity_type` for a `billing.reward_transactions` mutation (Doc-4I §HB-6.1 §9). */
+export const REWARD_TRANSACTION_ENTITY_TYPE = "reward_transactions" as const;
+/** The audit `entity_type` for a `billing.referrals` mutation (Doc-4I §HB-6.2 §9). */
+export const REFERRAL_ENTITY_TYPE = "referrals" as const;
+
+/** Reward-movement audit action ([ESC-BILL-AUDIT] — nearest §9 by pointer). */
+export const RewardAuditAction = {
+  /** A reward-point movement (credit or redeem) — §HB-6.1. */
+  MOVED: "reward_movement",
+} as const;
+
+/** Referral audit actions ([ESC-BILL-AUDIT] — nearest §9 by pointer). */
+export const ReferralAuditAction = {
+  /** A referral created at `pending` — §HB-6.2 track. */
+  TRACKED: "referral_tracked",
+  /** A referral advanced (pending→qualified→rewarded) — §HB-6.2 advance. */
+  ADVANCED: "referral_advanced",
+} as const;

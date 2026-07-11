@@ -53,9 +53,12 @@ export {
   type PlatformInvoiceHandlerDeps,
 } from "./platform-invoice.route-handler";
 
-// BC-BILL-6 rewards & referrals (W3-BILL-11 reads pilot) — org-self balance + referral reads.
+// BC-BILL-6 rewards & referrals (W3-BILL-11 reads + W3-BILL-12 credit/track/advance writes) — org-self.
 export {
   handleGetRewardBalance,
   handleListReferrals,
+  handleCreditReward,
+  handleTrackReferral,
+  handleAdvanceReferral,
   type RewardHandlerDeps,
 } from "./reward.route-handler";
