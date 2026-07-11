@@ -167,3 +167,15 @@ export {
   leadViewForbidden,
   LEAD_VIEW_FORBIDDEN,
 } from "../api/lead-credit.handler";
+
+// ── BC-BILL-5 PLATFORM INVOICING (W3-BILL-8 reads pilot) — get_platform_invoice + list_platform_invoices
+//    (org-self debtor reads). The issue/update writes + record_payment land in the next slice. ──
+
+export { getPlatformInvoice } from "../application/queries/get-platform-invoice.query";
+export { listPlatformInvoices } from "../application/queries/list-platform-invoices.query";
+export {
+  mapGetPlatformInvoice,
+  mapListPlatformInvoices,
+  invoiceViewForbidden,
+  INVOICE_VIEW_FORBIDDEN,
+} from "../api/platform-invoice.handler";

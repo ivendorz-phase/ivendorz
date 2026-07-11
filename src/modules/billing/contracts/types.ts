@@ -549,3 +549,88 @@ export interface ListLeadTransactionsResult {
  */
 export type ListLeadTransactionsOutcome =
   { ok: true; result: ListLeadTransactionsResult } | { ok: false; errorClass: "VALIDATION" };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BC-BILL-5 PLATFORM INVOICING (W3-BILL-8 reads pilot) — `get_platform_invoice` + `list_platform_invoices`
+// (Doc-4I §HB-5.4 / Doc-5I §8, wired). The issue/update writes + record_payment land in the next slice.
+// `platform_invoices` = the platform's OWN revenue (≠ operations.trade_invoices; firewall) — `amount` is
+// REAL MONEY, rendered as a precision-safe decimal STRING (the `plans.price` convention).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Platform-invoice lifecycle status (Doc-2 §10.8 `invoice_status`). */
+export type PlatformInvoiceStatus = "issued" | "paid" | "overdue" | "void";
+
+/** Platform-invoice purpose (Doc-2 §10.8 `invoice_purpose`). */
+export type PlatformInvoicePurpose =
+  "subscription" | "lead_package" | "advertising" | "microsite" | "service";
+
+/** Payment gateway (Doc-2 §10.8 `payment_gateway`). */
+export type PlatformPaymentGateway = "sslcommerz" | "bkash" | "nagad" | "bank";
+
+/** Payment lifecycle status (Doc-2 §10.8 `payment_status`). */
+export type PlatformPaymentStatus = "initiated" | "succeeded" | "failed" | "refunded";
+
+/** One payment record on an invoice (Doc-4I §HB-5.4 `payments[]` — `{ gateway, gateway_ref, status }`). */
+export interface InvoicePaymentView {
+  gateway: PlatformPaymentGateway;
+  gatewayRef: string | null;
+  status: PlatformPaymentStatus;
+}
+
+/** `get_platform_invoice` result (Doc-4I §HB-5.4 `invoice` output — verbatim field set incl. `payments`). */
+export interface PlatformInvoiceView {
+  invoiceId: string;
+  humanRef: string;
+  organizationId: string;
+  purpose: PlatformInvoicePurpose;
+  amount: string;
+  currency: string;
+  status: PlatformInvoiceStatus;
+  payments: InvoicePaymentView[];
+}
+
+/**
+ * The application-level `get_platform_invoice` outcome: success, a SYNTAX leg (`VALIDATION` — malformed
+ * `invoice_id`), or `NOT_FOUND` (the invoice is absent or its debtor is another org — protected-fact
+ * collapse §3.5). `AUTHORIZATION` (`can_view_billing`) resolves at the composition edge.
+ */
+export type GetPlatformInvoiceOutcome =
+  { ok: true; result: PlatformInvoiceView } | { ok: false; errorClass: "VALIDATION" | "NOT_FOUND" };
+
+/** One `list_platform_invoices` item (Doc-4I §HB-5.4 `items` — no `organization_id`/`payments`). */
+export interface PlatformInvoiceListItem {
+  invoiceId: string;
+  humanRef: string;
+  purpose: PlatformInvoicePurpose;
+  amount: string;
+  currency: string;
+  status: PlatformInvoiceStatus;
+}
+
+/** Doc-5A §8.6 page_info for the invoices list (camelCase — Option B; `total_count` omitted). */
+export interface PlatformInvoicesPageInfo {
+  nextCursor?: string;
+  hasMore: boolean;
+}
+
+/** `list_platform_invoices` request (Doc-4I §HB-5.4; Doc-5A §8). `filters` is the RAW `filter[*]` map
+ *  (allowlist `{ status?, purpose? }`, validated in the query); org = server-validated active org. */
+export interface ListPlatformInvoicesRequest {
+  filters?: Record<string, string>;
+  cursor?: string;
+  pageSize?: number;
+}
+
+/** `list_platform_invoices` result — the Doc-5A §8.6 list shape (items DESC by `created_at` + page_info). */
+export interface ListPlatformInvoicesResult {
+  items: PlatformInvoiceListItem[];
+  pageInfo: PlatformInvoicesPageInfo;
+}
+
+/**
+ * The application-level `list_platform_invoices` outcome: success or a SYNTAX leg (`VALIDATION` — undeclared
+ * filter, bad `status`/`purpose` enum, malformed `cursor`, out-of-bound `page_size`). `AUTHORIZATION` at the
+ * composition; org = server-validated active org (never a caller `org_id`).
+ */
+export type ListPlatformInvoicesOutcome =
+  { ok: true; result: ListPlatformInvoicesResult } | { ok: false; errorClass: "VALIDATION" };

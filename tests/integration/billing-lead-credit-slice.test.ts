@@ -84,7 +84,19 @@ describe("billing.list_lead_transactions.v1 (query) — Doc-4I §HB-4.2", () => 
   it("returns the transaction history newest-first with the frozen item shape", async () => {
     const org = uuidv7();
     const account = await seedAccount(org, 100);
+    // A credit purchase links to a real platform invoice — the source_invoice_id FK (added W3-BILL-8)
+    // requires it to resolve to an existing `platform_invoices` row (a lead_package invoice for this org).
     const invoice = uuidv7();
+    await prisma.platformInvoice.create({
+      data: {
+        id: invoice,
+        humanRef: `INV-P-${invoice}`,
+        organizationId: org,
+        amount: "5000",
+        currency: "BDT",
+        purpose: "lead_package",
+      },
+    });
     await seedTxn(account, "credit", 100, new Date("2026-01-01T00:00:00.000Z"), invoice);
     await seedTxn(account, "debit", 1, new Date("2026-02-01T00:00:00.000Z"));
 

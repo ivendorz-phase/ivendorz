@@ -693,3 +693,91 @@ enum LeadCreditTxnType {
   @@map("lead_credit_txn_type")
   @@schema("billing")
 }
+
+/// billing.platform_invoices (Doc-6I §3.5) — the platform's OWN revenue invoice (≠ operations.trade_invoices;
+/// firewalled, no operations FK). `amount`/`currency` = real money. W3-BILL-8 realizes the table + the reads
+/// (get_platform_invoice/list_platform_invoices); issue/update_status writes + record_payment land next slice.
+/// `subscription_id` FK → subscriptions is DB-enforced (migration) but not modeled as a Prisma relation
+/// (nullable, peripheral, not traversed by the reads).
+model PlatformInvoice {
+  id             String         @id @db.Uuid
+  humanRef       String         @map("human_ref")
+  organizationId String         @map("organization_id") @db.Uuid
+  subscriptionId String?        @map("subscription_id") @db.Uuid
+  amount         Decimal        @db.Decimal
+  currency       String         @default("BDT") @db.Char(3)
+  status         InvoiceStatus  @default(issued)
+  purpose        InvoicePurpose
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy      String?        @map("created_by") @db.Uuid
+  updatedBy      String?        @map("updated_by") @db.Uuid
+
+  payments PlatformPayment[]
+
+  @@unique([humanRef], map: "platform_invoices_human_ref_uq")
+  @@index([organizationId, status], map: "platform_invoices_org_status_idx")
+  @@map("platform_invoices")
+  @@schema("billing")
+}
+
+/// billing.platform_payments (Doc-6I §3.5) — gateway payment records (platform-owned; record_payment
+/// callback advances status/gateway_ref). No `amount` (the invoice carries it). W3-BILL-8 models it for the
+/// get_platform_invoice `payments` sub-list; the record_payment writer lands next slice.
+model PlatformPayment {
+  id                String         @id @db.Uuid
+  platformInvoiceId String         @map("platform_invoice_id") @db.Uuid
+  gateway           PaymentGateway
+  gatewayRef        String?        @map("gateway_ref")
+  status            PaymentStatus  @default(initiated)
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy         String?        @map("created_by") @db.Uuid
+  updatedBy         String?        @map("updated_by") @db.Uuid
+
+  invoice PlatformInvoice @relation(fields: [platformInvoiceId], references: [id], map: "platform_payments_invoice_fk")
+
+  @@map("platform_payments")
+  @@schema("billing")
+}
+
+enum InvoiceStatus {
+  issued
+  paid
+  overdue
+  void
+
+  @@map("invoice_status")
+  @@schema("billing")
+}
+
+enum InvoicePurpose {
+  subscription
+  lead_package
+  advertising
+  microsite
+  service
+
+  @@map("invoice_purpose")
+  @@schema("billing")
+}
+
+enum PaymentGateway {
+  sslcommerz
+  bkash
+  nagad
+  bank
+
+  @@map("payment_gateway")
+  @@schema("billing")
+}
+
+enum PaymentStatus {
+  initiated
+  succeeded
+  failed
+  refunded
+
+  @@map("payment_status")
+  @@schema("billing")
+}

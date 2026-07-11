@@ -138,6 +138,12 @@ export async function ensureRestrictedRlsRole(): Promise<void> {
   await prisma.$executeRawUnsafe(
     `GRANT SELECT ON billing.lead_credit_accounts, billing.lead_credit_transactions TO ${RESTRICTED_RLS_ROLE}`,
   );
+  // W3-BILL-8 — BC-BILL-5 platform invoicing: SELECT proves `platform_invoices_tenant` (debtor-org reads)
+  // and `platform_payments_read` (org reads payments VIA the parent invoice). The issue/update writes +
+  // record_payment (staff/System) land next slice.
+  await prisma.$executeRawUnsafe(
+    `GRANT SELECT ON billing.platform_invoices, billing.platform_payments TO ${RESTRICTED_RLS_ROLE}`,
+  );
 }
 
 /**
