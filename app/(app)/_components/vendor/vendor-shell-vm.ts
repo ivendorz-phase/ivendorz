@@ -40,7 +40,6 @@ export const VENDOR_NAV: NavSection[] = [
       { label: "Leads & Pipeline", href: `${BASE}/leads`, icon: "pipeline" },
       { label: "Engagements", href: `${BASE}/engagements`, icon: "engagements" },
       { label: "Buyer Inquiries", href: `${BASE}/inquiries`, icon: "inquiries" },
-      { label: "Profile Performance", href: `${BASE}/trust`, icon: "trust" },
     ],
   },
   {
@@ -82,6 +81,16 @@ export const VENDOR_NAV: NavSection[] = [
         ],
       },
     ],
+  },
+  // Trust is a READ-ONLY governance signal (M5), NOT an editable vendor surface. It is kept in its
+  // OWN discrete section — never folded among the editable `primary` leaves (RFQ Leads / Engagements)
+  // — per `esc_registry.md:53` ("Trust read-only") and `vendor_planning_and_design.md:97`. This
+  // additive extraction improves BOTH single-surface vendor rendering and the Hybrid co-mount, where
+  // Trust is the always-terminal group ([ESC-7G-A7] realization). The vendor may only VIEW it.
+  {
+    id: "performance",
+    label: "Trust",
+    items: [{ label: "Profile Performance", href: `${BASE}/trust`, icon: "trust" }],
   },
   {
     id: "standing",
