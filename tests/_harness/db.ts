@@ -102,6 +102,14 @@ export async function ensureRestrictedRlsRole(): Promise<void> {
   await prisma.$executeRawUnsafe(
     `GRANT SELECT, INSERT ON core.audit_records, core.audit_records_default TO ${RESTRICTED_RLS_ROLE}`,
   );
+  // W3-MKT-1 — the M2 public-projection RLS conformance gate (`vendor_profiles` tri-actor public-read
+  // leg + the fully-public `vendor_slug_history`). SELECT-only: this pilot slice is read-only, no
+  // write-path RLS to prove here (unlike the identity_authz full-CRUD grant, which exists to prove a
+  // MISSING write policy's fail-closed 0-rows — no analogous claim is made for marketplace yet).
+  await prisma.$executeRawUnsafe(`GRANT USAGE ON SCHEMA marketplace TO ${RESTRICTED_RLS_ROLE}`);
+  await prisma.$executeRawUnsafe(
+    `GRANT SELECT ON marketplace.vendor_profiles, marketplace.vendor_slug_history, marketplace.categories, marketplace.category_assignments TO ${RESTRICTED_RLS_ROLE}`,
+  );
 }
 
 /**

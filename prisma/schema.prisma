@@ -437,6 +437,184 @@ enum DelegationGrantStatus {
   @@schema("identity")
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// M2 — Marketplace & Discovery (`marketplace`) — Doc-6D (FROZEN)
+//
+// W3-MKT-1 pilot slice (Wave 3): the two anonymous Public Discovery reads
+// `marketplace.get_public_vendor_profile.v1` (Doc-4D PassB Discovery / Doc-5D Pass-1 row 64) and
+// `marketplace.resolve_vendor_slug.v1` (Doc-4D_VendorSlugResolve_Patch_v1.0.4 /
+// Doc-5D_VendorSlugResolve_Patch_v1.0.2). Realizes ONLY the Vendor Profile aggregate root
+// (`vendor_profiles`, Doc-6D Pass-1 §3.1.1, incl. the VSS `slug` format CHECK) + the category-join
+// child (`category_assignments`, §3.1.4) + the category tree it joins to (`categories`, Doc-6D
+// Pass-2 §3.2 — pulled forward into this slice because the frozen public projection includes real
+// category names, not deferred like `trust_indicators`/`profile_experience`) + the append-only
+// `vendor_slug_history` (Doc-6D_VendorSlugSubdomain_Patch_v1.0.1 6D-VSS-01.2/01.3). The remaining
+// Vendor Profile aggregate children (vendor_capacity_profiles, declared_financial_tiers,
+// financial_tier_history, vendor_ownership_history, vendor_matching_attributes,
+// vendor_claim_records) and the rest of Pass-2/Pass-3 (products, spec library, presentation, ads,
+// favorites) are OUT of this pilot's scope — the frozen public projection this slice realizes
+// (`name, human_ref, capability_flags, geography, categories`) needs none of them.
+//
+// Columns are [Doc-2 binding] verbatim Doc-2 §10.3; physical specifics are [§2.5] realization
+// choices tagged in Doc-6D. Enums / FKs / partial-unique indexes / CHECK / RLS are raw SQL in the
+// `marketplace_vendor_slug_pilot` migration (tables/columns managed by Prisma).
+// ─────────────────────────────────────────────────────────────────────────────
+
+// §3.1.1 — marketplace.vendor_profiles (AR; capability matrix; §5.3 two-dimension state; human_ref)
+model VendorProfile {
+  id                        String           @id @db.Uuid
+  humanRef                  String           @map("human_ref")
+  controllingOrganizationId String           @map("controlling_organization_id") @db.Uuid
+  name                      String
+  slug                      String
+  canSupply                 Boolean          @default(false) @map("can_supply")
+  canService                Boolean          @default(false) @map("can_service")
+  canFabricate              Boolean          @default(false) @map("can_fabricate")
+  canConsult                Boolean          @default(false) @map("can_consult")
+  vendorTypePreset          String?          @map("vendor_type_preset")
+  country                   String?
+  division                  String?
+  district                  String?
+  industrialZone            String?          @map("industrial_zone")
+  claimState                VendorClaimState @default(seeded) @map("claim_state")
+  status                    VendorStatus     @default(active)
+  visibility                VendorVisibility @default(public)
+  createdAt                 DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                 DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy                 String?          @map("created_by") @db.Uuid
+  updatedBy                 String?          @map("updated_by") @db.Uuid
+  deletedAt                 DateTime?        @map("deleted_at") @db.Timestamptz
+  deletedBy                 String?          @map("deleted_by") @db.Uuid
+  deleteReason              String?          @map("delete_reason")
+
+  categoryAssignments CategoryAssignment[]
+  slugHistory         VendorSlugHistory[]
+
+  @@unique([humanRef], map: "vendor_profiles_human_ref_uq")
+  // Directory read (`marketplace.list_vendor_directory.v1`) indexes — W3-MKT-2
+  // (20260711120000_marketplace_directory_indexes). The geography-drill-down composite below IS
+  // Prisma-expressible and declared here. The (name, id) keyset-sort index is PARTIAL
+  // (WHERE visibility='public' AND deleted_at IS NULL) and therefore NOT Prisma-expressible — it lives
+  // in that migration's raw SQL only, the same split used for vendor_profiles_public_idx / the partial
+  // uniques (a partial index is invisible to Prisma's schema diff, so no drift).
+  @@index([country, division, district, industrialZone], map: "vendor_profiles_directory_geo_idx")
+  @@map("vendor_profiles")
+  @@schema("marketplace")
+}
+
+enum VendorClaimState {
+  seeded
+  invited
+  claimed
+  verified
+
+  @@map("vendor_claim_state")
+  @@schema("marketplace")
+}
+
+enum VendorStatus {
+  active
+  suspended
+  banned
+
+  @@map("vendor_status")
+  @@schema("marketplace")
+}
+
+enum VendorVisibility {
+  public
+
+  @@map("vendor_visibility")
+  @@schema("marketplace")
+}
+
+// §3.2 — marketplace.categories (4-level self-FK tree; platform-owned; admin-governed — DD-4).
+// Pulled forward from Doc-6D Pass-2 into this pilot (see module header note above).
+model Category {
+  id           String    @id @db.Uuid
+  parentId     String?   @map("parent_id") @db.Uuid
+  name         String
+  slug         String
+  level        Int       @db.SmallInt
+  path         String
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy    String?   @map("created_by") @db.Uuid
+  updatedBy    String?   @map("updated_by") @db.Uuid
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy    String?   @map("deleted_by") @db.Uuid
+  deleteReason String?   @map("delete_reason")
+
+  parent              Category?            @relation("CategoryTree", fields: [parentId], references: [id], map: "categories_parent_fk")
+  children            Category[]           @relation("CategoryTree")
+  categoryAssignments CategoryAssignment[]
+
+  @@map("categories")
+  @@schema("marketplace")
+}
+
+// §3.1.4 — marketplace.category_assignments (vendor↔category; service-bounded ≤10/≤5)
+model CategoryAssignment {
+  id              String                   @id @db.Uuid
+  vendorProfileId String                   @map("vendor_profile_id") @db.Uuid
+  categoryId      String                   @map("category_id") @db.Uuid
+  level           CategoryAssignmentLevel
+  isSpecialized   Boolean                  @default(false) @map("is_specialized")
+  status          CategoryAssignmentStatus @default(proposed)
+  createdAt       DateTime                 @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime                 @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy       String?                  @map("created_by") @db.Uuid
+  updatedBy       String?                  @map("updated_by") @db.Uuid
+  deletedAt       DateTime?                @map("deleted_at") @db.Timestamptz
+  deletedBy       String?                  @map("deleted_by") @db.Uuid
+  deleteReason    String?                  @map("delete_reason")
+
+  vendorProfile VendorProfile @relation(fields: [vendorProfileId], references: [id], map: "category_assignments_profile_fk")
+  category      Category      @relation(fields: [categoryId], references: [id], map: "category_assignments_category_fk")
+
+  @@map("category_assignments")
+  @@schema("marketplace")
+}
+
+enum CategoryAssignmentLevel {
+  primary
+  secondary
+
+  @@map("category_assignment_level")
+  @@schema("marketplace")
+}
+
+enum CategoryAssignmentStatus {
+  proposed
+  active
+  removed
+
+  @@map("category_assignment_status")
+  @@schema("marketplace")
+}
+
+// Doc-6D_VendorSlugSubdomain_Patch_v1.0.1 6D-VSS-01.2 — marketplace.vendor_slug_history
+// (append-only; permanent; global-unique old_slug; public-read/system-write RLS).
+model VendorSlugHistory {
+  id              String   @id @db.Uuid
+  vendorProfileId String   @map("vendor_profile_id") @db.Uuid
+  oldSlug         String   @map("old_slug")
+  newSlug         String   @map("new_slug")
+  reason          String
+  approvedBy      String   @map("approved_by") @db.Uuid
+  migratedAt      DateTime @default(now()) @map("migrated_at") @db.Timestamptz
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy       String?  @map("created_by") @db.Uuid
+  updatedBy       String?  @map("updated_by") @db.Uuid
+
+  vendorProfile VendorProfile @relation(fields: [vendorProfileId], references: [id], map: "vendor_slug_history_profile_fk")
+
+  @@unique([oldSlug], map: "vendor_slug_history_old_slug_uq")
+  @@map("vendor_slug_history")
+  @@schema("marketplace")
+}
+
 // W2-IDN-6.5 — the M1 §B.6 command-dedup / Idempotency-Key replay store (Doc-4C §B.6; vehicle =
 // the Doc-6A §10.3 dedicated dedup table per the owning-module design, Doc-6C §6.1; stored-result
 // column set per Doc-5A §9.3). OPERATIONAL replay cache, NOT a domain aggregate (Doc-6A R2) — no
