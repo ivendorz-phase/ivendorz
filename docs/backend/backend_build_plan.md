@@ -302,6 +302,41 @@ directory listing and search-tab listing are now real; the per-vendor microsite 
 products, projects, microsite sections — remain a later slice). `search_catalog.v1` (real
 free-text search) also remains unbuilt — the Search page's Vendors tab shows an honest "search
 isn't live yet, showing the full directory" disclosure when a `?q=` is present.
+### Wave 3 — M6 `communication` pilot detailed (branch `wave/3-communication`, cut from `main`)
+
+#### `W3-COMM-1` — Support Communications (BC-COMM-4) — the first M6 write, backend + Doc-8 (FE deferred)
+- **Objective:** realize the 6 frozen BC-COMM-4 support-ticket contracts (`create_ticket`/`update_ticket`/
+  `add_ticket_message`/`close_ticket`/`get_ticket`/`list_tickets`) backend-through-HTTP, proving the M6
+  **audited-write shape** (write + audit in one txn, **no §8 event** — R11) + two-sided actor (User own-org /
+  Admin `staff_can_support`) + append-only + non-disclosure firewall.
+- **Frozen authority:** Doc-4H Pass-B Part-4 (§HB-4.1…4.6) · Doc-5H §7 (wire) · Doc-6H §3.4 (schema/RLS) ·
+  Doc-2 §3.7/§7/§9/§10.7 · **the audit gate `[ESC-COMM-AUDIT]` resolved Path A** by the folded linked pair
+  `Doc-2_Patch_v1.0.9` (new §9 **Communication** domain, 4 actions) + `Doc-4H_SupportTicketAuditToken_Patch_v1.0`
+  (tokens → `SupportTicketAuditAction.*`); owner-ruled 2026-07-11, Authority-Map-registered.
+- **Outputs:** `communication` schema (`support_tickets` + `ticket_messages` + `communication.command_dedup`
+  the Doc-6A §10.3 idempotency vehicle; RLS `support_tickets_party`/`ticket_messages_party`; append-only
+  immutability trigger) via 2 forward-only migrations + 2 `communication.*` POLICY seeds (Doc-3 v1.5, 24h/100);
+  full DDD vertical (`domain`/`application`/`infrastructure`/`contracts`/`api`) + `src/server/communication/*`
+  app-composition (User leg `withActiveOrg`; staff leg `withStaffContext`, **fail-closed via `resolveStaffContext`
+  — DC-3**) + `app/api/communication/tickets/**` routes.
+- **Doc-8:** 8C (contract/API, 6 wire shapes) · 8D (schema + RLS positive/negative/cross-tenant/WITH-CHECK-INSERT
+  under the restricted role) · 8E (lifecycle `open→in_progress→resolved→closed`; actor→transition authority —
+  User `resolved→closed` only, User-requesting-staff-transition → AUTHORIZATION not STATE; STATE≠CONFLICT; audit
+  tokens + rollback; non-disclosure NOT_FOUND collapse).
+- **Review outcome (`Wave_Template_v1.0`, 2026-07-11):** Review-A **PASS** (0/0/0 — contracts, audit tokens, both
+  patches, state machine, schema/RLS, boundaries verbatim; `command_dedup` validated as a Doc-6A §10.3 vehicle,
+  not coined) · Review-B (0 BLOCKER/MAJOR, 7 MINOR — staff-authz + 6 coverage gaps) · Team-6 (0 BLOCKER, 1 MAJOR
+  staff-authz + 1 MINOR command_dedup RLS). **Fix pass** (owner-directed **Option A**, module-scoped, no
+  shared-primitive change): `staff_can_support` advisory authority hook made live in the route-handler + ⚠ DC-3
+  maintainer warning + **`[ESC-COMM-STAFF-AUTHZ]`** carried for roster-time hard-gate; 6 coverage MINORs closed
+  (+ NIT-1 error-code consolidation). **Re-verified green: full suite 423/423 (+13), 37/37 COMM tests, tsc 0,
+  eslint/prettier clean; zero COMM regressions.** §13 gate BLOCKER=MAJOR=MINOR=0.
+- **FE deferred (owner ruling 2026-07-11):** admin/support console wires at M8/DC-3 (staff reachable); a user-side
+  "My Support" surface is its own slice — both carried as named follow-ons (no prod-reachable mock existed).
+- **Done:** Board close + commit **AUTHORIZED** by owner 2026-07-11; committed to `wave/3-communication`
+  (COMM-only by explicit path; parallel billing/trust sessions untouched). **NOT merged to `main`** — merges at
+  the full Wave-3 exit gate (Wave-2 precedent). Carried: `[ESC-COMM-STAFF-AUTHZ]` (DC-3) + program-wide
+  `[ESC-MKT-RATELIMIT-ENFORCE]`.
 
 ---
 
