@@ -1,7 +1,7 @@
 # iVendorz — Program Status & Authoring Roadmap
 
 **Companion to `iVendorz_Context_Pack_v5.md`.** Detailed per-module ledger + live work queue. Read both into a fresh chat to resume.
-**Updated:** 2026-07-11. Non-authoritative orientation — on any conflict, the FROZEN corpus wins; patch this to match.
+**Updated:** 2026-07-12. Non-authoritative orientation — on any conflict, the FROZEN corpus wins; patch this to match.
 
 > **CURRENT PHASE: Wave 3 — Independent Domains (M2 · M5 · M6 · M7, parallel).** **Waves 0–2 are
 > DELIVERED to `origin/main`:** Wave 0 Repository Bootstrap (2026-06-27; `wave0-complete`, merge
@@ -11,7 +11,10 @@
 > incl. real ubuntu `next build` · Vitest 386/33 · Playwright E2E+a11y); Vercel Production deploy live.**
 > Baseline records: `Wave{0,1,2}_Baseline_Report_v1.0.md`; governance records:
 > `governanceReviews/Wave-{0,1,2}_Integration_Audit_and_Exit_Gate_v1.0.md`. The gated build sequence is
-> `Build_Roadmap_v1.0.md` — **Wave 3 (Independent Domains, M2/M5/M6/M7 parallel) is IN PROGRESS.**
+> `Build_Roadmap_v1.0.md` — **Wave 3 (Independent Domains, M2/M5/M6/M7 parallel): ALL FOUR MODULES
+> INTEGRATED + EXIT GATE GREEN (2026-07-12) on `wave/3-integration` — `tsc` clean · Prisma valid ·
+> all 18 Wave-3 + base migrations apply on ephemeral PG · vitest 806/806. Awaiting owner-gated merge
+> to `main` (+ Supabase prod migrations). Record: `governanceReviews/Wave-3_Integration_Audit_and_Exit_Gate_v1.0.md`.**
 > **M2 slices built + reviewed 2026-07-11, committed to branch `wave/3-marketplace` (each ran
 > Review-A + Review-B + Team-6; `BLOCKER=MAJOR=MINOR=0` in the merged path once the owner-ruled
 > carried ESCs are excluded; 430/430 suite green). NOT merged to `main`** (owner ruling: Wave 3
@@ -26,7 +29,15 @@
 > Carried non-blocking from the security passes: `[ESC-MKT-HUMANREF-ENUM]` (sequential `human_ref`
 > enumeration, program-wide) + `[ESC-MKT-RATELIMIT-ENFORCE]` (zero enforced rate limiting,
 > program-wide, pre-existing since `get_public_product_detail.v1`) — both `esc_registry.md`. Detail:
-> `docs/backend/backend_build_plan.md` §5 `W3-MKT-1`/`W3-MKT-2`. M5/M6/M7 not started.
+> `docs/backend/backend_build_plan.md` §5 `W3-MKT-1`/`W3-MKT-2`.
+> **M5 trust — COMPLETE** (all 5 BC-TRUST contexts: verification substrate + request_verification +
+> verified_financial_tiers/first §8 emit + performance/trust scoring + fraud signals + reviews/ratings;
+> `wave/3-trust-wp1` `a68e997`). **M6 communication — pilot** (`W3-COMM-1` BC-COMM-4 support-ticket
+> audited write; `wave/3-communication` `301e6b3`; remainder owner-deferred). **M7 billing — COMPLETE**
+> (all 33 contracts, BC-BILL-1…6; `wave/3-billing` `be4c283`). **Cross-cutting outbox conflict resolved:**
+> `core.write_outbox_event.v1` was realized twice (M5 no-SD vs M7 SECURITY DEFINER) → owner-ruled
+> **Option A (no-SD)** 2026-07-12 (`[ESC-CORE-OUTBOX-MECH]`, `BOARD-PACKET-W3-CORE-OUTBOX-MECHANISM_v1.0.md`);
+> reconciled at the exit gate (canonical no-SD, `Response: none` void return, billing SD withdrawn).
 > (Owner-deferred external: Supabase PRODUCTION migrations — the deploy pipeline runs `next build` +
 > `prisma generate` only; `prisma migrate deploy` against prod Supabase is a separate owner step.)
 
