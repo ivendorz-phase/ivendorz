@@ -41,6 +41,10 @@ import taxonomySeed from "@/frontend/navigation/model/taxonomy.v1.json";
 
 // ── Vendors (vendor directory seed). One is intentionally unverified → demonstrates that an absent
 //    "Verified" badge is ABSENCE, never a fabricated "pending" state. ────────────────────────────────
+// `businessType` is a PRESENTATION label for the `vendor_type_preset` UI-preset field (M2) — NOT the
+// capability source of truth (the four-flag matrix stays authoritative; Doc-6D MK-CR4). The frozen value
+// SET is still a pending additive patch (Doc-4D VendorTypePreset PROPOSAL, human-approval pending), so
+// these are human-readable display labels, NOT a coined enum — realign to the ratified value set once it lands.
 export const VENDORS: VendorCardVM[] = [
   {
     slug: "padma-valve-fittings",
@@ -48,6 +52,7 @@ export const VENDORS: VendorCardVM[] = [
     category: "Valves & Fittings",
     location: "Dhaka · Tejgaon I/A",
     verified: true,
+    businessType: "Manufacturer",
     capability: { can_supply: true, can_service: true, can_fabricate: true, can_consult: false },
   },
   {
@@ -56,6 +61,7 @@ export const VENDORS: VendorCardVM[] = [
     category: "Steel & Metals",
     location: "Chattogram · Kalurghat",
     verified: true,
+    businessType: "Manufacturer",
     capability: { can_supply: true, can_service: false, can_fabricate: true, can_consult: false },
   },
   {
@@ -63,6 +69,7 @@ export const VENDORS: VendorCardVM[] = [
     name: "Jamuna Electrical & Drives",
     category: "Electrical & Drives",
     location: "Dhaka · Tongi",
+    businessType: "Supplier / Distributor",
     // Intentionally unverified — renders as absence (no "Verified" badge), not a fabricated state.
     capability: { can_supply: true, can_service: true, can_fabricate: false, can_consult: true },
   },
@@ -72,6 +79,7 @@ export const VENDORS: VendorCardVM[] = [
     category: "Pumps & Motors",
     location: "Narayanganj · Fatullah",
     verified: true,
+    businessType: "Supplier / Distributor",
     capability: { can_supply: true, can_service: true, can_fabricate: false, can_consult: false },
   },
   {
@@ -80,6 +88,7 @@ export const VENDORS: VendorCardVM[] = [
     category: "Safety & PPE",
     location: "Sylhet · Khadimnagar",
     verified: true,
+    businessType: "Importer / Distributor",
     capability: { can_supply: true, can_service: false, can_fabricate: false, can_consult: true },
   },
   {
@@ -88,6 +97,7 @@ export const VENDORS: VendorCardVM[] = [
     category: "Chemicals",
     location: "Chattogram · Sitakunda",
     verified: true,
+    businessType: "Importer",
     capability: { can_supply: true, can_service: false, can_fabricate: false, can_consult: true },
   },
   {
@@ -96,6 +106,7 @@ export const VENDORS: VendorCardVM[] = [
     category: "Fabrication & Machining",
     location: "Gazipur · Tongi",
     verified: true,
+    businessType: "Fabricator",
     capability: { can_supply: false, can_service: true, can_fabricate: true, can_consult: false },
   },
   {
@@ -104,6 +115,7 @@ export const VENDORS: VendorCardVM[] = [
     category: "Bearings & Power Transmission",
     location: "Narayanganj · Siddhirganj",
     verified: true,
+    businessType: "Engineering Consultant",
     capability: { can_supply: true, can_service: true, can_fabricate: false, can_consult: true },
   },
 ];
@@ -367,6 +379,14 @@ export function getPublicVendorProfile(slug: string): PublicVendorProfileVM | un
 /** Vendor-scoped PUBLISHED catalog — the public projection boundary (the seed carries only public products). */
 export function getPublicVendorProducts(slug: string): ProductCardVM[] {
   return PRODUCTS.filter((p) => p.vendorSlug === slug);
+}
+
+/** Up to `limit` representative product NAMES for a vendor (real M2 catalog names) — feeds the richer
+ *  VendorCard `topProducts` slot on the directory/microsite. Empty ⇒ the card renders no list (GI-03). */
+export function getVendorTopProductNames(slug: string, limit = 3): string[] {
+  return PRODUCTS.filter((p) => p.vendorSlug === slug)
+    .slice(0, limit)
+    .map((p) => p.name);
 }
 
 // ── Public product detail (P-PUB-11 · FE-PUB-05, ADR-025 + Doc-4D v1.0.3 / Doc-5D v1.0.1). The

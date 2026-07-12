@@ -5,7 +5,7 @@ import { ResultsGrid } from "@/frontend/components/results-grid";
 import { PaginationControl } from "@/frontend/components/pagination-control";
 import { SearchBar } from "@/frontend/components/search-bar";
 import { Container } from "@/frontend/components/container";
-import { VENDORS, VENDOR_FACETS } from "../_components/discovery/seed";
+import { VENDORS, VENDOR_FACETS, getVendorTopProductNames } from "../_components/discovery/seed";
 import { vendorHref } from "../_components/vendor-url";
 
 // P-PUB-12 Vendor Directory (Doc-7D Public surface · landing_page_spec §5). PRESENTATION & COMPOSITION
@@ -59,7 +59,13 @@ export default function VendorsPage() {
             footer={<PaginationControl hasMore hasPrevious={false} />}
           >
             {VENDORS.map((vendor) => (
-              <VendorCard key={vendor.slug} vendor={vendor} href={vendorHref(vendor.slug)} />
+              // Richer directory card: the `topProducts` slot is fed real M2 catalog names (the lean
+              // landing showcase omits it). Matrix stays authoritative; products never replace it.
+              <VendorCard
+                key={vendor.slug}
+                vendor={{ ...vendor, topProducts: getVendorTopProductNames(vendor.slug) }}
+                href={vendorHref(vendor.slug)}
+              />
             ))}
           </ResultsGrid>
         </div>

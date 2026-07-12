@@ -8,11 +8,19 @@
 // "featured" selection is editorial, not a computed score sort. Published-only: a vendor blacklisted by
 // some buyer still appears, byte-identical (Invariant #11; GI-12). One card is intentionally unverified
 // to demonstrate that absence renders as absence — never a fabricated state.
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { LandingSection } from "@/frontend/components/landing-section";
 import { VendorCard } from "@/frontend/components/vendor-card";
+import { VendorSaveButton } from "@/frontend/components/vendor-save-button";
+import { Button } from "@/frontend/primitives/button";
 import { FEATURED_VENDORS } from "../discovery/seed";
 import { vendorHref } from "../vendor-url";
 
+// Anonymous Public surface: the card CTAs ROUTE, they never mutate. "View profile" → the vendor's public
+// microsite; "Send RFQ" and Save → `(auth)` (a signed-out visitor cannot send an RFQ or save a vendor).
+// LEAN grid per the card-density decision — matrix stays; `topProducts` is deliberately NOT passed here
+// (products belong to the richer directory/microsite card, not the landing showcase).
 export function SupplierShowcase() {
   return (
     <LandingSection
@@ -24,7 +32,30 @@ export function SupplierShowcase() {
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {FEATURED_VENDORS.map((vendor) => (
-          <VendorCard key={vendor.slug} vendor={vendor} href={vendorHref(vendor.slug)} />
+          <VendorCard
+            key={vendor.slug}
+            vendor={vendor}
+            saveSlot={
+              // Anonymous surface: always UNSAVED, routes to `(auth)` — a signed-out visitor can't save.
+              <VendorSaveButton saved={false} href="/login" vendorName={vendor.name} />
+            }
+            action={
+              <div className="flex gap-2">
+                <Button asChild variant="outline" size="sm" className="flex-1">
+                  <Link href={vendorHref(vendor.slug)}>
+                    View profile
+                    <span className="sr-only"> — {vendor.name}</span>
+                  </Link>
+                </Button>
+                <Button asChild size="sm" className="flex-1">
+                  <Link href="/login">
+                    Send RFQ
+                    <ArrowRight aria-hidden="true" />
+                  </Link>
+                </Button>
+              </div>
+            }
+          />
         ))}
       </div>
     </LandingSection>

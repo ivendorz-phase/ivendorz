@@ -1,31 +1,57 @@
 import { Hero } from "./_components/landing/hero";
-import { FeaturedCategories } from "./_components/landing/featured-categories";
-import { SupplierShowcase } from "./_components/landing/supplier-showcase";
+import { LogoMarquee } from "./_components/landing/logo-marquee";
+import { CommandCenter } from "./_components/landing/command-center";
 import { PopularProducts } from "./_components/landing/popular-products";
+import { FeaturedCategories } from "./_components/landing/featured-categories";
+import { HowItWorks } from "./_components/landing/how-it-works";
+import { SupplierShowcase } from "./_components/landing/supplier-showcase";
+import { Faq } from "./_components/landing/faq";
+import { CtaBand } from "./_components/landing/cta-band";
+import { Container } from "@/frontend/components/container";
 
 // Public landing route (`/`) — P-PUB-01, the anonymous Public surface (Doc-7D · landing_page_spec.md),
 // mounted in the Doc-7C `(public)` shell (layout.tsx adds the header + footer chrome).
 //
 // SCOPE (parallel-implementation authorization): PRESENTATION & COMPOSITION ONLY — anonymous,
-// read-only, binds NO Doc-5 contract and fabricates no data; all backend wiring is left for later
-// (its original wave sequence).
-//   M1 (delivered) — SEC-HERO + the Command Center centerpiece (§2/§3).
-//   M2.1 (this slice) — SEC-CATEGORY · SEC-INDUSTRY (FeaturedCategories) · SEC-SUPPLIERS
-//        (SupplierShowcase) · SEC-PRODUCTS (PopularProducts), composing the new discovery components
-//        (vendor-card · product-card · category-tile) + the shared-kit capability-matrix. Section data
-//        is a CURATED STATIC SEED per the registered interim ESCs (CATNAV / PRODDETAIL) — no fabrication.
+// read-only, binds NO Doc-5 contract and fabricates no data; all backend wiring is left for later.
 //
-// Remaining landing sections (all presentation-only, each governed by landing_page_spec.md) follow in
-// a later Public milestone:
-//   M3 — SEC-STATS · SEC-PROCESS · SEC-TRUST · SEC-SUCCESS · SEC-PARTNERS · SEC-RESOURCES · SEC-CTA
-//        (+ stat-card · score-ring)
+// 2026-07-12 redesign (iVendorz Kit landing mockup). Section order:
+//   Hero (dark photo band + demo-preview RFQ ticker) → LogoMarquee (honest sector strip) →
+//   CommandCenter (search/intents band, moved out of the hero) → PopularProducts → FeaturedCategories
+//   ("Sourcing categories") → SupplierShowcase ("Featured Vendors"). How-it-works · FAQ · CTA band ·
+//   testimonials-shell follow in the next slice (all static). Section data remains a CURATED STATIC
+//   SEED per the registered interim ESCs (CATNAV / PRODDETAIL) — no fabrication (GI-03/GI-12).
 export default function HomePage() {
   return (
     <>
       <Hero />
-      <FeaturedCategories />
-      <SupplierShowcase />
+      <LogoMarquee />
+
+      {/* Command Center — the search + procurement-intents block. Relocated from the hero (the hero
+          now hosts the RFQ ticker); framed as its own band just above the discovery sections. */}
+      <section className="border-b border-iv-light-border bg-iv-light-base py-9 sm:py-12">
+        <Container>
+          <div className="mx-auto mb-6 max-w-2xl text-center">
+            <p className="font-mono text-xs font-semibold uppercase tracking-wider text-iv-fg-heading-strong">
+              Start here
+            </p>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-iv-ink-heading">
+              Search the industrial marketplace
+            </h2>
+            <p className="mt-2 text-iv-ink-secondary">
+              Find products, suppliers, and categories — or jump straight into an RFQ.
+            </p>
+          </div>
+          <CommandCenter />
+        </Container>
+      </section>
+
       <PopularProducts />
+      <FeaturedCategories />
+      <HowItWorks />
+      <SupplierShowcase />
+      <Faq />
+      <CtaBand />
     </>
   );
 }
