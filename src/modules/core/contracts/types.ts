@@ -75,28 +75,6 @@ export interface AppendAuditRecordResult {
 
 // ── W3-BILL-4 — `core.write_outbox_event.v1` (Doc-4B §16), the transactional-outbox WRITE primitive ──
 
-/**
- * Input to `core.write_outbox_event.v1` (Doc-4B §16). The OWNING (emitting) module is the only legal
- * caller for its events (§16.6) and is responsible for `eventName` existing in Doc-2 §8 (§16.4), the
- * thin payload (§16.5 — IDs + minimal metadata), and the Privacy-Review assertion (§16.3).
- */
-export interface WriteOutboxEventInput {
-  /** MUST exist in the Doc-2 §8 event catalog (by pointer — never coined; §16.4). */
-  eventName: string;
-  /** Event schema version (≥ 1; §16.4). */
-  eventVersion: number;
-  /** The aggregate root id the event concerns (Doc-2 §10.1 `aggregate_id`). */
-  aggregateId: string;
-  /** Thin payload (§16.5): IDs + minimal metadata only; no protected facts (§16.3), no blobs. */
-  payload: unknown;
-}
-
-/** Output of `core.write_outbox_event.v1` — the platform-assigned id of the appended `pending` outbox row. */
-export interface WriteOutboxEventResult {
-  /** The `core.outbox_events` id (UUIDv7, time-ordered) of the written row. */
-  eventId: string;
-}
-
 // ── W2-CORE-1 — config (POLICY) + feature-flag read services (Doc-4B §B8/§B9) ────────────────
 
 /**
@@ -291,12 +269,6 @@ export interface WriteOutboxEventInput {
   payload: Record<string, unknown>;
 }
 
-/**
- * Output of `core.write_outbox_event.v1`. Returns the platform-assigned identity of the appended
- * (`status='pending'`) outbox row — the correlation handle for the emit (mirrors the audit twin's
- * `auditId`; the emit itself is observed downstream via the dispatcher — §B6).
- */
-export interface WriteOutboxEventResult {
-  /** The `id` (UUIDv7, time-ordered) of the written `core.outbox_events` row. */
-  outboxEventId: string;
-}
+// `core.write_outbox_event.v1` declares NO Response (Doc-4B §Write-Outbox-Event, `Response: none` —
+// Doc-4A §21.5 carve-out). The primitive returns void; callers derive no correlation handle from the emit
+// (the dispatcher observes delivery downstream — §B6). [ESC-CORE-OUTBOX-MECH] Option A, owner-ruled 2026-07-12.

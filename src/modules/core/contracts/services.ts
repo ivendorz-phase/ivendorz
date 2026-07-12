@@ -34,7 +34,6 @@ import type {
   OutboxDispatchInput,
   OutboxDispatchResult,
   WriteOutboxEventInput,
-  WriteOutboxEventResult,
 } from "./types";
 
 /**
@@ -77,11 +76,13 @@ export type AppendAuditRecord = (
  * owning (emitting) module supplies a Doc-2 §8 name (by pointer); this primitive persists the row
  * structurally and does not validate the catalog. Error → `core_outbox_write_failed` (SYSTEM; rolls
  * the caller's tx back). NOT separately audited (the business action is audited by the caller — §17).
+ * Returns void — the frozen contract declares `Response: none` (Doc-4A §21.5 carve-out);
+ * [ESC-CORE-OUTBOX-MECH] Option A, owner-ruled 2026-07-12.
  */
 export type WriteOutboxEvent = (
   input: WriteOutboxEventInput,
   executor?: CoreServiceExecutor,
-) => Promise<WriteOutboxEventResult>;
+) => Promise<void>;
 
 /**
  * `core` transactional-outbox drainer (Doc-8B §7.2; Doc-6B §3.2). Drains `core.outbox_events`

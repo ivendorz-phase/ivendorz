@@ -27,7 +27,9 @@ import { CoreServiceError, type WriteOutboxEventInput } from "../../contracts/ty
 async function write(
   input: WriteOutboxEventInput,
   db: DbExecutor,
-): Promise<{ outboxEventId: string }> {
+): Promise<void> {
+  // `id` is minted app-side (UUIDv7) purely for the INSERT; it is NOT returned — the frozen contract
+  // declares `Response: none` ([ESC-CORE-OUTBOX-MECH] Option A, owner-ruled 2026-07-12).
   const outboxEventId = uuidv7();
   try {
     // `createMany` (single-row) emits a NON-`RETURNING` INSERT — see the NON-RETURNING note above.
@@ -56,7 +58,6 @@ async function write(
       { cause },
     );
   }
-  return { outboxEventId };
 }
 
 /**
