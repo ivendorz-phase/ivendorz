@@ -8,6 +8,7 @@
 // the ≤/− quota arithmetic requires numeric math.
 
 import { prisma, type DbExecutor } from "../../../../shared/db";
+import { uuidv7 } from "../../../../shared/ids";
 
 /** Coerce a Prisma `Decimal` (quota units — not money) to a JS number; `null` (no rows) → 0. */
 function toNum(value: { toString(): string } | null): number {
@@ -84,4 +85,51 @@ export async function findUsagePage(
     source: r.source,
     createdAt: r.createdAt,
   }));
+}
+
+// ── W3-BILL-14 — BC-BILL-3 `record_usage` (§HB-3.1) System-metering write over `usage_ledger`. ──
+
+/** Does the `entitlement_id` resolve to a `billing.entitlements` row? (the caller-supplied FK — [ESC-BILL-
+ *  USAGE-ENTID] Option B; §HB-3.1 stage-7 REFERENCE). */
+export async function entitlementExists(entitlementId: string, db: DbExecutor): Promise<boolean> {
+  const row = await db.entitlement.findFirst({
+    where: { id: entitlementId },
+    select: { id: true },
+  });
+  return row !== null;
+}
+
+/** Append one `usage_ledger` row (append-only; attribution ALWAYS to the Controlling Org — Doc-4I §HB-3.1).
+ *  Returns the minted id. `amount` = quota units. `created_by` is null (System metering); the acting
+ *  representative is captured in `acting_user_id`. */
+export async function insertUsage(
+  input: {
+    entitlementId: string;
+    organizationId: string;
+    actingUserId?: string;
+    consumingEntityId?: string;
+    quotaKey: string;
+    amount: number;
+    period: string;
+    source: "rfq_response" | "lead_access" | "ad_launch";
+  },
+  db: DbExecutor,
+): Promise<string> {
+  const id = uuidv7();
+  await db.usageLedger.create({
+    data: {
+      id,
+      entitlementId: input.entitlementId,
+      organizationId: input.organizationId,
+      ...(input.actingUserId !== undefined ? { actingUserId: input.actingUserId } : {}),
+      ...(input.consumingEntityId !== undefined
+        ? { consumingEntityId: input.consumingEntityId }
+        : {}),
+      quotaKey: input.quotaKey,
+      amount: input.amount,
+      period: input.period,
+      source: input.source,
+    },
+  });
+  return id;
 }

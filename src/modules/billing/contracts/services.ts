@@ -156,6 +156,15 @@ export { enforceQuota } from "../application/queries/enforce-quota.query";
 export { getUsage } from "../application/queries/get-usage.query";
 export { mapGetUsage, usageViewForbidden, USAGE_VIEW_FORBIDDEN } from "../api/usage.handler";
 
+// record_usage (§HB-3.1) — OUT-OF-WIRE System metering (Doc-5I §10/R1): no route/composition; consumed
+// in-process by the metering-signal handlers (RFQ/Operations/Marketplace — future infra). Faced for those
+// consumers + tests. entitlement_id caller-supplied ([ESC-BILL-USAGE-ENTID] Option B). W3-BILL-14.
+export {
+  recordUsageCommand as recordUsage,
+  validateRecordUsageInput,
+} from "../application/commands/record-usage.command";
+export type { RecordUsageDeps } from "../application/commands/record-usage.command";
+
 // ── BC-BILL-4 LEAD CREDITS (W3-BILL-7 reads pilot) — get_lead_balance + list_lead_transactions (org-self
 //    reads). The credit/debit writes (§HB-4.1) land in the next slice. ──
 

@@ -872,3 +872,37 @@ export interface LeadCreditMovementResult {
 
 export type LeadCreditMovementOutcome =
   { ok: true; result: LeadCreditMovementResult } | { ok: false; error: LeadCreditWriteError };
+
+// ── BC-BILL-3 `record_usage` (W3-BILL-14) — OUT-OF-WIRE System metering (§HB-3.1 / Doc-5I §10/R1). Appends
+//    a `usage_ledger` row attributed to the Controlling Org. `entitlement_id` is caller-supplied
+//    ([ESC-BILL-USAGE-ENTID] Option B). `Response: none`. `amount` = quota UNITS (number). ──
+
+/** The Doc-4A §12 error classes `record_usage` can raise (§HB-3.1 §11; System — no AUTHORIZATION leg). */
+export type UsageWriteErrorClass = "VALIDATION" | "REFERENCE" | "DEPENDENCY" | "SYSTEM";
+
+/** A `record_usage` failure (the in-process outcome). */
+export interface UsageWriteError {
+  errorClass: UsageWriteErrorClass;
+  errorCode: string;
+  message: string;
+}
+
+/** `record_usage` input (Doc-4I §HB-3.1 + the [ESC-BILL-USAGE-ENTID] Option-B `entitlement_id` input).
+ *  `organization_id` = the Controlling Org (attribution anchor). `source_event_id` = the Doc-4A §16
+ *  idempotency key (the metered-action event id). */
+export interface RecordUsageInput {
+  organizationId: string;
+  /** The metered entitlement (caller-supplied; maps to the NOT-NULL `usage_ledger.entitlement_id` FK). */
+  entitlementId: string;
+  quotaKey: string;
+  amount: number;
+  period: string;
+  source: UsageSource;
+  actingUserId?: string;
+  consumingEntityId?: string;
+  sourceEventId: string;
+}
+
+/** `record_usage` outcome — `Response: none` (21.5 System): success carries no payload; failure is the §12
+ *  envelope (VALIDATION / REFERENCE / DEPENDENCY / SYSTEM). */
+export type RecordUsageOutcome = { ok: true } | { ok: false; error: UsageWriteError };

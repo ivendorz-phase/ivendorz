@@ -140,3 +140,16 @@ export const LeadCreditAuditAction = {
   /** A lead-credit movement (credit or debit) — §HB-4.1. */
   MOVED: "lead_credit_movement",
 } as const;
+
+// ── W3-BILL-14 — BC-BILL-3 `record_usage` (Doc-4I §HB-3.1 §9). Usage recording is NOT separately enumerated
+//    in Doc-2 §9 → `[ESC-BILL-AUDIT]` (nearest §9 by pointer; no action invented). Attribution System
+//    (metering); org-scoped to the Controlling Org. ──
+
+/** The audit `entity_type` for a `billing.usage_ledger` mutation (Doc-4I §HB-3.1 §9). */
+export const USAGE_LEDGER_ENTITY_TYPE = "usage_ledger" as const;
+
+/** Usage-recording audit action ([ESC-BILL-AUDIT] — nearest §9 by pointer). */
+export const UsageAuditAction = {
+  /** A metered usage row appended — §HB-3.1. */
+  RECORDED: "usage_recorded",
+} as const;
