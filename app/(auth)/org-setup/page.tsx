@@ -1,7 +1,9 @@
 // Org setup route (`/org-setup`) — P-AUTH-03 (Wizard template · Doc-7E §2.3; journey J-BUY-02).
 // Post-signup onboarding: "every user ≥ 1 org" (Invariant #5 — Users act, Organizations own). Lives in
-// the `(auth)` group because there is NO active-org context yet (Doc-7C §2.1); does NOT add an
-// `(auth)/layout.tsx` (that would alter the sibling Login/Signup pages).
+// the `(auth)` group because there is NO active-org context yet (Doc-7C §2.1). Composes the shared
+// split-screen `AuthShell` (wide panel for the multi-column wizard). No dedicated redesign reference
+// existed for this screen, so it adopts the family frame + kit for consistency; the wizard content is
+// unchanged.
 //
 // PRESENTATION-ONLY: composes the Doc-7B kit and performs NO mutation. It BINDS the frozen wired
 // command `create_organization` (Doc-4C §C5 — caller-facing; creator becomes Owner atomically; a
@@ -14,8 +16,10 @@
 // field (`[ESC-7-API]` participation); it is never submitted here.
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Building2 } from "lucide-react";
 import { BrandLogo } from "@/frontend/brand";
-import { Card } from "@/frontend/primitives/card";
+import { AuthShell } from "../_components/auth-shell";
+import { AuthIconBadge } from "../_components/auth-icon-badge";
 import { OrgSetupWizard } from "./org-setup-wizard";
 
 export const metadata: Metadata = {
@@ -26,31 +30,45 @@ export const metadata: Metadata = {
 
 export default function OrgSetupPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-muted/40 px-4 py-10">
-      <div className="w-full max-w-lg">
-        <div className="mb-6 flex justify-center">
-          <Link
-            href="/"
-            className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            <BrandLogo height={36} />
-          </Link>
-        </div>
-
-        <Card className="p-6 shadow-iv-md sm:p-8">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold tracking-tight text-iv-ink-heading">
-              Set up your organization
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Every account works inside an organization — it owns your RFQs, quotes, and documents.
-              You’ll be its owner.
-            </p>
-          </div>
-
-          <OrgSetupWizard />
-        </Card>
+    <AuthShell
+      wide
+      aside={{
+        headline: "Set up the organization that owns your sourcing.",
+        subcopy:
+          "Every account works inside an organization — it owns your RFQs, quotes and documents. You’ll be its owner.",
+        points: [
+          "You become the Owner automatically",
+          "It gets a unique reference on creation",
+          "Invite your team once it’s set up",
+        ],
+        footNote: "Users act; organizations own — the platform’s core rule.",
+      }}
+    >
+      {/* Top bar — mobile brand (the aside is hidden below lg). */}
+      <div className="mb-8 flex items-center">
+        <Link
+          href="/"
+          className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:hidden"
+        >
+          <BrandLogo height={30} />
+        </Link>
       </div>
-    </main>
+
+      <AuthIconBadge>
+        <Building2 />
+      </AuthIconBadge>
+
+      <div className="mb-6">
+        <h1 className="text-[1.7rem] font-extrabold tracking-tight text-iv-ink-heading">
+          Set up your organization
+        </h1>
+        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+          Every account works inside an organization — it owns your RFQs, quotes, and documents.
+          You’ll be its owner.
+        </p>
+      </div>
+
+      <OrgSetupWizard />
+    </AuthShell>
   );
 }

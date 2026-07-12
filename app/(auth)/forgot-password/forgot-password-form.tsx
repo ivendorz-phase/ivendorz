@@ -4,14 +4,17 @@
 // state (Doc-7C §2.3). PRESENTATION-ONLY: client-side validation is UX only; it performs NO mutation
 // and sends NO email (Supabase Auth recovery is not wired in this build). GOVERNANCE — non-disclosure
 // (Doc-7A §4.3/§8): a valid submit ALWAYS resolves to the SAME uniform confirmation, never revealing
-// whether the address is registered (no account-existence side-channel). Composes the shared kit
-// (FormField / Input / Button).
+// whether the address is registered (no account-existence side-channel). Owns the screen's heading so
+// it can swap the whole panel to the "check your inbox" outcome (mirrors the reference). Composes the
+// shared kit (AuthField / Input / Button) + the (auth) presentational helpers.
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { MailCheck } from "lucide-react";
-import { FormField } from "@/frontend/components/form-field";
+import { ArrowLeft, Lock, Mail, MailCheck, Send } from "lucide-react";
 import { Input } from "@/frontend/primitives/input";
 import { Button } from "@/frontend/primitives/button";
+import { AuthField } from "../_components/auth-field";
+import { AuthIconBadge } from "../_components/auth-icon-badge";
+import { AuthResultPanel } from "../_components/auth-result-panel";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -39,65 +42,92 @@ export function ForgotPasswordForm() {
 
   if (sentTo) {
     return (
-      <div className="space-y-4">
-        <div className="flex flex-col items-center gap-2 rounded-md border border-border bg-iv-success-subtle px-4 py-5 text-center">
-          <MailCheck aria-hidden="true" className="size-6 text-iv-success-muted" />
-          <h2 className="text-base font-semibold text-iv-ink-heading">Check your email</h2>
-          <p className="text-sm text-muted-foreground" role="status">
+      <AuthResultPanel
+        tone="success"
+        icon={<MailCheck />}
+        title="Check your inbox"
+        description={
+          <>
             If an account exists for <span className="font-medium text-foreground">{sentTo}</span>,
-            we’ve sent a link to reset your password. The link expires shortly.
-          </p>
-        </div>
-
-        <p className="text-xs text-muted-foreground">
-          Didn’t get it? Check your spam folder, or{" "}
-          <button
-            type="button"
-            onClick={() => {
-              setSentTo(null);
-              setEmail("");
-            }}
-            className="rounded-sm font-medium text-iv-navy-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            try a different email
-          </button>
-          .
-        </p>
-
-        {/* Honest interim — email delivery is not wired in this presentation build. */}
-        <p className="text-xs text-muted-foreground">
-          Email delivery isn’t wired in this preview — nothing was sent.
-        </p>
-
-        <Button asChild variant="outline" className="w-full">
-          <Link href="/login">Back to sign in</Link>
-        </Button>
-      </div>
+            we’ve sent a link to reset your password. It expires in 30 minutes — remember to check
+            your spam folder.
+          </>
+        }
+        action={
+          <Button asChild size="lg" className="w-full">
+            <Link href="/login">Back to sign in</Link>
+          </Button>
+        }
+        note={
+          <>
+            Didn’t get it?{" "}
+            <button
+              type="button"
+              onClick={() => {
+                setSentTo(null);
+                setEmail("");
+              }}
+              className="rounded-sm font-medium text-iv-navy-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Try a different email
+            </button>
+            . Email delivery isn’t wired in this preview — nothing was sent.
+          </>
+        }
+      />
     );
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="space-y-4">
-      <FormField
-        id="reset-email"
-        label="Email"
-        required
-        description="We’ll send the reset link to this address."
-        error={error}
+    <div>
+      <Link
+        href="/login"
+        className="mb-6 inline-flex items-center gap-1.5 rounded-sm text-[13px] font-medium text-muted-foreground hover:text-iv-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <Input
-          name="email"
-          type="email"
-          autoComplete="email"
-          placeholder="you@company.com.bd"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </FormField>
+        <ArrowLeft aria-hidden="true" className="size-4" />
+        Back to sign in
+      </Link>
 
-      <Button type="submit" className="w-full">
-        Send reset link
-      </Button>
-    </form>
+      <AuthIconBadge>
+        <Lock />
+      </AuthIconBadge>
+
+      <div className="mb-6">
+        <h1 className="text-[1.7rem] font-extrabold tracking-tight text-iv-ink-heading">
+          Forgot your password?
+        </h1>
+        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+          No problem. Enter the email tied to your account and we’ll send you a link to reset it.
+        </p>
+      </div>
+
+      <form onSubmit={onSubmit} noValidate className="space-y-4">
+        <AuthField id="reset-email" label="Work email" icon={<Mail />} error={error} required>
+          <Input
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@company.com.bd"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </AuthField>
+
+        <Button type="submit" size="lg" className="w-full gap-2">
+          Send reset link
+          <Send aria-hidden="true" />
+        </Button>
+      </form>
+
+      <p className="mt-7 text-center text-sm text-muted-foreground">
+        Remembered it?{" "}
+        <Link
+          href="/login"
+          className="rounded-sm font-medium text-iv-navy-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          Sign in
+        </Link>
+      </p>
+    </div>
   );
 }
