@@ -1,13 +1,13 @@
-# Wave 3 — Independent Domains (M2 · M5 · M6 · M7) — Integration Audit + Exit Gate — **v0.1 DRAFT (PREP)**
+# Wave 3 — Independent Domains (M2 · M5 · M6 · M7) — Integration Audit + Exit Gate — **v1.0 — GATED (GREEN)**
 
 | Field | Value |
 |---|---|
 | **WP** | Wave-3 Integration Audit [W3-AUDIT-001] |
-| **Date** | 2026-07-11 |
-| **Status** | **PREP — read-only governance audit COMPLETE for the delivered branches; combined build/suite + merge HELD** (owner Plan A: "prepare now, gate when all 4 ready"). This is the DRAFT; it becomes v1.0 when the full gate runs. |
-| **Scope** | M2 `marketplace` · M5 `trust` · M6 `communication` · M7 `billing` — the four Wave-3 independent domains, each on its own branch cut from `main` (`4bf4645`), merging at this exit gate (Wave-2 single-wave-exit precedent). |
-| **Method** | Mirrors `Wave-2_Integration_Audit_and_Exit_Gate_v1.0.md`. Read-only per-branch analysis done on the shared tree without integrating (active parallel sessions + shared test DB → no full-suite runs yet, per `[[review-concurrency-contamination]]`). |
-| **Verdict** | **NOT YET GATED — blocked on M5 delivery + M2/M7 session-complete confirmation + quiet-DB window.** Gate **shape RULED** (Board 2026-07-11): **DELIVERED-SLICE EXIT GATE, APPROVED** (§0.1). The delivered branches (M2/M6/M7) pass every *read-only* governance clause. The *combined* build/migrate/suite/CHK-8-024 clauses are HELD until integration. |
+| **Date** | 2026-07-11 (prep) · **2026-07-12 (gate run — GREEN)** |
+| **Status** | **GATED — integration executed on `wave/3-integration` (off `main` `4bf4645`); all six §0.1 criteria GREEN.** All four modules merged; the one cross-cutting conflict (`core.write_outbox_event.v1` SD-vs-no-SD) was owner-ruled and resolved to Option A; combined `tsc` clean · Prisma schema valid · **all 18 Wave-3 + base migrations apply clean on ephemeral PG** · **vitest 806/806 (61 files)**. See §0.2. |
+| **Scope** | M2 `marketplace` · M5 `trust` · M6 `communication` · M7 `billing` — the four Wave-3 independent domains, each on its own branch cut from `main` (`4bf4645`), integrated on `wave/3-integration` at this exit gate (Wave-2 single-wave-exit precedent). |
+| **Method** | Mirrors `Wave-2_Integration_Audit_and_Exit_Gate_v1.0.md`. Prep pass = read-only per-branch (2026-07-11); **gate run = actual integration** on `wave/3-integration` in an isolated worktree against a throwaway ephemeral Postgres (port 5599), no contamination of any active session's DB (`[[review-concurrency-contamination]]`). |
+| **Verdict** | **✅ PASS — integration GREEN, exit gate MET.** All four modules integrated; zero frozen-corpus drift (additive patches only); the outbox mechanism conflict resolved Option A (owner-ruled, `[ESC-CORE-OUTBOX-MECH]`); combined build/migrate/suite/CHK-8-024 all green. **Remaining outward step: owner-gated merge of `wave/3-integration` → `main`** (+ Supabase prod migrations), per §B. Local `next build` is NOT the oracle on Windows — **CI is authoritative for `next build` + Playwright E2E** (`[[ci-is-the-build-oracle]]`); run on the merge PR. |
 
 > **Wave 3 ≠ Wave 2 in shape.** Wave 2 asserted complete M0+M1 **module DoDs**. Wave 3's committed work is **per-module slices with explicit deferrals** (M2: discovery reads, TrustIndicators/products/search deferred; M6: support-ticket pilot, event-consumer BCs deferred; M7: plan/entitlement catalog, ~of 33 contracts; M5: verification substrate WP1).
 
@@ -23,6 +23,31 @@ This gate asserts the **delivered surface**, not full-module DoDs. Evaluation cr
 6. **No regression** — Wave-0…2 inherited behavior + suites still green.
 
 **Explicitly EXCLUDED from this gate:** (a) full-module Definition of Done; (b) deferred capabilities scheduled for later waves (M2 trust-indicators/search, M6 event-consumer BCs, M7 remaining contracts, M5 remaining Trust WPs). These are carried (§D), not gating.
+
+---
+
+### §0.2 GATE RUN — RESULTS (2026-07-12) — **GREEN**
+
+The §C trigger was met (M5 completed all 5 BC-TRUST contexts; M7 completed all 33 contracts; M2/M6 at their delivered stops; owner authorized the coordinator to run the gate). Integration executed on **`wave/3-integration`** (cut from `main` `4bf4645`) in an isolated worktree.
+
+**Integration lineage:** governance docs → M5 trust (canonical outbox) → M2 marketplace → M6 communication → M7 billing → Option-A outbox cleanup → union-repair + migration reconciliation → test reconciliation.
+
+**The one cross-cutting conflict — `core.write_outbox_event.v1` (M0 shared kernel).** Discovered at merge (not in the v0.1 prep): M5 and M7 had each realized the M0 outbox-write primitive divergently — M5 no-SD (non-`RETURNING` caller-context insert), M7 `SECURITY DEFINER`. Raised as a Flag-and-Halt (`[ESC-CORE-OUTBOX-MECH]`, `governanceReviews/BOARD-PACKET-W3-CORE-OUTBOX-MECHANISM_v1.0.md`); **owner-ruled Option A (no-SD) 2026-07-12.** Resolved at this gate: canonical = M5's `31b997d`; `WriteOutboxEventResult` dropped (frozen `Response: none`, Doc-4A §21.5) → void return; M7's `SECURITY DEFINER` function + its `20260711180000_core_write_outbox_event` migration withdrawn; billing emitters re-pointed to `@/modules/core/contracts`. **Empirically confirmed: no Doc-6B tenant-INSERT policy needed** — billing's `purchase_subscription` emit works on the privileged app connection (RLS backstop intact; the one test asserting the withdrawn SD mechanism was reconciled to assert the no-SD backstop).
+
+**Shared-file reconciliation:** `00_AUTHORITY_MAP.md` + `esc_registry.md` auto-merged (additive). `schema.prisma` / `db.ts` / `backend_build_plan.md` union-resolved; two **union artifacts** repaired where conflict boundaries cut through syntax (dropped model `}` on `AdminRating`/`CommunicationCommandDedup`; dropped `);` on two `db.ts` grant calls) + a pre-existing duplicate `UUID_PATTERN` in `src/shared/ids/index.ts` de-duplicated. **Four** M5↔M6/M7 migration-timestamp collisions (incl. the one noted in §A-11) reconciled by +30s bumps on the M6/M7 side (no reordering); withdrawing billing's outbox migration cleared a fifth.
+
+**Six-criteria results (§0.1):**
+
+| # | Criterion | Result |
+|---|---|---|
+| 1 | Delivered-surface conformance | ✅ each slice conforms; outbox reconciled to the frozen Doc-4B contract |
+| 2 | Cross-module integrity (boundaries, contracts-only, firewall, no cross-schema FK) | ✅ disjoint module trees; billing re-points via `@/modules/core/contracts` only |
+| 3 | Shared-infrastructure reconciliation | ✅ union-merged; schema valid; all migrations coherent |
+| 4 | Combined build/test integrity | ✅ **`tsc` clean · `prisma validate` valid · all 18 Wave-3 + base migrations `migrate deploy` clean · vitest 806/806 (61 files)** on ephemeral PG. `next build` + E2E = CI (oracle), on the merge PR. |
+| 5 | Governance completeness | ✅ zero frozen-corpus drift; all corpus changes additive patches; `[ESC-CORE-OUTBOX-MECH]` recorded RESOLVED |
+| 6 | No regression | ✅ Wave-0…2 inherited suites green within the 806 |
+
+**Integration commits (`wave/3-integration`):** 4 merge commits (M2/M5/M6/M7) + `d7c1d0a` (Option-A cleanup) + `2d58a42` (union-repair + migration reconciliation) + `0d05cf9` (test reconciliation) + registry/audit folds.
 
 ---
 
@@ -78,10 +103,12 @@ Legend: **✅ PRELIM** = verified read-only, per delivered branch, pre-integrati
 ## §C. Readiness TRIGGER (what unblocks the full gate)
 
 Run the combined integration + §A HELD clauses + Part-B merge **only when ALL of**:
-1. ☐ **M5 trust** completes its Wave-3 scope and lands on `wave/3-trust` (currently `wave/3-trust-wp1`, +2, mid-build).
-2. ☐ **M2 + M7 sessions** confirm delivery-complete (no further commits to their wave branches).
-3. ✅ **Owner ruling on gate shape — RULED: DELIVERED-SLICE EXIT GATE (Board, 2026-07-11, APPROVED).** §0.1 closed; this trigger item is satisfied.
-4. ☐ A **quiet-tree window** on the shared Postgres (no active session running suites) — or run the combined suite in an isolated worktree with a throwaway DB.
+1. ✅ **M5 trust** completed all 5 BC-TRUST contexts (`wave/3-trust-wp1` `a68e997`) — integrated here. (Its code lived on `wave/3-trust-wp1`; `wave/3-trust` held the coordination/governance docs.)
+2. ✅ **M2 + M7** delivery-complete (M7 = all 33 contracts; M2 = its delivered discovery slices); **M6** at its owner-ruled pilot stop.
+3. ✅ **Owner ruling on gate shape — RULED: DELIVERED-SLICE EXIT GATE (Board, 2026-07-11, APPROVED).** §0.1 closed.
+4. ✅ **Quiet-tree window honored** — the combined suite ran in an isolated worktree against a throwaway ephemeral Postgres (port 5599); zero contamination of any active session's DB.
+
+**All triggers met — the gate ran 2026-07-12; results in §0.2.**
 
 ---
 
@@ -94,4 +121,4 @@ Run the combined integration + §A HELD clauses + Part-B merge **only when ALL o
 
 ---
 
-*Wave-3 Integration Audit + Exit Gate — v0.1 DRAFT (PREP). Read-only governance clauses verified for the delivered branches; combined build/migrate/suite/CHK-8-024 + merge HELD per owner Plan A. Promote to v1.0 when the §C trigger is met and the full gate runs. Non-authoritative under the frozen corpus; on conflict the frozen doc wins.*
+*Wave-3 Integration Audit + Exit Gate — **v1.0 · GATED (GREEN) 2026-07-12**. All four modules integrated on `wave/3-integration`; the `[ESC-CORE-OUTBOX-MECH]` outbox conflict resolved Option A (owner-ruled); combined `tsc`/`prisma validate`/`migrate deploy`/`vitest 806/806` green on ephemeral PG. §A prep-pass ⏳ HELD markers below record the 2026-07-11 read-only state and are **superseded by §0.2**. Remaining outward step = owner-gated `wave/3-integration` → `main` PR (CI runs `next build` + Playwright — the authoritative build/E2E oracle) + Supabase prod migrations. Non-authoritative under the frozen corpus; on conflict the frozen doc wins.*
