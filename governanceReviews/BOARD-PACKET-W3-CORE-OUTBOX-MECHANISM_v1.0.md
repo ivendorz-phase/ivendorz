@@ -204,12 +204,41 @@ three are a separate exit-gate migration-ordering reconciliation**, not part of 
 
 | Question | Ruling | Date | Record |
 |---|---|---|---|
-| Q1 — audit posture = normative rule for **all** M0 append primitives (binds outbox) vs **audit-specific**? | _pending_ | | |
-| Q2 — Option A (no-SD) / Option B (ratify SD) | _pending_ | | |
-| Q3 — contract-surface + migration reconciliation | _pending_ | | |
+| Q1 — audit posture = normative rule for **all** M0 append primitives (binds outbox) vs **audit-specific**? | **YES — binds the outbox twin** (normative for all M0 append primitives; `SECURITY DEFINER` not permitted) | 2026-07-12 | owner ruling |
+| Q2 — Option A (no-SD) / Option B (ratify SD) | **Option A — retain no-SD** | 2026-07-12 | owner ruling |
+| Q3 — contract-surface + migration reconciliation | **Reconcile the implementation to the existing frozen contract; do NOT expand the contract surface solely to accommodate the current implementation** (directive below) | 2026-07-12 | owner ruling |
 
-*Raised by the Wave-3 coordinator, 2026-07-12. Non-authoritative under the frozen corpus (CLAUDE.md §7);
-on any conflict the frozen doc wins. Sources cited by pointer, never restated.*
+### Ruling directive — Option A realization (frozen-contract-conformant; executed at the exit gate)
+
+The canonical target is the **frozen `core.write_outbox_event.v1` contract**
+([Doc-4B_Content_v1.0_PassB.md §Write Outbox Event, :895–:921](../generatedDocs/Doc-4B_Content_v1.0_PassB.md#L895-L921))
+— **not** either current implementation:
+
+- **Mechanism (Q1/Q2):** app-minted UUIDv7 + **non-`RETURNING`** insert on the **caller's executor**; **no
+  `SECURITY DEFINER`** (the `append_audit_record` twin's realization). ⇒ **M5/trust `31b997d` is canonical.**
+- **Inputs:** `event_name`, `event_version`, `aggregate_id`, `payload : object` → `Record<string, unknown>`
+  (trust conforms; **billing's `payload: unknown` is looser than the contract — tighten to the frozen shape**).
+- **Output = NONE (the Q3 correction).** The frozen contract declares **no** Outputs/Response
+  (`Response: none`, Doc-4A §21.5 carve-out). ⇒ **Drop `WriteOutboxEventResult` entirely** — **both**
+  `outboxEventId` (trust) **and** `eventId` (billing) are contract-surface expansions the ruling forbids; any
+  caller depending on a returned id drops that dependency. *(Even the canonical `31b997d` over-exposed a
+  result — it is reconciled too.)*
+- **Error code:** `core_outbox_write_failed` is **frozen** (:921) — **keep** (trust has it; billing restores it).
+
+**Two follow-ons at the gate (neither expands the contract surface):**
+1. **M7 withdraws** its `SECURITY DEFINER` function + `20260711180000_core_write_outbox_event` migration and
+   re-points every billing emitter to `@/modules/core/contracts`.
+2. **Tenant-emit RLS (defense-in-depth parity, not a contract change):** the no-SD path admits a tenant-context
+   write via the privileged app connection (RLS = backstop); for RLS-test/defense parity with `audit_records`'
+   D3 leg, an **additive Doc-6B** tenant-admitting INSERT `WITH CHECK` policy on `core.outbox_events` may be
+   added — confirm necessity vs. the privileged-connection posture at the gate.
+
+Registration of `[ESC-CORE-OUTBOX-MECH]` = **RESOLVED (Option A)** across `00_AUTHORITY_MAP.md` /
+`esc_registry.md` / `CORPUS_INDEX.md` (+ the Doc-6B patch if drafted) folds at the Wave-3 exit gate.
+
+*Raised by the Wave-3 coordinator, 2026-07-12; **owner-ruled 2026-07-12 (Q1=Yes · Q2=Option A · Q3=conform to
+frozen contract)**. Non-authoritative under the frozen corpus (CLAUDE.md §7); on any conflict the frozen doc
+wins. Sources cited by pointer, never restated.*
 
 ## Appendix A — Timeline
 
@@ -219,7 +248,7 @@ on any conflict the frozen doc wins. Sources cited by pointer, never restated.*
 | **T2** | 2026-07-11 (`31b997d`) | M5 / trust realizes it **no-SD** (non-`RETURNING` caller-context insert) as the isolated M0 WP W3-CORE-1 |
 | **T3** | 2026-07-12 | Divergence discovered during Wave-3 exit-gate reconciliation (add/add conflict on `src/modules/core/`) |
 | **T4** | 2026-07-12 | Coordinator raises this Flag-and-Halt packet (`[ESC-CORE-OUTBOX-MECH]`, proposed) |
-| **T5** | _pending_ | M0-owner / Architecture Board ruling (Q1–Q3) |
+| **T5** | 2026-07-12 | **M0-owner RULING: Q1=Yes (binds) · Q2=Option A (no-SD) · Q3=conform to frozen contract (drop `WriteOutboxEventResult`).** Execution deferred to the Wave-3 exit gate |
 
 ---
 
