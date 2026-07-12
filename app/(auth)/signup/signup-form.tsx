@@ -4,14 +4,18 @@
 // (Doc-7C §2.3). PRESENTATION-ONLY: client-side validation is UX only (never an authorization
 // decision — the server is the final authority, Doc-7A). It performs NO mutation and calls NO
 // contract: account creation is deferred (`[ESC-7-API-SIGNUP]`), so a valid submit shows an honest
-// interim notice and fabricates no account. Composes the shared kit (FormField / Input / Button); the
-// consent control is a native checkbox (no kit checkbox primitive exists yet) wired for a11y by hand.
+// interim notice and fabricates no account. Composes the shared kit (AuthField / Input / Button) +
+// the (auth) presentational helpers (PasswordToggle / PasswordStrength). The consent control is a
+// native checkbox (no kit checkbox primitive exists yet) wired for a11y by hand. Company/role are
+// intentionally NOT collected here — org/role setup is the separate /org-setup step (P-AUTH-03).
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { Info } from "lucide-react";
-import { FormField } from "@/frontend/components/form-field";
+import { Info, User, Mail, Lock } from "lucide-react";
 import { Input } from "@/frontend/primitives/input";
 import { Button } from "@/frontend/primitives/button";
+import { AuthField } from "../_components/auth-field";
+import { PasswordToggle } from "../_components/password-toggle";
+import { PasswordStrength } from "../_components/password-strength";
 
 interface FieldErrors {
   name?: string;
@@ -30,6 +34,8 @@ export function SignupForm() {
   const [terms, setTerms] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitted, setSubmitted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   function set<K extends keyof typeof values>(key: K, value: string) {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -70,7 +76,7 @@ export function SignupForm() {
         </div>
       ) : null}
 
-      <FormField id="signup-name" label="Full name" required error={errors.name}>
+      <AuthField id="signup-name" label="Full name" required icon={<User />} error={errors.name}>
         <Input
           name="name"
           type="text"
@@ -79,9 +85,9 @@ export function SignupForm() {
           value={values.name}
           onChange={(e) => set("name", e.target.value)}
         />
-      </FormField>
+      </AuthField>
 
-      <FormField id="signup-email" label="Work email" required error={errors.email}>
+      <AuthField id="signup-email" label="Work email" required icon={<Mail />} error={errors.email}>
         <Input
           name="email"
           type="email"
@@ -90,33 +96,48 @@ export function SignupForm() {
           value={values.email}
           onChange={(e) => set("email", e.target.value)}
         />
-      </FormField>
+      </AuthField>
 
-      <FormField
-        id="signup-password"
-        label="Password"
+      <div className="space-y-1.5">
+        <AuthField
+          id="signup-password"
+          label="Password"
+          required
+          icon={<Lock />}
+          error={errors.password}
+          trailing={
+            <PasswordToggle shown={showPassword} onToggle={() => setShowPassword((v) => !v)} />
+          }
+        >
+          <Input
+            name="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="new-password"
+            placeholder="At least 8 characters"
+            value={values.password}
+            onChange={(e) => set("password", e.target.value)}
+          />
+        </AuthField>
+        <PasswordStrength value={values.password} />
+      </div>
+
+      <AuthField
+        id="signup-confirm"
+        label="Confirm password"
         required
-        description={`Use at least ${MIN_PASSWORD} characters.`}
-        error={errors.password}
+        icon={<Lock />}
+        error={errors.confirm}
+        trailing={<PasswordToggle shown={showConfirm} onToggle={() => setShowConfirm((v) => !v)} />}
       >
         <Input
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          value={values.password}
-          onChange={(e) => set("password", e.target.value)}
-        />
-      </FormField>
-
-      <FormField id="signup-confirm" label="Confirm password" required error={errors.confirm}>
-        <Input
           name="confirm"
-          type="password"
+          type={showConfirm ? "text" : "password"}
           autoComplete="new-password"
+          placeholder="Re-enter your password"
           value={values.confirm}
           onChange={(e) => set("confirm", e.target.value)}
         />
-      </FormField>
+      </AuthField>
 
       <div className="space-y-1.5">
         <div className="flex items-start gap-2">
@@ -145,7 +166,7 @@ export function SignupForm() {
             >
               Privacy Policy
             </Link>
-            .
+            , and consent to vendor verification checks.
           </label>
         </div>
         {errors.terms ? (
@@ -155,7 +176,7 @@ export function SignupForm() {
         ) : null}
       </div>
 
-      <Button type="submit" className="w-full" disabled={submitted}>
+      <Button type="submit" size="lg" className="w-full" disabled={submitted}>
         Create account
       </Button>
     </form>
