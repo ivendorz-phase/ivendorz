@@ -239,3 +239,35 @@ export const ReviewAuditAction = {
 } as const;
 
 export type ReviewAuditActionToken = (typeof ReviewAuditAction)[keyof typeof ReviewAuditAction];
+
+// ── W3-TRUST-5b — BC-TRUST-5 Admin Rating audit token (Doc-4G §G8.4 §7; Doc-6G §3.5.1) ─────────────────
+//
+// PROOF that admin-rating set is NOT §9-enumerated (so it carries `[ESC-TRUST-AUDIT]`, UNLIKE the Public
+// Review actions which ARE enumerated on line 693):
+//   Doc-2 §9 line 693 (Reviews): "| Reviews | review submit, moderation decision, publish, remove |"
+//   Doc-2 §9 line 694 (Admin):   "| Admin | ban issue/lift, category approve/delete, suggestion decisions,
+//                                  import job execution, moderation decisions, link confirm/dismiss |"
+// NEITHER enumerates an admin-RATING action. Therefore — exactly the fraud precedent — this token carries
+// `[ESC-TRUST-AUDIT]` and binds the nearest §9 Trust action BY POINTER (channel Doc-2 §9 additive; NO §9
+// action invented — Doc-4G §G8.4 §7 / §H.6). Attribution: Admin (`rated_by`). NO event (Doc-2 §8 has none —
+// Doc-4G §H.7); each mutation is state + THIS audit only. The create-vs-update `operation` rides the audit
+// `newValue` (no dedicated column). The token STRING is the Doc-4G-class serialization; a future rename
+// touches Doc-4G/Doc-6G + this constant, never Doc-2.
+
+/** The audit `entity_type` for `trust.admin_ratings` rows (object-scope; Doc-4G §G8.4 §7). Singular per the
+ *  identity buyer_profile / verified-tier / score / fraud / public-review precedent — a realization choice,
+ *  NOT a frozen constant. */
+export const ADMIN_RATING_ENTITY_TYPE = "admin_rating" as const;
+
+/**
+ * Canonical Admin Rating audit action — `[ESC-TRUST-AUDIT]` (Doc-2 §9 693/694 enumerate no admin-rating
+ * action → nearest §9 Trust action by pointer; Doc-4G §G8.4 §7 / §H.6).
+ *   SET → `admin_rating_set` (create-or-update; Admin). The `operation` (create|update) rides `newValue`.
+ */
+export const AdminRatingAuditAction = {
+  /** [ESC-TRUST-AUDIT] (nearest §9 Trust by pointer) — the `set_admin_rating` create-or-update (Admin). */
+  SET: "admin_rating_set",
+} as const;
+
+export type AdminRatingAuditActionToken =
+  (typeof AdminRatingAuditAction)[keyof typeof AdminRatingAuditAction];

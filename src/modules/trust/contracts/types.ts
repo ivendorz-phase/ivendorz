@@ -804,3 +804,124 @@ export interface ListReviewsResult {
 export type ListReviewsOutcome =
   | { ok: true; result: ListReviewsResult }
   | { ok: false; error: ReviewReadError };
+
+// ── W3-TRUST-5b — BC-TRUST-5 (Part B) Admin Rating DTOs (Doc-4G §G8.4/§G8.5; Doc-6G §3.5.1) ──────────────
+// The Admin Rating aggregate: `set_admin_rating` (staff create-or-update the vendor's singleton) + the
+// staff-only read `list_admin_ratings`. This is a SEPARATE authority from the Public Review (Doc-4G §H.9a —
+// "never merged"). Field names/semantics owned by Doc-4G §G8.4/§G8.5 + Doc-2 §10.6; bound by pointer.
+//
+// NON-DISCLOSURE (F4G-PB5-M3 / §H.9f / Doc-4A §7.5): admin ratings are STAFF-INTERNAL — never public, never
+// tenant-visible, never exposed externally. The table has ONLY the `admin_ratings_staff FOR ALL` RLS policy;
+// a non-staff caller sees ZERO rows and the DEFERRED comp-edge collapses to NOT_FOUND (never AUTHORIZATION).
+// FIREWALL (Invariant #6; §H.9b): an admin rating is an INTERNAL SIGNAL only — it mutates NO score/
+// verification/fraud/tier row and issues no ban. NO EVENT (Doc-4G §H.7): the injected dep is
+// `appendAuditRecord` ONLY (no `writeOutboxEvent`). `rated_by` is server-derived from the staff context.
+//
+// COLUMN MAPPING (Doc-6G §3.5.1): the contract `ratingValue`/`ratingNote` map to the frozen DB columns
+// `score`/`comment`. `score` is `numeric` with NO range CHECK (do NOT apply the `public_reviews` 1–5 rule).
+
+/** The create-or-update operation an admin-rating set resolved to (rides the audit `newValue`). */
+export type AdminRatingOperation = "create" | "update";
+
+/** The acting-staff context for the Admin Rating writes. The `staff_can_verify`/`staff_super_admin` AUTHZ is
+ *  performed at the DEFERRED composition edge BEFORE the service runs (WP2 precedent); this carries only the
+ *  Doc-2 §9 attribution (`actorId` = the acting staff = `rated_by`). */
+export interface AdminRatingStaffContext {
+  /** The acting `identity.users` staff id — the Doc-2 §9 audit attribution (Admin actor; also `rated_by`). */
+  staffUserId: string;
+}
+
+/** Injected Module 0 contract service — the ONLY audit-write surface. NO `writeOutboxEvent`: BC-TRUST-5 emits
+ *  NO event (Doc-4G §H.7). */
+export interface SetAdminRatingDeps {
+  /** `core.append_audit_record.v1` (Doc-4B §B10), injected by the contract TYPE (`@/modules/core/contracts`). */
+  appendAuditRecord: AppendAuditRecord;
+}
+
+/** Input to `trust.set_admin_rating.v1` (Doc-4G §G8.4 request schema). `rated_by` is server-derived from the
+ *  staff context (never a caller field). The presence of `expectedRevision` signals UPDATE intent. */
+export interface SetAdminRatingInput {
+  /** `vendor_profile_id : uuid : required` — the subject; a bare cross-module UUID → M2 (no FK). */
+  vendorProfileId: string;
+  /** `expected_revision : conditional` — optimistic-concurrency token (realized against `updated_at`).
+   *  PRESENT ⇒ update the vendor's live rating; ABSENT ⇒ create (a live row already existing ⇒ CONFLICT). */
+  expectedRevision?: Date | null;
+  /** `rating_value : numeric : required` → the DB column `score` (Doc-6G §3.5.1). A finite number; NO 1–5 range. */
+  ratingValue: number;
+  /** `rating_note : text : optional` → the DB column `comment` (Doc-6G §3.5.1). Internal note (staff-only). */
+  ratingNote?: string | null;
+}
+
+/** Result of a successful `set_admin_rating` (Doc-4G §G8.4 §3 — `admin_rating_id`; `reference_id` rides the
+ *  deferred HTTP envelope, not `result`). Property names camelCase (Doc-5A Option B). */
+export interface SetAdminRatingResult {
+  /** The created-or-updated `admin_ratings.id` (UUIDv7). */
+  adminRatingId: string;
+  /** Which operation was applied (also recorded in the audit `newValue`). */
+  operation: AdminRatingOperation;
+}
+
+/** Error outcome of `set_admin_rating` (Doc-4G §G8.4 error register; classes per Doc-5A §6.2). The DG-2 vendor
+ *  resolution (REFERENCE/DEPENDENCY) is DEFERRED to the comp-edge (the WP2/WP5a precedent) — in-scope classes
+ *  are VALIDATION (SYNTAX) · NOT_FOUND (update with no live row; the non-staff collapse) · CONFLICT (stale
+ *  `expected_revision`; create over an existing live rating). */
+export interface SetAdminRatingError {
+  /** VALIDATION→400 · NOT_FOUND→404 · CONFLICT→409 (Doc-5A §6.2). */
+  errorClass: "VALIDATION" | "NOT_FOUND" | "CONFLICT";
+  /** The interim `trust_admin_rating_*` register code ([ESC-TRUST-CODE]). */
+  errorCode: string;
+  /** Human-safe, non-leaking message. */
+  message: string;
+}
+
+/** Outcome of `trust.set_admin_rating.v1`. `ok:true` ⇒ the vendor's singleton rating was created or updated. */
+export type SetAdminRatingOutcome =
+  | { ok: true; result: SetAdminRatingResult }
+  | { ok: false; error: SetAdminRatingError };
+
+/** The staff Admin Rating projection (Doc-4G §G8.5 §3 — staff-only; never tenant-visible). `score` is the DB
+ *  `numeric` mapped to `number`; `comment` is the internal note. */
+export interface AdminRatingView {
+  adminRatingId: string;
+  vendorProfileId: string;
+  /** The staff rating (DB column `score`; `numeric` → `number`), or `null`. */
+  score: number | null;
+  /** The staff rater (DB column `rated_by`; bare UUID → M1), or `null`. */
+  ratedBy: string | null;
+  /** The internal note (DB column `comment`), or `null`. */
+  comment: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Input to `trust.list_admin_ratings.v1` (Doc-4G §G8.5; staff-only; allowlisted params only — Doc-4A §9.6). */
+export interface ListAdminRatingsInput {
+  vendorProfileId: string;
+  /** Page size (allowlisted; clamped to the [ESC-TRUST-POLICY] window). */
+  limit?: number;
+  /** Opaque keyset cursor from a prior page's `nextCursor` (allowlisted). Invalid → VALIDATION. */
+  cursor?: string | null;
+}
+
+/** Result of `trust.list_admin_ratings.v1` (Doc-4G §G8.5 — the vendor's live staff ratings; a non-staff/no-GUC
+ *  caller sees an EMPTY list under RLS — the non-disclosure posture). */
+export interface ListAdminRatingsResult {
+  adminRatings: AdminRatingView[];
+  /** The opaque cursor for the next page, or `null` when exhausted. */
+  nextCursor: string | null;
+}
+
+/** Error outcome of `list_admin_ratings` (Doc-4G §G8.5 error register; classes per Doc-5A §6.2). The service
+ *  emits VALIDATION in-scope; the non-staff AUTHORIZATION/NOT_FOUND collapse is at the DEFERRED comp-edge. */
+export interface AdminRatingReadError {
+  /** VALIDATION→400 · NOT_FOUND→404 · DEPENDENCY→503 (Doc-5A §6.2). */
+  errorClass: "VALIDATION" | "NOT_FOUND" | "DEPENDENCY";
+  /** The interim `trust_admin_rating_*` register code ([ESC-TRUST-CODE]). */
+  errorCode: string;
+  message: string;
+}
+
+/** Outcome of `trust.list_admin_ratings.v1`. */
+export type ListAdminRatingsOutcome =
+  | { ok: true; result: ListAdminRatingsResult }
+  | { ok: false; error: AdminRatingReadError };

@@ -852,3 +852,34 @@ enum PublicReviewStatus {
   @@map("public_review_status")
   @@schema("trust")
 }
+
+// §3.5.1 — trust.admin_ratings (INTERNAL-ONLY staff rating — never public, never tenant-visible, never exposed
+// externally; F4G-PB5-M3 / Doc-4A §7.5). W3-TRUST-5b realizes the BC-TRUST-5 (Part B) Admin Rating aggregate —
+// a SEPARATE authority from the Public Review (Doc-4G §H.9a "never merged"). `vendorProfileId`/`ratedBy`/
+// `createdBy`/`updatedBy`/`deletedBy` are bare cross-module UUIDs (Doc-2 §0.3; no FK). `score` is `numeric`
+// with NO range CHECK (the 1–5 CHECK belongs to `public_reviews`, a DIFFERENT table) → Prisma `Decimal`
+// (the repository maps it to `number`). SD tuple. The per-vendor SINGLETON is app-enforced (advisory-xact-lock;
+// the frozen §3.5.1 DDL has NO `UNIQUE(vendor_profile_id)`). The column-scoped immutability trigger (identity
+// facts frozen; DELETE blocked) and the STAFF-ONLY `admin_ratings_staff FOR ALL` RLS (the non-disclosure crux —
+// NO public/author/tenant policy) live raw-SQL in the `trust_admin_ratings` migration. Columns [Doc-2 §10.6 /
+// Doc-6G §3.5.1 binding]. NO event — Doc-2 §8 has no Trust admin-rating event (Doc-4G §H.7).
+model AdminRating {
+  id              String    @id @db.Uuid
+  vendorProfileId String    @map("vendor_profile_id") @db.Uuid
+  ratedBy         String?   @map("rated_by") @db.Uuid
+  score           Decimal?  @db.Decimal
+  comment         String?
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy       String?   @map("created_by") @db.Uuid
+  updatedBy       String?   @map("updated_by") @db.Uuid
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy       String?   @map("deleted_by") @db.Uuid
+  deleteReason    String?   @map("delete_reason")
+
+  // The column-scoped immutability trigger + the STAFF-ONLY RLS live raw-SQL in the `trust_admin_ratings`
+  // migration (triggers + RLS are not expressible via Prisma; kept in one place, the migration). The per-vendor
+  // singleton is app-enforced (advisory-xact-lock) — the frozen §3.5.1 DDL has NO UNIQUE(vendor_profile_id).
+  @@map("admin_ratings")
+  @@schema("trust")
+}

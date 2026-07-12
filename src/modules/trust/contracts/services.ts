@@ -23,6 +23,10 @@ import {
   listReviews as listReviewsService,
 } from "../application/services/review-read.service";
 import {
+  listAdminRatings as listAdminRatingsService,
+  setAdminRating as setAdminRatingService,
+} from "../application/services/admin-rating.service";
+import {
   confirmVerifiedTier as confirmVerifiedTierService,
   downgradeVerifiedTier as downgradeVerifiedTierService,
   establishVerifiedTier as establishVerifiedTierService,
@@ -54,10 +58,13 @@ import type {
   ExpireVerifiedTierInput,
   FraudSignalActorContext,
   FraudSignalDeps,
+  AdminRatingStaffContext,
   FraudSignalTriageInput,
   FraudSignalTriageOutcome,
   GetReviewInput,
   GetReviewOutcome,
+  ListAdminRatingsInput,
+  ListAdminRatingsOutcome,
   IngestPerformanceInputDeps,
   IngestPerformanceInputInput,
   IngestPerformanceInputOutcome,
@@ -76,6 +83,9 @@ import type {
   RequestVerificationInput,
   RequestVerificationOutcome,
   ReviewStaffContext,
+  SetAdminRatingDeps,
+  SetAdminRatingInput,
+  SetAdminRatingOutcome,
   SubmitReviewContext,
   SubmitReviewDeps,
   SubmitReviewInput,
@@ -541,3 +551,65 @@ export const getReview: GetReview = (input, db) => getReviewService(input, db);
 
 /** Concrete `trust.list_reviews.v1` facade. */
 export const listReviews: ListReviews = (input, db) => listReviewsService(input, db);
+
+// ── W3-TRUST-5b — the BC-TRUST-5 (Part B) Admin Rating facades (Doc-4G §G8.4/§G8.5) ─────────────────────
+// The PUBLIC, contracts-only faces over the private M5 Admin Rating service. A SEPARATE authority from the
+// Public Review (Doc-4G §H.9a — "never merged"). Admin ratings are STAFF-INTERNAL: never public, never
+// tenant-visible, never exposed externally (F4G-PB5-M3 / Doc-4A §7.5) — the table has ONLY the
+// `admin_ratings_staff FOR ALL` RLS policy (NO public/author/tenant), so a non-staff caller sees ZERO rows and
+// the DEFERRED comp-edge collapses to NOT_FOUND (never AUTHORIZATION). This is an IN-BAND AUDITED-WRITE
+// aggregate: `set_admin_rating` writes `admin_ratings` + appends ONE `[ESC-TRUST-AUDIT]` `admin_rating_set`
+// audit atomically (Doc-2 §9 693/694 enumerate no admin-rating action → nearest §9 Trust action by pointer);
+// NO event (Doc-4G §H.7 — Doc-2 §8 has none); NO SD (Doc-6G §3.5.1); firewall (mutates no score/verification/
+// fraud/tier; no ban). The per-vendor SINGLETON is app-enforced (advisory-xact-lock; the frozen §3.5.1 DDL has
+// NO UNIQUE(vendor_profile_id)). The Admin HTTP wiring + the `staff_can_verify`/`staff_super_admin`
+// comp-edge authz + the DG-2 vendor resolution are DEFERRED (the WP2 precedent) — these are the functions they
+// will call, invoked directly by tests. **No delete op (no delete contract in scope).** The M0
+// `appendAuditRecord` is INJECTED by contract TYPE (NO `writeOutboxEvent`). set MUST run inside a staff-scoped
+// tx (`app.is_platform_staff = true`).
+
+// The Doc-2 §7 staff AUTHZ slugs (bound by pointer) — surfaced so the DEFERRED comp-edge references ONE source.
+export {
+  STAFF_CAN_VERIFY_SLUG as ADMIN_RATING_STAFF_CAN_VERIFY_SLUG,
+  STAFF_SUPER_ADMIN_SLUG as ADMIN_RATING_STAFF_SUPER_ADMIN_SLUG,
+} from "../domain/admin-rating.constants";
+
+// The re-exported Admin Rating DTOs so the DEFERRED Admin command / comp-edge (and consumers) build them via
+// `@/modules/trust/contracts`. NO event export (BC-TRUST-5 emits none).
+export type {
+  SetAdminRatingInput,
+  AdminRatingStaffContext,
+  SetAdminRatingDeps,
+  SetAdminRatingResult,
+  SetAdminRatingError,
+  SetAdminRatingOutcome,
+  AdminRatingOperation,
+  ListAdminRatingsInput,
+  ListAdminRatingsOutcome,
+  ListAdminRatingsResult,
+  AdminRatingView,
+  AdminRatingReadError,
+} from "./types";
+
+/** `trust.set_admin_rating.v1` (Doc-4G §G8.4) — staff create-or-update the vendor's singleton admin rating.
+ *  MUST run inside a staff-scoped tx (`app.is_platform_staff = true`). Emits no event. */
+export type SetAdminRating = (
+  input: SetAdminRatingInput,
+  ctx: AdminRatingStaffContext,
+  deps: SetAdminRatingDeps,
+  db?: DbExecutor,
+) => Promise<SetAdminRatingOutcome>;
+
+/** `trust.list_admin_ratings.v1` (Doc-4G §G8.5) — staff-only read of the vendor's admin ratings (not audited;
+ *  a non-staff/no-GUC caller sees an empty page — the non-disclosure posture). */
+export type ListAdminRatings = (
+  input: ListAdminRatingsInput,
+  db?: DbExecutor,
+) => Promise<ListAdminRatingsOutcome>;
+
+/** Concrete `trust.set_admin_rating.v1` facade (M5 contracts → M5 service). */
+export const setAdminRating: SetAdminRating = (input, ctx, deps, db) =>
+  setAdminRatingService(input, ctx, deps, db);
+
+/** Concrete `trust.list_admin_ratings.v1` facade. */
+export const listAdminRatings: ListAdminRatings = (input, db) => listAdminRatingsService(input, db);
