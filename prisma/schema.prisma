@@ -460,3 +460,426 @@ model CommandDedup {
   @@map("command_dedup")
   @@schema("identity")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M5 — Trust & Verification (`trust`) — Doc-6G (Content Pass-1, FROZEN)
+//
+// W3-TRUST-1 (`trust_verification_substrate`) realizes the BC-TRUST-1 Verification
+// grouping (Doc-6G §3.1): `verification_records` (§3.1.1; polymorphic subject,
+// platform-internal, column-scoped immutability) + `verification_decisions`
+// (§3.1.2; append-only, Admin-decides/Trust-owns) and their 4 enums.
+//
+// Columns/enum labels are [Doc-2 binding] (verbatim Doc-2 §10.6 / Doc-6G §3.1);
+// physical types/names are [§2.5] realization choices, tagged in Doc-6G. The
+// column-scoped/append-only immutability triggers (via M0's shared-kernel
+// `core.raise_immutable_violation`), the partial work-queue index, the in-module
+// FK, and the platform-internal RLS are realized as raw SQL in the
+// `trust_verification_substrate` migration (Doc-6G §3.x; tables/columns managed by
+// Prisma). Deferred (NOT this WP): `verified_financial_tiers` (§3.1.3) + the
+// Trust/Performance scores (Doc-6G Pass-2/3). No cross-schema FK — `subject_id`,
+// `requested_by`, `verification_task_id`, `created_by`/`updated_by` are bare UUIDs.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// §3.1.1 — trust.verification_records (§5.6; polymorphic subject; platform-internal; NO SD)
+model VerificationRecord {
+  id                   String                  @id @db.Uuid
+  subjectId            String                  @map("subject_id") @db.Uuid
+  subjectType          VerificationSubjectType @map("subject_type")
+  verificationType     VerificationType        @map("verification_type")
+  state                VerificationState       @default(requested)
+  evidenceDocumentRefs String[]                @default([]) @map("evidence_document_refs") @db.Uuid
+  requestedBy          String?                 @map("requested_by") @db.Uuid
+  expiresAt            DateTime?               @map("expires_at") @db.Timestamptz
+  createdAt            DateTime                @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime                @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy            String?                 @map("created_by") @db.Uuid
+  updatedBy            String?                 @map("updated_by") @db.Uuid
+
+  decisions VerificationDecision[]
+
+  @@map("verification_records")
+  @@schema("trust")
+}
+
+enum VerificationSubjectType {
+  vendor_profile
+  organization
+  capacity
+  declared_tier
+
+  @@map("verification_subject_type")
+  @@schema("trust")
+}
+
+enum VerificationType {
+  contact
+  business
+  factory
+  organization
+  tier
+  capacity
+
+  @@map("verification_type")
+  @@schema("trust")
+}
+
+enum VerificationState {
+  requested
+  in_review
+  approved
+  rejected
+  expired
+  revoked
+
+  @@map("verification_state")
+  @@schema("trust")
+}
+
+// §3.1.2 — trust.verification_decisions (append-only; Admin decides, Trust owns; in-module FK; NO SD)
+model VerificationDecision {
+  id                   String                   @id @db.Uuid
+  verificationRecordId String                   @map("verification_record_id") @db.Uuid
+  decidedBy            String?                  @map("decided_by") @db.Uuid
+  verificationTaskId   String?                  @map("verification_task_id") @db.Uuid
+  decision             VerificationDecisionType
+  reason               String?
+  decidedAt            DateTime                 @default(now()) @map("decided_at") @db.Timestamptz
+  createdAt            DateTime                 @default(now()) @map("created_at") @db.Timestamptz
+  createdBy            String?                  @map("created_by") @db.Uuid
+
+  verificationRecord VerificationRecord @relation(fields: [verificationRecordId], references: [id], map: "verification_decisions_record_fk")
+
+  @@map("verification_decisions")
+  @@schema("trust")
+}
+
+enum VerificationDecisionType {
+  approve
+  reject
+  confirm
+  downgrade
+  request_info
+
+  @@map("verification_decision")
+  @@schema("trust")
+}
+
+// §3.1.3 — trust.verified_financial_tiers (System-written; emits VendorTierChanged; NO in-band write
+// policy — the System verification service writes via owner-role/SECURITY DEFINER; `Declared`-only =
+// absence of a row). W3-TRUST-3 realizes this (substrate + SD write functions + immutability + RLS in the
+// `trust_verified_financial_tiers` migration). `vendor_profile_id` is a bare cross-module UUID → M2 (no FK);
+// `tier` uses the MODULE-OWNED `trust.financial_tier` (NOT a cross-schema ref to marketplace.financial_tier).
+// The FULL unique index on vendor_profile_id + the partial review-sweep index + the column-scoped
+// immutability trigger (frozen id/vendor_profile_id/created_at/created_by; DELETE blocked) live raw-SQL in
+// the migration (the house pattern). Columns/enum labels are [Doc-2 §10.6 / Doc-6G §3.1.3 binding].
+model VerifiedFinancialTier {
+  id              String             @id @db.Uuid
+  vendorProfileId String             @unique(map: "verified_financial_tiers_vendor_uq") @map("vendor_profile_id") @db.Uuid
+  tier            FinancialTier
+  status          VerifiedTierStatus @default(pending_verification)
+  verifiedAt      DateTime?          @map("verified_at") @db.Timestamptz
+  nextReviewAt    DateTime?          @map("next_review_at") @db.Timestamptz
+  basisJsonb      Json?              @map("basis_jsonb") @db.JsonB
+  createdAt       DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy       String?            @map("created_by") @db.Uuid
+  updatedBy       String?            @map("updated_by") @db.Uuid
+
+  @@map("verified_financial_tiers")
+  @@schema("trust")
+}
+
+enum FinancialTier {
+  A
+  B
+  C
+  D
+  E
+
+  @@map("financial_tier")
+  @@schema("trust")
+}
+
+enum VerifiedTierStatus {
+  pending_verification
+  verified
+  suspended
+  expired
+
+  @@map("verified_tier_status")
+  @@schema("trust")
+}
+
+// §3.2 — Trust Score (System-computed; freeze; per-update history) — Doc-6G §3.2 / Doc-4G PassB Part2
+// §G5/§H. W3-TRUST-4b realizes the head (`trust_scores`; `score smallint NOT NULL` 0–100 — UNLIKE
+// performance's NULLABLE Not-Rated; lifecycle computed|frozen; `band` text) + the append-only per-update
+// snapshot (`trust_score_history`). NO in-band write policy — the System Trust-scoring service writes via
+// owner-role/SECURITY DEFINER (Invariant #6). FIREWALL (Doc-6G §3.2.1; Invariant #6): NO column computed
+// from Financial Tier / Performance / Buyer-Vendor Status and NO cross-score FK — the score CONSUMES
+// `verification_records` + `performance_scores` + a fraud read-seam only, and NEVER `verified_financial_tiers`.
+// Absence-of-history is NEVER 0 (Doc-3 §12.1 FIXED): a no-input vendor gets a documented NON-ZERO interim
+// baseline (the formula plug's [ESC-TRUST-POLICY] concern). `vendor_profile_id` is a bare cross-module UUID
+// (→ M2; no FK). The index + immutability triggers + RLS + the ONE SD write function live raw-SQL in the
+// `trust_trust_scoring` migration; `ScoreFreezeState` is SHARED with the performance tables (declared once,
+// in `trust_performance_scoring` / below). Columns/enum labels [Doc-2 §10.6 / Doc-6G §3.2 binding]; [§2.5].
+
+// §3.2.1 — trust.trust_scores (head; score smallint NOT NULL 0–100; lifecycle computed|frozen; System-written)
+model TrustScore {
+  id                  String           @id @db.Uuid
+  vendorProfileId     String           @unique(map: "trust_scores_vendor_uq") @map("vendor_profile_id") @db.Uuid
+  score               Int              @db.SmallInt
+  band                String
+  trustFormulaVersion String           @map("trust_formula_version")
+  trustScoreUpdatedAt DateTime         @default(now()) @map("trust_score_updated_at") @db.Timestamptz
+  freezeState         ScoreFreezeState @default(none) @map("freeze_state")
+  freezeReason        String?          @map("freeze_reason")
+  frozenAt            DateTime?        @map("frozen_at") @db.Timestamptz
+  createdAt           DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy           String?          @map("created_by") @db.Uuid
+  updatedBy           String?          @map("updated_by") @db.Uuid
+
+  history TrustScoreHistory[]
+
+  @@map("trust_scores")
+  @@schema("trust")
+}
+
+// §3.2.2 — trust.trust_score_history (append-only; per-update snapshot; in-module FK → trust_scores)
+model TrustScoreHistory {
+  id                  String   @id @db.Uuid
+  trustScoreId        String   @map("trust_score_id") @db.Uuid
+  vendorProfileId     String   @map("vendor_profile_id") @db.Uuid
+  score               Int      @db.SmallInt
+  band                String
+  trustFormulaVersion String   @map("trust_formula_version")
+  snapshotAt          DateTime @default(now()) @map("snapshot_at") @db.Timestamptz
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+  createdBy           String?  @map("created_by") @db.Uuid
+
+  trustScore TrustScore @relation(fields: [trustScoreId], references: [id], map: "trust_score_history_score_fk")
+
+  @@index([vendorProfileId, snapshotAt], map: "trust_score_history_vendor_idx")
+  @@map("trust_score_history")
+  @@schema("trust")
+}
+
+// §3.3 — Performance Scoring (System-computed; idempotent inputs; per-update history) — Doc-6G §3.3 /
+// Doc-4G PassB Part3 §G6/§H. W3-TRUST-4a realizes the head (`performance_scores`; NULLABLE score = Not
+// Rated below the 5-responses-OR-2-projects min-threshold gate — never 0), the append-only per-update
+// snapshot (`performance_score_history`), and the idempotent Operations/RFQ consumer inputs
+// (`performance_inputs`; dedup UNIQUE on (source_type, source_entity_id, input_type)). NO in-band write
+// policy — the System Performance-scoring service writes via owner-role/SECURITY DEFINER (Invariant #6).
+// FIREWALL (Doc-6G §3.3.1 line 84): components_jsonb carries performance inputs ONLY — no Financial Tier /
+// Trust Score / Buyer-Vendor Status column or FK. `vendor_profile_id`/`source_entity_id` are bare
+// cross-module UUIDs (→ M2/M3/M4; no FK). The 3 enums + indexes + immutability triggers + RLS + the SD
+// write functions live raw-SQL in the `trust_performance_scoring` migration. Columns/enum labels are
+// [Doc-2 §10.6 / Doc-6G §3.3 binding]; physical specifics [§2.5].
+
+// §3.3.1 — trust.performance_scores (head; NULLABLE score = Not Rated; min-threshold gate; System-written)
+model PerformanceScore {
+  id                        String           @id @db.Uuid
+  vendorProfileId           String           @unique(map: "performance_scores_vendor_uq") @map("vendor_profile_id") @db.Uuid
+  score                     Int?             @db.SmallInt
+  level                     String?
+  componentsJsonb           Json?            @map("components_jsonb") @db.JsonB
+  performanceFormulaVersion String           @map("performance_formula_version")
+  performanceScoreUpdatedAt DateTime         @default(now()) @map("performance_score_updated_at") @db.Timestamptz
+  freezeState               ScoreFreezeState @default(none) @map("freeze_state")
+  freezeReason              String?          @map("freeze_reason")
+  frozenAt                  DateTime?        @map("frozen_at") @db.Timestamptz
+  minThresholdMet           Boolean          @default(false) @map("min_threshold_met")
+  createdAt                 DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                 DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy                 String?          @map("created_by") @db.Uuid
+  updatedBy                 String?          @map("updated_by") @db.Uuid
+
+  history PerformanceScoreHistory[]
+
+  @@map("performance_scores")
+  @@schema("trust")
+}
+
+// §3.3.2 — trust.performance_score_history (append-only; per-update snapshot; in-module FK → performance_scores)
+model PerformanceScoreHistory {
+  id                        String   @id @db.Uuid
+  performanceScoreId        String   @map("performance_score_id") @db.Uuid
+  vendorProfileId           String   @map("vendor_profile_id") @db.Uuid
+  score                     Int?     @db.SmallInt
+  level                     String?
+  performanceFormulaVersion String   @map("performance_formula_version")
+  snapshotAt                DateTime @default(now()) @map("snapshot_at") @db.Timestamptz
+  createdAt                 DateTime @default(now()) @map("created_at") @db.Timestamptz
+  createdBy                 String?  @map("created_by") @db.Uuid
+
+  performanceScore PerformanceScore @relation(fields: [performanceScoreId], references: [id], map: "performance_score_history_score_fk")
+
+  @@map("performance_score_history")
+  @@schema("trust")
+}
+
+// §3.3.3 — trust.performance_inputs (append-only; idempotent Operations/RFQ consumer; dedup UNIQUE; NO SD-edit)
+model PerformanceInput {
+  id              String                @id @db.Uuid
+  vendorProfileId String                @map("vendor_profile_id") @db.Uuid
+  sourceEntityId  String                @map("source_entity_id") @db.Uuid
+  sourceType      PerformanceSourceType @map("source_type")
+  inputType       PerformanceInputType  @map("input_type")
+  occurredAt      DateTime              @map("occurred_at") @db.Timestamptz
+  valueJsonb      Json?                 @map("value_jsonb") @db.JsonB
+  createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz
+  createdBy       String?               @map("created_by") @db.Uuid
+
+  @@unique([sourceType, sourceEntityId, inputType], map: "performance_inputs_dedup_uq")
+  @@index([vendorProfileId, inputType, occurredAt], map: "performance_inputs_vendor_idx")
+  @@map("performance_inputs")
+  @@schema("trust")
+}
+
+enum ScoreFreezeState {
+  none
+  frozen
+
+  @@map("score_freeze_state")
+  @@schema("trust")
+}
+
+enum PerformanceInputType {
+  response
+  decline
+  non_response
+  delivery
+  feedback
+  dispute
+  completion
+
+  @@map("performance_input_type")
+  @@schema("trust")
+}
+
+enum PerformanceSourceType {
+  invitation
+  quotation
+  engagement
+  wcc
+
+  @@map("performance_source_type")
+  @@schema("trust")
+}
+
+// §3.4 — trust.fraud_signals (platform-internal; polymorphic subject; admin/System FOR ALL — NO SD; emits
+// NO event — Doc-2 §8 has no Trust fraud event). W3-TRUST-4c realizes the BC-TRUST-4 aggregate (substrate +
+// in-band audited-write lifecycle in the `trust_fraud_signals` migration + the M5 fraud-signal service).
+// `subject_id`/`reported_by`/`created_by`/`updated_by` are bare cross-module UUIDs (Doc-2 §0.3; no FK).
+// `subjectType`/`signalType`/`severity` are TEXT — Doc-2 §10.6 declares no value set (validated non-empty in
+// the app layer; membership `[ESC]`-deferred, no fixed enum coined). NO CHECK, NO business UNIQUE, and NO
+// detection_ref/triage_note column (Doc-4G §H.10 — Pass-B introduces no column; the request fields
+// detection_ref/triage_note ride the immutable AUDIT `newValue`). The 2 indexes + the column-scoped
+// immutability trigger (identity + creation facts frozen; DELETE blocked) + the `fraud_signals_admin FOR ALL`
+// RLS live raw-SQL in the migration (the house pattern). Columns/enum labels [Doc-2 §10.6 / Doc-6G §3.4 binding].
+model FraudSignal {
+  id          String          @id @db.Uuid
+  subjectId   String          @map("subject_id") @db.Uuid
+  subjectType String          @map("subject_type")
+  reportedBy  String?         @map("reported_by") @db.Uuid
+  signalType  String          @map("signal_type")
+  severity    String
+  state       FraudSignalState @default(open)
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy   String?         @map("created_by") @db.Uuid
+  updatedBy   String?         @map("updated_by") @db.Uuid
+
+  // Indexes (subject lookup + the partial `open/reviewed` work-queue) live raw-SQL in the
+  // `trust_fraud_signals` migration (the WP1 verification_records precedent — partial predicates are
+  // not expressible via Prisma `@@index`; kept in one place, the migration).
+  @@map("fraud_signals")
+  @@schema("trust")
+}
+
+enum FraudSignalState {
+  open
+  reviewed
+  actioned
+  dismissed
+
+  @@map("fraud_signal_state")
+  @@schema("trust")
+}
+
+// §3.5.2 — trust.public_reviews (post-award; moderation; public when published; feeds performance via the
+// in-module BC-TRUST-3 ingestion service — F4G-M2/M3, NOT a cross-module event). W3-TRUST-5a realizes the
+// BC-TRUST-5 (Part A) Public Review aggregate (substrate + in-band audited-write lifecycle in the
+// `trust_public_reviews` migration + the M5 public-review service/command). `vendorProfileId`/
+// `authorOrganizationId`/`engagementId`/`moderatedBy`/`createdBy`/`updatedBy`/`deletedBy` are bare
+// cross-module UUIDs (Doc-2 §0.3; no FK). `rating` is a smallint 1–5 (CHECK in the migration). SD tuple
+// (removed = hidden). The `UNIQUE(engagement_id, author_organization_id)` business key, the partial
+// published index, the column-scoped immutability trigger (authored/identity facts frozen; DELETE blocked),
+// and the author/public-read/staff RLS live raw-SQL in the migration (the house pattern). Columns/enum labels
+// [Doc-2 §10.6 / Doc-6G §3.5.2 binding]. NO event — Doc-2 §8 has no Trust review event (Doc-4G §H.7).
+model PublicReview {
+  id                   String             @id @db.Uuid
+  vendorProfileId      String             @map("vendor_profile_id") @db.Uuid
+  authorOrganizationId String             @map("author_organization_id") @db.Uuid
+  engagementId         String             @map("engagement_id") @db.Uuid
+  rating               Int                @db.SmallInt
+  body                 String?
+  status               PublicReviewStatus @default(submitted)
+  moderatedBy          String?            @map("moderated_by") @db.Uuid
+  moderatedAt          DateTime?          @map("moderated_at") @db.Timestamptz
+  createdAt            DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy            String?            @map("created_by") @db.Uuid
+  updatedBy            String?            @map("updated_by") @db.Uuid
+  deletedAt            DateTime?          @map("deleted_at") @db.Timestamptz
+  deletedBy            String?            @map("deleted_by") @db.Uuid
+  deleteReason         String?            @map("delete_reason")
+
+  // The UNIQUE(engagement_id, author_organization_id) business key, the partial published index, the
+  // column-scoped immutability trigger, and the RLS live raw-SQL in the `trust_public_reviews` migration
+  // (partial predicates + triggers + RLS are not expressible via Prisma; kept in one place, the migration).
+  @@map("public_reviews")
+  @@schema("trust")
+}
+
+enum PublicReviewStatus {
+  submitted
+  approved
+  published
+  rejected
+  removed
+
+  @@map("public_review_status")
+  @@schema("trust")
+}
+
+// §3.5.1 — trust.admin_ratings (INTERNAL-ONLY staff rating — never public, never tenant-visible, never exposed
+// externally; F4G-PB5-M3 / Doc-4A §7.5). W3-TRUST-5b realizes the BC-TRUST-5 (Part B) Admin Rating aggregate —
+// a SEPARATE authority from the Public Review (Doc-4G §H.9a "never merged"). `vendorProfileId`/`ratedBy`/
+// `createdBy`/`updatedBy`/`deletedBy` are bare cross-module UUIDs (Doc-2 §0.3; no FK). `score` is `numeric`
+// with NO range CHECK (the 1–5 CHECK belongs to `public_reviews`, a DIFFERENT table) → Prisma `Decimal`
+// (the repository maps it to `number`). SD tuple. The per-vendor SINGLETON is app-enforced (advisory-xact-lock;
+// the frozen §3.5.1 DDL has NO `UNIQUE(vendor_profile_id)`). The column-scoped immutability trigger (identity
+// facts frozen; DELETE blocked) and the STAFF-ONLY `admin_ratings_staff FOR ALL` RLS (the non-disclosure crux —
+// NO public/author/tenant policy) live raw-SQL in the `trust_admin_ratings` migration. Columns [Doc-2 §10.6 /
+// Doc-6G §3.5.1 binding]. NO event — Doc-2 §8 has no Trust admin-rating event (Doc-4G §H.7).
+model AdminRating {
+  id              String    @id @db.Uuid
+  vendorProfileId String    @map("vendor_profile_id") @db.Uuid
+  ratedBy         String?   @map("rated_by") @db.Uuid
+  score           Decimal?  @db.Decimal
+  comment         String?
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy       String?   @map("created_by") @db.Uuid
+  updatedBy       String?   @map("updated_by") @db.Uuid
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy       String?   @map("deleted_by") @db.Uuid
+  deleteReason    String?   @map("delete_reason")
+
+  // The column-scoped immutability trigger + the STAFF-ONLY RLS live raw-SQL in the `trust_admin_ratings`
+  // migration (triggers + RLS are not expressible via Prisma; kept in one place, the migration). The per-vendor
+  // singleton is app-enforced (advisory-xact-lock) — the frozen §3.5.1 DDL has NO UNIQUE(vendor_profile_id).
+  @@map("admin_ratings")
+  @@schema("trust")
+}
