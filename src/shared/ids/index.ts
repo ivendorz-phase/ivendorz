@@ -47,11 +47,3 @@ export function uuidv7(): string {
     `${hex.slice(16, 20)}-${hex.slice(20, 32)}`
   );
 }
-
-/**
- * Canonical UUID string shape (any RFC-4122 version; case-insensitive) — the platform-wide SYNTAX check
- * for a machine identifier at a trust boundary (Doc-4A §11.2 category 1). Framework-shared so modules
- * bind ONE source instead of re-declaring the regex per command (the `UUID_RE` copies dotted across the
- * codebase). Additive; changes no existing behavior.
- */
-export const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
