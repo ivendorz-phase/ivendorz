@@ -6,6 +6,7 @@
 // here (the fixed Doc-2 §10.6 set) but application-DEFERRED (see the command). Field names/semantics are
 // owned by Doc-4G §G4.1 + Doc-2 §10.6; bound by pointer, never re-authored.
 
+import type { DbExecutor } from "@/shared/db";
 import type { AppendAuditRecord, WriteOutboxEvent } from "@/modules/core/contracts";
 
 /** The `trust.verification_subject_type` value set (Doc-2 §10.6 / Doc-6G §3.1.1; fixed — do not extend). */
@@ -553,3 +554,253 @@ export type CreateFraudSignalOutcome =
 export type FraudSignalTriageOutcome =
   | { ok: true; result: FraudSignalTriageResult }
   | { ok: false; error: FraudSignalError };
+
+// ── W3-TRUST-5a — BC-TRUST-5 (Part A) Public Review DTOs (Doc-4G §G8.1/§G8.2/§G8.3/§G8.5; Doc-6G §3.5.2) ──
+// The Public Review aggregate: submit (buyer/User + active-org), moderate/publish/remove (staff), and the
+// public review reads (get/list — published only). SCOPE IS THE PUBLIC REVIEW AGGREGATE ONLY — the Admin
+// Rating aggregate (`set_admin_rating` / `list_admin_ratings`, §G8.4/§G8.5) is a SEPARATE WP (WP5b). Field
+// names/semantics owned by Doc-4G §G8 + Doc-2 §10.6; bound by pointer, never re-authored.
+//
+// FIREWALL (Invariant #6; Doc-4G §H.9): a review mutates NO score/verification/fraud/tier row and issues NO
+// ban. Its ONLY downstream write — on PUBLISH — is a `performance_inputs` row appended VIA the BC-TRUST-3
+// ingestion service (F4G-M2 single-writer; §H.9c), never a direct write. NO EVENT (Doc-4G §H.7 — Doc-2 §8
+// has no Trust review event): submit's dep is `appendAuditRecord` only; publish adds the in-module
+// `ingestPerformanceInput` (Path B). `author_organization_id` is SERVER-derived from the active-org context
+// (Invariant #5) — NEVER a caller-supplied field.
+
+/** The `trust.public_review_status` value set (Doc-2 §10.6 / Doc-6G §3.5.2; entry `submitted`;
+ *  `published`/`rejected`/`removed` terminal-or-hidden — Doc-4G §H.5). Do not extend. */
+export type PublicReviewStatusValue =
+  | "submitted"
+  | "approved"
+  | "published"
+  | "rejected"
+  | "removed";
+
+/** The `decision` enum for `moderate_review` (Doc-4G §G8.2) — maps to `approved` / `rejected`. */
+export type ReviewModerationDecisionValue = "approve" | "reject";
+
+/** The acting-staff context for the Admin review lifecycle (moderate/publish/remove). The
+ *  `staff_can_verify`/`staff_super_admin` AUTHZ is performed at the DEFERRED composition edge BEFORE the
+ *  service runs (WP2 precedent); this carries only the Doc-2 §9 attribution (`actorId` = the acting staff). */
+export interface ReviewStaffContext {
+  /** The acting `identity.users` staff id — the Doc-2 §9 audit attribution (Admin actor). */
+  staffUserId: string;
+}
+
+// ── submit_review.v1 (Doc-4G §G8.1) — buyer-authored (User + active-org); emits NO event ────────────────
+
+/** Input to `trust.submit_review.v1` (Doc-4G §G8.1 request schema). `author_organization_id` is SERVER-derived
+ *  from the active org (Invariant #5 — never client input) and is NOT part of this input. */
+export interface SubmitReviewInput {
+  /** `vendor_profile_id : uuid : required` — the subject; a bare cross-module UUID → M2 (no FK). */
+  vendorProfileId: string;
+  /** `engagement_id : uuid : required` — the post-award gate; a bare cross-module UUID → M4 (service-validated). */
+  engagementId: string;
+  /** `rating : numeric : required` — 1–5 (range is a BUSINESS rule; Doc-2 §10.6). */
+  rating: number;
+  /** `body : text : optional` (Doc-2 §10.6). */
+  body?: string | null;
+}
+
+/** The server-resolved request context for the submit write (from the active-org context guard — never client
+ *  input; Invariant #5). */
+export interface SubmitReviewContext {
+  /** The acting `identity.users` id (= `app.user_id`; the User attribution / `created_by`). */
+  userId: string;
+  /** The server-resolved active org (= `app.active_org`; the `author_organization_id` — Invariant #5). */
+  activeOrgId: string;
+  /** Caller IP for the audit (Doc-2 §9; redaction-aware). Optional. */
+  ipAddress?: string | null;
+  /** Caller user-agent for the audit (Doc-2 §9; redaction-aware). Optional. */
+  userAgent?: string | null;
+}
+
+/** Injected Module 0 contract service — the ONLY audit-write surface. NO `writeOutboxEvent`: BC-TRUST-5 emits
+ *  NO event (Doc-4G §H.7). */
+export interface SubmitReviewDeps {
+  /** `core.append_audit_record.v1` (Doc-4B §B10), injected by the contract TYPE (`@/modules/core/contracts`). */
+  appendAuditRecord: AppendAuditRecord;
+}
+
+/** Result of a successful `submit_review` (Doc-4G §G8.1 response). Property names camelCase (Doc-5A Option B);
+ *  `reference_id` (deferred HTTP) rides the envelope, not `result`. */
+export interface SubmitReviewResult {
+  /** The opened `public_reviews.id` (UUIDv7). */
+  publicReviewId: string;
+  /** Always `submitted` on a fresh open (Doc-4G §G8.1 — lifecycle entry `submitted`). */
+  status: PublicReviewStatusValue;
+}
+
+/** Error outcome of `submit_review` (Doc-4G §G8.1 error register; classes per Doc-5A §6.2). The DG-4 engagement
+ *  gate + DG-2 vendor resolution (REFERENCE/NOT_FOUND/DEPENDENCY) are DEFERRED to the composition edge (the
+ *  WP2 precedent) — in-scope classes are VALIDATION (SYNTAX) + BUSINESS (rating range; duplicate). */
+export interface SubmitReviewError {
+  /** VALIDATION→400 · BUSINESS→422 (Doc-5A §6.2). */
+  errorClass: "VALIDATION" | "BUSINESS";
+  /** The interim `trust_review_*` register code ([ESC-TRUST-CODE]). */
+  errorCode: string;
+  /** Human-safe, non-leaking message. */
+  message: string;
+}
+
+/** Outcome of `trust.submit_review.v1`. `ok:true` ⇒ a fresh `submitted` review. */
+export type SubmitReviewOutcome =
+  | { ok: true; result: SubmitReviewResult }
+  | { ok: false; error: SubmitReviewError };
+
+// ── moderate/publish/remove_review (Doc-4G §G8.2/§G8.3) — staff lifecycle; emits NO event ────────────────
+
+/** Error outcome of a staff review lifecycle op (moderate/publish/remove) (Doc-4G §G8.2/§G8.3 error register;
+ *  classes per Doc-5A §6.2). The union covers all three ops: moderate adds BUSINESS (note-required); publish
+ *  adds DEPENDENCY (Step-1 audit unavailable — patch F4G-PB5-MA2). */
+export interface ReviewStaffError {
+  /** VALIDATION→400 · NOT_FOUND→404 · STATE/CONFLICT→409 · BUSINESS→422 · DEPENDENCY→503 (Doc-5A §6.2). */
+  errorClass: "VALIDATION" | "NOT_FOUND" | "STATE" | "CONFLICT" | "BUSINESS" | "DEPENDENCY";
+  /** The interim `trust_review_*` register code ([ESC-TRUST-CODE]). */
+  errorCode: string;
+  /** Human-safe, non-leaking message. */
+  message: string;
+}
+
+/** Result of an applied moderate/remove transition (Doc-4G §G8.2/§G8.3 response). Property names camelCase. */
+export interface ReviewStaffResult {
+  publicReviewId: string;
+  /** The status after the transition (`approved` | `rejected` | `removed`). */
+  status: PublicReviewStatusValue;
+  /** The NEW `updated_at` (ISO-8601 UTC) — the caller's next `expected_revision` optimistic token. */
+  updatedAt: string;
+}
+
+/** Input to `trust.moderate_review.v1` (Doc-4G §G8.2 request schema). */
+export interface ModerateReviewInput {
+  /** `public_review_id : uuid : required` — the target review. */
+  publicReviewId: string;
+  /** `expected_revision : required` — optimistic-concurrency token, realized against `updated_at` (the WP3/
+   *  fraud precedent — a `Date` at the TS boundary). */
+  expectedRevision: Date;
+  /** `decision : enum<approve|reject> : required` — the moderation outcome (maps to `approved`/`rejected`). */
+  decision: ReviewModerationDecisionValue;
+  /** `moderation_note : text : conditional` — REQUIRED on `reject` (BUSINESS). NO DB column (Doc-4G §H.10) —
+   *  rides the audit `newValue` (the fraud `triage_note` precedent). */
+  moderationNote?: string | null;
+}
+
+/** Outcome of `trust.moderate_review.v1`. `ok:true` ⇒ `approved` | `rejected`. */
+export type ModerateReviewOutcome =
+  | { ok: true; result: ReviewStaffResult }
+  | { ok: false; error: ReviewStaffError };
+
+/** The in-module BC-TRUST-3 ingestion service TYPE (F4G-M2 single-writer), injected into `publish_review`
+ *  for the Path-B Buyer-Feedback contribution (Doc-4G §G8.3 §8). Defaults to the in-module
+ *  `ingestPerformanceInput`; injectable so a test can supply a failing one. */
+export type PublishReviewIngestPerformanceInput = (
+  input: IngestPerformanceInputInput,
+  deps: IngestPerformanceInputDeps,
+  db?: DbExecutor,
+) => Promise<IngestPerformanceInputOutcome>;
+
+/** Injected Module 0 + in-module surfaces for `publish_review` (Doc-4G §G8.3; patch F4G-PB5-MA2 two-step
+ *  model). NO `writeOutboxEvent`: BC-TRUST-5 emits NO event (Doc-4G §H.7). */
+export interface PublishReviewDeps {
+  /** `core.append_audit_record.v1` (Doc-4B §B10), injected by the contract TYPE — the Step-1 audit. */
+  appendAuditRecord: AppendAuditRecord;
+  /** The in-module BC-TRUST-3 `trust.ingest_performance_input.v1` (Path B, Step 2; F4G-M2 single-writer).
+   *  OPTIONAL — DEFAULTS to the in-module `ingestPerformanceInput`; injectable so a test can supply a failing
+   *  one (patch F4G-PB5-MA2). */
+  ingestPerformanceInput?: PublishReviewIngestPerformanceInput;
+}
+
+/** Input to `trust.publish_review.v1` (Doc-4G §G8.3 request schema). */
+export interface PublishReviewInput {
+  /** `public_review_id : uuid : required` — the target `approved` review. */
+  publicReviewId: string;
+  /** `expected_revision : required` — optimistic-concurrency token (realized against `updated_at`). */
+  expectedRevision: Date;
+}
+
+/** Result of a successful `publish_review` (Doc-4G §G8.3 response; patch F4G-PB5-MA2). Property names camelCase. */
+export interface PublishReviewResult {
+  publicReviewId: string;
+  /** Always `published` on success (Step 1 committed). */
+  status: PublicReviewStatusValue;
+  /** `true` iff the Path-B ingestion (Step 2) applied; `false` when Step 2 failed/deferred (the review is
+   *  STILL `published` — the lifecycle outcome is independent of ingestion availability, patch F4G-PB5-MA2). */
+  ingestionApplied: boolean;
+}
+
+/** Outcome of `trust.publish_review.v1`. `ok:true` ⇒ `published` (with `ingestionApplied` flagging Step 2). */
+export type PublishReviewOutcome =
+  | { ok: true; result: PublishReviewResult }
+  | { ok: false; error: ReviewStaffError };
+
+/** Input to `trust.remove_review.v1` (Doc-4G §G8.3 request schema). Removal is a hidden soft-delete (SD=YES). */
+export interface RemoveReviewInput {
+  /** `public_review_id : uuid : required` — the target review (removable from submitted/approved/published). */
+  publicReviewId: string;
+  /** `expected_revision : required` — optimistic-concurrency token (realized against `updated_at`). */
+  expectedRevision: Date;
+  /** `removal_reason : text : optional` (Doc-4G §G8.3) — persisted as the SD `delete_reason` column. */
+  removalReason?: string | null;
+}
+
+/** Outcome of `trust.remove_review.v1`. `ok:true` ⇒ `removed` (hidden). */
+export type RemoveReviewOutcome =
+  | { ok: true; result: ReviewStaffResult }
+  | { ok: false; error: ReviewStaffError };
+
+// ── get_review / list_reviews (Doc-4G §G8.5 — public projection; published only; not audited; CQRS) ──────
+
+/** The public review projection (Doc-4G §G8.5 §3 — only `published` reviews are public). */
+export interface PublicReviewView {
+  publicReviewId: string;
+  vendorProfileId: string;
+  rating: number;
+  body: string | null;
+  /** Always `published` on the public projection. */
+  status: PublicReviewStatusValue;
+  /** The review authored time (ISO-8601 UTC; the buyer's submission `created_at`). */
+  createdAt: string;
+  /** The published/moderation timestamp (ISO-8601 UTC; realized against `updated_at`). */
+  publishedAt: string;
+}
+
+/** Error outcome of a public review read (Doc-4G §G8.5 error register; classes per Doc-5A §6.2). */
+export interface ReviewReadError {
+  /** VALIDATION→400 · NOT_FOUND→404 · DEPENDENCY→503 (Doc-5A §6.2). */
+  errorClass: "VALIDATION" | "NOT_FOUND" | "DEPENDENCY";
+  /** The interim `trust_review_*` register code ([ESC-TRUST-CODE]). */
+  errorCode: string;
+  message: string;
+}
+
+/** Input to `trust.get_review.v1` (Doc-4G §G8.5). */
+export interface GetReviewInput {
+  publicReviewId: string;
+}
+
+/** Outcome of `trust.get_review.v1`. `ok:true` ⇒ a `published` review; a non-published id ⇒ NOT_FOUND. */
+export type GetReviewOutcome =
+  | { ok: true; result: PublicReviewView }
+  | { ok: false; error: ReviewReadError };
+
+/** Input to `trust.list_reviews.v1` (Doc-4G §G8.5; allowlisted params only — Doc-4A §9.6). */
+export interface ListReviewsInput {
+  vendorProfileId: string;
+  /** Page size (allowlisted; clamped to the [ESC-TRUST-POLICY] window). */
+  limit?: number;
+  /** Opaque keyset cursor from a prior page's `nextCursor` (allowlisted). Invalid → VALIDATION. */
+  cursor?: string | null;
+}
+
+/** Result of `trust.list_reviews.v1` (Doc-4G §G8.5 — only `published` reviews for the vendor). */
+export interface ListReviewsResult {
+  reviews: PublicReviewView[];
+  /** The opaque cursor for the next page, or `null` when exhausted. */
+  nextCursor: string | null;
+}
+
+/** Outcome of `trust.list_reviews.v1`. */
+export type ListReviewsOutcome =
+  | { ok: true; result: ListReviewsResult }
+  | { ok: false; error: ReviewReadError };

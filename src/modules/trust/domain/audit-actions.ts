@@ -197,3 +197,45 @@ export const FraudSignalAuditAction = {
 
 export type FraudSignalAuditActionToken =
   (typeof FraudSignalAuditAction)[keyof typeof FraudSignalAuditAction];
+
+// ── W3-TRUST-5a — BC-TRUST-5 Public Review audit tokens (Doc-4G §G8.1/§G8.2/§G8.3 §7; Doc-6G §3.5.2) ─────
+//
+// Doc-2 §9 line 693 (Reviews domain row): "| Reviews | review submit, moderation decision, publish, remove |"
+// — ALL FOUR review mutations are SEPARATELY ENUMERATED. Therefore, UNLIKE the fraud actions (which carry
+// `[ESC-TRUST-AUDIT]` because §9 enumerates NO fraud action), these four tokens bind BY POINTER to an
+// ENUMERATED §9 action and carry NO `[ESC-TRUST-AUDIT]` — exactly like the performance "recalculation" /
+// "formula version change" tokens (Doc-4G §H.6 reserves `[ESC-TRUST-AUDIT]` for the NON-enumerated actions).
+// Attribution (Doc-4G §H.6 / §G8): User for `submit` (`author_organization_id`); Admin for moderation
+// decision / publish / remove.
+//
+// There is NO event (Doc-2 §8 has no Trust review event — Doc-4G §H.7); each mutation is state + THIS audit
+// only. The request field `moderation_note` (reject) has NO DB column (Doc-4G §H.10 — Pass-B introduces no
+// column) — it rides the immutable audit `newValue` (the fraud `triage_note` precedent); `removal_reason`
+// persists as the SD `delete_reason` column. The token STRING is the Doc-4G-class serialization; a future
+// rename touches Doc-4G/Doc-6G + this constant, never Doc-2.
+
+/** The audit `entity_type` for `trust.public_reviews` rows (object-scope; Doc-4G §G8.1-§G8.3 §7). Singular
+ *  per the identity buyer_profile / verified-tier / score / fraud precedent — a realization choice, NOT a
+ *  frozen constant. */
+export const PUBLIC_REVIEW_ENTITY_TYPE = "public_review" as const;
+
+/**
+ * Canonical Public Review audit actions — each binds BY POINTER to a SEPARATELY-ENUMERATED Doc-2 §9 Reviews
+ * action (line 693); NO `[ESC-TRUST-AUDIT]`.
+ *   SUBMITTED → §9 Reviews "review submit" (enumerated); the `submit_review` open leg (User).
+ *   MODERATED → §9 Reviews "moderation decision" (enumerated); the `moderate_review` approve|reject (Admin).
+ *   PUBLISHED → §9 Reviews "publish" (enumerated); the `publish_review` Step-1 transition (Admin).
+ *   REMOVED   → §9 Reviews "remove" (enumerated); the `remove_review` hidden soft-delete (Admin).
+ */
+export const ReviewAuditAction = {
+  /** §9 Reviews "review submit" (enumerated — no ESC); the `submit_review` open leg (User). */
+  SUBMITTED: "review_submitted",
+  /** §9 Reviews "moderation decision" (enumerated — no ESC); the `moderate_review` approve|reject (Admin). */
+  MODERATED: "review_moderation_decision",
+  /** §9 Reviews "publish" (enumerated — no ESC); the `publish_review` Step-1 transition (Admin). */
+  PUBLISHED: "review_published",
+  /** §9 Reviews "remove" (enumerated — no ESC); the `remove_review` hidden soft-delete (Admin). */
+  REMOVED: "review_removed",
+} as const;
+
+export type ReviewAuditActionToken = (typeof ReviewAuditAction)[keyof typeof ReviewAuditAction];

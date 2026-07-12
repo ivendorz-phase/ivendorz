@@ -806,3 +806,49 @@ enum FraudSignalState {
   @@map("fraud_signal_state")
   @@schema("trust")
 }
+
+// §3.5.2 — trust.public_reviews (post-award; moderation; public when published; feeds performance via the
+// in-module BC-TRUST-3 ingestion service — F4G-M2/M3, NOT a cross-module event). W3-TRUST-5a realizes the
+// BC-TRUST-5 (Part A) Public Review aggregate (substrate + in-band audited-write lifecycle in the
+// `trust_public_reviews` migration + the M5 public-review service/command). `vendorProfileId`/
+// `authorOrganizationId`/`engagementId`/`moderatedBy`/`createdBy`/`updatedBy`/`deletedBy` are bare
+// cross-module UUIDs (Doc-2 §0.3; no FK). `rating` is a smallint 1–5 (CHECK in the migration). SD tuple
+// (removed = hidden). The `UNIQUE(engagement_id, author_organization_id)` business key, the partial
+// published index, the column-scoped immutability trigger (authored/identity facts frozen; DELETE blocked),
+// and the author/public-read/staff RLS live raw-SQL in the migration (the house pattern). Columns/enum labels
+// [Doc-2 §10.6 / Doc-6G §3.5.2 binding]. NO event — Doc-2 §8 has no Trust review event (Doc-4G §H.7).
+model PublicReview {
+  id                   String             @id @db.Uuid
+  vendorProfileId      String             @map("vendor_profile_id") @db.Uuid
+  authorOrganizationId String             @map("author_organization_id") @db.Uuid
+  engagementId         String             @map("engagement_id") @db.Uuid
+  rating               Int                @db.SmallInt
+  body                 String?
+  status               PublicReviewStatus @default(submitted)
+  moderatedBy          String?            @map("moderated_by") @db.Uuid
+  moderatedAt          DateTime?          @map("moderated_at") @db.Timestamptz
+  createdAt            DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy            String?            @map("created_by") @db.Uuid
+  updatedBy            String?            @map("updated_by") @db.Uuid
+  deletedAt            DateTime?          @map("deleted_at") @db.Timestamptz
+  deletedBy            String?            @map("deleted_by") @db.Uuid
+  deleteReason         String?            @map("delete_reason")
+
+  // The UNIQUE(engagement_id, author_organization_id) business key, the partial published index, the
+  // column-scoped immutability trigger, and the RLS live raw-SQL in the `trust_public_reviews` migration
+  // (partial predicates + triggers + RLS are not expressible via Prisma; kept in one place, the migration).
+  @@map("public_reviews")
+  @@schema("trust")
+}
+
+enum PublicReviewStatus {
+  submitted
+  approved
+  published
+  rejected
+  removed
+
+  @@map("public_review_status")
+  @@schema("trust")
+}

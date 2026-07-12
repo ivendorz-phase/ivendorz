@@ -10,8 +10,18 @@
 // the AUTHZ (`can_submit_verification` → M1 `check_permission`) lives at the composition edge
 // (`src/server/trust` → `src/server/authz`), never inside this module.
 
-import type { DbExecutor } from "@/shared/db";
+import type { DbExecutor, PrismaClient } from "@/shared/db";
 import { requestVerificationCommand } from "../application/commands/request-verification.command";
+import { submitReview as submitReviewCommand } from "../application/commands/submit-review.command";
+import {
+  moderateReview as moderateReviewService,
+  publishReview as publishReviewService,
+  removeReview as removeReviewService,
+} from "../application/services/public-review.service";
+import {
+  getReview as getReviewService,
+  listReviews as listReviewsService,
+} from "../application/services/review-read.service";
 import {
   confirmVerifiedTier as confirmVerifiedTierService,
   downgradeVerifiedTier as downgradeVerifiedTierService,
@@ -46,14 +56,30 @@ import type {
   FraudSignalDeps,
   FraudSignalTriageInput,
   FraudSignalTriageOutcome,
+  GetReviewInput,
+  GetReviewOutcome,
   IngestPerformanceInputDeps,
   IngestPerformanceInputInput,
   IngestPerformanceInputOutcome,
+  ListReviewsInput,
+  ListReviewsOutcome,
+  ModerateReviewInput,
+  ModerateReviewOutcome,
   PerformanceScoreDeps,
+  PublishReviewDeps,
+  PublishReviewInput,
+  PublishReviewOutcome,
+  RemoveReviewInput,
+  RemoveReviewOutcome,
   RequestVerificationContext,
   RequestVerificationDeps,
   RequestVerificationInput,
   RequestVerificationOutcome,
+  ReviewStaffContext,
+  SubmitReviewContext,
+  SubmitReviewDeps,
+  SubmitReviewInput,
+  SubmitReviewOutcome,
   SuspendVerifiedTierInput,
   TriggerPerformanceReviewInput,
   TriggerPerformanceReviewOutcome,
@@ -386,3 +412,132 @@ export const actionFraudSignal: ActionFraudSignal = (input, ctx, deps, db) =>
 /** Concrete `trust.dismiss_fraud_signal.v1` facade. */
 export const dismissFraudSignal: DismissFraudSignal = (input, ctx, deps, db) =>
   dismissFraudSignalService(input, ctx, deps, db);
+
+// ── W3-TRUST-5a — the BC-TRUST-5 (Part A) Public Review facades (Doc-4G §G8.1/§G8.2/§G8.3/§G8.5) ─────────
+// The PUBLIC, contracts-only faces over the private M5 Public Review command/services. This is an IN-BAND
+// AUDITED-WRITE aggregate (the D7 / WP4c fraud pattern) — each mutation writes `public_reviews` + appends ONE
+// ENUMERATED §9 audit (Doc-2 §9 line 693 Reviews — submit/moderation/publish/remove) atomically on the
+// caller's tx; NO event (Doc-4G §H.7 — Doc-2 §8 has no Trust review event); NO SD (Doc-6G §3.5.2); firewall
+// (a review mutates no score/verification/fraud/tier and issues no ban — Doc-4G §H.9). `author_organization_id`
+// is SERVER-derived from the active-org context (Invariant #5), never client input.
+//
+// PUBLISH is the TWO-STEP model (patch F4G-PB5-MA2): Step 1 = state+audit atomic; Step 2 = the in-module
+// BC-TRUST-3 ingestion service (Path B, F4G-M2 single-writer — the ONLY downstream write; never a direct
+// `performance_inputs` write). Step 2 failure does NOT roll back the `published` review. The Admin HTTP wiring
+// + the `can_submit_review` (buyer) / `staff_can_verify`|`staff_super_admin` (staff) composition-edge authz +
+// the DG-4 engagement / DG-2 vendor resolution are DEFERRED to the composition edge (the WP2 precedent) —
+// these are the functions they will call, invoked directly by tests. **Admin Ratings (§G8.4) are a SEPARATE
+// aggregate (WP5b) — not built here.** The M0 `appendAuditRecord` is INJECTED by contract TYPE (NO
+// `writeOutboxEvent`). submit MUST run inside `withActiveOrgContext` (active-org GUC); moderate/remove inside
+// a staff-scoped tx (`app.is_platform_staff = true`); publish takes the BASE client (owns two tx boundaries).
+
+/** The stage-1 SYNTAX validator + its result→outcome mapper — surfaced so the DEFERRED composition edge runs
+ *  SYNTAX BEFORE AUTHZ (Doc-4A §11.2 fixed order), from the SAME single source the command re-runs (self-guard). */
+export {
+  submitReviewSyntaxOutcome,
+  validateSubmitReviewInput,
+} from "../application/commands/submit-review.command";
+export type { SubmitReviewSyntaxResult } from "../application/commands/submit-review.command";
+
+// The Doc-2 §7 AUTHZ slugs (bound by pointer) — surfaced so the DEFERRED composition edge references ONE source.
+export {
+  CAN_SUBMIT_REVIEW_SLUG,
+  STAFF_CAN_VERIFY_SLUG,
+  STAFF_SUPER_ADMIN_SLUG,
+} from "../domain/public-review.constants";
+
+// The re-exported Public Review DTOs so the DEFERRED Admin command / composition edge (and consumers) build
+// them via `@/modules/trust/contracts`. NO event export (BC-TRUST-5 emits none).
+export type {
+  SubmitReviewInput,
+  SubmitReviewContext,
+  SubmitReviewDeps,
+  SubmitReviewResult,
+  SubmitReviewError,
+  SubmitReviewOutcome,
+  ModerateReviewInput,
+  ModerateReviewOutcome,
+  PublishReviewInput,
+  PublishReviewDeps,
+  PublishReviewOutcome,
+  PublishReviewResult,
+  RemoveReviewInput,
+  RemoveReviewOutcome,
+  ReviewStaffContext,
+  ReviewStaffResult,
+  ReviewStaffError,
+  PublicReviewStatusValue,
+  ReviewModerationDecisionValue,
+  GetReviewInput,
+  GetReviewOutcome,
+  ListReviewsInput,
+  ListReviewsOutcome,
+  PublicReviewView,
+  ListReviewsResult,
+  ReviewReadError,
+} from "./types";
+
+/** `trust.submit_review.v1` (Doc-4G §G8.1) — buyer-authored submit (User + active-org). MUST be invoked
+ *  INSIDE `withActiveOrgContext` (the `db` executor carries `app.active_org`/`app.user_id`). Emits no event. */
+export type SubmitReview = (
+  input: SubmitReviewInput,
+  ctx: SubmitReviewContext,
+  deps: SubmitReviewDeps,
+  db?: DbExecutor,
+) => Promise<SubmitReviewOutcome>;
+
+/** `trust.moderate_review.v1` (Doc-4G §G8.2) — staff approve/reject a submitted review. MUST run inside a
+ *  staff-scoped tx (`app.is_platform_staff = true`). Emits no event. */
+export type ModerateReview = (
+  input: ModerateReviewInput,
+  ctx: ReviewStaffContext,
+  deps: SubmitReviewDeps,
+  db?: DbExecutor,
+) => Promise<ModerateReviewOutcome>;
+
+/** `trust.publish_review.v1` (Doc-4G §G8.3; patch F4G-PB5-MA2 two-step) — staff publish; Step 2 feeds
+ *  Buyer-Feedback (Path B) via the in-module BC-TRUST-3 ingestion service. Takes the BASE client (owns two tx
+ *  boundaries; sets the staff GUC itself). Emits no event. */
+export type PublishReview = (
+  input: PublishReviewInput,
+  ctx: ReviewStaffContext,
+  deps: PublishReviewDeps,
+  client?: PrismaClient,
+) => Promise<PublishReviewOutcome>;
+
+/** `trust.remove_review.v1` (Doc-4G §G8.3) — staff hide a review (soft-delete, SD=YES). MUST run inside a
+ *  staff-scoped tx. Emits no event; no Path-B. */
+export type RemoveReview = (
+  input: RemoveReviewInput,
+  ctx: ReviewStaffContext,
+  deps: SubmitReviewDeps,
+  db?: DbExecutor,
+) => Promise<RemoveReviewOutcome>;
+
+/** `trust.get_review.v1` (Doc-4G §G8.5) — read one PUBLISHED review (public projection; not audited). */
+export type GetReview = (input: GetReviewInput, db?: DbExecutor) => Promise<GetReviewOutcome>;
+
+/** `trust.list_reviews.v1` (Doc-4G §G8.5) — list a vendor's PUBLISHED reviews (public projection; not audited). */
+export type ListReviews = (input: ListReviewsInput, db?: DbExecutor) => Promise<ListReviewsOutcome>;
+
+/** Concrete `trust.submit_review.v1` facade (M5 contracts → M5 application command). */
+export const submitReview: SubmitReview = (input, ctx, deps, db) =>
+  submitReviewCommand(input, ctx, deps, db);
+
+/** Concrete `trust.moderate_review.v1` facade. */
+export const moderateReview: ModerateReview = (input, ctx, deps, db) =>
+  moderateReviewService(input, ctx, deps, db);
+
+/** Concrete `trust.publish_review.v1` facade (two-step publish). */
+export const publishReview: PublishReview = (input, ctx, deps, client) =>
+  publishReviewService(input, ctx, deps, client);
+
+/** Concrete `trust.remove_review.v1` facade. */
+export const removeReview: RemoveReview = (input, ctx, deps, db) =>
+  removeReviewService(input, ctx, deps, db);
+
+/** Concrete `trust.get_review.v1` facade (M5 contracts → M5 read service). */
+export const getReview: GetReview = (input, db) => getReviewService(input, db);
+
+/** Concrete `trust.list_reviews.v1` facade. */
+export const listReviews: ListReviews = (input, db) => listReviewsService(input, db);
