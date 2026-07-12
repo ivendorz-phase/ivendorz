@@ -249,6 +249,7 @@ wins. Sources cited by pointer, never restated.*
 | **T3** | 2026-07-12 | Divergence discovered during Wave-3 exit-gate reconciliation (add/add conflict on `src/modules/core/`) |
 | **T4** | 2026-07-12 | Coordinator raises this Flag-and-Halt packet (`[ESC-CORE-OUTBOX-MECH]`, proposed) |
 | **T5** | 2026-07-12 | **M0-owner RULING: Q1=Yes (binds) · Q2=Option A (no-SD) · Q3=conform to frozen contract (drop `WriteOutboxEventResult`).** Execution deferred to the Wave-3 exit gate |
+| **T6** | 2026-07-12 | **Owner APPROVES the Option-A target state for both M5 (contract-conformance cleanup: drop `WriteOutboxEventResult`/`outboxEventId`, update emitters, keep `core_outbox_write_failed`/`payload:Record`) and M7 (withdraw SD function + `20260711180000` migration, re-point emitters to `@/modules/core/contracts`).** Execution locked; runs at the gate |
 
 ---
 
