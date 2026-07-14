@@ -8,19 +8,42 @@
 // journey-bucket summary is adapter-supplied (own facts only — never client-computed, R7). At wiring
 // the seam swaps to the GI-02 server data layer and this page does not change. Uses the platform
 // shell PageHeader.
+//
+// URL PARAMS (allowlisted, the documents-hub convention — anything else ⇒ All):
+//  • `?state=` — own-quotation-state filter (draft | submitted; frozen Doc-4M tokens). The vendor
+//    sidebar's "Make Offer" / "Saved Offers" entries deep-link here; the URL is the single source
+//    of truth (the chips are plain Links — no client filter state). Filters the vendor's OWN
+//    quotation state only (ND-2/ND-3 safe). The filtered-empty copy below is derived from the
+//    FILTER alone (never from a matching outcome), so the inbox's canonical unfiltered empty state
+//    stays byte-identical ([ESC-7B-EMPTY-LOCK]).
 import type { Metadata } from "next";
+import { EmptyState } from "@/frontend/components/empty-state";
 import { PageHeader } from "../../../_components/shell";
 import { rfqWorkflowData, RfqPipelineSummary } from "../../../_components/rfq-workflow";
-import { InvitationInbox, QuotationHomeSummary } from "../../../_components/vendor/rfq";
+import {
+  InboxStateFilter,
+  InvitationInbox,
+  QuotationHomeSummary,
+  parseInboxStateFilter,
+  INBOX_STATE_FILTER_LABELS,
+} from "../../../_components/vendor/rfq";
 
 export const metadata: Metadata = { title: "RFQs & Quotations" };
 
-export default async function RfqsPage() {
+export default async function RfqsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ state?: string }>;
+}) {
+  const activeState = parseInboxStateFilter((await searchParams).state);
   const [items, quota, buckets] = await Promise.all([
     rfqWorkflowData.vendor.listInbox(),
     rfqWorkflowData.vendor.getQuota(),
     rfqWorkflowData.vendor.getPipelineSummary(),
   ]);
+  const visible = activeState
+    ? items.filter((item) => item.quotation_state === activeState)
+    : items;
   return (
     <div className="space-y-6">
       <PageHeader
@@ -29,7 +52,19 @@ export default async function RfqsPage() {
       />
       <QuotationHomeSummary quota={quota} />
       <RfqPipelineSummary buckets={buckets} />
-      <InvitationInbox items={items} />
+      <InboxStateFilter active={activeState} />
+      {activeState && visible.length === 0 ? (
+        <EmptyState
+          title={`No ${INBOX_STATE_FILTER_LABELS[activeState].toLowerCase()}`}
+          description={
+            activeState === "draft"
+              ? "Offers you are still drafting appear here. Clear the filter to see every invitation."
+              : "Offers you have submitted appear here. Clear the filter to see every invitation."
+          }
+        />
+      ) : (
+        <InvitationInbox items={visible} />
+      )}
     </div>
   );
 }
