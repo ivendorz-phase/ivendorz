@@ -3,7 +3,7 @@
 > **Tagline:** *The Industrial Procurement Operating System for Bangladesh — governed
 > RFQ matching that delivers the right lead to the right vendor at the right scale.*
 
-**Version:** 1.3
+**Version:** 1.4
 **Classification:** **Non-authoritative orientation document.** Summarizes the frozen
 corpus; never overrides it. Updated through **additive patch only**. "Skill-Ready" =
 suitable as AI bootstrap/skill context, **not** a frozen architecture artifact.
@@ -84,7 +84,7 @@ Fewest moving parts; managed/serverless infrastructure over self-hosted.
 | Concern | Technology | Role |
 |---------|-----------|------|
 | Frontend | Next.js App Router + React + Tailwind + shadcn/ui | SSR/SSG for SEO; one stack public + app |
-| Backend | Next.js route handlers + server actions (TypeScript) | Same codebase; logic in module folders |
+| Backend | Next.js route handlers (primary) + server actions where ergonomic (secondary) — TypeScript | Same codebase; route-handler-driven, server actions secondary; logic in module folders |
 | Database | Supabase PostgreSQL | System of record; one schema per module |
 | ORM | Prisma | Single source of data truth |
 | Auth | Supabase Auth | Authentication only (login, sessions, OTP) |
@@ -607,6 +607,7 @@ M0 Core: audit + outbox + IDs + config underpin everything
 | 1.1 | 2026-06-22 | Status update: Doc-4 series complete/FROZEN. Added Current Program Phase, AI Agent Governance, Required AI Skills, Golden Rules. |
 | 1.2 | 2026-06-22 | Board patch: expanded Doc-4F…4M map; code-approval path; skill Authority Order; module Owner column; runtime version baselines; state-machine + event-catalog authority pointers; carried-deps historical note; active deliverable; appendices A–F. |
 | 1.3 | 2026-06-22 | Board patch 2: architecture supremacy in Authority Order (ranks 0–1 immutable); §0 reading path 4B…4M; human approval for architecture-affecting artifacts; Prisma layout marked planned; non-authoritative classification + change control; Appendix G governance/implementation pointers. |
+| 1.4 | 2026-07-15 | Additive clarification patch (owner-approved): §2.1 Backend row clarified — Next.js route handlers are the primary execution model, server actions secondary (used where ergonomically appropriate); the application is route-handler-driven. No frozen document contradicted; refines, does not reword, the "route handlers + server actions" statement. |
 
 ---
 
@@ -656,5 +657,5 @@ M0 Core: audit + outbox + IDs + config underpin everything
 
 ---
 
-*End of Master Overview v1.3. Non-authoritative — patch additively whenever a referenced
+*End of Master Overview v1.4. Non-authoritative — patch additively whenever a referenced
 frozen document changes; it must never contradict the corpus it summarizes.*
