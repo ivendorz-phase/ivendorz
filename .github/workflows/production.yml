@@ -27,12 +27,13 @@ jobs:
       SMOKE_BASE_URL: ${{ github.event.deployment_status.environment_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+        run: pnpm exec playwright install --with-deps chromium
       - name: Smoke test against live production URL
-        run: npx playwright test tests/e2e/smoke.spec.ts
+        run: pnpm exec playwright test tests/e2e/smoke.spec.ts

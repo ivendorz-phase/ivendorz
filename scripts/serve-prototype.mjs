@@ -2,9 +2,9 @@
 /**
  * Serve a high-fidelity clickable prototype for Stage-4 visual review.
  *
- *   npm run prototype                 → serves prototypes/admin-console
- *   npm run prototype review-system   → serves prototypes/review-system
- *   npm run prototype -- --port 9000  → custom port
+ *   pnpm run prototype                 → serves prototypes/admin-console
+ *   pnpm run prototype review-system   → serves prototypes/review-system
+ *   pnpm run prototype -- --port 9000  → custom port
  *
  * The CLICKABLE prototype is the PRIMARY Stage-4 review artifact (owner ruling
  * 2026-07-08). Screenshots are evidence for the audit trail, never the review

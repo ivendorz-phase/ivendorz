@@ -3,11 +3,12 @@
 **Document type:** Structural Constitution — non-authoritative engineering reference defining
 **ownership, boundaries, and folder shape** (not implementation design; that is Doc-5…8).
 **Date:** 2026-06-23 · **Governance freeze:** 2026-06-27
-**Version:** v1.1
-**Status:** **FROZEN v1.0, additively patched v1.1** (governance layer freeze
-`governance-frozen-v1`, 2026-06-27; Additive Patch v1.1 Board-approved 2026-07-06). The
-governance *architecture* is ratified; content remains non-authoritative under, and patched to
-match, the frozen corpus.
+**Version:** v1.2
+**Status:** **FROZEN v1.0, additively patched v1.1, v1.2** (governance layer freeze
+`governance-frozen-v1`, 2026-06-27; Additive Patch v1.1 Board-approved 2026-07-06; Additive
+Patch v1.2 owner-approved 2026-07-15 — canonical package manager standardized on **pnpm**,
+superseding F-06 Option A; no structural rule changed). The governance *architecture* is
+ratified; content remains non-authoritative under, and patched to match, the frozen corpus.
 **Authoritative source:** On any conflict, the frozen document wins. See [`project_details.md`](project_details.md)
 
 ---
@@ -411,7 +412,8 @@ ask ⑦) · `LICENSE` (owner-provided only, never invented) · `repo.manifest.js
 G1 ask ⑨ — **generated metadata**, derived from this registry and regenerated on every
 structure change via `scripts/build-repo-manifest.mjs`, committed together with the structure
 change; never an independently maintained source of truth, never hand-edited) · standard
-tool/config files and the canonical lockfile (npm, G1 ask ②) · **pinned exceptions** whose
+tool/config files and the canonical lockfile (pnpm — `pnpm-lock.yaml`, pinned via the
+`packageManager` field; supersedes F-06 Option A per owner directive 2026-07-15) · **pinned exceptions** whose
 paths are cited by frozen documents and therefore cannot move: `esc_registry.md`, `ROADMAP.md`,
 `00_PROJECT_STATUS.md`, `iVendorz_New_Chat_Primer.md`, `Wave_Template_v1.0.md`,
 `Governance_Freeze_v1.0.md`.
