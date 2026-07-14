@@ -37,6 +37,15 @@ const TIER_LABEL: Record<DashboardScoreTier, string> = {
   platinum: "Platinum",
 };
 
+/** Tier chip styling — gold/premium uses the reserved `--iv-amber` (award) ramp; the rest map onto
+ *  neutral/navy tokens. Always paired with the tier text label, never colour alone (a11y). */
+const TIER_CHIP: Record<DashboardScoreTier, string> = {
+  bronze: "bg-iv-warning-subtle text-iv-warning-muted",
+  silver: "bg-iv-neutral-subtle text-iv-ink-secondary",
+  gold: "bg-iv-amber-100 text-iv-amber-700",
+  platinum: "bg-iv-navy-100 text-iv-navy-700",
+};
+
 const TIER_ORDER: DashboardScoreTier[] = ["bronze", "silver", "gold", "platinum"];
 
 export interface GlobalTrustScoreCardProps {
@@ -57,44 +66,55 @@ export function GlobalTrustScoreCard({
   const progressPct = Math.round(Math.max(0, Math.min(1, progressToNextTier ?? 0)) * 100);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Global Trust Score</CardTitle>
+    <Card className="h-full overflow-hidden">
+      {/* Distinct navy "status surface" header band — sets this panel apart from the plain white
+          content cards as a standing status/standing signal. */}
+      <CardHeader className="bg-iv-navy-700 p-5">
+        <CardTitle className="text-base text-iv-fg-inverse">Global Trust Score</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5 p-5">
         <div className="flex items-center gap-4">
           <TrustScoreRing score={score} />
-          <div className="space-y-1">
+          <div className="space-y-2">
             {tier ? (
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Current: <span className="text-foreground">{TIER_LABEL[tier]}</span>
-              </p>
+              <span
+                className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${TIER_CHIP[tier]}`}
+              >
+                {TIER_LABEL[tier]}
+              </span>
             ) : null}
             {nextTier ? (
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Next tier: <span className="text-foreground">{TIER_LABEL[nextTier]}</span>
+              <p className="text-xs font-medium text-muted-foreground">
+                Next tier:{" "}
+                <span className="font-semibold text-iv-ink-strong">{TIER_LABEL[nextTier]}</span>
               </p>
             ) : null}
           </div>
         </div>
 
         {nextTier ? (
-          <div
-            role="progressbar"
-            aria-label={`Progress toward ${TIER_LABEL[nextTier]}`}
-            aria-valuenow={progressPct}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            className="h-2 w-full overflow-hidden rounded-full bg-muted"
-          >
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+              <span>Progress to {TIER_LABEL[nextTier]}</span>
+              <span className="font-mono tabular-nums text-iv-ink-strong">{progressPct}%</span>
+            </div>
             <div
-              className="h-full rounded-full bg-iv-brand-600"
-              style={{ width: `${progressPct}%` }}
-            />
+              role="progressbar"
+              aria-label={`Progress toward ${TIER_LABEL[nextTier]}`}
+              aria-valuenow={progressPct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              className="h-2 w-full overflow-hidden rounded-full bg-muted"
+            >
+              <div
+                className="h-full rounded-full bg-iv-navy-700 transition-[width] duration-slow ease-iv-out"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
           </div>
         ) : null}
 
-        <div className="rounded-md bg-iv-info-subtle p-3 text-sm text-iv-info-muted">
+        <div className="rounded-md border border-iv-info-base/15 bg-iv-info-subtle p-3 text-sm leading-relaxed text-iv-info-muted">
           Completing your Operational Infrastructure section may improve your score.
         </div>
 

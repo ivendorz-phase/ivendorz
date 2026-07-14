@@ -19,6 +19,16 @@ const TONE_ICON_BG: Record<VendorKpiTone, string> = {
   neutral: "bg-muted text-muted-foreground",
 };
 
+/** Thin top accent bar that colour-codes the tile at a glance (paired with the tinted icon chip so
+ *  meaning is never conveyed by colour alone — R: a11y). */
+const TONE_ACCENT: Record<VendorKpiTone, string> = {
+  brand: "bg-iv-brand-600",
+  info: "bg-iv-info-base",
+  success: "bg-iv-success-base",
+  warning: "bg-iv-warning-base",
+  neutral: "bg-iv-neutral-base",
+};
+
 export interface VendorKpiStatCardProps {
   label: string;
   value?: ReactNode;
@@ -42,13 +52,19 @@ export function VendorKpiStatCard({
   className,
 }: VendorKpiStatCardProps) {
   return (
-    <Card className={cn("min-w-0", className)}>
-      <CardContent className="flex flex-col gap-3 p-4">
+    <Card
+      className={cn(
+        "min-w-0 overflow-hidden transition-shadow duration-normal ease-iv-out hover:shadow-iv-md",
+        className,
+      )}
+    >
+      <div aria-hidden className={cn("h-1 w-full", TONE_ACCENT[tone])} />
+      <CardContent className="flex flex-col gap-4 p-5">
         <div className="flex items-center justify-between">
           {icon ? (
             <span
               className={cn(
-                "inline-flex size-9 items-center justify-center rounded-md",
+                "inline-flex size-10 items-center justify-center rounded-md [&_svg]:size-5",
                 TONE_ICON_BG[tone],
               )}
             >
@@ -58,16 +74,17 @@ export function VendorKpiStatCard({
             <span />
           )}
           {live ? (
-            <span className="rounded-full bg-iv-success-subtle px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide text-iv-success-muted">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-iv-success-subtle px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide text-iv-success-muted">
+              <span aria-hidden className="size-1.5 rounded-full bg-iv-success-base" />
               Live
             </span>
           ) : null}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-2xl font-semibold tabular-nums text-foreground">
+          <p className="truncate font-mono text-3xl font-semibold tabular-nums leading-none text-iv-ink-strong">
             {value ?? "—"}
           </p>
-          <p className="truncate text-sm text-muted-foreground">{label}</p>
+          <p className="mt-2 truncate text-sm font-medium text-muted-foreground">{label}</p>
         </div>
       </CardContent>
     </Card>
