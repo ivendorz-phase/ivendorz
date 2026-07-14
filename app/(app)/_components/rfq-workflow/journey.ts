@@ -19,7 +19,13 @@ import type { RfqState, InvitationState, QuotationState } from "@/frontend/compo
  * send one to a contract. Each groups one or more frozen Doc-4M RFQ states for orientation.
  */
 export type RfqJourneyStageKey =
-  "authoring" | "validation" | "routing" | "quoting" | "evaluation" | "award" | "post_award";
+  | "authoring"
+  | "validation"
+  | "routing"
+  | "quoting"
+  | "evaluation"
+  | "award"
+  | "post_award";
 
 /** The acting side a stage chiefly belongs to (display copy only — authorization is server-side). */
 export type JourneyActor = "buyer" | "vendor" | "system" | "buyer_and_vendor";

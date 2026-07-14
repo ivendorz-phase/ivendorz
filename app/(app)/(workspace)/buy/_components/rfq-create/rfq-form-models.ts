@@ -31,7 +31,10 @@ export type WorkNature = "supply" | "service" | "fabricate" | "consult";
 
 /** `routing_mode` — how broadly the (governed) engine may route. The buyer sets breadth; the engine matches. */
 export type RoutingMode =
-  "approved_only" | "approved_conditional" | "approved_open" | "open_market";
+  | "approved_only"
+  | "approved_conditional"
+  | "approved_open"
+  | "open_market";
 
 /** `currency` — frozen <BDT> at create (Doc-2 §0.4 multi-currency-ready; only BDT today). */
 export type RfqCurrency = "BDT";
