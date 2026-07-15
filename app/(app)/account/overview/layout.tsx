@@ -8,7 +8,7 @@
 // (Buyer + Vendor) — distinct from the user's ORG ROLE (Owner); the two dimensions never conflate (Inv #2).
 import type { ReactNode } from "react";
 import { AppShell } from "../../_components/shell";
-import { accountShellVm } from "./account-nav-model";
+import { accountShellVm } from "../../_components/hybrid/hybrid-shell-vm";
 
 const ACCOUNT_SHELL_VM = accountShellVm([
   { label: "Account", href: "/account/overview" },

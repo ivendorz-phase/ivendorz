@@ -51,8 +51,23 @@ export interface NavItem {
 
 export interface NavSection {
   id: string;
-  /** Section heading (e.g. "Procurement" / "Selling" for Hybrid orgs — IA §4.3). */
+  /** Section heading (e.g. "Procurement" — IA §4.3). */
   label?: string;
+  /**
+   * Co-mount SURFACE this section belongs to ("Buying" / "Selling" / "Trust"). Consecutive sections
+   * carrying the same tag render as ONE bracketed block under a strong surface header, so a Hybrid
+   * org's co-mounted Buyer and Vendor surfaces read as distinct blocks rather than a run-on list of
+   * equal-weight sections — Invariant #2 "grouped, not merged" ([ESC-7G-A7]).
+   *
+   * SET BY THE SEAM, never derived here: `hybrid-nav.ts` states the boundary — "Identity/seam
+   * validates·selects·tags·orders; presentation concatenates·renders". This is a DISPLAY LABEL the
+   * shell renders verbatim; it is NOT a `PlatformParticipation` value and the shell never interprets
+   * it (no per-surface branching, no colour map).
+   *
+   * Single-surface navs (buyer-only / vendor-only / admin / account) leave this unset and render
+   * exactly as before — additive and optional.
+   */
+  surface?: string;
   items: NavItem[];
 }
 
@@ -80,9 +95,82 @@ export interface QuickCreateItem {
   disabled?: boolean;
 }
 
+/**
+ * One entry in the co-mount PARTICIPATION LENS control ([ESC-7G-A7R], Board-RULED 2026-07-15) — a
+ * ROLE workspace the user may foreground.
+ *
+ * THE LENS IS NOT A TOGGLE, AND MUST NEVER BECOME ONE (SD-1/SD-3/SD-5, binding):
+ *  • Both surfaces stay MOUNTED under every lens — the composed `nav` never shrinks. The lens only
+ *    changes which co-mounted block the sidebar FOREGROUNDS; the other is always one click away.
+ *    Removing a surface from `nav` would be the re-routing toggle that Doc-7A R6 §4.2 forbids
+ *    ("a surface is a capability, not an exclusive app") and that `[ESC-7G-A7]` rejected.
+ *  • It is NEVER an authorization boundary. It gates no route and hides no permitted action; the
+ *    server re-validates regardless (Doc-7A §4.3 R7). "The lens gates X" is a BLOCKER on sight.
+ *  • It is DERIVED FROM THE ROUTE and stored nowhere (SD-2) — so it cannot go stale, cannot lie about
+ *    where you are, and asserts no client-side context (Invariant #5). The control is a NAVIGATION
+ *    affordance, not a mode switch.
+ *
+ * SEAM-SUPPLIED, like the `NavSection.surface` tags it pairs with: the shell owns no route→surface
+ * mapping of its own and interprets no participation.
+ *
+ * ALSO the element type of `ShellViewModel.foldableSurfaces` — the same three fields (label tying it
+ * to a `NavSection.surface` tag, href, route prefix) are what a block needs in order to FOLD, and a
+ * role workspace both folds and appears in the control. Membership of the two lists is what differs,
+ * never the shape: `surfaces` ⊆ `foldableSurfaces`. See that field for the ruling and the reasoning.
+ */
+export interface SurfaceSwitchItem {
+  /** Display label — MUST equal the `NavSection.surface` tag of the sections it foregrounds. */
+  label: string;
+  /** Where the control navigates — that surface's overview route. */
+  href: string;
+  /** Route prefix identifying this surface (e.g. `/sell`). Supplied here so the shell never has to
+   *  derive one by string-surgery on `href`. */
+  prefix: string;
+}
+
 export interface ShellViewModel {
   identity: ShellIdentity;
   nav: NavSection[];
+  /**
+   * Co-mount lens control — the ROLE workspaces, in order, for a Hybrid org. Unset for
+   * single-surface navs (buyer-only / vendor-only / admin / account) → no control renders and every
+   * block stays foregrounded, exactly as before this existed.
+   *
+   * TERMINAL surfaces are deliberately ABSENT here: `Trust` carries a `NavSection.surface` tag but no
+   * entry in this list, which is precisely what keeps it visible under EVERY lens (SD-6) — it is
+   * never foregrounded, never folded into an editable group, and never hidden behind a lens.
+   */
+  surfaces?: SurfaceSwitchItem[];
+  /**
+   * Every co-mounted block that FOLDS by route — the set the sidebar foregrounds exactly one of,
+   * collapsing the rest to their one-click surface header. A SUPERSET of `surfaces`.
+   *
+   * WHY THIS IS A SEPARATE LIST (owner-RULED 2026-07-15). The A7 packet expressly RESERVED this
+   * question — A7.4, "which groups are surface-specific vs shared? … **Board to confirm the split**"
+   * — and the seam recorded its answer as a placeholder ("this fixture picks a sensible split",
+   * `hybrid-shell-vm.ts`). The owner has now confirmed the split: Account (Surface E) folds exactly
+   * like Buying/Selling, but it does NOT join the participation lens control.
+   *
+   * That distinction is the whole reason this field exists, and it is load-bearing:
+   *  • Doc-7C §4.3 (FROZEN) composes the navigable surface set from "the organization's platform
+   *    participation + the user's org role". Account is NEITHER — every user has it under every
+   *    participation (Doc-7A_Structure §Doc-7E). It folds like a surface; it is not a role.
+   *  • Putting it in `surfaces` would render it as a third segment of a control whose semantics are
+   *    "participation/role grouping" (`[ESC-7B-SEGMENTED]`) and whose ruled scope is the two role
+   *    workspaces (A7R SD-5, "always renders both options").
+   *  • It would also hand a buyer-only org a two-entry "Buying | Account" control — a lens with
+   *    nothing to lens, which `SurfaceSwitcher` documents it must not render.
+   *
+   * Splitting the lists keeps every A7R directive literally intact:
+   *  • SD-1/SD-5 — nothing leaves `nav`; a folded block keeps its header as a one-click link back in.
+   *  • SD-2 — still derived from the route (`resolveActiveSurface`), stored nowhere.
+   *  • SD-3 — still gates nothing; the server re-validates regardless (R7).
+   *  • SD-6 — `Trust` is in NEITHER list, which is exactly what keeps it drawn in full under every
+   *    fold, and it stays TERMINAL (last) in the composed order.
+   *
+   * Unset ⇒ falls back to `surfaces`, so a nav authored before this field renders unchanged.
+   */
+  foldableSurfaces?: SurfaceSwitchItem[];
   quickCreate?: QuickCreateItem[];
   notifications?: NotificationItem[];
   /** Non-disclosure-safe unread count (IA §4.2/§5.4). */

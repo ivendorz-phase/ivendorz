@@ -64,7 +64,7 @@ export function AppShell({
         ) : null}
 
         <div className="flex flex-1">
-          <Sidebar nav={vm.nav} />
+          <Sidebar nav={vm.nav} surfaces={vm.surfaces} foldableSurfaces={vm.foldableSurfaces} />
           <div className={cn("flex min-w-0 flex-1 flex-col", hasQuickBar && "pb-16 md:pb-0")}>
             {/* The shell owns the content container (the single <Container> primitive + padding); pages
                 render content only. Pages must NOT re-wrap in their own max-w container (double-wrap). */}

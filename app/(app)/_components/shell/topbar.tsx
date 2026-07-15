@@ -24,10 +24,29 @@ export interface TopbarProps {
 }
 
 export function Topbar({ vm, orgSwitcherSlot, notificationSlot, userMenuSlot }: TopbarProps) {
-  const { identity, nav, quickCreate, notifications, unreadCount, search } = vm;
+  const {
+    identity,
+    nav,
+    surfaces,
+    foldableSurfaces,
+    quickCreate,
+    notifications,
+    unreadCount,
+    search,
+  } = vm;
   return (
+    // The participation lens does NOT live here — owner directive 2026-07-15 moved it to the top of the
+    // Sidebar (amends [ESC-7G-A7R] SD-8; see `sidebar.tsx`). This topbar is therefore back to its
+    // original shape: the three-group centring scaffold and the `lg:` search breakpoint existed only to
+    // make room for the centred control, so both are reverted with it.
     <header className="sticky top-0 z-[var(--iv-z-sticky)] flex h-14 items-center gap-2 border-b border-border bg-background px-3 sm:px-4">
-      <MobileNav nav={nav} org={identity.activeOrg} organizations={identity.organizations} />
+      <MobileNav
+        nav={nav}
+        surfaces={surfaces}
+        foldableSurfaces={foldableSurfaces}
+        org={identity.activeOrg}
+        organizations={identity.organizations}
+      />
       <Link
         href="/buy/dashboard"
         className="inline-flex items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

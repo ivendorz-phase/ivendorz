@@ -7,7 +7,7 @@
 // nav model (single source). Breadcrumb links back to the Organization page.
 import type { ReactNode } from "react";
 import { AppShell } from "../../_components/shell";
-import { accountShellVm } from "../overview/account-nav-model";
+import { accountShellVm } from "../../_components/hybrid/hybrid-shell-vm";
 
 const ACCOUNT_SHELL_VM = accountShellVm([
   { label: "Account", href: "/account/overview" },

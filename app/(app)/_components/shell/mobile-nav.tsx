@@ -7,7 +7,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { ChevronDown, Menu } from "lucide-react";
+import { ChevronDown, ChevronRight, Menu } from "lucide-react";
 import { cn } from "@/frontend/lib/cn";
 import { Button } from "@/frontend/primitives/button";
 import {
@@ -21,7 +21,8 @@ import {
 } from "@/frontend/primitives/sheet";
 import { OrgSwitcher } from "./org-switcher";
 import { NAV_ICONS } from "./icons";
-import type { NavItem, NavSection, ShellOrg } from "./types";
+import { resolveActiveSurface, toNavBlocks } from "./hybrid-nav";
+import type { NavItem, NavSection, ShellOrg, SurfaceSwitchItem } from "./types";
 
 /** Mirrors the desktop `Sidebar`'s `isActive` — see its comment for why `search` is needed
  *  (query-bearing hrefs like `/rfqs?state=draft` never match on `pathname` alone). */
@@ -134,6 +135,12 @@ function findActiveGroupLabel(nav: NavSection[], pathname: string, search: strin
 
 interface MobileNavProps {
   nav: NavSection[];
+  surfaces?: SurfaceSwitchItem[];
+  /** The blocks that fold by route — role workspaces PLUS Account. Superset of `surfaces`; see
+   *  `types.ts` → `foldableSurfaces`. The drawer carries no lens CONTROL (SD-8: it would sit beside
+   *  the org switcher this header relocates in), so it uses only this list — it applies the fold
+   *  through its one-click surface headers, exactly as SD-8 prescribes. */
+  foldableSurfaces?: SurfaceSwitchItem[];
   org?: ShellOrg;
   organizations?: ShellOrg[];
 }
@@ -156,9 +163,24 @@ function MobileNavWithSearch(props: MobileNavProps) {
   return <MobileNavInner {...props} search={search} />;
 }
 
-function MobileNavInner({ nav, org, organizations, search }: MobileNavProps & { search: string }) {
+function MobileNavInner({
+  nav,
+  foldableSurfaces,
+  surfaces,
+  org,
+  organizations,
+  search,
+}: MobileNavProps & { search: string }) {
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
+
+  // Mirrors the desktop rail exactly (see `sidebar.tsx`): fold by the SUPERSET list, so Account folds
+  // here too and the two navs cannot drift into two dialects of the co-mount.
+  const foldable = foldableSurfaces ?? surfaces;
+
+  // Which block is foregrounded ([ESC-7G-A7R] SD-2) — route-derived, via the SAME resolver the desktop
+  // rail and the sidebar control use.
+  const activeSurface = resolveActiveSurface(foldable, pathname);
 
   // Accordion: at most ONE group open at a time (mirrors the desktop `Sidebar`); navigating into a
   // group's page auto-opens that group.
@@ -185,35 +207,77 @@ function MobileNavInner({ nav, org, organizations, search }: MobileNavProps & { 
           {org ? <OrgSwitcher activeOrg={org} organizations={organizations ?? [org]} /> : null}
         </SheetHeader>
         <nav aria-label="Primary" className="overflow-y-auto p-3">
-          {nav.map((section) => (
-            <div key={section.id} className="mb-4 last:mb-0">
-              {section.label ? (
-                <p className="px-3 pb-1 text-2xs font-semibold uppercase tracking-wide text-iv-nav-fg-muted">
-                  {section.label}
-                </p>
-              ) : null}
-              <ul className="flex flex-col gap-0.5">
-                {section.items.map((item) =>
-                  item.children && item.children.length > 0 ? (
-                    <NavGroup
-                      key={item.label}
-                      item={item}
-                      pathname={pathname}
-                      search={search}
-                      isOpen={openGroup === item.label}
-                      onToggle={() =>
-                        setOpenGroup((cur) => (cur === item.label ? null : item.label))
-                      }
-                    />
+          {/* Same co-mount blocking rule as the desktop Sidebar (shared `toNavBlocks`) so the two navs
+              never drift: a surface's sections render under ONE strong header inside an accent rail;
+              untagged sections render exactly as before. */}
+          {toNavBlocks(nav).map((block) => {
+            // The fold — identical rule to the desktop rail (see `sidebar.tsx` for the full
+            // SD-1/SD-5/SD-6 rationale): a backgrounded block collapses to a header LINK, one click
+            // away, never removed. Trust appears in neither list, so it always renders in full.
+            const foldableSurface = Boolean(
+              block.surface && foldable?.some((s) => s.label === block.surface),
+            );
+            const backgrounded =
+              foldableSurface && activeSurface !== null && block.surface !== activeSurface;
+            const surfaceHref = backgrounded
+              ? foldable?.find((s) => s.label === block.surface)?.href
+              : undefined;
+
+            return (
+              <div key={block.surface ?? block.sections[0].id} className="mb-4 last:mb-0">
+                {block.surface ? (
+                  surfaceHref ? (
+                    <SheetClose asChild>
+                      <Link
+                        href={surfaceHref}
+                        className="flex items-center justify-between gap-2 rounded-md px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-iv-nav-fg-muted hover:bg-iv-nav-hover hover:text-iv-nav-fg"
+                      >
+                        <span className="truncate">{block.surface}</span>
+                        <ChevronRight aria-hidden className="size-3.5 shrink-0" />
+                      </Link>
+                    </SheetClose>
                   ) : (
-                    <li key={item.href}>
-                      <NavLink item={item} pathname={pathname} search={search} />
-                    </li>
-                  ),
+                    <p className="px-3 pb-2 text-xs font-bold uppercase tracking-wider text-iv-nav-fg">
+                      {block.surface}
+                    </p>
+                  )
+                ) : null}
+                {backgrounded ? null : (
+                  <div className={cn(block.surface && "ml-3 border-l border-iv-nav-border pl-2")}>
+                    {block.sections.map((section, sectionIndex) => (
+                      <div key={section.id} className={cn(sectionIndex > 0 && "mt-3")}>
+                        {section.label ? (
+                          <p className="px-3 pb-1 text-2xs font-semibold uppercase tracking-wide text-iv-nav-fg-muted">
+                            {section.label}
+                          </p>
+                        ) : null}
+                        <ul className="flex flex-col gap-0.5">
+                          {section.items.map((item) =>
+                            item.children && item.children.length > 0 ? (
+                              <NavGroup
+                                key={item.label}
+                                item={item}
+                                pathname={pathname}
+                                search={search}
+                                isOpen={openGroup === item.label}
+                                onToggle={() =>
+                                  setOpenGroup((cur) => (cur === item.label ? null : item.label))
+                                }
+                              />
+                            ) : (
+                              <li key={item.href}>
+                                <NavLink item={item} pathname={pathname} search={search} />
+                              </li>
+                            ),
+                          )}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
                 )}
-              </ul>
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </nav>
       </SheetContent>
     </Sheet>

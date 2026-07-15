@@ -9,7 +9,15 @@
 // P-ACC-11, Billing → P-ACC-16, Workflow → P-ACC-13. The bare `/account` buyer-profile page
 // (P-ACC-14) carries NO nav item — it is reached via the user menu and the overview's "Edit profile"
 // link, so no sidebar entry highlights there.
-import type { BreadcrumbItem, NavItem, NavSection, ShellViewModel } from "../../_components/shell";
+//
+// DATA ONLY — this file owns the Account surface's nav sections and nothing else. The ShellViewModel
+// that renders them (`accountShellVm`) lives in the co-mount seam
+// (`app/(app)/_components/hybrid/hybrid-shell-vm.ts`), because since A7.4 (owner-RULED 2026-07-15)
+// `/account/*` renders the SAME co-mounted nav as the workspaces, with Account simply folded open —
+// composing that is the seam's job, not this model's. Same shape as `buyer-nav-model.ts`: nav data
+// here, VM in the seam. Importing the seam from here would close an import cycle (the seam reads
+// `ACCOUNT_NAV` below), so this file must stay free of shell-VM concerns.
+import type { NavItem, NavSection } from "../../_components/shell";
 
 export const ACCOUNT_NAV: NavSection[] = [
   {
@@ -49,24 +57,3 @@ export const ACCOUNT_QUICK_BAR: NavItem[] = [
   { label: "Members", href: "/account/members", icon: "members" },
   { label: "Billing", href: "/account/billing", icon: "billing" },
 ];
-
-/**
- * The canonical Account-section ShellViewModel, shared by EVERY `/account/*` layout — ONE identity
- * seed + the shared nav/quick-bar; only the per-page breadcrumb differs. PRESENTATION SEED only
- * (a wired build resolves identity/active-org server-side via get_active_context, SR3 — PARKED);
- * no client-supplied org id is trusted (Inv #5).
- */
-export function accountShellVm(breadcrumb: BreadcrumbItem[]): ShellViewModel {
-  return {
-    identity: {
-      user: { name: "Anisur Rahman", email: "anisur@padmavalve.com.bd" },
-      activeOrg: { id: "active", name: "Padma Valve & Fittings Ltd.", participation: "hybrid" },
-      organizations: [
-        { id: "active", name: "Padma Valve & Fittings Ltd.", participation: "hybrid" },
-      ],
-    },
-    nav: ACCOUNT_NAV,
-    quickBar: ACCOUNT_QUICK_BAR,
-    breadcrumb,
-  };
-}

@@ -13,7 +13,7 @@
 // an OBS, not resolved here.
 import type { ReactNode } from "react";
 import { AppShell } from "../../_components/shell";
-import { accountShellVm } from "../overview/account-nav-model";
+import { accountShellVm } from "../../_components/hybrid/hybrid-shell-vm";
 
 const SEARCH_SHELL_VM = accountShellVm([
   { label: "Account", href: "/account/overview" },
