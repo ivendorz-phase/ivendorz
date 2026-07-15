@@ -14,6 +14,7 @@
 import * as React from "react";
 import { Button } from "../primitives/button";
 import { cn } from "../lib/cn";
+import { sanitizeRichNoteHtml } from "../lib/sanitize-html";
 
 /** Formatting colors — brand token values (--iv-navy-700 / --iv-amber-500) + danger red. */
 export const RICH_NOTE_COLORS = [
@@ -22,12 +23,9 @@ export const RICH_NOTE_COLORS = [
   { name: "Red", value: "#dc2626", dotClass: "bg-red-600" },
 ] as const;
 
-/** Light scrub for rich-note HTML (own-authored, device-local; never server-persisted yet). */
-export const sanitizeRichNoteHtml = (html: string) =>
-  html
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/\son\w+="[^"]*"/gi, "")
-    .replace(/\son\w+='[^']*'/gi, "");
+// The sanitizer lives in `../lib/sanitize-html` (the single allow-list gate — see that module's
+// header). Re-exported here so existing kit consumers keep one import site.
+export { sanitizeRichNoteHtml };
 
 export interface RichNoteEditorProps {
   initialHtml: string;

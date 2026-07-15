@@ -13,19 +13,12 @@
 // is a genuine-empty placeholder until the organization profile read is wired (no fabricated
 // identity). Buyer details bind EXISTING granted RfqSnapshotView fields only.
 import { CurrencyDisplay } from "@/frontend/components/currency-display";
+import { sanitizeRichNoteHtml } from "@/frontend/lib/sanitize-html";
 
 /** Plain grouped number — currency shows ONLY on the Grand total and in the "Unit rate" column
  *  header (owner directive 2026-07-07). */
 const formatNumber = (n: number) =>
   new Intl.NumberFormat("en-BD", { maximumFractionDigits: 2 }).format(n);
-
-/** Defense-in-depth scrub before the rich description HTML is injected (authored device-local
- *  by the same user via the workbench editor; scrubbed again here at the injection point). */
-const scrubHtml = (html: string) =>
-  html
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/\son\w+="[^"]*"/gi, "")
-    .replace(/\son\w+='[^']*'/gi, "");
 
 export interface QuotationDocumentLine {
   itemName: string;
@@ -228,7 +221,9 @@ export function QuotationDocument({ model }: { model: QuotationDocumentModel }) 
                     {line.shortDescription?.trim() ? (
                       <span
                         className="block whitespace-pre-line break-words text-xs text-slate-600"
-                        dangerouslySetInnerHTML={{ __html: scrubHtml(line.shortDescription) }}
+                        dangerouslySetInnerHTML={{
+                          __html: sanitizeRichNoteHtml(line.shortDescription),
+                        }}
                       />
                     ) : null}
                   </td>

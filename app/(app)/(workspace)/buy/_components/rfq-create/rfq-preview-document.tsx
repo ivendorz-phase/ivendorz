@@ -11,7 +11,7 @@
 // and the CS print view): fixed white/slate utilities inside the paper only. No fabricated RFQ number:
 // the human_ref is assigned by the system at submission, so the header says exactly that.
 // Presentation-only: renders the draft form object; no fetch, no mutation.
-import { sanitizeRichNoteHtml } from "@/frontend/components/rich-note-editor";
+import { sanitizeRichNoteHtml } from "@/frontend/lib/sanitize-html";
 import type { RfqDraftForm, WorkNature } from "./rfq-form-models";
 
 const WORK_NATURE_LABEL: Record<WorkNature, string> = {
