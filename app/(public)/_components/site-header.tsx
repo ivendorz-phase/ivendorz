@@ -2,9 +2,24 @@
 
 // Public top-nav chrome (Doc-7C SR2 `(public)` group / Doc-7D PR1, PR7). ANONYMOUS: there is NO
 // org-switcher and NO notification center here (those are authenticated shell slots — Doc-7C §4/§6).
-// Conversion CTAs route to the auth-entry area (Doc-7E owns the auth action — Doc-7D PR5).
-// Nav items marked (*) target Wave-3 public views (P-PUB-*) not yet built — placeholdered to "/".
+// Conversion CTAs (Sign in · Get started · Request for Quotation) route to the auth-entry area
+// (Doc-7E owns the auth action — Doc-7D PR5). That rule is unchanged and still governs those three.
 // FE-PUB-09: hosts the Industrial Category Explorer (IA §5.3 — MEGA_MENU package instance).
+//
+// 2026-07-16 — STALE PLACEHOLDERS RETIRED (verified against the "iVendorz Public Pages" reference,
+// design project `14497856-6435-433d-b191-2a32431d642b`). This file previously read "Nav items marked
+// (*) target Wave-3 public views not yet built — placeholdered to '/'", and Pricing · Resources ·
+// Help Center all pointed at "/" — three nav links silently dead-ending on the homepage. All of those
+// pages EXIST and are built today (`/pricing` · `/resources` · `/how-it-works` · `/contact`), so the
+// placeholders had outlived their cause: the note, not the routes, was the stale thing. Every href in
+// this file is now a real route. The reference's own nav set maps 1:1 onto them, which is what
+// surfaced the drift. If a future nav label has no route, it does not ship — it does not get "/".
+//
+// NOT taken from the reference (it is a click-through prototype and routes these loosely): its
+// `Sign in`→/for-vendors, `Get started`→/for-buyers, `Request for Quotation`→/marketplace and
+// `Suppliers`→/marketplace. Those are auth/workflow and directory destinations, which a visual
+// reference must never influence (`visual_reference_implementation.md` §2) — Sign in/Get started/RFQ
+// keep the Doc-7E auth entry, Suppliers keeps the real vendor directory (`/vendors`).
 //
 // Two-row layout (owner reference mockup, 2026-07-04): row 1 = logo + catalog search + auth
 // entry; row 2 = Categories/Suppliers/More/Sell-on-iVendorz + Help Center/Request-for-Quotation.
@@ -45,12 +60,17 @@ type ExplorerMobileComponent = React.ComponentType<ExplorerMobileProps>;
 
 const MARKETPLACE_LINK = { href: "/marketplace", label: "Marketplace" }; // P-PUB-10 (M2.2)
 const SUPPLIERS_LINK = { href: "/vendors", label: "Suppliers" }; // P-PUB-12 (M2.2), relabeled
+/** "More" group — the reference's own three items. Each is a real, built route (see file header:
+ *  these were the stale `/` placeholders). */
 const MORE_LINKS = [
-  { href: "/", label: "Pricing" }, // * Wave-3, not yet built
-  { href: "/", label: "Resources" }, // * Wave-3, not yet built
+  { href: "/pricing", label: "Pricing" },
+  { href: "/resources", label: "Resources" },
+  { href: "/how-it-works", label: "How it works" },
 ];
-const SELL_ON_IVENDORZ_HREF = "/login";
-const HELP_CENTER_HREF = "/"; // * Wave-3, not yet built
+/** Nav label → its own marketing page (reference: `#/for-vendors`). NOT a conversion CTA, so the
+ *  auth-entry rule below does not apply to it. */
+const SELL_ON_IVENDORZ_HREF = "/for-vendors";
+const HELP_CENTER_HREF = "/contact";
 
 export function SiteHeader() {
   const [open, setOpen] = React.useState(false);
