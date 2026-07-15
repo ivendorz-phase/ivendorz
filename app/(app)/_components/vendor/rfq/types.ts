@@ -149,6 +149,11 @@ export interface RfqSnapshotView {
   item_name?: string;
   quantity?: string;
   unit?: string;
+  /** The buyer's own Purchase Requisition reference for the line (mirrors RfqItemRow.prNumber; owner
+   *  directive 2026-07-15). Requirement CONTENT the buyer chose to state, not a routing/targeting
+   *  signal — so it is granted-vendor visible like the rest of this block (ND-1..ND-8 withhold
+   *  competitor/matching facts, which this is not). Buyer-typed, never platform-assigned. */
+  pr_number?: string;
 
   /** Technical detail — dev-doc capture (mirrors RfqDraftForm brandPreference/alternativeBrand/
    *  productCondition/standards/certifications). */
@@ -231,6 +236,9 @@ export interface QuotaView {
  *  jsonb field. The jsonb internal schema is dev-doc (Doc-4E Part4), NOT a frozen column set; these
  *  sub-fields are display structure only. Amounts are BDT (currency stored per value field). */
 export interface PriceBreakdownLine {
+  /** Buyer's PR reference carried through from the RFQ line, so a rehydrated draft/revision keeps
+   *  citing it (display structure only, same dev-doc class as the rest of this shape). */
+  pr_number?: string;
   description?: string;
   qty?: number;
   unit_amount?: number;

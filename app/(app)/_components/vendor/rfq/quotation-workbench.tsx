@@ -83,6 +83,10 @@ const TEXTAREA_CLASS = vendorTextareaClass("min-h-[96px]");
 /** One client-local item row. `original` is the buyer's RFQ copy — always retained (ESC-QTN-AMEND). */
 interface ItemRow {
   id: number;
+  /** Buyer's PR reference — READ-ONLY here, like `qty`: it is the buyer's requisition, and no
+   *  PR-amendment concept exists on the frozen RFQ surface. Excluded from `isAmended` for that
+   *  reason; it is not part of the vendor's spec restatement. */
+  prNumber?: string;
   itemName: string;
   sizeSpec: string;
   /** Buyer quantity — locked (no quantity-amendment flag exists on the frozen RFQ surface). */
@@ -196,6 +200,7 @@ function seedRows(rfq?: RfqSnapshotView, lines?: PriceBreakdownLine[]): ItemRow[
   if (lines && lines.length > 0) {
     return lines.map((line, index) => ({
       id: index + 1,
+      prNumber: line.pr_number,
       itemName: line.description ?? "",
       sizeSpec: "",
       qty: line.qty,
@@ -209,6 +214,7 @@ function seedRows(rfq?: RfqSnapshotView, lines?: PriceBreakdownLine[]): ItemRow[
     return [
       {
         id: 1,
+        prNumber: rfq?.pr_number,
         itemName: rfq?.item_name ?? "",
         sizeSpec: rfq?.standards ?? "",
         qty: Number.isFinite(parsedQty) ? parsedQty : undefined,
@@ -489,6 +495,9 @@ export function QuotationWorkbench({
                 Sl.
               </th>
               <th scope="col" className="px-3 py-2 text-left font-medium">
+                PR #
+              </th>
+              <th scope="col" className="px-3 py-2 text-left font-medium">
                 Buyer specification
               </th>
               <th scope="col" className="px-3 py-2 text-left font-medium">
@@ -504,6 +513,9 @@ export function QuotationWorkbench({
               <tr key={row.id} className="bg-iv-amber-50/60">
                 <td className="px-3 py-2 text-muted-foreground">
                   {rows.findIndex((r) => r.id === row.id) + 1}
+                </td>
+                <td className="px-3 py-2 font-mono text-xs text-muted-foreground">
+                  {row.prNumber?.trim() || "—"}
                 </td>
                 <td className="px-3 py-2">
                   {specLine(row.original.itemName, row.original.sizeSpec)}
@@ -542,6 +554,7 @@ export function QuotationWorkbench({
       deliveryInstructions: rfq?.delivery_instructions,
     },
     lines: rows.map((row) => ({
+      prNumber: row.prNumber,
       itemName: row.itemName,
       sizeSpec: row.sizeSpec,
       qty: row.qty,
@@ -640,6 +653,9 @@ export function QuotationWorkbench({
                       Sl.
                     </th>
                     <th scope="col" className="px-3 py-2 text-left font-medium">
+                      PR #
+                    </th>
+                    <th scope="col" className="px-3 py-2 text-left font-medium">
                       Item name
                     </th>
                     <th scope="col" className="px-3 py-2 text-left font-medium">
@@ -701,6 +717,10 @@ export function QuotationWorkbench({
                             {row.notOffered ? <Badge variant="neutral">Not offered</Badge> : null}
                             {amended ? <Badge variant="amber">Amended</Badge> : null}
                           </div>
+                        </td>
+                        {/* Buyer's requisition ref — read-only, never amendable (see ItemRow.prNumber). */}
+                        <td className="px-3 py-2 align-top font-mono text-xs text-muted-foreground">
+                          {row.prNumber?.trim() || "—"}
                         </td>
                         <td className="px-3 py-2 align-top">
                           {editing ? (
@@ -1414,6 +1434,9 @@ export function QuotationWorkbench({
                         Sl.
                       </th>
                       <th scope="col" className="py-2 pr-2 font-semibold">
+                        PR #
+                      </th>
+                      <th scope="col" className="py-2 pr-2 font-semibold">
                         Item name
                       </th>
                       <th scope="col" className="py-2 pr-2 font-semibold">
@@ -1427,6 +1450,9 @@ export function QuotationWorkbench({
                   <tbody className="divide-y divide-slate-200">
                     <tr>
                       <td className="py-2 pr-2 text-slate-500">1</td>
+                      <td className="py-2 pr-2 font-mono text-xs text-slate-600">
+                        {rfq?.pr_number ?? "—"}
+                      </td>
                       <td className="py-2 pr-2">{rfq?.item_name ?? "—"}</td>
                       <td className="py-2 pr-2">{rfq?.standards ?? "—"}</td>
                       <td className="py-2 text-right tabular-nums">

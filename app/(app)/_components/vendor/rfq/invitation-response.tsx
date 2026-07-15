@@ -148,6 +148,9 @@ export function InvitationResponse({
                     #
                   </th>
                   <th scope="col" className="px-3 py-2 text-left font-medium">
+                    PR #
+                  </th>
+                  <th scope="col" className="px-3 py-2 text-left font-medium">
                     Item name / dimensions
                   </th>
                   <th scope="col" className="px-3 py-2 text-left font-medium">
@@ -161,6 +164,9 @@ export function InvitationResponse({
               <tbody className="divide-y divide-border">
                 <tr>
                   <td className="px-3 py-2 text-muted-foreground">1</td>
+                  <td className="px-3 py-2 font-mono text-xs text-muted-foreground">
+                    {rfq?.pr_number ?? "—"}
+                  </td>
                   <td className="px-3 py-2 text-foreground">{rfq?.item_name ?? "—"}</td>
                   <td className="px-3 py-2 text-foreground">{rfq?.standards ?? "—"}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{quantityLine ?? "—"}</td>

@@ -1,12 +1,14 @@
 "use client";
 
 // P-BUY-RFQ — Item Requirements List (Request type section). PRESENTATION-ONLY: an inline, repeatable
-// item grid (Sl. No. / Item Name / Size / Qty / Unit / Description / Action) plus a "Paste from Excel"
-// helper that parses tab/comma/semicolon-delimited clipboard text into rows (5 columns: Item Name,
-// Size, Qty, Unit, Description — owner directive 2026-07-07; 4- and 3-column pastes still accepted)
-// with unit-name normalization against `UNIT_OPTIONS`, and an Append/Replace choice. Rows are LOCAL UI
-// state only — no fetch, no mutation; a client form surface wires these into the dev-doc capture
-// (`content_jsonb`, alongside the existing single item/quantity/unit fields) at integration (Wave 4).
+// item grid (Sl. No. / PR # / Item Name / Size / Qty / Unit / Description / Action) plus a "Paste from
+// Excel" helper that parses tab/comma/semicolon-delimited clipboard text into rows (6 columns: PR #,
+// Item Name, Size, Qty, Unit, Description — owner directive 2026-07-15; Sl. No. is auto-numbered and
+// never pasted, which is why the primary paste width is 6, not 7) with unit-name normalization against
+// `UNIT_OPTIONS`, and an Append/Replace choice. The pre-PR-# 5/4/3-column pastes stay accepted with
+// their ORIGINAL meaning (no PR #) so existing buyer sheets do not silently shift by one column. Rows
+// are LOCAL UI state only — no fetch, no mutation; a client form surface wires these into the dev-doc
+// capture (`content_jsonb`, alongside the existing single item/quantity/unit fields) at integration (Wave 4).
 // Reuses the buyer `Select`/`Textarea` controls; native text/number inputs otherwise (no kit table
 // primitive exists yet). Pasted Description text is HTML-escaped before it seeds the rich editor.
 
@@ -28,7 +30,15 @@ function nextRowId() {
 }
 
 function blankRow(): RfqItemRow {
-  return { id: nextRowId(), itemName: "", size: "", quantity: "", unit: "", description: "" };
+  return {
+    id: nextRowId(),
+    prNumber: "",
+    itemName: "",
+    size: "",
+    quantity: "",
+    unit: "",
+    description: "",
+  };
 }
 
 /** Normalize a pasted unit token against `UNIT_OPTIONS` (value or label match, case-insensitive), falling
@@ -83,9 +93,13 @@ function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-/** Parse pasted tabular text into rows. 5+ columns = Item Name/Size/Qty/Unit/Description; 4 columns =
- *  Item Name/Size/Qty/Unit; 3 columns = Item Name/Qty/Unit (no Size). Returns [] when nothing parseable. */
-function parsePastedRows(text: string): RfqItemRow[] {
+/** Parse pasted tabular text into rows. 6+ columns = PR #/Item Name/Size/Qty/Unit/Description (the
+ *  current model). The narrower widths keep their PRE-PR-# meaning — 5 = Item Name/Size/Qty/Unit/
+ *  Description, 4 = Item Name/Size/Qty/Unit, 3 = Item Name/Qty/Unit (no Size) — so a sheet copied
+ *  before PR # existed still lands in the right columns. Returns [] when nothing parseable.
+ *  Exported for `tests/unit/parse-pasted-rfq-item-rows.test.ts` — the column dispatch is the one
+ *  piece of real logic here and a silent one-column shift corrupts a whole RFQ. */
+export function parsePastedRows(text: string): RfqItemRow[] {
   const lines = text
     .split(/\r\n|\r|\n/)
     .map((l) => l.trim())
@@ -94,13 +108,16 @@ function parsePastedRows(text: string): RfqItemRow[] {
   const parsed: RfqItemRow[] = [];
   for (const line of lines) {
     const cells = splitCells(line).map((c) => c.trim());
+    let prNumber = "";
     let itemName = "";
     let size = "";
     let quantity = "";
     let unitRaw = "";
     let description = "";
 
-    if (cells.length >= 5) {
+    if (cells.length >= 6) {
+      [prNumber, itemName, size, quantity, unitRaw, description] = cells;
+    } else if (cells.length === 5) {
       [itemName, size, quantity, unitRaw, description] = cells;
     } else if (cells.length === 4) {
       [itemName, size, quantity, unitRaw] = cells;
@@ -113,6 +130,7 @@ function parsePastedRows(text: string): RfqItemRow[] {
     if (!itemName && !quantity) continue;
     parsed.push({
       id: nextRowId(),
+      prNumber: prNumber ?? "",
       itemName: itemName ?? "",
       size: size ?? "",
       quantity: (quantity ?? "").replace(/[^0-9.]/g, ""),
@@ -151,7 +169,7 @@ export function ItemRequirementsTable({ rows: initialRows }: { rows?: RfqItemRow
     const parsed = parsePastedRows(pasteValue);
     if (parsed.length === 0) {
       setPasteError(
-        "Could not parse columns. Copy 5 columns (Item Name, Size, Qty, Unit, Description), 4 columns (without Description) or 3 columns (Item Name, Qty, Unit) from Excel.",
+        "Could not parse columns. Copy 6 columns (PR #, Item Name, Size, Qty, Unit, Description), 5 columns (without PR #), 4 columns (without PR # or Description) or 3 columns (Item Name, Qty, Unit) from Excel.",
       );
       return;
     }
@@ -167,7 +185,8 @@ export function ItemRequirementsTable({ rows: initialRows }: { rows?: RfqItemRow
         <div>
           <p className="text-sm font-medium text-foreground">Item Requirements List</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Provide names, sizes, quantities, and standard units for each requested line.
+            Provide names, sizes, quantities, and standard units for each requested line. Add your
+            PR # to cite your own requisition on a line — vendors quote against it.
           </p>
         </div>
         <Button
@@ -185,15 +204,19 @@ export function ItemRequirementsTable({ rows: initialRows }: { rows?: RfqItemRow
       {pasteOpen ? (
         <div className="mt-2 rounded-md border border-dashed border-border bg-secondary/40 p-3">
           <p className="text-xs text-muted-foreground">
-            Paste a 5-column table copied from Excel/Sheets — Item Name, Size, Qty, Unit,
-            Description — or 4 columns (without Description) or 3 (Item Name, Qty, Unit). Columns
-            are matched by tabs, commas, or semicolons.
+            Paste a 6-column table copied from Excel/Sheets — PR #, Item Name, Size, Qty, Unit,
+            Description. Leave the PR # cell blank on lines that have no requisition. Older 5-column
+            (without PR #), 4-column and 3-column pastes still work. Do not include the Sl. No.
+            column — rows are numbered automatically. Columns are matched by tabs, commas, or
+            semicolons.
           </p>
           <Textarea
             rows={4}
             value={pasteValue}
             onChange={(e) => setPasteValue(e.target.value)}
-            placeholder={"MS plate 12mm\t2000x1000mm\t50\tpcs\tMill-certified, no rust pitting"}
+            placeholder={
+              "PR-2026-0184\tMS plate 12mm\t2000x1000mm\t50\tpcs\tMill-certified, no rust pitting"
+            }
             className="mt-2 font-mono text-xs"
           />
           {pasteError ? (
@@ -244,10 +267,11 @@ export function ItemRequirementsTable({ rows: initialRows }: { rows?: RfqItemRow
       </div>
 
       <div className="mt-3 max-h-[350px] overflow-y-auto overflow-x-auto rounded-md border border-border">
-        <table className="w-full min-w-[720px] border-collapse text-sm">
+        <table className="w-full min-w-[840px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-border bg-secondary/40 text-left text-xs font-semibold text-muted-foreground">
               <th className="w-12 px-2 py-2">Sl. No.</th>
+              <th className="w-32 px-2 py-2">PR #</th>
               <th className="px-2 py-2">
                 Item Name<span className="ml-0.5 text-destructive">*</span>
               </th>
@@ -264,6 +288,16 @@ export function ItemRequirementsTable({ rows: initialRows }: { rows?: RfqItemRow
             {rows.map((row, i) => (
               <tr key={row.id} className="border-b border-border last:border-0">
                 <td className="px-2 py-1.5 text-muted-foreground">{i + 1}</td>
+                <td className="px-2 py-1.5">
+                  <input
+                    type="text"
+                    aria-label={`PR number (row ${i + 1})`}
+                    className={INPUT_CLASS}
+                    value={row.prNumber ?? ""}
+                    onChange={(e) => updateRow(row.id, { prNumber: e.target.value })}
+                    placeholder="e.g. PR-2026-0184"
+                  />
+                </td>
                 <td className="px-2 py-1.5">
                   <input
                     type="text"

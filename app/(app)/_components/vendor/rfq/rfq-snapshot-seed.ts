@@ -27,6 +27,7 @@ export const RFQ_SNAPSHOT_SEED: RfqSnapshotView = {
   ],
 
   // Dev-doc capture (mirrors buyer RfqDraftForm — not standalone frozen columns).
+  pr_number: "PR-2026-0184",
   item_name: "MS Plate, 10mm thickness",
   quantity: "20",
   unit: "ton",

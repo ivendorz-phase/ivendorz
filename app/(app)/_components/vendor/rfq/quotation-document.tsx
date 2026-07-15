@@ -21,6 +21,10 @@ const formatNumber = (n: number) =>
   new Intl.NumberFormat("en-BD", { maximumFractionDigits: 2 }).format(n);
 
 export interface QuotationDocumentLine {
+  /** Buyer's PR reference for the line, carried from the RFQ (owner directive 2026-07-15). Read-only
+   *  on the offer: it is the BUYER's requisition, never vendor-editable and never amendable — an
+   *  amendment restates the vendor's spec, it does not re-point the buyer's requisition. */
+  prNumber?: string;
   itemName: string;
   sizeSpec: string;
   qty?: number;
@@ -189,6 +193,9 @@ export function QuotationDocument({ model }: { model: QuotationDocumentModel }) 
                   Sl.
                 </th>
                 <th scope="col" className="py-2 pr-2 font-semibold">
+                  PR #
+                </th>
+                <th scope="col" className="py-2 pr-2 font-semibold">
                   Item &amp; specification
                 </th>
                 <th scope="col" className="py-2 pr-2 text-right font-semibold">
@@ -206,6 +213,9 @@ export function QuotationDocument({ model }: { model: QuotationDocumentModel }) 
               {model.lines.map((line, index) => (
                 <tr key={index} className={line.notOffered ? "text-slate-500" : undefined}>
                   <td className="py-2 pr-2 align-top text-slate-500">{index + 1}</td>
+                  <td className="py-2 pr-2 align-top font-mono text-xs text-slate-600">
+                    {line.prNumber?.trim() || "—"}
+                  </td>
                   <td className="py-2 pr-2 align-top">
                     <span className="font-medium">{line.itemName || "—"}</span>
                     {line.sizeSpec ? (
@@ -364,6 +374,9 @@ export function QuotationDocument({ model }: { model: QuotationDocumentModel }) 
                     Sl.
                   </th>
                   <th scope="col" className="py-2 pr-2 font-semibold">
+                    PR #
+                  </th>
+                  <th scope="col" className="py-2 pr-2 font-semibold">
                     Buyer specification
                   </th>
                   <th scope="col" className="py-2 pr-2 font-semibold">
@@ -378,6 +391,9 @@ export function QuotationDocument({ model }: { model: QuotationDocumentModel }) 
                 {amendedLines.map((line) => (
                   <tr key={model.lines.indexOf(line)}>
                     <td className="py-2 pr-2 text-slate-500">{model.lines.indexOf(line) + 1}</td>
+                    <td className="py-2 pr-2 font-mono text-xs text-slate-600">
+                      {line.prNumber?.trim() || "—"}
+                    </td>
                     <td className="py-2 pr-2">{line.originalSpec ?? "—"}</td>
                     <td className="py-2 pr-2 font-medium">
                       {[line.itemName, line.sizeSpec].filter(Boolean).join(" · ") || "—"}

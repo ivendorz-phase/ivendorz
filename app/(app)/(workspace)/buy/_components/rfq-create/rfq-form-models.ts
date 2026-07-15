@@ -59,6 +59,11 @@ export interface RfqAttachment {
  *  of the single item/quantity/unit fields below. Serializes into `content_jsonb` at wiring. */
 export interface RfqItemRow {
   id: string;
+  /** Buyer's internal Purchase Requisition reference for this line (owner directive 2026-07-15).
+   *  OPTIONAL — not every line traces to a PR. Buyer-typed free text, never platform-assigned: the
+   *  only system-assigned ref on an RFQ is the year-scoped `human_ref` (M0 ID gen). Dev-doc capture
+   *  with the row into `content_jsonb`; shared with granted vendors so both sides cite one reference. */
+  prNumber?: string;
   itemName: string;
   size: string;
   quantity: string;

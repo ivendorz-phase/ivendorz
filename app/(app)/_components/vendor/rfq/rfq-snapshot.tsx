@@ -56,6 +56,7 @@ export function RfqSnapshot({ rfq }: RfqSnapshotProps) {
       value: rfq?.no_formal_spec ? "No formal specification" : undefined,
     },
     { label: "Version locked", value: rfq?.version_locked_label },
+    { label: "PR #", value: rfq?.pr_number },
     { label: "Item", value: rfq?.item_name },
     { label: "Quantity", value: itemLine },
     { label: "Brand preference", value: rfq?.brand_preference },

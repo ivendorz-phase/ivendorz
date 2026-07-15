@@ -46,6 +46,7 @@ export function RfqPreviewDocument({ form }: { form: RfqDraftForm }) {
         ? [
             {
               id: "single",
+              prNumber: "",
               itemName: form.itemName ?? "",
               size: "",
               quantity: form.quantity ?? "",
@@ -149,6 +150,9 @@ export function RfqPreviewDocument({ form }: { form: RfqDraftForm }) {
                     Sl.
                   </th>
                   <th scope="col" className="py-2 pr-2 font-semibold">
+                    PR #
+                  </th>
+                  <th scope="col" className="py-2 pr-2 font-semibold">
                     Item name
                   </th>
                   <th scope="col" className="py-2 pr-2 font-semibold">
@@ -166,6 +170,9 @@ export function RfqPreviewDocument({ form }: { form: RfqDraftForm }) {
                 {rows.map((row, index) => (
                   <tr key={row.id}>
                     <td className="py-2 pr-2 align-top text-slate-500">{index + 1}</td>
+                    <td className="py-2 pr-2 align-top font-mono text-xs text-slate-600">
+                      {row.prNumber?.trim() || "—"}
+                    </td>
                     <td className="py-2 pr-2 align-top font-medium">{row.itemName || "—"}</td>
                     <td className="py-2 pr-2 align-top">{row.size || "—"}</td>
                     <td className="py-2 pr-2 text-right align-top tabular-nums">
