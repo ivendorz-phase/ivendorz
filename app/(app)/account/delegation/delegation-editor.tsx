@@ -85,7 +85,7 @@ export function DelegationEditor(props: Props) {
   const [slugs, setSlugs] = useState<Set<string>>(() => new Set(initialSlugs));
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const [interim, setInterim] = useState<string | null>(null);
-  const [confirm, setConfirm] = useState<null | "suspend" | "revoke">(null);
+  const [confirm, setConfirm] = useState<null | "suspend" | "reinstate" | "revoke">(null);
 
   const dirty =
     !isTerminal &&
@@ -361,7 +361,7 @@ export function DelegationEditor(props: Props) {
                 title="Reinstate grant"
                 detail="Restores the delegated authority to active."
                 action={
-                  <Button type="button" onClick={() => onLifecycle("reinstate")}>
+                  <Button type="button" onClick={() => setConfirm("reinstate")}>
                     Reinstate
                   </Button>
                 }
@@ -418,7 +418,10 @@ export function DelegationEditor(props: Props) {
         </div>
       ) : null}
 
-      {/* Suspend / revoke confirm (UX §2 — destructive actions confirm explicitly). */}
+      {/* Lifecycle confirm — every §5.10 edge routes through here. UX §2 MANDATES the explicit confirm
+          for `revoke` (destructive + terminal); `suspend`/`reinstate` are reversible and take one too
+          because each flips live delegated authority, and a one-click authority change is the surprise
+          worth spending a dialog on. Only `revoke` is irreversible-WARNED (destructive variant below). */}
       <Dialog open={confirm !== null} onOpenChange={(open) => (open ? null : setConfirm(null))}>
         <DialogContent>
           {confirm ? (
