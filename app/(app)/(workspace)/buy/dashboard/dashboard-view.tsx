@@ -3,19 +3,72 @@
 // (`page.tsx`) resolves the data via the Doc-7C wired data layer (GI-02) and passes it here; this file
 // renders presentation only.
 //
-// Anatomy (§9.1), redesigned pass: greeting hero (branded welcome + primary CTAs) → priority-approval
-// action banner (only when the buyer has items awaiting their decision) → KPI stat-card band → sourcing +
-// engagement pipeline widgets → content grid (three work queues + recent activity + quick actions rail).
-// First-run (`data === null`) renders the hero + the single "Create RFQ" CTA (§9.1).
+// ── 2026-07-15 · REFERENCE-DRIVEN LAYOUT REVISION ──────────────────────────────────────────────────
+// Rebuilt against the owner's claude.ai/design reference (design project `5852bb75-de9b-49c6-b2c6-
+// 70f1009d0af3`, "Vendor Dashboard Overview.dc.html"), specifically its **`Buying Overview` screen** —
+// the file carries a dedicated buyer branch, so the buyer leg is ported from that, NOT from the vendor
+// overview. It is the SAME reference the vendor dashboard was rebuilt against (`(workspace)/sell/
+// dashboard/page.tsx`, VX-02), and its buyer branch was evidently authored FROM this page's own SEED:
+// identical BDT figures, refs (`RFQ-2026-000123`, `ENG-2026-000044`), vendors and funnel counts.
 //
-// GOVERNANCE realized here:
+// Standing owner ruling applied (same one that governs VX-02): "match the reference's visual hierarchy,
+// spacing, proportions and stacked-card composition — but do not invent data or metrics; where a
+// reference widget is not backed by our domain model, substitute a semantically equivalent, data-backed
+// component of the same footprint." Divergences are recorded below and in each component's header.
+// The repo-wide standard for reference use is `docs/frontend/architecture/visual_reference_implementation.md`
+// §2 ("copy the composition; implement the platform") — cite it, don't re-derive it.
+//
+// Anatomy, as ported: slim page header (eyebrow · greeting · actions) → priority-approval banner →
+// 4-up KPI band → a 1.55fr/1fr two-column grid (decision/work queues left; funnels + activity right).
+// First-run (`data === null`) renders the header + the single "Create RFQ" CTA (§9.1).
+//
+// WHAT THE REFERENCE ASKED FOR AND WHY IT IS NOT HERE:
+//  1. "Good morning, Arif" — a time-of-day claim needs a client clock (forbidden repo-wide; same call as
+//     VX-02). The greeting is time-neutral and named from the shared `identity-seed` placeholder.
+//  2. "6 decisions need you today. Everything else is on track." — a client-computed aggregate over two
+//     partial queues (R7), plus a clock ("today") and an unbacked all-clear claim. Replaced by static
+//     descriptive copy that asserts no figure.
+//  3. THE 4-UP "DECISION TILES" ROW (Approvals waiting 3 · Quotes to review 2 · Order delayed 1 · RFQs
+//     closing soon 2) IS NOT BUILT — only ONE of its four tiles is backable. `awaitingMyApprovalCount`
+//     is real; "Quotes to review" would be a client-side count of a PARTIAL queue (R7); "Order delayed"
+//     has no backing state at all (the pinned contract-authority engagement set is `open → in_delivery →
+//     completed → closed` — there is no `delayed`, and the Doc-4M divergence is an OPEN carried
+//     Flag-and-Halt, so coining one here is doubly forbidden); "RFQs closing soon" needs a deadline +
+//     time-bucketing field no read projects. A 4-up row with 1 real tile is not the reference's
+//     composition, and filling the other 3 is exactly the invention the ruling forbids. The one backed
+//     tile keeps its two existing, backed homes: the priority banner and the KPI band.
+//  4. "Bills payable · BDT 2.8M · due in 9 days" KPI — no field on `BuyerDashboardKpis` and no wired
+//     read projects a payables aggregate or its ageing. The existing backed "Win rate" tile holds the
+//     slot.
+//  5. The reference's `[Approve]` / `[Award]` row buttons — see `decisions-waiting-card.tsx`'s header:
+//     R6 / Invariant #12 (frozen) forbid any surface that pre-selects the award. Shipped as `[View]` /
+//     `[Compare]` navigation into the comparison workspace instead.
+//  6. Its "Decisions waiting · 5" card title + badge — no approval-queue ROW read exists (only a count),
+//     and the badge is a client-computed cross-queue aggregate (R7). See the same header.
+//  7. Its per-KPI delta chips ("▲ 6.4% vs last mo") — retained ONLY because this page already shipped
+//     them as explicitly-disclosed BX-06 illustrative decoration (see `kpi-stat-card.tsx`'s `KpiTrend`
+//     doc and the gating below); no frozen trend/delta read exists. They are NOT contract-traced.
+//
+// ALSO DROPPED FROM THE REFERENCE, DELIBERATELY:
+//  • Its sidebar, top bar, search box and account chip — all already rendered by the shared `(workspace)`
+//    shell. This view is the page body only and must not re-render chrome. (This also retires this page's
+//    own navy `GreetingHero` band, whose CTAs now sit in the shared `PageHeader` — matching both the
+//    reference's slim header AND the sell dashboard's, per the visual-reference standard §4: consistency
+//    with the sibling surface outranks fidelity to an external reference.)
+//  • Its Selling/Buying role toggle — REJECTED by the hybrid co-mount ruling and superseded by the
+//    shipped participation LENS in the sidebar (`[ESC-7G-A7]` / `[ESC-7G-A7R]`).
+//  • Its ₹/GSTIN/Indian data — not applicable here: the reference's BUYER branch is already BDT.
+//
+// GOVERNANCE realized here (unchanged by the revision):
 //  • R6 / Inv #12 — there is NO "recommended winner", ranked-to-winner, or auto-select widget anywhere.
+//    Queues render in the caller/contract order; nothing is re-sorted (ordering quotes by price would
+//    itself imply a recommendation).
 //  • Inv #11 / GI-12 — KPI counts carry NO excluded/blacklist figure; CRM status is never shown (it lives
-//    only in P-BUY-26/27). `total` renders only if the contract provides it. The priority banner surfaces
-//    only the buyer's OWN awaiting-approval count (P-BUY-12), never a party-exclusion figure.
+//    only in P-BUY-26/27). The priority banner surfaces only the buyer's OWN awaiting-approval count
+//    (P-BUY-12), never a party-exclusion figure.
 //  • R7 firewall — every figure is a contract read, never client-computed.
 //  • Engagement states use the pinned contract-authority set (§0.1 carried Flag-and-Halt).
-//  • The hero / quick-actions rail carry only plain NAVIGATION links to existing routes — no second live
+//  • The header / quick-actions rail carry only plain NAVIGATION links to existing routes — no second live
 //    org-switcher/notification/search widget is instantiated (the shell topbar owns those on every page).
 
 import type { ReactNode } from "react";
@@ -28,7 +81,6 @@ import {
   ArrowRight,
   BarChart3,
   Bookmark,
-  Building2,
   ClipboardCheck,
   FileText,
   FolderOpen,
@@ -38,21 +90,18 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { PageHeader } from "../../../_components/shell";
 import { KpiStatCard } from "../_components/kpi-stat-card";
 import { WorkQueueCard, type QueueColumn } from "../_components/work-queue-card";
+import { DecisionsWaitingCard } from "../_components/decisions-waiting-card";
 import { SourcingPipelineCard } from "../_components/sourcing-pipeline-card";
 import { EngagementPipelineCard } from "../_components/engagement-pipeline-card";
 import { ActivityTimeline } from "../_components/activity-timeline";
 import { formatDate, Money, Ref } from "../_components/format";
-import {
-  rfqStateDisplay,
-  quotationStateDisplay,
-  engagementStateDisplay,
-} from "../_components/state-display";
+import { rfqStateDisplay, engagementStateDisplay } from "../_components/state-display";
 import type {
   BuyerDashboardViewModel,
   RfqQueueRow,
-  QuotationQueueRow,
   EngagementQueueRow,
 } from "../_components/view-models";
 
@@ -81,32 +130,10 @@ const RFQ_COLUMNS: QueueColumn<RfqQueueRow>[] = [
     header: "Updated",
     numeric: true,
     hideOnMobile: true,
-    render: (r) => <span className="text-muted-foreground">{formatDate(r.updatedAt)}</span>,
-  },
-];
-
-const QUOTATION_COLUMNS: QueueColumn<QuotationQueueRow>[] = [
-  {
-    key: "vendor",
-    header: "Vendor",
-    render: (q) => <span className="truncate">{q.vendorName}</span>,
-  },
-  {
-    key: "state",
-    header: "Status",
-    render: (q) => {
-      const s = quotationStateDisplay(q.state);
-      return <StatusChip label={s.label} tone={s.tone} />;
-    },
-  },
-  { key: "amount", header: "Amount", numeric: true, render: (q) => <Money value={q.amount} /> },
-  {
-    key: "valid",
-    header: "Valid until",
-    numeric: true,
-    hideOnMobile: true,
-    render: (q) => (
-      <span className="text-muted-foreground">{q.validUntil ? formatDate(q.validUntil) : "—"}</span>
+    // `whitespace-nowrap`: the ported 1.55fr left column is narrower than the previous 2-of-3 span, so
+    // a wrapping short date ("Jun 30, 2026" breaking across three lines) is the failure mode here.
+    render: (r) => (
+      <span className="whitespace-nowrap text-muted-foreground">{formatDate(r.updatedAt)}</span>
     ),
   },
 ];
@@ -136,79 +163,19 @@ const ENGAGEMENT_COLUMNS: QueueColumn<EngagementQueueRow>[] = [
     header: "Updated",
     numeric: true,
     hideOnMobile: true,
-    render: (e) => <span className="text-muted-foreground">{formatDate(e.updatedAt)}</span>,
+    // See RFQ_COLUMNS above — same narrow-column wrap.
+    render: (e) => (
+      <span className="whitespace-nowrap text-muted-foreground">{formatDate(e.updatedAt)}</span>
+    ),
   },
 ];
-
-/** Small uppercase section eyebrow used to group the dashboard's bands (presentation only). */
-function SectionLabel({ children }: { children: ReactNode }) {
-  return (
-    <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-      {children}
-    </h2>
-  );
-}
-
-/**
- * Greeting hero (redesign pass) — a single branded welcome band that consolidates the page heading + the
- * former utility "dashboard header card". Navy-dominant per the frozen palette (`iv-navy-*`). It carries
- * ONLY plain navigation links + the primary "New RFQ" CTA — NOT a second live org-switcher / notification
- * / search-shortcut instance (the shell topbar owns those interactive widgets on every `(app)` page, so we
- * never double the focus/dropdown state). Echoes the same neutral identity placeholder the topbar renders
- * (`identity-seed.ts`) — never an independently-fabricated name.
- */
-function GreetingHero({ userName, orgName }: { userName?: string; orgName?: string }) {
-  return (
-    <section className="overflow-hidden rounded-xl border border-iv-navy-800/40 bg-gradient-to-br from-iv-navy-800 via-iv-navy-700 to-iv-navy-800 p-6 text-white shadow-iv-md sm:p-8">
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <p className="text-xs font-medium uppercase tracking-wider text-white/60">
-            Procurement workspace
-          </p>
-          <h1 className="mt-1 text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
-            Welcome back
-          </h1>
-          {orgName ? (
-            <p className="mt-2 flex items-center gap-1.5 text-sm text-white/80">
-              <Building2 aria-hidden className="size-4 shrink-0" />
-              <span className="truncate">
-                {orgName}
-                {userName ? ` · ${userName}` : ""}
-              </span>
-            </p>
-          ) : null}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            asChild
-            className="gap-1.5 border-transparent bg-white text-iv-navy-800 hover:bg-iv-navy-50"
-          >
-            <Link href="/buy/rfqs/new">
-              <Plus aria-hidden />
-              New RFQ
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            className="gap-1.5 border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
-          >
-            <Link href="/buy/discover">
-              <Search aria-hidden />
-              Find vendors
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 /**
  * Priority action banner — surfaces the single most time-sensitive buyer action: items awaiting THIS
  * buyer's approval (P-BUY-12). Rendered only when the wired count is > 0; the figure is the buyer's own
  * approval count (a contract read), never a party-exclusion/blacklist figure (Inv #11). It is a plain
- * navigation link into the approvals queue — no decision is made or recommended here (R6).
+ * navigation link into the approvals queue — no decision is made or recommended here (R6). This is also
+ * the backed home of the reference's "Approvals waiting" decision tile (see this file's header, item 3).
  */
 function ApprovalPriorityBanner({ count }: { count: number }) {
   return (
@@ -294,6 +261,42 @@ function FirstRunEmpty() {
   );
 }
 
+/**
+ * The ported slim header (reference: eyebrow · greeting · sub · ghost+primary action pair). Uses the
+ * shared shell `PageHeader` — the same primitive the sell dashboard's header uses, so the two workspace
+ * overviews read as one system. The greeting is time-neutral (no client clock) and the sub-line asserts
+ * no figure (see this file's header, items 1–2).
+ */
+function DashboardHeader({ userName, orgName }: { userName?: string; orgName?: string }) {
+  return (
+    <PageHeader
+      title={userName ? `Welcome back, ${userName}` : "Welcome back"}
+      description="Your approvals, quotations and engagements at a glance."
+      meta={
+        <span className="font-mono text-2xs font-semibold uppercase tracking-widest text-muted-foreground">
+          {orgName ? `Procurement · ${orgName}` : "Procurement · Overview"}
+        </span>
+      }
+      actions={
+        <>
+          <Button asChild variant="outline" className="gap-1.5">
+            <Link href="/buy/discover">
+              <Search aria-hidden />
+              Find vendors
+            </Link>
+          </Button>
+          <Button asChild className="gap-1.5">
+            <Link href="/buy/rfqs/new">
+              <Plus aria-hidden />
+              New RFQ
+            </Link>
+          </Button>
+        </>
+      }
+    />
+  );
+}
+
 export function BuyerDashboardView({
   data,
   identity,
@@ -305,10 +308,10 @@ export function BuyerDashboardView({
 }) {
   if (data === null) {
     return (
-      <section className="flex flex-col gap-6">
-        <GreetingHero userName={identity?.userName} orgName={identity?.orgName} />
+      <div>
+        <DashboardHeader userName={identity?.userName} orgName={identity?.orgName} />
         <FirstRunEmpty />
-      </section>
+      </div>
     );
   }
 
@@ -323,23 +326,24 @@ export function BuyerDashboardView({
   } = data;
   const winRatePct =
     typeof kpis.winRate === "number" ? `${Math.round(kpis.winRate * 100)}%` : undefined;
-  const hasPipelines =
-    (rfqPipeline && rfqPipeline.length > 0) ||
-    (engagementPipeline && engagementPipeline.length > 0);
   const awaitingApproval =
     typeof kpis.awaitingMyApprovalCount === "number" ? kpis.awaitingMyApprovalCount : 0;
 
   return (
-    <section className="flex flex-col gap-6">
-      <GreetingHero userName={identity?.userName} orgName={identity?.orgName} />
+    <div>
+      <DashboardHeader userName={identity?.userName} orgName={identity?.orgName} />
 
-      {awaitingApproval > 0 ? <ApprovalPriorityBanner count={awaitingApproval} /> : null}
+      {awaitingApproval > 0 ? (
+        <div className="mb-4">
+          <ApprovalPriorityBanner count={awaitingApproval} />
+        </div>
+      ) : null}
 
-      {/* KPI stat-card band — every VALUE is a contract read; counts non-disclosure-safe (Inv #11).
-          Mobile-first single column, 2-up at sm, full 4-up at xl. `trend` on each card is UI-layer
+      {/* KPI band — every VALUE is a contract read; counts non-disclosure-safe (Inv #11). Mobile-first
+          single column, 2-up at sm, full 4-up at xl (the reference's KPI strip). `trend` is UI-layer
           illustrative decoration, gated on the real value being present — never shown next to a "—"
           placeholder — same disclosure posture as the rest of this page's presentation-fixture SEED
-          (page.tsx's own header comment), not a contract-traced figure (no frozen trend/delta read exists). */}
+          (page.tsx's header), not a contract-traced figure (no frozen trend/delta read exists). */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiStatCard
           label="Spend"
@@ -386,62 +390,44 @@ export function BuyerDashboardView({
         />
       </div>
 
-      {/* Sourcing + engagement pipelines — pre- and post-award lifecycle funnels (aggregate contract
-          reads; observe-only, R6). Each renders only when its own wired read supplies stages; otherwise
-          omitted (no fabricated funnel) — the two are independent, not a single combined widget. */}
-      {hasPipelines ? (
-        <div className="flex flex-col gap-3">
-          <SectionLabel>Pipelines</SectionLabel>
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-            {rfqPipeline && rfqPipeline.length > 0 ? (
-              <SourcingPipelineCard stages={rfqPipeline} viewAllHref="/buy/rfqs" />
-            ) : null}
-            {engagementPipeline && engagementPipeline.length > 0 ? (
-              <EngagementPipelineCard stages={engagementPipeline} viewAllHref="/buy/engagements" />
-            ) : null}
-          </div>
+      {/* The reference's `ov-mid` two-column body, at its 1.55fr/1fr proportion: the decision/work queues
+          carry the left column; the observe-only funnels, activity and shortcuts stack in the right.
+          Each pipeline renders only when its own wired read supplies stages (no fabricated funnel); the
+          two are independent reads, never one combined widget. */}
+      <div className="mt-4 grid grid-cols-1 items-start gap-4 xl:grid-cols-[1.55fr_1fr]">
+        <div className="flex flex-col gap-4">
+          <DecisionsWaitingCard quotations={quotationQueue} viewAllHref="/buy/quotations" />
+          <WorkQueueCard
+            title="RFQs by state"
+            columns={RFQ_COLUMNS}
+            rows={rfqQueue}
+            getRowKey={(r) => r.id}
+            getRowHref={(r) => `/buy/rfqs/${r.id}`}
+            emptyMessage="No RFQs yet"
+            viewAllHref="/buy/rfqs"
+          />
+          <WorkQueueCard
+            title="Engagements needing action"
+            columns={ENGAGEMENT_COLUMNS}
+            rows={engagementQueue}
+            getRowKey={(e) => e.id}
+            getRowHref={(e) => `/buy/engagements/${e.id}`}
+            emptyMessage="No engagements need action"
+            viewAllHref="/buy/engagements"
+          />
         </div>
-      ) : null}
 
-      {/* Content grid — three "needs your action" queues (left) + recent activity & quick actions (right,
-          per-widget streaming, §9.1). */}
-      <div className="flex flex-col gap-3">
-        <SectionLabel>Needs your attention</SectionLabel>
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-          <div className="flex flex-col gap-4 xl:col-span-2">
-            <WorkQueueCard
-              title="RFQs by state"
-              columns={RFQ_COLUMNS}
-              rows={rfqQueue}
-              getRowKey={(r) => r.id}
-              getRowHref={(r) => `/buy/rfqs/${r.id}`}
-              emptyMessage="No RFQs yet"
-              viewAllHref="/buy/rfqs"
-            />
-            <WorkQueueCard
-              title="Quotations awaiting review"
-              columns={QUOTATION_COLUMNS}
-              rows={quotationQueue}
-              getRowKey={(q) => q.id}
-              getRowHref={(q) => `/buy/rfqs/${q.rfqId}`}
-              emptyMessage="No quotations awaiting review"
-            />
-            <WorkQueueCard
-              title="Engagements needing action"
-              columns={ENGAGEMENT_COLUMNS}
-              rows={engagementQueue}
-              getRowKey={(e) => e.id}
-              getRowHref={(e) => `/buy/engagements/${e.id}`}
-              emptyMessage="No engagements need action"
-              viewAllHref="/buy/engagements"
-            />
-          </div>
-          <div className="flex flex-col gap-4">
-            <ActivityTimeline entries={recentActivity} />
-            <QuickActionsCard />
-          </div>
+        <div className="flex flex-col gap-4">
+          {rfqPipeline && rfqPipeline.length > 0 ? (
+            <SourcingPipelineCard stages={rfqPipeline} viewAllHref="/buy/rfqs" />
+          ) : null}
+          {engagementPipeline && engagementPipeline.length > 0 ? (
+            <EngagementPipelineCard stages={engagementPipeline} viewAllHref="/buy/engagements" />
+          ) : null}
+          <ActivityTimeline entries={recentActivity} />
+          <QuickActionsCard />
         </div>
       </div>
-    </section>
+    </div>
   );
 }
