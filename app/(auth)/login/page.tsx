@@ -5,7 +5,10 @@
 // the iVendorz-kit split layout (dark brand aside + form panel) — honest, capability-true copy only.
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { CircleCheck } from "lucide-react";
 import { BrandLogo } from "@/frontend/brand";
+import { resolveSupabaseSession } from "@/server/auth";
 import { AuthShell } from "../_components/auth-shell";
 import { LoginForm } from "./login-form";
 
@@ -14,7 +17,25 @@ export const metadata: Metadata = {
   description: "Sign in to iVendorz — source from verified industrial suppliers across Bangladesh.",
 };
 
-export default function LoginPage() {
+// Per-request: reads the session to bounce already-authenticated users into their workspace.
+export const dynamic = "force-dynamic";
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ signed_out?: string }>;
+}) {
+  // Already signed in ⇒ there is nothing to sign in to. Send them to their workspace (the entry route
+  // resolves the default lens). This runs before render, so no login form flashes.
+  const session = await resolveSupabaseSession();
+  if (session !== null) {
+    redirect("/dashboard");
+  }
+
+  // Set by the `/logout` route on a successful sign-out (`?signed_out=1`) — a one-shot confirmation.
+  const { signed_out: signedOutParam } = await searchParams;
+  const signedOut = signedOutParam === "1";
+
   return (
     <AuthShell
       aside={{
@@ -48,6 +69,16 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
+
+      {signedOut ? (
+        <div
+          role="status"
+          className="mb-6 flex items-start gap-2 rounded-md border border-iv-success-muted/25 bg-iv-success-subtle px-3 py-2.5 text-sm text-iv-success-muted"
+        >
+          <CircleCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+          <p>You have been signed out. Sign in again to return to your workspace.</p>
+        </div>
+      ) : null}
 
       <div className="mb-7">
         <h1 className="text-[1.7rem] font-extrabold tracking-tight text-iv-ink-heading">Sign in</h1>

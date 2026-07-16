@@ -38,7 +38,9 @@ export async function loginAction(
     return { error: "Invalid email or password." };
   }
 
-  // Authentication established; hand off to the authenticated group (which resolves active-org
-  // context + ensures first-login provisioning via `ensureProvisioned`).
-  redirect("/");
+  // Authentication established; hand off to the workspace-entry route (`/dashboard`), which resolves
+  // the active-org context — first-login provisioning via `ensureProvisioned` + the default
+  // co-mounted lens — and redirects to the right dashboard. This action owns sign-in + redirect only;
+  // the composition edge owns provisioning (Doc-7C §3.2).
+  redirect("/dashboard");
 }

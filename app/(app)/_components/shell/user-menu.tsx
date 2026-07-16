@@ -1,9 +1,10 @@
 "use client";
 
 // Platform shell — user menu (IA §4.7). Distinct from the org-switcher (which changes tenant context).
-// PRESENTATION ONLY: account/settings link to the real `/account` surface (Doc-7E); logout routes to the
-// `(auth)` entry — the actual Supabase sign-out is DEFERRED wiring. Reuses the frozen kit Avatar +
-// DropdownMenu.
+// Account/settings link to the real `/account` surface (Doc-7E). Log out submits a real POST to the
+// `/logout` route (Supabase sign-out — Doc-7E §2 auth-exit); it is a native `<form method="post">`, not
+// a `<Link>`, because a GET logout is prefetched on hover and would clear the session unbidden. Reuses
+// the frozen kit Avatar + DropdownMenu.
 import Link from "next/link";
 import { LifeBuoy, LogOut, Settings, User } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
@@ -51,11 +52,13 @@ export function UserMenu({ user }: { user: ShellUser }) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/login">
-            <LogOut aria-hidden="true" /> Log out
-          </Link>
-        </DropdownMenuItem>
+        <form action="/logout" method="post">
+          <DropdownMenuItem asChild>
+            <button type="submit" className="w-full cursor-pointer">
+              <LogOut aria-hidden="true" /> Log out
+            </button>
+          </DropdownMenuItem>
+        </form>
       </DropdownMenuContent>
     </DropdownMenu>
   );

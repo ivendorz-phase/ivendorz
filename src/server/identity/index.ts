@@ -19,6 +19,15 @@ export {
   type ActiveOrgIdentityOutcome,
 } from "./active-org-identity";
 
+// The server-resolved default workspace entry path (post-login landing + `/dashboard`). Composition
+// only — a NAVIGATION default derived from participation flags, never an authorization gate.
+export {
+  resolveWorkspaceEntryPath,
+  BUY_WORKSPACE_HOME,
+  SELL_WORKSPACE_HOME,
+  type WorkspaceEntryDeps,
+} from "./active-org-lens";
+
 export {
   handleUpsertBuyerProfile,
   type UpsertBuyerProfileHandlerDeps,
