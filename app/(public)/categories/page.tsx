@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Package, Wrench, Hammer, MessageSquare } from "lucide-react";
 import { Card } from "@/frontend/primitives/card";
+import { PublicPageHead } from "../_components/public-page-head";
 import { CategoryTile } from "@/frontend/components/category-tile";
 import { SearchBar } from "@/frontend/components/search-bar";
 import { LandingSection } from "@/frontend/components/landing-section";
@@ -72,19 +73,18 @@ const AZ_GROUPS: [string, ReturnType<typeof TAXONOMY.pathTo>][] = (() => {
 export default function CategoriesPage() {
   return (
     <>
-      <section className="border-b border-border bg-background">
-        <Container className="py-10 sm:py-12">
-          <h1 className="text-3xl font-bold tracking-tight text-iv-ink-heading sm:text-4xl">
-            Browse by category
-          </h1>
-          <p className="mt-2 max-w-2xl text-iv-ink-secondary">
-            Browse industrial categories and jump straight to the suppliers and products you need.
-          </p>
-          <div className="mt-5 max-w-2xl">
-            <SearchBar action="/search" />
-          </div>
-        </Container>
-      </section>
+      {/* Page head — the reference's shared `.pghead` (see file header). Copy unchanged; the search
+          bar keeps its place inside the head exactly as the reference composes it. */}
+      <PublicPageHead
+        eyebrow="All categories"
+        crumbs={[{ label: "Categories" }]}
+        title="Browse by category"
+        description="Browse industrial categories and jump straight to the suppliers and products you need."
+      >
+        <div className="max-w-2xl">
+          <SearchBar action="/search" />
+        </div>
+      </PublicPageHead>
 
       <LandingSection
         id="sec-popular-categories"

@@ -3,7 +3,9 @@
 // wired here), so this renders labelled DECORATIVE placeholder tiles — NO fabricated <img> sources
 // (mirrors the product-detail decorative-tile pattern). Presentation-only; genuine-empty when absent.
 // Reuses the kit; RSC-friendly.
-import { Image as ImageIcon } from "lucide-react";
+// 2026-07-16: the placeholder tile's markup moved to the shared `MediaPlaceholder` (this file was its
+// first instance) — same frame, same tokens, same governance posture; only the duplication is gone.
+import { MediaPlaceholder } from "../media-placeholder";
 import type { GalleryItemVM } from "./company-content-seed";
 
 export interface CompanyGalleryProps {
@@ -17,13 +19,7 @@ export function CompanyGallery({ gallery }: CompanyGalleryProps) {
       {gallery.map((item) => (
         <li key={item.label}>
           {/* Decorative placeholder — no fabricated image source. */}
-          <div className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-lg border border-border bg-muted text-muted-foreground">
-            <ImageIcon aria-hidden="true" className="size-6" />
-            <span className="text-xs font-medium text-foreground">{item.label}</span>
-            {item.caption ? (
-              <span className="px-2 text-center text-2xs">{item.caption}</span>
-            ) : null}
-          </div>
+          <MediaPlaceholder className="aspect-[4/3]" label={item.label} caption={item.caption} />
         </li>
       ))}
     </ul>

@@ -16,20 +16,26 @@ export const metadata = {
 
 export default function MaintenancePage() {
   return (
-    <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-      <span className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        <Wrench aria-hidden="true" className="size-6" />
+    // 2026-07-16 — ported to the reference (`isMaintenance`): a utility screen, so no `PublicPageHead`
+    // (the reference gives it none). Ported: its proportions — a larger icon medallion, heading and
+    // lead measure, and its single outline action. Copy is unchanged; in particular no return time is
+    // promised, since we have none to state.
+    <div className="flex flex-col items-center justify-center px-6 py-20 text-center sm:py-28">
+      <span className="flex size-16 items-center justify-center rounded-full bg-iv-brand-50 text-iv-brand-600">
+        <Wrench aria-hidden="true" className="size-8" />
       </span>
-      <p className="mt-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+      <p className="mt-6 font-mono text-xs font-semibold uppercase tracking-widest text-iv-brand-600">
         Maintenance
       </p>
-      <h1 className="mt-2 text-2xl font-semibold text-foreground">Down for maintenance</h1>
-      <p className="mt-2 max-w-md text-sm text-muted-foreground">
+      <h1 className="mt-3 text-3xl font-bold tracking-tight text-iv-ink-heading sm:text-4xl">
+        Down for maintenance
+      </h1>
+      <p className="mt-4 max-w-xl text-base text-iv-ink-secondary">
         iVendorz is briefly unavailable while we carry out scheduled maintenance. We’ll be back
         shortly — thanks for your patience.
       </p>
-      <div className="mt-6">
-        <Button asChild variant="outline">
+      <div className="mt-8">
+        <Button asChild size="lg" variant="outline">
           <Link href="/">Try again</Link>
         </Button>
       </div>

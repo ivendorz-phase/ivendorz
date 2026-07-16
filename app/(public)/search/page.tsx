@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Info } from "lucide-react";
 import { SearchBar } from "@/frontend/components/search-bar";
+import { PublicPageHead } from "../_components/public-page-head";
 import { FilterSidebar } from "@/frontend/components/filter-sidebar";
 import { VENDORS, PRODUCTS, CATEGORY_GROUPS, VENDOR_FACETS } from "../_components/discovery/seed";
 import { VendorCard } from "@/frontend/components/vendor-card";
@@ -203,77 +204,76 @@ export default async function SearchPage({
   }
 
   return (
-    <Container className="py-8">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight text-iv-ink-heading sm:text-4xl">
-          {q ? (
-            <>
-              Search results for <span className="text-iv-navy-700">“{q}”</span>
-            </>
-          ) : (
-            "Search the marketplace"
-          )}
-        </h1>
-        <div className="mt-4 max-w-2xl">
+    <>
+      {/* Page head — the reference's shared `.pghead` (see file header). The h1 keeps this page's own
+          wording and its dynamic query echo; the search bar and the honest not-yet-wired disclosure
+          stay in the head, so the disclosure sits with the results it qualifies. */}
+      <PublicPageHead
+        crumbs={[{ label: "Search" }]}
+        title={q ? `Search results for “${q}”` : "Search the marketplace"}
+      >
+        <div className="max-w-2xl">
           <SearchBar action="/search" defaultQuery={q} />
         </div>
         {/* Honest interim disclosure (byte-neutral) — live catalog search is not yet wired. Removed when
             `search_catalog` lands. */}
-        <p className="mt-2 text-xs text-muted-foreground">
+        <p className="mt-3 text-xs text-white/70">
           Live catalog search is coming soon — showing example listings from across the marketplace.
         </p>
-      </header>
+      </PublicPageHead>
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <aside className="lg:w-64 lg:shrink-0">
-          <div className="rounded-lg border border-border bg-card p-4 lg:sticky lg:top-20">
-            <FilterSidebar facets={VENDOR_FACETS} label="Filter search results" />
+      <Container className="py-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+          <aside className="lg:w-64 lg:shrink-0">
+            <div className="rounded-lg border border-border bg-card p-4 lg:sticky lg:top-20">
+              <FilterSidebar facets={VENDOR_FACETS} label="Filter search results" />
+            </div>
+          </aside>
+
+          <div className="min-w-0 flex-1">
+            {/* Result-type tabs as URL links (server-rendered; aria-current, no client-computed counts — GI-03). */}
+            <nav
+              aria-label="Result type"
+              className="mb-4 inline-flex h-9 items-center justify-center gap-1 rounded-md bg-muted p-1"
+            >
+              {TABS.map((t) => {
+                const active = t.key === activeTab;
+                return (
+                  <Link
+                    key={t.key}
+                    href={tabHref(t.key)}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "rounded-sm px-3 py-1 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      active
+                        ? "bg-card text-foreground shadow-iv-xs"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {t.label}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Labelled live region so loading→loaded / partial / error transitions are perceivable to AT. */}
+            <section
+              aria-label="Search results"
+              aria-live="polite"
+              aria-busy={demoState === "loading" ? true : undefined}
+            >
+              {demoState === "partial" ? (
+                <div className="mb-4 flex items-center gap-2 rounded-md border border-border bg-iv-info-subtle px-3 py-2 text-sm text-iv-info-base">
+                  <Info aria-hidden="true" className="size-4 shrink-0" />
+                  Showing partial results while we finish searching…
+                </div>
+              ) : null}
+
+              {renderResults()}
+            </section>
           </div>
-        </aside>
-
-        <div className="min-w-0 flex-1">
-          {/* Result-type tabs as URL links (server-rendered; aria-current, no client-computed counts — GI-03). */}
-          <nav
-            aria-label="Result type"
-            className="mb-4 inline-flex h-9 items-center justify-center gap-1 rounded-md bg-muted p-1"
-          >
-            {TABS.map((t) => {
-              const active = t.key === activeTab;
-              return (
-                <Link
-                  key={t.key}
-                  href={tabHref(t.key)}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "rounded-sm px-3 py-1 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    active
-                      ? "bg-card text-foreground shadow-iv-xs"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {t.label}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Labelled live region so loading→loaded / partial / error transitions are perceivable to AT. */}
-          <section
-            aria-label="Search results"
-            aria-live="polite"
-            aria-busy={demoState === "loading" ? true : undefined}
-          >
-            {demoState === "partial" ? (
-              <div className="mb-4 flex items-center gap-2 rounded-md border border-border bg-iv-info-subtle px-3 py-2 text-sm text-iv-info-base">
-                <Info aria-hidden="true" className="size-4 shrink-0" />
-                Showing partial results while we finish searching…
-              </div>
-            ) : null}
-
-            {renderResults()}
-          </section>
         </div>
-      </div>
-    </Container>
+      </Container>
+    </>
   );
 }

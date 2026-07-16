@@ -19,18 +19,30 @@ export const metadata = {
   title: "Access denied — iVendorz",
 };
 
+// 2026-07-16 — ported to the "iVendorz Public Pages" reference (`isForbidden`). It is a utility screen,
+// so it takes NO `PublicPageHead` (the reference gives it none either — a breadcrumb into a page you
+// cannot access would be nonsense). Ported: the reference's proportions — a large status code over the
+// heading, a wider lead measure, and its ghost+primary action pair. Copy is unchanged, and the second
+// action routes to `/contact`, a real page (the reference's own target for it).
 export default function ForbiddenPage() {
   return (
-    <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-      <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">403</p>
-      <h1 className="mt-2 text-2xl font-semibold text-foreground">Access denied</h1>
-      <p className="mt-2 max-w-md text-sm text-muted-foreground">
+    <div className="flex flex-col items-center justify-center px-6 py-20 text-center sm:py-28">
+      <p className="font-mono text-5xl font-bold tracking-tight text-iv-brand-600 sm:text-6xl">
+        403
+      </p>
+      <h1 className="mt-4 text-3xl font-bold tracking-tight text-iv-ink-heading sm:text-4xl">
+        Access denied
+      </h1>
+      <p className="mt-4 max-w-xl text-base text-iv-ink-secondary">
         You don’t have access to this page. If you think this is a mistake, contact an administrator
         in your organization.
       </p>
-      <div className="mt-6">
-        <Button asChild variant="outline">
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <Button asChild size="lg">
           <Link href="/">Back to home</Link>
+        </Button>
+        <Button asChild size="lg" variant="ghost">
+          <Link href="/contact">Contact support</Link>
         </Button>
       </div>
     </div>
