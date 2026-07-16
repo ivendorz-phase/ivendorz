@@ -1,5 +1,31 @@
 # iVendorz Skills Guide
 
+## Dev server policy — ONE server per checkout (owner directive 2026-07-16)
+
+**Never start your own `next dev` in a checkout that already has one running.** Use the existing
+server — in `E:\Projects\iVendorz` that is **http://localhost:3000**.
+
+A different `-p` port does **not** give you a different build directory. Every dev server in a
+checkout shares that checkout's single `.next`, and each start or recompile rewrites it, yanking
+compiled chunks out from under every other server on that directory. The victims then fail on
+requests they used to serve.
+
+The failure does not look like a build problem, which is why it burns hours:
+
+- **every** route 500s, not just the one you touched;
+- the body is a bare `Internal Server Error` with **no dev overlay or stack** (it dies too deep in
+  module loading to render one);
+- the log shows `ENOENT ... app-build-manifest.json`, `Cannot find module
+  '../chunks/ssr/[turbopack]_runtime.js'`, or a `ReferenceError` naming a symbol that **is**
+  imported — at a line number that does not match the file on disk (a stale compile).
+
+Diagnose before restarting: if a fresh server on the same code serves the page, the code is fine
+and you are looking at cache corruption. `Get-NetTCPConnection -State Listen` plus
+`Get-CimInstance Win32_Process` will show every server on the checkout.
+
+Need a server nobody else can disturb? Use a **git worktree** — a separate directory gets its own
+`.next`. `git worktree list` shows the existing ones. Do **not** solve it by picking a higher port.
+
 ## Available Custom Skills
 
 ### Pre-Commit Checklist
