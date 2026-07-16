@@ -1,48 +1,88 @@
 name: Release
 
-# Tag-triggered release gate. Push a `vX.Y.Z` tag to cut a release:
-# the tagged commit is rebuilt from a clean checkout, then a GitHub Release is
-# created with auto-generated notes (commits/PRs since the previous tag).
-# No auto version-bumping — this workflow never decides the version, it only
-# publishes what was already tagged.
+# Main-branch release cut (replaces the previous tag-triggered gate).
+#
+# Fires only after CI succeeds on a `main` commit, then TriPSs/conventional-changelog-action
+# reads the Conventional Commit history and:
+#   1. bumps `version` in package.json (semver, derived from feat/fix/BREAKING CHANGE),
+#   2. writes the changelog to docs/CHANGELOG.md (registered Engineering docs area,
+#      REPOSITORY_STRUCTURE §Ownership Matrix — NOT root; P-5 forbids a new root file),
+#   3. commits `chore(release): x.y.z` and pushes the `vX.Y.Z` tag.
+# A GitHub Release is then created as a DRAFT — publishing stays a human action.
+#
+# This workflow never decides *whether* to release; the commit history does. A run with no
+# releasable commits is skipped (skip-on-empty), not failed.
+#
+# NOTE (operational): the release commit is pushed with GITHUB_TOKEN, which cannot bypass
+# branch protection. If `main` requires PRs/status checks, grant this workflow's actor a
+# bypass allowance, or the push step will fail. GITHUB_TOKEN pushes also do not re-trigger
+# CI, so the release commit cannot loop back into this workflow.
 on:
-  push:
-    tags: ["v*.*.*"]
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
 
+# Needs write scope to push the release commit + tag and to create the draft Release.
 permissions:
   contents: write
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-main
   cancel-in-progress: false
 
 jobs:
   release:
-    name: Build & publish GitHub Release
+    name: Version, changelog & draft release
+    # Never cut a release off a red CI run — this is the whole point of the workflow_run gate.
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    env:
-      # Same hermetic Postgres contract as ci.yml's verify job — the build needs
-      # a reachable DATABASE_URL/DIRECT_URL even though no schema work happens here.
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ivendorz
-      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/ivendorz
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: main
+          # conventional-changelog-action walks history back to the previous tag.
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+
+      # The workflow_run gate proves CI passed on head_sha, not necessarily on main's tip.
+      # If main moved on, skip: that newer commit's own CI run will cut the release instead.
+      - name: Guard — release only the commit CI verified
+        id: guard
+        run: |
+          tip="$(git rev-parse HEAD)"
+          verified="${{ github.event.workflow_run.head_sha }}"
+          if [ "$tip" != "$verified" ]; then
+            echo "main tip $tip != CI-verified $verified — deferring to the newer run."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Conventional changelog & version bump
+        id: changelog
+        if: steps.guard.outputs.proceed == 'true'
+        uses: TriPSs/conventional-changelog-action@v6
         with:
-          node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Generate Prisma client
-        run: pnpm run db:generate
-      - name: Build (Next.js)
-        run: pnpm run build
-      - name: Create GitHub Release
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          git-message: "chore(release): {version}"
+          git-user-name: ivendorz-release-bot
+          git-user-email: noreply@ivendorz.com
+          version-file: "./package.json"
+          output-file: "docs/CHANGELOG.md"
+          tag-prefix: "v"
+          release-count: "10"
+          # No releasable commits (e.g. a docs-only push) is a no-op, not a failure.
+          skip-on-empty: "true"
+
+      - name: Create draft GitHub Release
+        if: steps.guard.outputs.proceed == 'true' && steps.changelog.outputs.skipped == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
+          # Via env, not inline — release notes are untrusted commit text.
+          NOTES: ${{ steps.changelog.outputs.clean_changelog }}
         run: |
-          gh release create "${{ github.ref_name }}" \
-            --title "${{ github.ref_name }}" \
-            --generate-notes
+          printf '%s\n' "$NOTES" > release-notes.md
+          gh release create "${{ steps.changelog.outputs.tag }}" \
+            --title "${{ steps.changelog.outputs.tag }}" \
+            --notes-file release-notes.md \
+            --draft
