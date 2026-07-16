@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
   Boxes,
@@ -47,15 +48,32 @@ import { PublicPageHead } from "../_components/public-page-head";
 //     internal placeholder behind auth, so all four are forbidden outright (§Data & Copy Fidelity).
 //     **OWNER RULING (2026-07-16): keep the band's 4-up footprint; fill it with true, non-numeric
 //     content** — the canonical treatment for the whole class. Realized as `JOURNEY`.
-//  2. ITS "THE STORY" SECTION IS NOT BUILT — **ESCALATED, awaiting a ruling.** It is not merely lorem
-//     (which the directive lets me replace with copy of my own): the section is founder backstory
-//     ("Our founders spent a decade chasing quotes over email and phone…") beside a "Team / office
-//     photo" image slot. Both are unverifiable claims about REAL PEOPLE and a real company history
-//     that no source in this repo supplies, and the directive is explicit that new business claims,
-//     testimonials and dates are NOT "copy" I may write. This page's own scope note above already
-//     records the same decision ("no invented … team"). Writing it would be fabrication; building it
-//     empty would be worse. It stays out until the owner supplies the real story + photo, or rules
-//     the section dropped.
+//  2. ITS "THE STORY" SECTION — escalated 2026-07-16, then **OWNER-APPROVED WITH CONSTRAINTS**: author
+//     it by SYNTHESIZING the approved corpus only; invent no timeline, achievement, customer history,
+//     funding or personal anecdote; use an authentic corpus image, or failing that a neutral
+//     industrial visual — never stock "team" imagery or AI-generated people; escalate again if the
+//     sources are insufficient. What shipped, and where every clause comes from:
+//
+//     • THE REFERENCE'S OWN COPY IS NOT USED. Its two paragraphs are lorem plus founder backstory
+//       ("Our founders spent a decade chasing quotes over email and phone…"), and its heading —
+//       "Built by procurement people, for procurement people" — is itself an unverifiable claim about
+//       who built this. The heading here is "Why iVendorz exists": the same slot, no claim.
+//     • SOURCES CHECKED, and what was actually there. There is NO founder profile, pitch deck,
+//       brochure or company-history document anywhere in the repo — every "founder" hit in
+//       `generatedDocs/` is the **"Founder-Assisted" marketplace maturity model** (Doc-3: Stage A
+//       Founder-Assisted → B Assisted → C Autonomous), an operational ROUTING role, not biography.
+//       So no personal/company history was available and none is asserted.
+//     • PARAGRAPH 1 (the problem) synthesizes problem framing this codebase ALREADY ships and has
+//       already approved: `for-buyers/page.tsx` ("instead of scattered emails and calls") and
+//       `landing/how-it-works.tsx` ("no cold-calling, no spreadsheets"). It restates the status quo
+//       those pages already assert — it introduces no new claim about the market.
+//     • PARAGRAPH 2 (the response) is the Master Overview §1 "Core flow" in prose: structured RFQ →
+//       capability-matched verified vendors → comparable priced quotations → award → the post-award
+//       document chain (LOI, PO, challan, invoice, WCC). Every noun traces to §1.
+//     • THE IMAGE is `public/hero/hero-bg.jpg` — the repo's ONLY photographic asset, already shipping
+//       on the landing hero and the auth aside. It is genuine industrial fabrication with no
+//       identifiable person: authentic, corpus-resident, and neither stock "team" imagery nor
+//       AI-generated people. No team/office photo exists, and none was fabricated.
 export const metadata = {
   title: "About iVendorz — Industrial Procurement OS for Bangladesh",
   description:
@@ -155,6 +173,53 @@ export default function AboutPage() {
               </li>
             ))}
           </ol>
+        </Container>
+      </section>
+
+      {/* "The story" — the reference's grid2 prose+image section. Every clause is synthesized from an
+          approved source (see file header); nothing here is a founder, timeline, customer, funding or
+          anecdote claim. */}
+      <section className="border-b border-border bg-background">
+        <Container className="py-14">
+          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
+            <div>
+              <p className="font-mono text-2xs font-semibold uppercase tracking-widest text-iv-brand-600">
+                The story
+              </p>
+              <h2 className="mt-3 text-2xl font-bold tracking-tight text-iv-ink-heading sm:text-3xl">
+                Why iVendorz exists
+              </h2>
+              <div className="mt-5 flex flex-col gap-4 text-iv-ink-secondary">
+                <p>
+                  Industrial procurement still runs on scattered emails, phone calls and
+                  spreadsheets. A requirement goes out to whoever the buyer already knows;
+                  quotations come back in different shapes, on different days, priced against
+                  different assumptions — and the comparison ends up in a private file that no one
+                  can check afterwards.
+                </p>
+                <p>
+                  iVendorz makes that one workflow. A buyer posts a structured RFQ once, the
+                  platform routes it to capability-matched verified vendors, priced quotations come
+                  back comparable, and the award is made on a trail that outlives the decision. The
+                  same workflow carries the order through to delivery — LOI, purchase order,
+                  challan, invoice, work-completion certificate — so what both sides agreed stays on
+                  the record.
+                </p>
+              </div>
+            </div>
+            {/* The corpus' only photographic asset (see file header) — genuine industrial
+                fabrication, no identifiable person. Decorative: the prose beside it carries the
+                meaning, so the alt is empty rather than narrating the picture. */}
+            <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-border lg:aspect-[3/2]">
+              <Image
+                src="/hero/hero-bg.jpg"
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+          </div>
         </Container>
       </section>
 
