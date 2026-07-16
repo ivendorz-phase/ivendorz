@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, ClipboardList, Route, FileSpreadsheet, FileCheck, Truck } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
+import { PublicPageHead } from "../_components/public-page-head";
 import { Container } from "@/frontend/components/container";
 
 // Public "How it works" route (`/how-it-works`) — P-PUB-03 (Doc-7D Public surface · T-STATIC · TB-NONE;
@@ -52,18 +53,14 @@ const STEPS = [
 export default function HowItWorksPage() {
   return (
     <>
-      {/* Intro. */}
-      <section className="border-b border-border bg-background">
-        <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20">
-          <h1 className="text-4xl font-extrabold tracking-tight text-iv-ink-heading sm:text-5xl">
-            How procurement works on iVendorz
-          </h1>
-          <p className="mx-auto mt-5 text-lg text-iv-ink-secondary">
-            One governed workflow, from the first request to a delivered order — designed so every
-            award is explicit and every supplier is treated by the same rules.
-          </p>
-        </div>
-      </section>
+      {/* Page head — the reference's shared `.pghead` (see file header). Copy unchanged; the eyebrow
+          is the reference's own section label, which asserts nothing. */}
+      <PublicPageHead
+        eyebrow="How it works"
+        crumbs={[{ label: "How it works" }]}
+        title="How procurement works on iVendorz"
+        description="One governed workflow, from the first request to a delivered order — designed so every award is explicit and every supplier is treated by the same rules."
+      />
 
       {/* Governed flow — ordered-list stepper. */}
       <section className="bg-muted/30">

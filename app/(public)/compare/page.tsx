@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Check, Minus, Info, X } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
+import { PublicPageHead } from "../_components/public-page-head";
 import { EmptyState } from "@/frontend/components/empty-state";
 import { VendorVerifiedBadge } from "../_components/microsite/vendor-verified-badge";
 import { VENDORS } from "../_components/discovery/seed";
@@ -84,18 +85,15 @@ export default async function ComparePage({
 
   return (
     <>
-      {/* Intro. */}
-      <section className="border-b border-border bg-background">
-        <Container className="py-12 sm:py-14">
-          <h1 className="text-3xl font-extrabold tracking-tight text-iv-ink-heading sm:text-4xl">
-            Compare vendors
-          </h1>
-          <p className="mt-3 max-w-2xl text-iv-ink-secondary">
-            Put suppliers side by side to weigh them yourself. This is a neutral discovery aid —
-            iVendorz doesn’t rank vendors, recommend a winner, or score them here.
-          </p>
-        </Container>
-      </section>
+      {/* Page head — the reference's shared `.pghead` (see file header). Copy unchanged — in
+          particular the R6 neutrality sentence stays exactly as written; the reference's own h1
+          ("iVendorz vs. the old way") is a marketing comparison and is NOT adopted. */}
+      <PublicPageHead
+        eyebrow="Compare"
+        crumbs={[{ label: "Compare" }]}
+        title="Compare vendors"
+        description="Put suppliers side by side to weigh them yourself. This is a neutral discovery aid — iVendorz doesn’t rank vendors, recommend a winner, or score them here."
+      />
 
       <section className="bg-muted/30">
         <Container className="py-10">

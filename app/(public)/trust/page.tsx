@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Layers, Lock, EyeOff } from "lucide-react";
 import { Card } from "@/frontend/primitives/card";
+import { PublicPageHead } from "../_components/public-page-head";
 import { Button } from "@/frontend/primitives/button";
 import { VendorVerifiedBadge } from "../_components/microsite/vendor-verified-badge";
 import { Container } from "@/frontend/components/container";
@@ -56,21 +57,13 @@ const PRINCIPLES = [
 export default function TrustPage() {
   return (
     <>
-      {/* Intro. */}
-      <section className="border-b border-border bg-background">
-        <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20">
-          <p className="text-sm font-semibold uppercase tracking-wide text-iv-brand-600">
-            Trust &amp; verification
-          </p>
-          <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-iv-ink-heading sm:text-5xl">
-            Trust you can verify
-          </h1>
-          <p className="mx-auto mt-5 text-lg text-iv-ink-secondary">
-            On iVendorz, trust is kept simple and honest: verification is earned and shown on the
-            platform — not a score you have to decode, and not something a supplier sets themselves.
-          </p>
-        </div>
-      </section>
+      {/* Page head — the reference's shared `.pghead` (see file header). Copy unchanged. */}
+      <PublicPageHead
+        eyebrow="Trust & verification"
+        crumbs={[{ label: "Trust & verification" }]}
+        title="Trust you can verify"
+        description="On iVendorz, trust is kept simple and honest: verification is earned and shown on the platform — not a score you have to decode, and not something a supplier sets themselves."
+      />
 
       {/* The Verified mark. */}
       <section className="bg-muted/30">

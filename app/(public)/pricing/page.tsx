@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
+import { PublicPageHead } from "../_components/public-page-head";
 import { PricingPlans } from "./pricing-plans";
 import { Container } from "@/frontend/components/container";
 
@@ -23,17 +24,17 @@ export default function PricingPage() {
   return (
     <>
       {/* Marketing header. */}
-      <section className="border-b border-border bg-background">
-        <Container className="py-16 text-center sm:py-20">
-          <h1 className="text-4xl font-extrabold tracking-tight text-iv-ink-heading sm:text-5xl">
-            Simple, transparent pricing
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-iv-ink-secondary">
-            Pick the plan that fits your procurement team. Every plan runs the full RFQ-to-award
-            workflow — plans only set your platform features and quotas.
-          </p>
-        </Container>
-      </section>
+      {/* Page head — the shared `.pghead`. The reference's own pricing screen opens with a plain
+          centered header instead of the band; this page takes the band anyway so all 20 public pages
+          open identically — an inconsistent chrome on one page would read as a defect, and
+          `visual_reference_implementation.md` §4 puts consistency with the sibling surfaces above
+          fidelity to a single reference screen. Copy unchanged. */}
+      <PublicPageHead
+        eyebrow="Pricing & plans"
+        crumbs={[{ label: "Pricing" }]}
+        title="Simple, transparent pricing"
+        description="Pick the plan that fits your procurement team. Every plan runs the full RFQ-to-award workflow — plans only set your platform features and quotas."
+      />
 
       {/* Plans. */}
       <section className="bg-muted/30">

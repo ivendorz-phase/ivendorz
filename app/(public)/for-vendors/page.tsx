@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Search, Inbox, Grid3x3, Store, BadgeCheck, FileText } from "lucide-react";
 import { Card } from "@/frontend/primitives/card";
+import { PublicPageHead } from "../_components/public-page-head";
 import { Button } from "@/frontend/primitives/button";
 import { Container } from "@/frontend/components/container";
 
@@ -63,31 +64,34 @@ const VALUE_PROPS = [
 export default function ForVendorsPage() {
   return (
     <>
-      {/* Intro. */}
-      <section className="border-b border-border bg-background">
-        <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20">
-          <p className="text-sm font-semibold uppercase tracking-wide text-iv-brand-600">
-            For vendors
-          </p>
-          <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-iv-ink-heading sm:text-5xl">
-            Get found. Win real work.
-          </h1>
-          <p className="mx-auto mt-5 text-lg text-iv-ink-secondary">
-            Put your capabilities in front of industrial buyers across Bangladesh — and let
-            qualified RFQs come to you.
-          </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button asChild size="lg" className="gap-2">
-              <Link href="/login">
-                Get started <ArrowRight aria-hidden="true" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link href="/vendors">Browse the directory</Link>
-            </Button>
-          </div>
+      {/* Page head — the reference's shared `.pghead` (see file header). Copy unchanged; on-navy CTA
+          idiom per `for-buyers/page.tsx`. */}
+      <PublicPageHead
+        eyebrow="For vendors"
+        crumbs={[{ label: "For vendors" }]}
+        title="Get found. Win real work."
+        description="Put your capabilities in front of industrial buyers across Bangladesh — and let qualified RFQs come to you."
+      >
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Button
+            asChild
+            size="lg"
+            className="gap-2 border-transparent bg-white text-iv-brand-700 hover:bg-iv-brand-50"
+          >
+            <Link href="/login">
+              Get started <ArrowRight aria-hidden="true" />
+            </Link>
+          </Button>
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
+          >
+            <Link href="/vendors">Browse the directory</Link>
+          </Button>
         </div>
-      </section>
+      </PublicPageHead>
 
       {/* Value props. */}
       <section className="bg-muted/30">

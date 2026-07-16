@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BookOpen, ArrowRight } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
+import { PublicPageHead } from "../_components/public-page-head";
 import { EmptyState } from "@/frontend/components/empty-state";
 import { Container } from "@/frontend/components/container";
 
@@ -22,21 +23,13 @@ export const metadata = {
 export default function ResourcesPage() {
   return (
     <>
-      {/* Intro. */}
-      <section className="border-b border-border bg-background">
-        <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20">
-          <p className="text-sm font-semibold uppercase tracking-wide text-iv-brand-600">
-            Resources
-          </p>
-          <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-iv-ink-heading sm:text-5xl">
-            Procurement resources
-          </h1>
-          <p className="mx-auto mt-5 text-lg text-iv-ink-secondary">
-            Practical guides and articles on sourcing, RFQs, and working with verified suppliers —
-            written for industrial teams in Bangladesh.
-          </p>
-        </div>
-      </section>
+      {/* Page head — the reference's shared `.pghead` (see file header). Copy unchanged. */}
+      <PublicPageHead
+        eyebrow="Resources"
+        crumbs={[{ label: "Resources" }]}
+        title="Procurement resources"
+        description="Practical guides and articles on sourcing, RFQs, and working with verified suppliers — written for industrial teams in Bangladesh."
+      />
 
       {/* Coming soon. */}
       <section className="bg-muted/30">

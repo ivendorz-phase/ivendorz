@@ -11,6 +11,7 @@ import {
 import { Card } from "@/frontend/primitives/card";
 import { Button } from "@/frontend/primitives/button";
 import { Container } from "@/frontend/components/container";
+import { PublicPageHead } from "../_components/public-page-head";
 
 // Public "For Buyers" segment route (`/for-buyers`) — P-PUB-05 (Doc-7D Public surface · T-STATIC ·
 // TB-NONE; screen_specifications §P-PUB-02..06, journey J-GST-01). A pure SERVER COMPONENT mounted in the
@@ -66,31 +67,37 @@ const VALUE_PROPS = [
 export default function ForBuyersPage() {
   return (
     <>
-      {/* Intro. */}
-      <section className="border-b border-border bg-background">
-        <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20">
-          <p className="text-sm font-semibold uppercase tracking-wide text-iv-brand-600">
-            For buyers
-          </p>
-          <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-iv-ink-heading sm:text-5xl">
-            Source with confidence
-          </h1>
-          <p className="mx-auto mt-5 text-lg text-iv-ink-secondary">
-            For the factories, plants, and EPC contractors that keep industry running — bring
-            sourcing onto one governed workflow, from the first RFQ to a delivered order.
-          </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button asChild size="lg" className="gap-2">
-              <Link href="/login">
-                Get started <ArrowRight aria-hidden="true" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link href="/marketplace">Explore the marketplace</Link>
-            </Button>
-          </div>
+      {/* Page head — the reference's shared `.pghead` (see file header). Copy unchanged. */}
+      <PublicPageHead
+        eyebrow="For buyers"
+        crumbs={[{ label: "For buyers" }]}
+        title="Source with confidence"
+        description="For the factories, plants, and EPC contractors that keep industry running — bring sourcing onto one governed workflow, from the first RFQ to a delivered order."
+      >
+        {/* On-navy CTA pair — the established idiom for buttons on a navy band (white fill for the
+            primary, translucent outline for the secondary). The kit `primary` variant is a navy
+            gradient and would disappear into this background; `secondary`/`outline` are light-surface
+            variants for the same reason. Composition-level classes only — no variant is added. */}
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Button
+            asChild
+            size="lg"
+            className="gap-2 border-transparent bg-white text-iv-brand-700 hover:bg-iv-brand-50"
+          >
+            <Link href="/login">
+              Get started <ArrowRight aria-hidden="true" />
+            </Link>
+          </Button>
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
+          >
+            <Link href="/marketplace">Explore the marketplace</Link>
+          </Button>
         </div>
-      </section>
+      </PublicPageHead>
 
       {/* Value props. */}
       <section className="bg-muted/30">

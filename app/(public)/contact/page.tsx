@@ -1,4 +1,5 @@
 import { ContactForm } from "./contact-form";
+import { PublicPageHead } from "../_components/public-page-head";
 
 // Public Contact / Support route (`/contact`) — P-PUB-24 (Doc-7D Public surface · T-STATIC · TB-NONE;
 // screen_specifications §P-PUB-24). A SERVER COMPONENT mounted in the Doc-7C `(public)` shell,
@@ -31,20 +32,13 @@ const FAQ = [
 export default function ContactPage() {
   return (
     <>
-      {/* Intro. */}
-      <section className="border-b border-border bg-background">
-        <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20">
-          <p className="text-sm font-semibold uppercase tracking-wide text-iv-brand-600">
-            Contact &amp; support
-          </p>
-          <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-iv-ink-heading sm:text-5xl">
-            Get in touch
-          </h1>
-          <p className="mx-auto mt-5 text-lg text-iv-ink-secondary">
-            Have a question about iVendorz? Send us a message and we’ll get back to you.
-          </p>
-        </div>
-      </section>
+      {/* Page head — the reference's shared `.pghead` (see file header). Copy unchanged. */}
+      <PublicPageHead
+        eyebrow="Contact & support"
+        crumbs={[{ label: "Contact" }]}
+        title="Get in touch"
+        description="Have a question about iVendorz? Send us a message and we’ll get back to you."
+      />
 
       {/* Form. */}
       <section className="bg-muted/30">
