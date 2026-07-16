@@ -15,6 +15,7 @@ export function FeaturedCategories() {
   return (
     <LandingSection
       id="sec-category"
+      eyebrow="Sourcing categories"
       title="Browse industrial categories"
       description="Source across industrial categories — from valves and steel to electrical drives, pumps, and safety."
       viewAllHref="/categories"

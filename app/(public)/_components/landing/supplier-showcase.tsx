@@ -25,6 +25,7 @@ export function SupplierShowcase() {
   return (
     <LandingSection
       id="sec-suppliers"
+      eyebrow="Sourcing partners"
       title="Verified suppliers"
       description="Credible industrial suppliers, with verification and capabilities you can check at a glance."
       viewAllHref="/vendors"
