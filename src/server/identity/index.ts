@@ -10,6 +10,15 @@ export {
   type ResolveSession,
 } from "./get-buyer-profile.route-handler";
 
+// The server-rendered DATA face for a workspace surface's display identity (Doc-7C SR3). Composition
+// only — it coins no contract; see the file header.
+export {
+  loadActiveOrgIdentity,
+  type ActiveOrgIdentity,
+  type ActiveOrgIdentityDeps,
+  type ActiveOrgIdentityOutcome,
+} from "./active-org-identity";
+
 export {
   handleUpsertBuyerProfile,
   type UpsertBuyerProfileHandlerDeps,

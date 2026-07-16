@@ -398,9 +398,16 @@ export function BuyerDashboardView({
   identity,
 }: {
   data: BuyerDashboardViewModel | null;
-  /** Same neutral identity placeholder the shell renders (Doc-7C SR3 — PARKED); optional so existing
-   *  callers/tests need not supply it. */
-  identity?: { userName: string; orgName: string };
+  /**
+   * The display identity for the greeting. WIRED 2026-07-16 — `page.tsx` resolves it server-side via
+   * `loadActiveOrgIdentity` (Doc-7C SR3 is no longer PARKED for this field).
+   *
+   * Each field is INDEPENDENTLY OPTIONAL, and that is the contract, not laxity: `identity.get_user.v1`
+   * projects `display_name` as NULLABLE — "absence is the legitimate state" (`ESC-IDN-DISPLAYNAME`
+   * owner Option A). An absent name renders the un-named "Welcome back"; it is never back-filled with
+   * a fabricated one. The whole prop stays optional so existing callers/tests need not supply it.
+   */
+  identity?: { userName?: string; orgName?: string };
 }) {
   if (data === null) {
     return (

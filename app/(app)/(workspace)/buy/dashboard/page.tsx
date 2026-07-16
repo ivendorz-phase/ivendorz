@@ -13,7 +13,31 @@
 // its own Suspense boundary with a scoped error-state (§9.1 / GI-05). The browser never calls a Doc-5
 // contract and never sets `Iv-Active-Organization` (Inv #5 / Doc-7C SR3). Every figure is a wired read,
 // never client-computed (R7).
+//
+// ── 2026-07-16 · IDENTITY IS NOW WIRED (owner-ruled scope) ────────────────────────────────────────
+// The greeting no longer reads from a fixture: `loadActiveOrgIdentity` resolves the REAL display
+// identity server-side (`@/server/identity` → session → provision → `withActiveOrg` →
+// `identity.get_organization.v1` + `identity.get_user.v1`), the same server-rendered data-layer
+// pattern the wired `(app)/account` page already uses (`loadActiveOrgBuyerProfile`) — NOT a client
+// self-fetch of our own HTTP API. Inv #5 / Doc-7C SR3 hold: the org is resolved from the SESSION, the
+// browser asserts no org identity, and no client-supplied org id exists.
+//
+// SCOPE, and why only this: the dashboard's BUSINESS data (KPIs · pipelines · RFQ/quotation/engagement
+// queues · activity) is owned by M3 (rfq) and M4 (operations), which are EMPTY SKELETONS on every
+// branch including `main` — their `contracts/services.ts` is a 196-byte `export {}` ("Realized … in a
+// later build wave. Coins nothing yet."). There is nothing to wire them to; doing so means authoring
+// two backend modules (Wave 4/5), which is out of the current Wave-3 sequence. So `SEED` below stays a
+// disclosed presentation fixture and the owner ruled identity-only (2026-07-16).
+//
+// FALLBACK, and why it is not a fabrication: with no session / no active-org context the page keeps
+// the NEUTRAL `BUYER_IDENTITY_SEED` placeholder ("Your account" / "Active organization"). That is a
+// deliberate non-name, not an invented person or org — the same neutral token this page has always
+// rendered. `display_name` is CONTRACT-NULLABLE ("absence is the legitimate state",
+// `ESC-IDN-DISPLAYNAME` Option A) and a null name is never back-filled: `dashboard-view.tsx` renders
+// the un-named "Welcome back" instead.
 
+import { ensureProvisioned, resolveSupabaseSession } from "@/server/auth";
+import { loadActiveOrgIdentity } from "@/server/identity";
 import { BuyerDashboardView } from "./dashboard-view";
 import { BUYER_IDENTITY_SEED } from "../_components/identity-seed";
 import type { BuyerDashboardViewModel } from "../_components/view-models";
@@ -21,6 +45,10 @@ import type { BuyerDashboardViewModel } from "../_components/view-models";
 export const metadata = {
   title: "Dashboard",
 };
+
+// Per-request server render — the identity read depends on the session + the server-resolved
+// active-org context (mirrors the wired `(app)/account` page).
+export const dynamic = "force-dynamic";
 
 // Presentation fixture — a representative industrial-procurement workspace. Every figure here stands in for
 // a wired read (KPI reads, list_rfqs state facets, list_quotations_for_rfq, list_engagements, audit reads);
@@ -130,11 +158,23 @@ const SEED: BuyerDashboardViewModel = {
   ],
 };
 
-export default function BuyerDashboardPage() {
-  return (
-    <BuyerDashboardView
-      data={SEED}
-      identity={{ userName: BUYER_IDENTITY_SEED.userName, orgName: BUYER_IDENTITY_SEED.orgName }}
-    />
-  );
+export default async function BuyerDashboardPage() {
+  // The ONE wired read on this page (see header). DATA, never an HTTP envelope.
+  const outcome = await loadActiveOrgIdentity({
+    resolveSession: resolveSupabaseSession,
+    ensureProvisioned,
+  });
+
+  // Map the server DATA outcome onto the greeting's props.
+  //   no session / no active-org context → the neutral placeholder (a deliberate non-name).
+  //   resolved                           → the REAL names; a contract-null `display_name` stays null,
+  //                                        and the view renders the un-named "Welcome back".
+  const identity = outcome.identity
+    ? {
+        userName: outcome.identity.userName ?? undefined,
+        orgName: outcome.identity.orgName ?? BUYER_IDENTITY_SEED.orgName,
+      }
+    : { userName: BUYER_IDENTITY_SEED.userName, orgName: BUYER_IDENTITY_SEED.orgName };
+
+  return <BuyerDashboardView data={SEED} identity={identity} />;
 }
