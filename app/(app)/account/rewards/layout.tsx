@@ -8,9 +8,11 @@ import type { ReactNode } from "react";
 import { AppShell } from "../../_components/shell";
 import { accountShellVm } from "../../_components/hybrid/hybrid-shell-vm";
 
+// Breadcrumb is Account › Referral — NOT nested under Plans & billing (unlike its former §6.2 siblings
+// P-ACC-17..21), because the owner ruled Referral a first-class destination on 2026-07-17.
 const ACCOUNT_SHELL_VM = accountShellVm([
   { label: "Account", href: "/account/overview" },
-  { label: "Rewards" },
+  { label: "Referral" },
 ]);
 
 export default function RewardsLayout({ children }: { children: ReactNode }) {

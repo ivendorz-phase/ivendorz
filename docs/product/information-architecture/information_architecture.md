@@ -1,7 +1,7 @@
 # iVendorz — Information Architecture
 
 **Role:** Lead Product Designer + Frontend UI Engineer
-**Status:** **DRAFT v0.2** — Information Architecture (non-authoritative companion to the Doc-7 program)
+**Status:** **DRAFT v0.3** — Information Architecture (non-authoritative companion to the Doc-7 program)
 **Date:** 2026-06-29
 **Wave:** 0C — Information Architecture
 **Companion to:** [`design_philosophy.md`](../../frontend/design-system/design_philosophy.md) (tokens & visual vocabulary)
@@ -9,6 +9,11 @@
 point (§4.10); elevated the command palette to the **Universal Command Center** (§5.2); renamed
 *Mega menu → **Industrial Category Explorer*** and expanded it (§5.3); expanded Global search scope
 (§5.1); added a taxonomy-independence rule (§5.3 / §8).
+**Revision v0.3 (additive amendment, 2026-07-17 — owner-ruled):** **Referral** (P-ACC-22) is un-nested
+from Billing in the §6.2 Account sitemap and listed as a **first-class destination** (`page_inventory`
+§12 nav: `Secondary` → `Primary`, amended in step). Billing accounts for reward movements only after
+eligibility is determined. Navigation/IA only — coins nothing, moves no ownership; the backing
+contracts remain M7 / BC-BILL-6 (Doc-4I §HB-6.3, FROZEN). See the §6.2 amendment note.
 
 ---
 
@@ -425,16 +430,27 @@ Account  (app)                              [authenticated, org-scoped]
 ├─ Roles & permissions                      ⇠ create_role, set_role_permissions, list_permissions (§C7)
 ├─ Delegation grants                        ⇠ create/suspend/revoke_delegation_grant (§C9)
 ├─ Settings                                 ⇠ upsert_buyer_profile, update_workflow_settings (§C10/11)
+├─ Referral                                 ⇠ get_reward_balance, list_referrals (BC-BILL-6)
 └─ Billing
    ├─ Plans                                 ⇠ get_plan, list_plans (BC-BILL-1, read)
    ├─ Subscription                          ⇠ purchase/cancel_subscription, get_subscription (BC-BILL-2)
    ├─ Usage & quota                         ⇠ get_usage
    ├─ Lead credits                          ⇠ get_lead_balance, list_lead_transactions (BC-BILL-4)
-   ├─ Platform invoices                     ⇠ get/list_platform_invoice (platform-fee only)
-   └─ Rewards                               ⇠ get_reward_balance, list_referrals
+   └─ Platform invoices                     ⇠ get/list_platform_invoice (platform-fee only)
 ```
 > Org-switcher is **Doc-7C**, not a page here (§4.8). `activate_plan` is **Admin-only** (Surface H),
 > never here.
+
+**Amendment (additive, 2026-07-17 — owner-ruled):** **Referral** (P-ACC-22) is un-nested from Billing
+and listed as a **first-class Account destination** (§12 nav: `Secondary` → `Primary`). Rationale, per
+the ruling: referral is a business-growth capability, and nesting it under Billing (or CRM, or
+Settings) suppressed it; **Billing accounts for reward movements only after eligibility is
+determined.** This is a **navigation/IA change only** — it coins nothing and moves no ownership: the
+backing contracts remain **M7 / BC-BILL-6** (`get_reward_balance`, `list_referrals`; Doc-4I §HB-6.3,
+FROZEN), and this doc conforms upward as before. The reward-eligibility machine
+(`advance_referral.v1`: `pending → qualified → rewarded`) is M7's and is untouched. Any move to make
+Referral an owning module in its own right is an architecture change — Red Flag (create module /
+change ownership), out of scope here, and reserved to the Board with human approval (CLAUDE.md §7/§8).
 
 ### 6.3 Buyer Workspace — Surface F `(app)` (Doc-7F · Doc-5E / Doc-5F)
 

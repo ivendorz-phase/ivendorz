@@ -43,6 +43,17 @@ export const ACCOUNT_NAV: NavSection[] = [
     label: "Subscription",
     items: [{ label: "Plans & billing", href: "/account/billing", icon: "billing" }],
   },
+  // Referral — a FIRST-CLASS destination, not a Billing sub-page (owner-ruled 2026-07-17). Referral is
+  // a business-growth capability; burying it under Plans & billing (or CRM, or Settings) hid it. An
+  // unlabeled single-item section renders it as a top-level entry, the `BUYER_NAV.overview` pattern.
+  //
+  // NAV PLACEMENT ONLY — this changes no ownership. The backing contracts stay M7/BC-BILL-6
+  // (`get_reward_balance`, `list_referrals`; Doc-4I §HB-6.3, FROZEN). A sidebar entry is not a module.
+  //
+  // The companions were amended to match, not overridden: `page_inventory.md` §12/§13.4 (P-ACC-22
+  // Secondary → Primary) and `information_architecture.md` §6.2 (un-nested from Billing). Both are
+  // DRAFT non-authoritative companions that conform upward — no frozen doc moved.
+  { id: "referral", items: [{ label: "Referral", href: "/account/rewards", icon: "rewards" }] },
   {
     id: "settings",
     label: "Settings",

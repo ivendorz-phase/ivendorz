@@ -1,12 +1,13 @@
 # iVendorz — Page Inventory
 
 **Role:** Lead Product Designer + Frontend UI Engineer
-**Status:** **DRAFT v0.3** — Page Inventory (non-authoritative companion; the **single source for per-page planning metadata**)
+**Status:** **DRAFT v0.5** — Page Inventory (non-authoritative companion; the **single source for per-page planning metadata**)
 **Date:** 2026-06-29
 **Wave:** 0.3 — Governance Refactor (foundation)
 **Companions:** [`shared_conventions.md`](../../frontend/components/shared_conventions.md) (**SC** — planning vocab, presets, cross-ref codes) · [`design_philosophy.md`](../../frontend/design-system/design_philosophy.md) · [`information_architecture.md`](../information-architecture/information_architecture.md) · [`ux_patterns.md`](ux_patterns.md) · [`marketplace_ux.md`](marketplace_ux.md) · [`page_templates.md`](../../frontend/design-system/page_templates.md) (**PT** — `T-*`) · [`esc_registry.md`](../../../esc_registry.md) (**ER**) · [`glossary.md`](../../reference/glossary.md) (**GL**)
 **Revision v0.3:** governance refactor — §13 extended into the **single planning matrix** (adds `Complexity · Priority · Interaction · Visual-hierarchy` from `SC §8` to the existing Actor/Devices/Search/Nav for all 144 pages); §11 ESC register replaced by a pointer to `ER`; a **Depends-on rule** stated once; cross-refs migrated to `SC §6` codes. Inventory tables (§2–§8) and the §12 Master Navigation Matrix are **unchanged**. Coins nothing.
 **Revision v0.4 (additive amendment, 2026-07-03 — owner Board-minted at FE-DOC track creation, WBS v1.2):** new §8A **Cross-workspace Documents** (`P-DOC-01..06`; total 144 → **150**); §12 gains a "Documents" entry in the Buyer and Vendor left-navs; new §13.8 attributes rows. Realizes a presentation-layer composition of frozen M3/M4/M7 module-owned records (Content ≠ Presentation) — **coins no contract, no document kind, no route topology**; absent document kinds are `ER` §Document Management handles, never rendered. The frozen-144 sections §2–§8 are byte-unchanged.
+**Revision v0.5 (additive amendment, 2026-07-17 — owner-ruled):** **P-ACC-22 Rewards / referrals is `Secondary` → `Primary`** and enters the §12 Account nav as **Referral** (7 → **8** destinations); §13.4's `Nav` cell moves to match; `IA §6.2` un-nests it from Billing (amended in step). Rationale: referral is a business-growth capability, and nesting it under Billing / CRM / Settings suppressed it — it was in fact reachable from **zero** links repo-wide. **Navigation only:** no page is minted (P-ACC-22 already exists; the universe stays **152** and `scripts/verify-fe-wbs-coverage.mjs` is untouched), and **no ownership moves** — the backing contracts remain M7 / BC-BILL-6 (`get_reward_balance`, `list_referrals`; Doc-4I §HB-6.3, FROZEN), whose reward-eligibility machine (`advance_referral.v1`) is M7's and untouched. Coins nothing. The §4/§13.4 page NAME stays "Rewards / referrals" (a document-internal handle, §0); the rendered destination is "Referral".
 
 ---
 
@@ -407,6 +408,7 @@ source. Secondary/contextual pages are reached from these destinations.
 | Delegation | P-ACC-11 |
 | Settings | P-ACC-13 |
 | Billing | P-ACC-16 |
+| Referral | P-ACC-22 |
 
 **Buyer — left nav**
 
@@ -565,7 +567,17 @@ contract — Invariant #10). Values are drawn **only** from `SC §8`. Reading no
 | P-ACC-19 Lead credits | Shared | D/T | Occasional | Secondary | Medium | P2 | Transactional | Secondary |
 | P-ACC-20 Platform invoices | Shared | D/T | Occasional | Secondary | Medium | P1 | Read-only | Secondary |
 | P-ACC-21 Platform invoice detail | Shared | D/T | Rare | Contextual | Simple | P1 | Read-only | Secondary |
-| P-ACC-22 Rewards / referrals | Shared | D/T/M | Rare | Secondary | Medium | P2 | Read-only | Secondary |
+| P-ACC-22 Rewards / referrals | Shared | D/T/M | Rare | Primary | Medium | P2 | Read-only | Secondary |
+
+**Amendment (additive, 2026-07-17 — owner-ruled):** P-ACC-22 Rewards / referrals is **`Secondary` →
+`Primary`**, and enters the §12 Account nav as **Referral** (8 destinations, was 7). Referral is a
+business-growth capability; nesting it under Billing / CRM / Settings suppressed it, and it was in
+fact reachable from **zero** links repo-wide. It is un-nested from Billing in `IA §6.2` (amended to
+match) — Billing accounts for reward movements only after eligibility is determined. **Navigation
+only:** no page is minted (P-ACC-22 already exists; the universe stays 152 and
+`scripts/verify-fe-wbs-coverage.mjs` is untouched), nothing is coined, and ownership does not move —
+the contracts remain **M7 / BC-BILL-6** (Doc-4I §HB-6.3, FROZEN) per this doc's "coins no
+architecture, route, contract, page, or ESC tag" scope.
 
 **Correction (2026-07-03, owner ruling on `FE-VEN-14`'s composition report):** P-ACC-19 Lead
 Credits corrected from `Buyer` to `Shared` — labeling gap, not a real restriction; lead credits are

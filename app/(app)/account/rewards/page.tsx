@@ -8,15 +8,20 @@
 import { PageHeader } from "../../_components/shell/page-header";
 import { RewardsDashboard } from "./rewards-dashboard";
 
+// LABEL SSoT: the destination is "Referral" everywhere a user can see it — sidebar leaf
+// (`account-nav-model.ts`), breadcrumb leaf (`layout.tsx`), `<title>`, and this `<h1>`. The owner
+// ruled the destination's name on 2026-07-17; the page follows the nav, not the reverse. P-ACC-22's
+// inventory NAME stays "Rewards / referrals" in `page_inventory.md` §4/§13.4 — a document-internal
+// handle ("Page IDs (`P-*`) and routes are document-internal handles", §0), never rendered.
 export const metadata = {
-  title: "Rewards & referrals — iVendorz",
+  title: "Referral — iVendorz",
 };
 
 export default function RewardsPage() {
   return (
     <>
       <PageHeader
-        title="Rewards & referrals"
+        title="Referral"
         description="Your reward points and the organizations you've referred."
       />
       <RewardsDashboard />

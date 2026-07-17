@@ -11,6 +11,7 @@ import {
   Files,
   FileText,
   FolderTree,
+  Gift,
   Globe,
   Handshake,
   Inbox,
@@ -75,6 +76,9 @@ export const NAV_ICONS = {
   roles: ShieldCheck,
   delegation: KeyRound,
   security: Lock,
+  // Referral — a first-class Account destination (owner-ruled 2026-07-17); matches the Gift mark the
+  // P-ACC-22 balance card already uses.
+  rewards: Gift,
   // Buyer sidebar IA (BX-04) — Communication + Analytics groups.
   notifications: Bell,
   messages: MessageSquare,
