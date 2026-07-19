@@ -123,8 +123,11 @@ const RFQ_COLUMNS: QueueColumn<RfqQueueRow>[] = [
   {
     key: "rfq",
     header: "RFQ",
+    // Absorbs the flexible width and truncates the title, so long titles never widen the table past
+    // its (narrow, two-column) track and push the right column off-screen.
+    truncate: true,
     render: (r) => (
-      <span className="flex flex-col">
+      <span className="flex min-w-0 flex-col">
         <span className="truncate">{r.title}</span>
         <Ref>{r.humanRef}</Ref>
       </span>
@@ -156,8 +159,10 @@ const ENGAGEMENT_COLUMNS: QueueColumn<EngagementQueueRow>[] = [
   {
     key: "engagement",
     header: "Engagement",
+    // See RFQ_COLUMNS — truncate so the vendor name never widens the table past its track.
+    truncate: true,
     render: (e) => (
-      <span className="flex flex-col">
+      <span className="flex min-w-0 flex-col">
         <span className="truncate">{e.vendorName}</span>
         <Ref>{e.humanRef}</Ref>
       </span>
@@ -318,17 +323,21 @@ function QuickActionsCard() {
         <CardTitle className="text-sm font-semibold">Quick actions</CardTitle>
       </CardHeader>
       <CardContent className="p-4 pt-0">
+        {/* Compact horizontal tiles (icon + label on one row) — halves the card's height vs the
+            previous stacked-tile grid, so this card and the two funnels + activity above it fit the
+            right column WITHOUT a scroll tail beyond the left action-queues (owner directive
+            2026-07-17). */}
         <div className="grid grid-cols-2 gap-2">
           {QUICK_ACTIONS.map((a) => (
             <Link
               key={a.href}
               href={a.href}
-              className="flex flex-col gap-2 rounded-md border border-border p-3 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex items-center gap-2.5 rounded-md border border-border p-2.5 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <span className="flex size-8 items-center justify-center rounded-md bg-iv-navy-50 text-iv-navy-700 [&_svg]:size-4 dark:bg-iv-navy-900/50 dark:text-iv-navy-200">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-iv-navy-50 text-iv-navy-700 [&_svg]:size-4 dark:bg-iv-navy-900/50 dark:text-iv-navy-200">
                 {a.icon}
               </span>
-              <span className="text-sm font-medium text-foreground">{a.label}</span>
+              <span className="truncate text-sm font-medium text-foreground">{a.label}</span>
             </Link>
           ))}
         </div>
@@ -411,7 +420,7 @@ export function BuyerDashboardView({
 }) {
   if (data === null) {
     return (
-      <div>
+      <div className="iv-type-unified">
         <DashboardHeader userName={identity?.userName} orgName={identity?.orgName} />
         <FirstRunEmpty />
       </div>
@@ -433,7 +442,7 @@ export function BuyerDashboardView({
     typeof kpis.awaitingMyApprovalCount === "number" ? kpis.awaitingMyApprovalCount : 0;
 
   return (
-    <div>
+    <div className="iv-type-unified">
       <DashboardHeader userName={identity?.userName} orgName={identity?.orgName} />
 
       {awaitingApproval > 0 ? (
@@ -456,7 +465,15 @@ export function BuyerDashboardView({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiStatCard
           label="Spend"
-          value={kpis.spend ? <Money value={kpis.spend} /> : undefined}
+          // A large BDT figure overflows the KPI tile's `text-2xl` and wraps mid-number; render this
+          // one value a size down so it stays on a single line (the short counts below keep text-2xl).
+          value={
+            kpis.spend ? (
+              <span className="text-xl">
+                <Money value={kpis.spend} />
+              </span>
+            ) : undefined
+          }
           icon={<Wallet aria-hidden />}
           tone="brand"
         />
@@ -496,8 +513,13 @@ export function BuyerDashboardView({
           carry the left column; the observe-only funnels, activity and shortcuts stack in the right.
           Each pipeline renders only when its own wired read supplies stages (no fabricated funnel); the
           two are independent reads, never one combined widget. */}
+      {/* `min-w-0` on BOTH tracks is load-bearing: a grid item defaults to `min-width:auto`
+          (= min-content), so the left column's queue TABLES (long RFQ titles) would expand the
+          1.55fr track past its share and shove the 1fr right column off-screen at tighter widths
+          (e.g. a zoomed/high-DPR viewport near the `xl` breakpoint). `min-w-0` lets each track hold
+          its fr share; the tables then truncate / scroll inside their own `overflow-x-auto` card. */}
       <div className="mt-4 grid grid-cols-1 items-start gap-4 xl:grid-cols-[1.55fr_1fr]">
-        <div className="flex flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-4">
           <DecisionsWaitingCard quotations={quotationQueue} viewAllHref="/buy/quotations" />
           <WorkQueueCard
             title="RFQs by state"
@@ -519,7 +541,7 @@ export function BuyerDashboardView({
           />
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-4">
           {rfqPipeline && rfqPipeline.length > 0 ? (
             <SourcingPipelineCard stages={rfqPipeline} viewAllHref="/buy/rfqs" />
           ) : null}

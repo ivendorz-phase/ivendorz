@@ -24,6 +24,15 @@ export interface DataColumn<T> {
   numeric?: boolean;
   /** Hide below `sm` to keep the table scannable on mobile. */
   hideOnMobile?: boolean;
+  /**
+   * Let this column absorb the flexible width and TRUNCATE its content instead of forcing the table
+   * wider than its container (an auto-layout table otherwise sizes a column to its content's
+   * min-content — a long unbroken title then overflows a narrow track). Opt-in: applies `w-full` to
+   * the cell so this column claims the space the other (content-sized) columns leave, and its own
+   * content truncates within that. The cell's content must use `truncate` (with `min-w-0` on any flex
+   * wrapper) for the ellipsis. Off by default — existing columns are unaffected.
+   */
+  truncate?: boolean;
 }
 
 export interface DataListTableProps<T> {
@@ -88,6 +97,7 @@ export function DataListTable<T>({
                   "px-4 py-2 text-left text-2xs font-semibold uppercase tracking-wide text-muted-foreground",
                   col.numeric && "text-right",
                   col.hideOnMobile && "hidden sm:table-cell",
+                  col.truncate && "w-full max-w-0",
                   stickyFirstColumn &&
                     colIndex === 0 &&
                     "sticky left-0 z-10 border-r border-border bg-card",
@@ -139,15 +149,21 @@ export function DataListTable<T>({
                         "px-4 py-2.5 align-middle text-foreground",
                         col.numeric && "text-right tabular-nums",
                         col.hideOnMobile && "hidden sm:table-cell",
+                        col.truncate && "w-full max-w-0",
                         sticky &&
                           "sticky left-0 z-10 border-r border-border bg-card group-hover:bg-accent",
                       )}
                     >
-                      {/* First column links the row to its detail (opaque-id route) when provided. */}
+                      {/* First column links the row to its detail (opaque-id route) when provided.
+                          A truncate column's link becomes a block min-w-0 box so its content can
+                          ellipsis instead of forcing the cell wide. */}
                       {isFirst && href ? (
                         <Link
                           href={href}
-                          className="font-medium text-foreground underline-offset-2 hover:underline"
+                          className={cn(
+                            "font-medium text-foreground underline-offset-2 hover:underline",
+                            col.truncate && "block min-w-0",
+                          )}
                         >
                           {content}
                         </Link>

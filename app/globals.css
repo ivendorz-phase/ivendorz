@@ -425,6 +425,14 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* Unified typography (owner directive 2026-07-17, buyer dashboard) — under this scope, money/refs/
+     ids render in the sans UI font instead of the mono numeric font, so the surface reads in ONE
+     typeface. Tabular numerals are retained for column alignment. Higher specificity than the base
+     rule above, so it wins within the same layer. */
+  .iv-type-unified :is([data-type="id"], [data-type="ref"], [data-type="amount"]) {
+    font-family: var(--iv-font-sans);
+  }
+
   /* Numeric tabular for all financial data */
   [data-numeric] {
     font-variant-numeric: tabular-nums;
