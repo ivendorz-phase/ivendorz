@@ -37,6 +37,8 @@ export const ADMIN_NAV: NavSection[] = [
     items: [
       { label: "Categories", href: `${BASE}/categories`, icon: "categories" },
       { label: "Ad review", href: `${BASE}/ads`, icon: "advertising" },
+      { label: "Suggestion triage", href: `${BASE}/suggestions`, icon: "leads" },
+      { label: "Link triage", href: `${BASE}/links`, icon: "pipeline" },
     ],
   },
   {
@@ -53,6 +55,7 @@ export const ADMIN_NAV: NavSection[] = [
     items: [
       { label: "Import jobs", href: `${BASE}/imports`, icon: "orders" },
       { label: "Outreach", href: `${BASE}/outreach`, icon: "leads" },
+      { label: "Outreach contacts", href: `${BASE}/outreach/contacts`, icon: "team" },
     ],
   },
   {
@@ -65,12 +68,17 @@ export const ADMIN_NAV: NavSection[] = [
       { label: "Users", href: `${BASE}/identity/users`, icon: "team" },
     ],
   },
+  {
+    id: "support",
+    label: "Support",
+    items: [{ label: "Support tickets", href: `${BASE}/support`, icon: "messages" }],
+  },
 ];
 
 /** Admin `+ Create` actions — each maps to a wired Admin command when wired (owning module owns the effect). */
 export const ADMIN_QUICK_CREATE: QuickCreateItem[] = [
-  { label: "New category", href: `${BASE}/categories`, icon: "categories" },
-  { label: "New import job", href: `${BASE}/imports`, icon: "orders" },
+  { label: "New category", href: `${BASE}/categories/new`, icon: "categories" },
+  { label: "New import job", href: `${BASE}/imports/new`, icon: "orders" },
 ];
 
 /** Mobile quick-bar — a thumb-reach SUBSET (admin is desktop-first, page_inventory §13.7; parity only). */

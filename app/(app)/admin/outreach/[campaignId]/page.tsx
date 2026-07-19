@@ -91,12 +91,17 @@ export default async function CampaignDetailPage({
           </>
         }
         actions={
-          isDraft || isRunning ? (
-            // Disabled — run/complete are owned by BC-ADM-6 (R5). Admin decides; the module runs the campaign.
-            <Button size="sm" disabled>
-              {isDraft ? "Run campaign" : "Complete campaign"}
+          <>
+            <Button asChild size="sm" variant="outline">
+              <Link href={`${LIST}/contacts?campaign=${detail.id}`}>View contacts</Link>
             </Button>
-          ) : undefined
+            {isDraft || isRunning ? (
+              // Disabled — run/complete are owned by BC-ADM-6 (R5). Admin decides; the module runs the campaign.
+              <Button size="sm" disabled>
+                {isDraft ? "Run campaign" : "Complete campaign"}
+              </Button>
+            ) : null}
+          </>
         }
       />
 

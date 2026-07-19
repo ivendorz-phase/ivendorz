@@ -108,6 +108,12 @@ export default async function CategoriesPage({
       <PageHeader
         title="Categories"
         description="The admin-governed category taxonomy. Vendors propose categories; the taxonomy module governs the canonical tree and applies every status change."
+        actions={
+          // Navigation only — the editor's Create action stays disabled (P-ADM-09, R5).
+          <Button asChild size="sm">
+            <Link href={`${BASE}/new`}>New category</Link>
+          </Button>
+        }
       />
 
       <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by status">

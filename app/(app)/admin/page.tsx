@@ -69,6 +69,8 @@ export default function AdminDashboardPage() {
             items={[
               { label: "Category management", href: `${BASE}/categories` },
               { label: "Ad review queue", href: `${BASE}/ads` },
+              { label: "Suggestion triage", href: `${BASE}/suggestions` },
+              { label: "Link triage", href: `${BASE}/links` },
             ]}
           />
         </DashboardSection>
@@ -87,6 +89,7 @@ export default function AdminDashboardPage() {
             items={[
               { label: "Import jobs", href: `${BASE}/imports` },
               { label: "Outreach campaigns", href: `${BASE}/outreach` },
+              { label: "Outreach contacts", href: `${BASE}/outreach/contacts` },
             ]}
           />
         </DashboardSection>
@@ -100,6 +103,13 @@ export default function AdminDashboardPage() {
               { label: "Users", href: `${BASE}/identity/users` },
             ]}
           />
+        </DashboardSection>
+
+        <DashboardSection title="Support">
+          <PipelineLinks items={[{ label: "Support tickets", href: `${BASE}/support` }]} />
+          <p className="mt-3 text-xs text-muted-foreground">
+            Read-only staff view — support tickets are owned by Communication.
+          </p>
         </DashboardSection>
 
         <DashboardSection title="Recent activity" className="lg:col-span-3">

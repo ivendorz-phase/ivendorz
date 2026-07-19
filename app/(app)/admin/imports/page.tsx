@@ -80,9 +80,9 @@ export default async function ImportJobsPage({
         title="Import jobs"
         description="Bulk category and vendor-seed imports. Each job loads data into the platform; the seeded records are owned by Marketplace, not by import."
         actions={
-          // Disabled — `submit_import_job` is the separate wizard (P-ADM-15), owned by BC-ADM-4 (R5).
-          <Button size="sm" disabled>
-            New import job
+          // Navigation only — the wizard's Start action stays disabled (P-ADM-15, BC-ADM-4, R5).
+          <Button asChild size="sm">
+            <Link href={`${BASE}/new`}>New import job</Link>
           </Button>
         }
       />

@@ -70,10 +70,15 @@ export default async function OutreachPage({
         title="Outreach"
         description="Vendor-acquisition campaigns. Outreach is informational only — it never affects matching, routing, ranking, or supplier selection."
         actions={
-          // Disabled — `create_outreach_campaign` is actioned from the detail (P-ADM-17), owned by BC-ADM-6 (R5).
-          <Button size="sm" disabled>
-            New campaign
-          </Button>
+          <>
+            <Button asChild size="sm" variant="outline">
+              <Link href={`${BASE}/contacts`}>Contacts</Link>
+            </Button>
+            {/* Disabled — `create_outreach_campaign` is actioned from the detail (P-ADM-17), owned by BC-ADM-6 (R5). */}
+            <Button size="sm" disabled>
+              New campaign
+            </Button>
+          </>
         }
       />
 
