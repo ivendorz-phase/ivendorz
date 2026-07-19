@@ -92,6 +92,20 @@ export interface InboxItemView {
   /** Own-record fact only (§6.6 / ND-4): this vendor has an unread clarification message on its OWN
    *  thread — never an exclusion / "not matched" signal. */
   unread_clarification?: boolean;
+
+  // ── List-table columns (the "RFQ Workspace" reference). GRANT-SCOPED own/received facts an invited
+  // vendor legitimately sees — the SAME class already disclosed on the detail snapshot (RfqSnapshotView):
+  // the buyer's identity (grant-scoped), the category label, and the RFQ's estimated value (a frozen
+  // create_rfq field already shown). These are NOT the withheld ND-1..ND-8 signals (competitor count,
+  // rank, match confidence, "why-not-invited") — those are never added here. All optional ⇒ the column
+  // renders "—" when a fixture/read omits it (no fabrication).
+  /** Resolved display name for the frozen buyer_org_id (resolved by integration; grant-scoped). */
+  buyer_org_name?: string;
+  /** Resolved display name for the frozen category_id (category owned by M2/M8). */
+  category_label?: string;
+  /** Frozen estimated_value + currency (BDT default; multi-currency-ready — currency per value field). */
+  estimated_value?: number;
+  currency?: string;
 }
 
 /** Vendor-entitled RFQ snapshot for the detail (S3) — read = `rfq.get_rfq.v1`, grant-scoped via

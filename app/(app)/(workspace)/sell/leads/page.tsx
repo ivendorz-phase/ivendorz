@@ -7,16 +7,17 @@ import type { Metadata } from "next";
 import { PageHeader } from "../../../_components/shell";
 import { LeadBoard, LeadList, LeadPipeline } from "../../../_components/vendor/leads";
 
-export const metadata: Metadata = { title: "Leads & Pipeline" };
+export const metadata: Metadata = { title: "Leadboard" };
 
 export default function LeadsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Leads & Pipeline"
-        description="Your private CRM of RFQ invitations you've received. Leads appear automatically — you don't create them."
+        title="Leadboard"
+        description="Your private CRM of RFQ invitations you've received, on a stage board. Leads appear automatically — you don't create them."
       />
-      <LeadPipeline list={<LeadList />} board={<LeadBoard />} />
+      {/* Board opens first (VX-03) — the kanban is the focus; List stays available as a tab. */}
+      <LeadPipeline list={<LeadList />} board={<LeadBoard />} defaultView="board" />
     </div>
   );
 }

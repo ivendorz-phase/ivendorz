@@ -86,7 +86,7 @@ export function NextActionsCard({ leads, leadsHref = "/sell/leads" }: NextAction
 
       <div className="border-t border-border p-4">
         <Button asChild variant="outline" size="sm" className="w-full">
-          <Link href={leadsHref}>Open Leads &amp; Pipeline</Link>
+          <Link href={leadsHref}>Open Leadboard</Link>
         </Button>
       </div>
     </Card>

@@ -22,7 +22,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ lea
   return (
     <div className="space-y-6">
       <Breadcrumbs
-        items={[{ label: "Leads & Pipeline", href: "/sell/leads" }, { label: "Lead detail" }]}
+        items={[{ label: "Leadboard", href: "/sell/leads" }, { label: "Lead detail" }]}
         className="mb-4"
       />
       <PageHeader

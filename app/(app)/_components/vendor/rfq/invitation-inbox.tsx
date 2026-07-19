@@ -33,6 +33,9 @@ export interface InvitationInboxProps {
   items?: InboxItemView[];
   /** Temporary A7-neutral mount prefix (see workspace layout); dropped post-A7. */
   basePath?: string;
+  /** Render the list rows WITHOUT their own Card frame — the caller supplies the surrounding panel
+   *  (the reference "RFQ Workspace" frames the whole list once). Default false = unchanged behaviour. */
+  unframed?: boolean;
 }
 
 const URGENCY_RANK: Record<WindowUrgency, number> = { imminent: 0, soon: 1, normal: 2 };
@@ -81,7 +84,11 @@ function InvitationRow({ item, basePath }: { item: InboxItemView; basePath: stri
   );
 }
 
-export function InvitationInbox({ items, basePath = "/sell" }: InvitationInboxProps) {
+export function InvitationInbox({
+  items,
+  basePath = "/sell",
+  unframed = false,
+}: InvitationInboxProps) {
   if (!items || items.length === 0) {
     // The single canonical empty copy (fixed per list type — [ESC-7B-EMPTY-LOCK]). It asserts NOTHING
     // about this vendor's matching outcome; it is identical for excluded ≡ never-matched ≡ zero.
@@ -100,50 +107,40 @@ export function InvitationInbox({ items, basePath = "/sell" }: InvitationInboxPr
   // inbox (all new, or all already-responded) stays a plain list, no label noise.
   const showGroups = needsResponseItems.length > 0 && otherItems.length > 0;
 
+  // A row list: bare `<ul>` when the caller frames it (`unframed`), else the self-framed Card.
+  const list = (rows: InboxItemView[]) => {
+    const ul = (
+      <ul className="divide-y divide-border">
+        {rows.map((item) => (
+          <InvitationRow key={item.rfq_id} item={item} basePath={basePath} />
+        ))}
+      </ul>
+    );
+    return unframed ? (
+      ul
+    ) : (
+      <Card>
+        <CardContent className="p-0">{ul}</CardContent>
+      </Card>
+    );
+  };
+
+  if (!showGroups) return list(sorted);
+
   return (
     <div className="space-y-4">
-      {showGroups ? (
-        <>
-          <div className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Needs your response
-            </p>
-            <Card>
-              <CardContent className="p-0">
-                <ul className="divide-y divide-border">
-                  {needsResponseItems.map((item) => (
-                    <InvitationRow key={item.rfq_id} item={item} basePath={basePath} />
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Other invitations
-            </p>
-            <Card>
-              <CardContent className="p-0">
-                <ul className="divide-y divide-border">
-                  {otherItems.map((item) => (
-                    <InvitationRow key={item.rfq_id} item={item} basePath={basePath} />
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </>
-      ) : (
-        <Card>
-          <CardContent className="p-0">
-            <ul className="divide-y divide-border">
-              {sorted.map((item) => (
-                <InvitationRow key={item.rfq_id} item={item} basePath={basePath} />
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+      <div className="space-y-2">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Needs your response
+        </p>
+        {list(needsResponseItems)}
+      </div>
+      <div className="space-y-2">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Other invitations
+        </p>
+        {list(otherItems)}
+      </div>
     </div>
   );
 }

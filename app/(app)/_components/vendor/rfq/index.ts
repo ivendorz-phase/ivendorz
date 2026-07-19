@@ -7,6 +7,7 @@
 // zero contract invention. Byte-equivalence (Invariant 11 / GR11 / CHK-7-040) is load-bearing: every
 // view is received/own data only — no competitor count, rank, score, or "why-not-invited" signal.
 export { InvitationInbox, type InvitationInboxProps } from "./invitation-inbox";
+export { RfqInboxTable, type RfqInboxTableProps } from "./rfq-inbox-table";
 export {
   InboxStateFilter,
   parseInboxStateFilter,
@@ -16,6 +17,7 @@ export {
   type InboxStateFilterProps,
 } from "./inbox-state-filter";
 export { QuotationHomeSummary, type QuotationHomeSummaryProps } from "./quotation-home-summary";
+export { RfqStatCards, type RfqStatCardsProps } from "./rfq-stat-cards";
 export { RfqSnapshot, type RfqSnapshotProps } from "./rfq-snapshot";
 export { InvitationResponse, type InvitationResponseProps } from "./invitation-response";
 export { ClarificationsSection, type ClarificationsSectionProps } from "./clarifications-section";
@@ -38,7 +40,6 @@ export { QuotationSubmitPanel, type QuotationSubmitPanelProps } from "./quotatio
 export { QuotaMeter, type QuotaMeterProps } from "./quota-meter";
 export { WindowStateChip, type WindowStateChipProps } from "./window-state-chip";
 export { RfqStateChip, InvitationStateChip, QuotationStateChip } from "./state-chips";
-export { RFQ_SNAPSHOT_SEED } from "./rfq-snapshot-seed";
 
 export type {
   RfqState,
