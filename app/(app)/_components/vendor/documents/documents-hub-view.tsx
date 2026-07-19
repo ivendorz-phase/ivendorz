@@ -30,7 +30,16 @@
 //    fabricate a destination that doesn't exist for this workspace).
 
 import Link from "next/link";
-import { Download, FilePlus2, Briefcase } from "lucide-react";
+import {
+  Download,
+  FilePlus2,
+  Briefcase,
+  Upload,
+  FileText,
+  Truck,
+  ReceiptText,
+  FilePen,
+} from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
 import { Card, CardContent } from "@/frontend/primitives/card";
 import { EmptyState } from "@/frontend/components/empty-state";
@@ -70,6 +79,74 @@ const BASE = "/sell";
 // page instead. This is a genuine route-topology difference from the buyer hub, not an omission.
 
 const GeneratedDocIcon = documentIcon("generated");
+
+// VX-03 quick-create grid (owner directive 2026-07-17, matching the design's Business Docs
+// "Quick create" block). Each tile is REAL NAVIGATION to the relevant document surface — never a
+// fabricated create command (no write is wired; the vendor's offer IS its quotation, so "New
+// offer" routes to the RFQ workspace's draft view). No counts, no fabricated rows.
+const QUICK_CREATE: {
+  key: string;
+  label: string;
+  description: string;
+  href: string;
+  Icon: typeof FileText;
+}[] = [
+  {
+    key: "offer",
+    label: "New offer",
+    description: "Quote against an invitation",
+    href: `${BASE}/rfqs?state=draft`,
+    Icon: FileText,
+  },
+  {
+    key: "challan",
+    label: "Delivery challan",
+    description: "Record a dispatch",
+    href: `${BASE}/documents?stage=challan`,
+    Icon: Truck,
+  },
+  {
+    key: "bill",
+    label: "Bill / invoice",
+    description: "Generate a trade bill",
+    href: `${BASE}/documents?stage=trade_invoice`,
+    Icon: ReceiptText,
+  },
+  {
+    key: "template",
+    label: "New template",
+    description: "Branded document layout",
+    href: `${BASE}/documents/templates`,
+    Icon: FilePen,
+  },
+];
+
+function QuickCreateGrid() {
+  return (
+    <section aria-labelledby="quick-create-heading" className="flex flex-col gap-3">
+      <h2 id="quick-create-heading" className="text-sm font-semibold text-foreground">
+        Quick create
+      </h2>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {QUICK_CREATE.map(({ key, label, description, href, Icon }) => (
+          <Link
+            key={key}
+            href={href}
+            className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-iv-brand-400 hover:bg-muted/50"
+          >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-iv-brand-50 text-iv-brand-600">
+              <Icon aria-hidden className="size-5" />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-foreground">{label}</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">{description}</span>
+            </span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 const VIEW_CHIPS: { key: HubView | "all"; label: string }[] = [
   { key: "all", label: "All" },
@@ -166,7 +243,26 @@ export function DocumentsHubView({ data }: { data: DocumentsHubData }) {
       <PageHeader
         title="Documents"
         description="Every procurement document in one place — from RFQ to payment. Rows link to the owning record; nothing is duplicated."
+        actions={
+          // FE-DOC-03 cross-links (disclosed touch of P-DOC-02) — navigation only. "Import PO"
+          // (design's Business Docs header action) is presentation-only until the M8 VendorImport
+          // command is wired — disabled, never faked.
+          <>
+            <Button variant="outline" size="sm" disabled>
+              <Upload aria-hidden className="size-4" />
+              Import PO
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/sell/documents/templates">Templates</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/sell/documents/generated">Generated documents</Link>
+            </Button>
+          </>
+        }
       />
+
+      <QuickCreateGrid />
 
       <div className="flex flex-col gap-4">
         {/* MAJOR-01 — the six-stage flow as a permanent FILTER strip (navigation, not state). */}
@@ -421,23 +517,17 @@ export function DocumentsHubView({ data }: { data: DocumentsHubData }) {
               <DocumentRelations
                 label="Sourcing document links"
                 links={[
+                  // Real navigation only — no fixture deep-link (owner directive 2026-07-17: no
+                  // demo data; the former "Quotation QTN-…" chip pointed at a deleted fixture id).
+                  // Note for a future quotation deep-link: the vendor route is
+                  // `/rfqs/[rfqId]/quotation` (singular — one own quotation per RFQ), never the
+                  // buyer's `/rfqs/[rfqId]/quotations/[quotationId]` shape (Review-B catch).
                   { id: "rfqs", label: "RFQs & Quotations", href: `${BASE}/rfqs`, kindKey: "rfq" },
                   {
                     id: "leads",
-                    label: "Leads & Pipeline",
+                    label: "Leadboard",
                     href: `${BASE}/leads`,
                     kindKey: "rfq",
-                  },
-                  {
-                    id: "quotation",
-                    label: "Quotation QTN-2026-000456",
-                    // Vendor route shape differs from the buyer's: a vendor has exactly ONE
-                    // quotation per RFQ (their own), so there's no per-quotation-id sub-route —
-                    // unlike the buyer's `/rfqs/[rfqId]/quotations/[quotationId]`, the real vendor
-                    // page is `/rfqs/[rfqId]/quotation` (singular). Caught by Review-B: an earlier
-                    // draft copy-pasted the buyer's route shape without checking it.
-                    href: `${BASE}/rfqs/rfq_01/quotation`,
-                    kindKey: "quotation",
                   },
                 ]}
               />

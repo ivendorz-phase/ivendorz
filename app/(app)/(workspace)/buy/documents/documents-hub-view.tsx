@@ -304,6 +304,17 @@ export function DocumentsHubView({ data }: { data: DocumentsHubData }) {
       <PageHeader
         title="Documents"
         description="Every procurement document in one place — from RFQ to payment. Rows link to the owning record; nothing is duplicated."
+        actions={
+          // FE-DOC-03 cross-links (disclosed touch of P-DOC-01) — navigation only.
+          <>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/buy/documents/templates">Templates</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/buy/documents/generated">Generated documents</Link>
+            </Button>
+          </>
+        }
       />
 
       <div className="mt-4 flex flex-col gap-4">

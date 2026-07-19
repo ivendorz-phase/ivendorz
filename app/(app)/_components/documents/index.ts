@@ -53,3 +53,28 @@ export {
   DOCUMENTS_ALWAYS_VISIBLE_COLUMNS,
 } from "./document-table-spec";
 export { DOCUMENTS_ANALYTICS_EVENTS, type DocumentsAnalyticsEvent } from "./analytics-events";
+// FE-DOC-03 (P-DOC-03..06) — templates + generated documents pages, shared across both mounts.
+export {
+  TEMPLATE_FORMATS,
+  TEMPLATE_FORMAT_LABEL,
+  TEMPLATE_STATUSES,
+  TEMPLATE_STATUS_META,
+  SEED_TEMPLATES,
+  SEED_GENERATED_DOCUMENTS,
+  getSeedTemplate,
+  getSeedGeneratedDocument,
+  generatedKindLabel,
+  type TemplateFormat,
+  type TemplateStatus,
+  type TemplateVersionVM,
+  type DocumentTemplateVM,
+  type GeneratedDocumentDetailVM,
+} from "./templates-generated-seed";
+export { TemplatesView, TemplateDetailView } from "./templates-view";
+export { GeneratedDocumentsView, GeneratedDocumentDetailView } from "./generated-documents-view";
+export {
+  renderTemplatesPage,
+  renderTemplateDetailPage,
+  renderGeneratedDocumentsPage,
+  renderGeneratedDocumentDetailPage,
+} from "./templates-generated-pages";
