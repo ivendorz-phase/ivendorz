@@ -45,3 +45,12 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 *.code-workspace
+
+# Local-only design previews — throwaway visual references, never shipped (Review-A 2026-07-19).
+# vendor-dashboard-preview reproduces a design canvas with sample data; it must not deploy as a
+# public, unauthenticated route. Keep it local; rebuild the real surface from the kit with wired reads.
+/app/vendor-dashboard-preview/
+
+# Stray review/screenshot artifacts at repo root (never deliverables).
+/referral-updated.png
+/*-updated.png

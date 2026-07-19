@@ -118,6 +118,34 @@ plus the module-declared verification components, all under Invariant #8. Legal-
 deleting statutory originals is accepted by explicit owner sign-off with mitigations (faithful snapshot
 where declared, SHA-256 integrity proof where declared, immutable audit chain) — packet item R6.
 
+**Operational Cost & Upload Governance (Informative — Non-Normative).** This section records
+implementation posture only (owner-recommended addition, 2026-07-17). It binds no module, coins no
+name, and sets no value. Concrete POLICY keys and their values are registered in Doc-3; enforcement
+behavior lives in the owning module's Doc-4 contract document. Nothing here narrows or widens the
+normative lifecycle rules above.
+
+Upload limits exist at three layers, each serving a distinct purpose:
+
+1. **Per-file limits** — purpose-specific maximum file size and MIME/extension allowlists, enforced
+   at grant issuance. These protect the platform and its processing pipeline (security screening,
+   upload/processing stability); they are not commercial instruments, and they are scoped per
+   purpose because legitimate file profiles differ radically between purposes.
+2. **Per-container limits** — bounds on attachment count and total bytes per business container
+   (e.g., per RFQ). These prevent abuse of durable storage as a free file locker and should be set
+   generously enough that no legitimate industrial use ever encounters them.
+3. **Per-organization quotas** — total durable storage per organization, managed as a configurable
+   subscription entitlement (a numeric entitlement, never a plan-name check). This is the only layer
+   a legitimate user should ever feel, and it degrades commercially — advance warning and an upgrade
+   path — rather than failing an in-flight business action without notice.
+
+**Retention posture.** Durable documents are never deleted because of storage constraints. Cost is
+managed through storage tiering (an infrastructure concern invisible to this ADR), deduplication
+(within a single organization only — deduplication must never be observable across tenants), and the
+commercial quotas above — never by shortening retention and never by widening the permanent-deletion
+list beyond the decision text of this ADR. Future durable-upload declarations (e.g., M2 spec
+documents, M3 RFQ attachments) are expected to realize these layers in their own contract and POLICY
+patches, inheriting this posture without expanding this ADR's normative scope.
+
 ## Flag-and-Halt: the clause tensions (the Board's actual decision)
 
 Stated per CLAUDE.md §11, not resolved here. **The Board must rule:**
@@ -156,9 +184,11 @@ If any ruling fails, this proposal and the entire linked patch set are returned,
 | Fail-safe default protects all undeclared surfaces | PASS |
 | Mandatory deletion audit event on every purge | PASS — stated in the decision text |
 | Evidence Snapshot implementation-neutral + reference-only rule + M5 exclusivity | PASS — verbatim owner wording |
+| Cost/limits section is informative-only — binds nothing, coins nothing, sets no value | PASS — posture only; keys/values live in the Doc-3/Doc-4 patches |
 
 ---
 
 *ADR-026 proposal — Transient Upload / Business Record lifecycle, reusable processing pipeline, M5+M4
-founding declarations, ADR-012 additive amendment, rank-0 scope ruling requested. PROPOSED — awaits human
-approval; folds only with the linked patch set (packet R3).*
+founding declarations, ADR-012 additive amendment, informative cost & upload-governance posture,
+rank-0 scope ruling requested. PROPOSED — awaits human approval; folds only with the linked patch set
+(packet R3).*
