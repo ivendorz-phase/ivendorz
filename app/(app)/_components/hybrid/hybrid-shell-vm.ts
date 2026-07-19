@@ -117,7 +117,17 @@ function buyingGroups(): NavSection[] {
  * Leaves the co-mount re-homes into `Selling › Communication`, in render order. Both are the vendor's
  * OWN surface-specific comms; neither is org-level.
  */
-const SELLING_COMMUNICATION_LEAVES = ["Buyer Inquiries", "Notifications"];
+// VX-03 (owner directive 2026-07-17): the design's Selling "Communication" group is Messages +
+// Notifications + Support Tickets. These are re-homed here so the Hybrid co-mount shows them under
+// Selling › Communication (the single-surface VENDOR_NAV renders them from its own `communication`
+// section). Buyer Inquiries stays re-homed here per the 2026-07-15 ruling (the design places it in
+// the primary group instead — a co-mount-IA discrepancy flagged for the owner, not reversed here).
+const SELLING_COMMUNICATION_LEAVES = [
+  "Buyer Inquiries",
+  "Messages",
+  "Notifications",
+  "Support Tickets",
+];
 
 /** Seam helper — collect VENDOR_NAV leaves by label, in the order named. Returns fresh copies. */
 function vendorLeaves(labels: readonly string[]): NavItem[] {
@@ -284,10 +294,13 @@ const HYBRID_QUICK_CREATE: QuickCreateItem[] = [...BUYER_QUICK_CREATE, ...VENDOR
  */
 export const HYBRID_SHELL_VM: ShellViewModel = {
   identity: {
-    // Presentation fixture only. Production identity/participation resolves server-side (SR3).
-    user: { name: "Anisur Rahman", email: "anisur@padmavalve.com.bd" },
-    activeOrg: { id: "active", name: "Padma Valve & Fittings Ltd.", participation: "hybrid" },
-    organizations: [{ id: "active", name: "Padma Valve & Fittings Ltd.", participation: "hybrid" }],
+    // NEUTRAL placeholder (owner directive 2026-07-17: no fabricated person/org anywhere) — the
+    // same posture as `VENDOR_SHELL_VM`/`BUYER_SHELL_VM`. Production identity/participation
+    // resolves server-side (SR3); `participation: "hybrid"` is the structural flag driving the
+    // co-mount, not an identity claim.
+    user: { name: "Your account", email: "" },
+    activeOrg: { id: "active", name: "Active organization", participation: "hybrid" },
+    organizations: [{ id: "active", name: "Active organization", participation: "hybrid" }],
   },
   nav: composeNavFor("hybrid"),
   surfaces: HYBRID_SURFACES,

@@ -25,6 +25,8 @@ export interface AppShellProps {
   orgSwitcherSlot?: ReactNode;
   notificationSlot?: ReactNode;
   userMenuSlot?: ReactNode;
+  /** Optional static header pinned above the sidebar nav (e.g. the workspace identity strip). */
+  sidebarHeader?: ReactNode;
 }
 
 export function AppShell({
@@ -33,6 +35,7 @@ export function AppShell({
   orgSwitcherSlot,
   notificationSlot,
   userMenuSlot,
+  sidebarHeader,
 }: AppShellProps) {
   const quickBar = vm.quickBar ?? [];
   const hasQuickBar = quickBar.length > 0;
@@ -64,7 +67,12 @@ export function AppShell({
         ) : null}
 
         <div className="flex flex-1">
-          <Sidebar nav={vm.nav} surfaces={vm.surfaces} foldableSurfaces={vm.foldableSurfaces} />
+          <Sidebar
+            nav={vm.nav}
+            surfaces={vm.surfaces}
+            foldableSurfaces={vm.foldableSurfaces}
+            header={sidebarHeader}
+          />
           <div className={cn("flex min-w-0 flex-1 flex-col", hasQuickBar && "pb-16 md:pb-0")}>
             {/* The shell owns the content container (the single <Container> primitive + padding); pages
                 render content only. Pages must NOT re-wrap in their own max-w container (double-wrap). */}

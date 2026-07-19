@@ -164,6 +164,9 @@ interface SidebarProps {
   nav: NavSection[];
   surfaces?: SurfaceSwitchItem[];
   foldableSurfaces?: SurfaceSwitchItem[];
+  /** Optional static header pinned above the nav (e.g. the workspace identity strip). Presentation
+   *  slot only — the shell renders whatever node it is given; it is never a nav item or a control. */
+  header?: React.ReactNode;
 }
 
 export function Sidebar(props: SidebarProps) {
@@ -183,6 +186,7 @@ function SidebarInner({
   nav,
   surfaces,
   foldableSurfaces,
+  header,
   search,
 }: SidebarProps & { search: string }) {
   const pathname = usePathname();
@@ -231,10 +235,15 @@ function SidebarInner({
     <div
       data-collapsed={collapsed}
       className={cn(
-        "sticky top-14 hidden h-[calc(100dvh-3.5rem)] shrink-0 flex-col border-r border-iv-nav-border bg-iv-nav-bg md:flex",
+        "group sticky top-14 hidden h-[calc(100dvh-3.5rem)] shrink-0 flex-col border-r border-iv-nav-border bg-iv-nav-bg md:flex",
         collapsed ? "w-16" : "w-[264px]",
       )}
     >
+      {/* Passive workspace identity header (owner-directed 2026-07-18) — a static label of the active
+          workspace, pinned above the nav. NOT a switcher: not clickable, no toggle; switching lives in
+          the top-right menu. Rendered as an opaque node the shell does not interpret. */}
+      {header}
+
       {/* Participation lens ([ESC-7G-A7R] SD-8, amended by owner 2026-07-15: sidebar top, not topbar)
           — pinned ABOVE the nav it filters, outside the scroll area so it never scrolls away.
           EXPANDED ONLY: the 64px icon-rail cannot hold a two-option segmented control. Hiding it there

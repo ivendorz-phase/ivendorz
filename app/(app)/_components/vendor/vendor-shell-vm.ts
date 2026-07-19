@@ -38,9 +38,13 @@ export const VENDOR_NAV: NavSection[] = [
     items: [
       { label: "Dashboard", href: `${BASE}/dashboard`, icon: "dashboard" },
       { label: "RFQ Leads", href: `${BASE}/rfqs`, icon: "rfqs" },
-      { label: "Leads & Pipeline", href: `${BASE}/leads`, icon: "pipeline" },
+      { label: "Leadboard", href: `${BASE}/leads`, icon: "pipeline" },
       { label: "Engagements", href: `${BASE}/engagements`, icon: "engagements" },
+      { label: "Finance", href: `${BASE}/finance`, icon: "reports" },
       { label: "Buyer Inquiries", href: `${BASE}/inquiries`, icon: "inquiries" },
+      // VX-03 (owner directive 2026-07-17) — the design's Selling "Buyer CRM" surface. Private
+      // per-vendor buyer relationship data (the sell-side mirror of the buyer's M4 Vendor CRM).
+      { label: "Buyer CRM", href: `${BASE}/buyer-crm`, icon: "crm" },
     ],
   },
   {
@@ -72,13 +76,19 @@ export const VENDOR_NAV: NavSection[] = [
         label: "Business Docs",
         href: `${BASE}/documents`,
         icon: "documents",
+        // VX-03 (owner directive 2026-07-17): aligned to the design's Business Docs sidebar —
+        // Dashboard + Templates lead, followed by the per-type document views. Each leaf points at
+        // a REAL route: Templates has its own page; the per-type entries deep-link the hub's
+        // frozen stage filter (`?stage=`), and Offers reuse the RFQ workspace (a vendor's offer IS
+        // its quotation — no separate offers store exists).
         children: [
-          { label: "Save PO", href: `${BASE}/documents?stage=po` },
-          { label: "Delivery Challan", href: `${BASE}/documents?stage=challan` },
-          { label: "Mushok Challan", href: `${BASE}/documents/mushok-challan` },
-          { label: "Bill Generation", href: `${BASE}/documents` },
-          { label: "Make Offer", href: `${BASE}/rfqs?state=draft` },
-          { label: "Saved Offers", href: `${BASE}/rfqs?state=submitted` },
+          { label: "Dashboard", href: `${BASE}/documents` },
+          { label: "Templates", href: `${BASE}/documents/templates` },
+          { label: "Purchase Orders", href: `${BASE}/documents?stage=po` },
+          { label: "Delivery Challans", href: `${BASE}/documents?stage=challan` },
+          { label: "Mushok Challans", href: `${BASE}/documents/mushok-challan` },
+          { label: "Bill Generation", href: `${BASE}/documents?stage=trade_invoice` },
+          { label: "Offers", href: `${BASE}/rfqs?state=submitted` },
         ],
       },
     ],
@@ -93,10 +103,20 @@ export const VENDOR_NAV: NavSection[] = [
     label: "Trust",
     items: [{ label: "Profile Performance", href: `${BASE}/trust`, icon: "trust" }],
   },
+  // Communication group (VX-03 — matches the design's "Communication" sidebar section: Messages,
+  // Notifications, Support Tickets).
+  {
+    id: "communication",
+    label: "Communication",
+    items: [
+      { label: "Messages", href: `${BASE}/messages`, icon: "messages" },
+      { label: "Notifications", href: `${BASE}/notifications`, icon: "notifications" },
+      { label: "Support Tickets", href: `${BASE}/support`, icon: "support" },
+    ],
+  },
   {
     id: "standing",
     items: [
-      { label: "Notifications", href: `${BASE}/notifications`, icon: "notifications" },
       { label: "Billing & Plan", href: `${BASE}/billing`, icon: "billing" },
       { label: "Team", href: `${BASE}/organization`, icon: "team" },
       { label: "Settings", href: `${BASE}/settings`, icon: "settings" },

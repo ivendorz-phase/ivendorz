@@ -1,26 +1,28 @@
-// Shared Buyer+Vendor workspace layout ([ESC-7G-A7] Board-ratified topology, A7.2 Option 1). ONE shell
-// mounted ONCE for BOTH the Buying (`/buy/*`) and Selling (`/sell/*`) surfaces, so a Hybrid user crossing
-// Buying↔Selling never remounts the shell (no lost sidebar state) — the canonical "one shell, multiple
-// workspaces" realized as a single shared `(app)` layout group. Admin (`/admin`) and Account (`/account`)
-// keep their own shells OUTSIDE this group. App Router composition only (REPOSITORY_STRUCTURE §8).
+// Shared Buyer+Vendor workspace layout — ONE application shell driven by a WORKSPACE CONTEXT
+// (owner-directed "Workspace Switching & Unified Navigation Refactor", 2026-07-18). A Hybrid user
+// crossing Buying↔Selling never remounts the shell; the active workspace (context) selects which
+// single-surface nav the one shared sidebar renders, and the top-right Workspace Switcher sets it.
 //
-// The co-mounted nav is the seam-composed `HYBRID_SHELL_VM` (both surface sets, grouped-not-merged, Trust
-// terminal). PRESENTATION ONLY: identity/participation are a fixture until the Doc-7C context layer is
-// wired (`get_active_context`, SR3 — PARKED); production resolves the navigable surface set server-side
-// from participation + role + entitlement (Inv #5/#10). No client-supplied org id is trusted (Inv #5).
+// SUPERSEDES the prior [ESC-7G-A7R] REALIZATION (co-mount BOTH surfaces in one sidebar + a sidebar
+// lens control) with a different but equally frozen-conformant one: single-workspace sidebar + a
+// top-right switcher that keeps both workspaces one click away. This stays within frozen Doc-7A R6
+// §4.2 (verbatim: "a surface is a route-group/capability, NOT a per-user exclusive app: one user …
+// MAY MOUNT Buyer AND Vendor workspaces … the App Shell composes the navigable surface set from
+// platform participation + org role") — both workspaces stay REACHABLE; R6 never mandated rendering
+// both in the sidebar at once. It is a UI lens only, never an authz claim (R7 — the server
+// re-validates). See `_components/workspace/workspace-context.tsx` for the full governance note.
+//
+// App Router composition only (REPOSITORY_STRUCTURE §8). Admin (`/admin`) and Account (`/account`)
+// keep their own layouts OUTSIDE this group. Identity/participation are a neutral presentation fixture
+// until the Doc-7C context layer (SR3, get_active_context) is wired; no client-supplied org is trusted.
 import type { ReactNode } from "react";
-import { AppShell, type ShellViewModel } from "../_components/shell";
-import { HYBRID_SHELL_VM } from "../_components/hybrid/hybrid-shell-vm";
-import { NOTIFICATIONS, UNREAD_COUNT } from "./buy/notifications/notifications-seed";
-
-const WORKSPACE_SHELL_VM: ShellViewModel = {
-  ...HYBRID_SHELL_VM,
-  // BX-04: the SAME seed the full `/buy/notifications` page reads, so the topbar bell dropdown and the
-  // full page stay a single source. Buyer-local because that seed lives in this route group.
-  notifications: NOTIFICATIONS,
-  unreadCount: UNREAD_COUNT,
-};
+import { WorkspaceProvider } from "../_components/workspace/workspace-context";
+import { WorkspaceShell } from "../_components/workspace/workspace-shell";
 
 export default function WorkspaceLayout({ children }: { children: ReactNode }) {
-  return <AppShell vm={WORKSPACE_SHELL_VM}>{children}</AppShell>;
+  return (
+    <WorkspaceProvider>
+      <WorkspaceShell>{children}</WorkspaceShell>
+    </WorkspaceProvider>
+  );
 }

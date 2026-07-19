@@ -17,6 +17,7 @@ import {
   Inbox,
   KeyRound,
   LayoutDashboard,
+  LifeBuoy,
   Library,
   Lock,
   Megaphone,
@@ -82,6 +83,7 @@ export const NAV_ICONS = {
   // Buyer sidebar IA (BX-04) — Communication + Analytics groups.
   notifications: Bell,
   messages: MessageSquare,
+  support: LifeBuoy,
   reports: BarChart3,
   // Vendor dashboard redesign (VX-01) — Digital Showcase / Business Docs sub-groups + tier badge.
   showcase: Globe,
