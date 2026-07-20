@@ -16,8 +16,12 @@ const MICROSITE_LABEL: Record<MicrositeStatus, string> = {
 };
 
 export function MicrositeStatusChip({ status }: { status?: MicrositeStatus }) {
-  const value: MicrositeStatus = status ?? "draft";
-  return <StatusChip label={MICROSITE_LABEL[value]} tone={MICROSITE_TONE[value]} />;
+  // An UNREAD status is an absence, not `draft`. Defaulting here asserted a frozen Doc-4M lifecycle
+  // value as fact on every surface that renders this chip while no read is wired — and made the
+  // three steps of one authoring journey disagree with each other. `DomainStatusChip` below already
+  // handles absence explicitly; this now matches it.
+  if (!status) return <StatusChip label="Not started yet" tone="neutral" />;
+  return <StatusChip label={MICROSITE_LABEL[status]} tone={MICROSITE_TONE[status]} />;
 }
 
 const DOMAIN_TONE: Record<CustomDomainStatus, StatusTone> = {

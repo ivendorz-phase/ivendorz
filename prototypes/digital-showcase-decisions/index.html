@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Digital Showcase — Decision-Support Prototype (NON-AUTHORITATIVE)</title>
+<link rel="stylesheet" href="_assets/tokens.css" />
+<style>
+  /* ============================================================
+     Digital Showcase decision-support prototype — Stage-3 artifact.
+     NON-PRODUCTION. Tokens mirror the frozen Doc-7B system (usage,
+     not new color). Motion: 150–250ms ease-out only, ≤8px translate.
+     ============================================================ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--iv-font-sans);
+    background: var(--iv-bg);
+    color: var(--iv-fg);
+    font-size: var(--iv-text-sm);
+    line-height: 1.55;
+  }
+  button { font: inherit; cursor: pointer; background: none; border: none; color: inherit; }
+  .app { display: flex; flex-direction: column; height: 100vh; }
+
+  /* ---- Prototype harness topbar (chrome, not product UI) ---- */
+  .harness {
+    display: flex; align-items: center; gap: var(--iv-space-4);
+    padding: var(--iv-space-2) var(--iv-space-4);
+    background: var(--iv-navy-950); color: #cbd5e1;
+    font-size: var(--iv-text-xs);
+  }
+  .harness .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--iv-amber-400); }
+  .harness strong { color: #fff; font-weight: 600; }
+  .harness .spacer { flex: 1; }
+  .harness .chip {
+    border: 1px solid #334155; border-radius: var(--iv-radius-full);
+    padding: 2px 10px; color: #94a3b8; white-space: nowrap;
+  }
+  .harness .toggle {
+    display: flex; align-items: center; gap: 6px;
+    border: 1px solid #334155; border-radius: var(--iv-radius-full);
+    padding: 3px 10px; color: #e2e8f0;
+  }
+  .harness .toggle[aria-pressed="true"] { background: var(--iv-navy-700); border-color: var(--iv-navy-500); }
+
+  .frame { display: flex; flex: 1; min-height: 0; }
+
+  /* ---- Workspace sidebar (ratified navy) ---- */
+  .sidebar {
+    width: 248px; flex: none; overflow-y: auto;
+    background: var(--iv-navy-900); color: #cbd5e1;
+    padding: var(--iv-space-4) 0 var(--iv-space-6);
+  }
+  .brand {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 0 var(--iv-space-4) var(--iv-space-4);
+    border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: var(--iv-space-3);
+  }
+  .brand b { color: #fff; font-size: var(--iv-text-base); letter-spacing: -0.01em; }
+  .brand span { font-size: var(--iv-text-2xs); color: #8ba0c6; text-transform: uppercase; letter-spacing: 0.08em; }
+  .nav-label {
+    padding: var(--iv-space-3) var(--iv-space-4) var(--iv-space-1);
+    font-size: var(--iv-text-2xs); text-transform: uppercase; letter-spacing: 0.1em; color: #5a74a3;
+  }
+  .nav-item, .nav-child {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    padding: 7px var(--iv-space-4); text-align: left; color: #b7c6e0;
+    border-left: 2px solid transparent;
+    transition: background var(--iv-duration-fast) var(--iv-ease-out);
+  }
+  .nav-child { padding-left: calc(var(--iv-space-4) + 18px); font-size: var(--iv-text-xs); }
+  .nav-item[disabled], .nav-child[disabled] { color: #5a74a3; cursor: not-allowed; }
+  .nav-item:not([disabled]):hover, .nav-child:not([disabled]):hover { background: rgba(255,255,255,0.05); }
+  .nav-item.active, .nav-child.active {
+    background: rgba(255,255,255,0.08); color: #fff; border-left-color: var(--iv-amber-400);
+  }
+  .gate-badge {
+    margin-left: auto; font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+    background: var(--iv-amber-500); color: #1a1204; border-radius: var(--iv-radius-sm); padding: 1px 5px;
+  }
+  .sidebar footer {
+    margin-top: var(--iv-space-6); padding: var(--iv-space-3) var(--iv-space-4) 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-size: var(--iv-text-2xs); color: #5a74a3; line-height: 1.7;
+  }
+
+  /* ---- Main ---- */
+  main { flex: 1; overflow-y: auto; padding: var(--iv-space-6) var(--iv-space-8) var(--iv-space-16); }
+  .screen { display: none; max-width: 1080px; margin: 0 auto; }
+  .screen.on { display: block; animation: enter var(--iv-duration-normal) var(--iv-ease-out); }
+  @keyframes enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .screen.on { animation: none; }
+    * { transition: none !important; }
+  }
+
+  .crumb { font-size: var(--iv-text-xs); color: var(--iv-fg-muted); margin-bottom: var(--iv-space-2); }
+  .crumb b { color: var(--iv-fg-secondary); font-weight: 500; }
+  h1 { font-size: var(--iv-text-2xl); color: var(--iv-fg-heading-strong); letter-spacing: -0.02em; margin-bottom: var(--iv-space-1); }
+  .sub { color: var(--iv-fg-muted); margin-bottom: var(--iv-space-5); max-width: 70ch; }
+  h2 { font-size: var(--iv-text-lg); color: var(--iv-fg-heading); margin: var(--iv-space-8) 0 var(--iv-space-3); }
+
+  /* Review-only annotations (hidden in Preview mode) */
+  .rv {
+    border: 1px dashed var(--iv-amber-500); background: var(--iv-amber-50);
+    border-radius: var(--iv-radius-md); padding: var(--iv-space-3) var(--iv-space-4);
+    font-size: var(--iv-text-xs); color: var(--iv-amber-800); margin-bottom: var(--iv-space-5);
+  }
+  .rv b { color: var(--iv-amber-900); }
+  .rv-tag {
+    display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 0.05em;
+    background: var(--iv-amber-100); color: var(--iv-amber-800);
+    border: 1px solid var(--iv-amber-300); border-radius: var(--iv-radius-sm);
+    padding: 0 5px; vertical-align: middle;
+  }
+  .rv-tag.frozen { background: var(--iv-navy-100); color: var(--iv-navy-700); border-color: var(--iv-navy-300); }
+  body.preview .rv, body.preview .rv-tag { display: none; }
+
+  .card {
+    background: var(--iv-surface); border: 1px solid var(--iv-border);
+    border-radius: var(--iv-radius-lg); box-shadow: var(--iv-elevation-1);
+    padding: var(--iv-space-5);
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--iv-primary); color: #fff; font-weight: 500;
+    border-radius: var(--iv-radius-md); padding: 8px 14px;
+    transition: filter var(--iv-duration-fast) var(--iv-ease-out);
+  }
+  .btn:hover { filter: brightness(1.1); }
+  .btn.ghost { background: transparent; color: var(--iv-fg-secondary); border: 1px solid var(--iv-border); }
+  .btn[disabled] { opacity: 0.45; cursor: not-allowed; filter: none; }
+  .chip {
+    display: inline-block; font-size: var(--iv-text-2xs); font-weight: 500;
+    border-radius: var(--iv-radius-full); padding: 2px 10px;
+    background: var(--iv-surface-2); color: var(--iv-fg-secondary); border: 1px solid var(--iv-border);
+  }
+  .chip.open { background: var(--iv-warning-subtle); color: var(--iv-warning-ink); border-color: transparent; }
+  .chip.multi { background: var(--iv-info-subtle); color: var(--iv-info-ink); border-color: transparent; }
+  .chip.single { background: var(--iv-success-subtle); color: var(--iv-success-ink); border-color: transparent; }
+  .chip.draft { background: var(--iv-neutral-subtle); color: var(--iv-neutral-ink); border-color: transparent; }
+  .chip.pub { background: var(--iv-success-subtle); color: var(--iv-success-ink); border-color: transparent; }
+
+  /* ---- Screen 0: overview ---- */
+  .pipeline {
+    display: flex; gap: var(--iv-space-2); align-items: stretch; flex-wrap: wrap;
+    margin-bottom: var(--iv-space-6);
+  }
+  .pipe-step {
+    flex: 1 1 180px; background: var(--iv-surface); border: 1px solid var(--iv-border);
+    border-radius: var(--iv-radius-md); padding: var(--iv-space-3) var(--iv-space-4);
+  }
+  .pipe-step .k { font-size: var(--iv-text-2xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--iv-fg-muted); }
+  .pipe-step .v { font-weight: 600; color: var(--iv-fg-heading); font-size: var(--iv-text-sm); }
+  .pipe-step .d { font-size: var(--iv-text-xs); color: var(--iv-fg-muted); }
+  .decisions { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--iv-space-4); }
+  .decision h3 { font-size: var(--iv-text-base); color: var(--iv-fg-heading); margin: var(--iv-space-2) 0 var(--iv-space-1); }
+  .decision p { font-size: var(--iv-text-xs); color: var(--iv-fg-secondary); margin-bottom: var(--iv-space-3); }
+  .decision .rec { font-size: var(--iv-text-xs); background: var(--iv-surface-2); border-radius: var(--iv-radius-md); padding: var(--iv-space-2) var(--iv-space-3); margin-bottom: var(--iv-space-3); }
+
+  /* ---- Screen 1: template picker ---- */
+  .tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--iv-space-4); }
+  .tpl {
+    text-align: left; background: var(--iv-surface); border: 1.5px solid var(--iv-border);
+    border-radius: var(--iv-radius-lg); padding: var(--iv-space-4); position: relative;
+    transition: border-color var(--iv-duration-fast) var(--iv-ease-out), box-shadow var(--iv-duration-fast) var(--iv-ease-out);
+    display: block; width: 100%;
+  }
+  .tpl:hover { box-shadow: var(--iv-elevation-2); }
+  .tpl[aria-pressed="true"] { border-color: var(--iv-brand-600); box-shadow: var(--iv-glow-brand); }
+  .tpl .letter {
+    position: absolute; top: 12px; right: 12px;
+    width: 26px; height: 26px; display: grid; place-items: center;
+    background: var(--iv-navy-700); color: #fff; font-weight: 700; font-size: var(--iv-text-xs);
+    border-radius: var(--iv-radius-sm);
+  }
+  .thumb {
+    height: 110px; border: 1px solid var(--iv-border); border-radius: var(--iv-radius-md);
+    background: var(--iv-light-muted); margin-bottom: var(--iv-space-3);
+    padding: 8px; display: flex; flex-direction: column; gap: 4px; overflow: hidden;
+  }
+  .tb { background: var(--iv-navy-200); border-radius: 2px; }
+  .tb.accent { background: var(--iv-navy-600); }
+  .tb.gold { background: var(--iv-amber-300); }
+  .row { display: flex; gap: 4px; flex: 1; }
+  .row .tb { flex: 1; }
+  .tpl h3 { font-size: var(--iv-text-sm); color: var(--iv-fg-heading); }
+  .tpl .desc { font-size: var(--iv-text-xs); color: var(--iv-fg-muted); margin: 2px 0 var(--iv-space-2); }
+  .picked {
+    margin-top: var(--iv-space-5); font-size: var(--iv-text-xs); color: var(--iv-fg-secondary);
+    background: var(--iv-surface); border: 1px solid var(--iv-border); border-radius: var(--iv-radius-md);
+    padding: var(--iv-space-3) var(--iv-space-4);
+  }
+  .picked code { font-family: var(--iv-font-mono); color: var(--iv-fg-heading); }
+
+  /* ---- Screen 2: starter semantics ---- */
+  .opt-toggle { display: inline-flex; border: 1px solid var(--iv-border); border-radius: var(--iv-radius-md); overflow: hidden; margin-bottom: var(--iv-space-4); }
+  .opt-toggle button { padding: 8px 16px; background: var(--iv-surface); color: var(--iv-fg-secondary); font-size: var(--iv-text-xs); font-weight: 500; }
+  .opt-toggle button[aria-pressed="true"] { background: var(--iv-primary); color: #fff; }
+  table { width: 100%; border-collapse: collapse; font-size: var(--iv-text-xs); }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--iv-border); }
+  th { color: var(--iv-fg-muted); font-weight: 500; text-transform: uppercase; font-size: var(--iv-text-2xs); letter-spacing: 0.06em; }
+  td code { font-family: var(--iv-font-mono); color: var(--iv-fg-heading); }
+  .route-note { color: var(--iv-fg-muted); }
+
+  /* ---- Screen 3: project portfolio ---- */
+  .split { display: grid; grid-template-columns: 1fr 380px; gap: var(--iv-space-5); align-items: start; }
+  @media (max-width: 980px) { .split { grid-template-columns: 1fr; } }
+  .proj {
+    display: block; width: 100%; text-align: left;
+    background: var(--iv-surface); border: 1.5px solid var(--iv-border); border-radius: var(--iv-radius-lg);
+    padding: var(--iv-space-4); margin-bottom: var(--iv-space-3);
+    transition: border-color var(--iv-duration-fast) var(--iv-ease-out);
+  }
+  .proj[aria-pressed="true"] { border-color: var(--iv-brand-600); }
+  .proj .t { display: flex; justify-content: space-between; gap: var(--iv-space-2); align-items: baseline; }
+  .proj h3 { font-size: var(--iv-text-sm); color: var(--iv-fg-heading); }
+  .proj .meta { font-size: var(--iv-text-xs); color: var(--iv-fg-muted); margin-top: 2px; }
+  .proj p { font-size: var(--iv-text-xs); color: var(--iv-fg-secondary); margin-top: var(--iv-space-2); }
+  .editor h3 { font-size: var(--iv-text-base); color: var(--iv-fg-heading); margin-bottom: var(--iv-space-3); }
+  .field { margin-bottom: var(--iv-space-3); }
+  .field label { display: flex; align-items: center; gap: 6px; font-size: var(--iv-text-xs); font-weight: 500; color: var(--iv-fg-secondary); margin-bottom: 4px; }
+  .field input, .field textarea, .field select {
+    width: 100%; font: inherit; font-size: var(--iv-text-sm); color: var(--iv-fg);
+    background: var(--iv-surface); border: 1px solid var(--iv-border); border-radius: var(--iv-radius-md);
+    padding: 7px 10px;
+  }
+  .field textarea { resize: vertical; min-height: 64px; }
+  .field .hint { font-size: var(--iv-text-2xs); color: var(--iv-fg-muted); margin-top: 3px; }
+  .editor .actions { display: flex; gap: var(--iv-space-2); margin-top: var(--iv-space-4); }
+  .empty {
+    border: 1.5px dashed var(--iv-border); border-radius: var(--iv-radius-lg);
+    padding: var(--iv-space-8); text-align: center; color: var(--iv-fg-muted); font-size: var(--iv-text-xs);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Harness chrome (not product UI) -->
+  <div class="harness">
+    <span class="dot"></span>
+    <span><strong>NON-AUTHORITATIVE PROTOTYPE</strong> · Digital Showcase decision packet · coins nothing — every “PROPOSED” element awaits a Board ruling</span>
+    <span class="spacer"></span>
+    <span class="chip">Prototype v0.1 · Plan v0.2 (digital_showcase_planning_and_design.md)</span>
+    <button class="toggle" id="rvToggle" aria-pressed="true" title="Show/hide review-only governance annotations">Review annotations: <b id="rvState">ON</b></button>
+  </div>
+
+  <div class="frame">
+    <!-- Sidebar mirrors the vendor workspace nav; only packet screens are active -->
+    <nav class="sidebar" aria-label="Vendor workspace (prototype)">
+      <div class="brand"><b>iVendorz</b><span>Vendor</span></div>
+
+      <div class="nav-label">Decision packet</div>
+      <button class="nav-item active" data-go="s0">Overview</button>
+
+      <div class="nav-label">Digital Showcase</div>
+      <button class="nav-child" disabled title="Built in production — out of prototype scope">Company Profile</button>
+      <button class="nav-child" disabled title="Built in production — out of prototype scope">Product Portfolio</button>
+      <button class="nav-child" data-go="s3">Project Portfolio <span class="gate-badge">G5</span></button>
+      <button class="nav-child" disabled title="Built in production — out of prototype scope">Categories</button>
+      <button class="nav-child" disabled title="Built in production — out of prototype scope">Spec Library</button>
+      <button class="nav-child" data-go="s1">Microsite &amp; Branding <span class="gate-badge">G3</span></button>
+      <button class="nav-child" data-go="s2">Starter semantics <span class="gate-badge">G4</span></button>
+      <button class="nav-child" disabled title="Built in production — out of prototype scope">Advertising</button>
+
+      <footer>
+        Stage-3 clickable prototype.<br />
+        Linkage: Prototype v0.1 ↔ Plan v0.2 ↔ Template System v1.0 (approved).<br />
+        Tokens mirror frozen Doc-7B. Light theme primary.
+      </footer>
+    </nav>
+
+    <main>
+      <!-- ================= Screen 0 — Overview ================= -->
+      <section class="screen on" id="s0">
+        <div class="crumb">Digital Showcase program · <b>Decision packet — Overview</b></div>
+        <h1>Three open decisions, one sitting</h1>
+        <p class="sub">This prototype exists to let the owner/Board <em>see</em> each open Digital Showcase decision
+        before ruling on it. Nothing here is production code; nothing here mints anything.</p>
+
+        <div class="rv"><b>Provenance.</b> Plan: <code>docs/product/requirements/digital_showcase_planning_and_design.md</code> v0.2 §5/§10.
+        Frozen anchors bound by pointer: <code>marketplace.microsites.layout_template (A–E)</code> · Doc-7D §10 canonical seven (approved, fold pending G1) ·
+        <code>showcase_projects</code> + <code>[ESC-6-SCHEMA-SHOWCASE]</code>. Sample vendor is the approved prototype’s anchor mock
+        (Meghna Industrial Valves &amp; Fittings Ltd. — illustrative, not real data).</div>
+
+        <div class="pipeline">
+          <div class="pipe-step"><div class="k">Author</div><div class="v">/sell/company*</div><div class="d">profile · products · projects</div></div>
+          <div class="pipe-step"><div class="k">Present</div><div class="v">/sell/microsite</div><div class="d">template A–E · sections · theme</div></div>
+          <div class="pipe-step"><div class="k">Publish</div><div class="v">draft → published</div><div class="d">no draft ever leaks</div></div>
+          <div class="pipe-step"><div class="k">Render</div><div class="v">/vendors/[slug]/*</div><div class="d">canonical 7 routes · anonymous</div></div>
+        </div>
+
+        <div class="decisions">
+          <div class="card decision">
+            <span class="chip open">G3 · OPEN — Board to mint</span>
+            <h3>Name the templates</h3>
+            <p>The five approved layouts and the frozen enum <code>A–E</code> match only in cardinality.
+            Which name maps to which letter?</p>
+            <div class="rec"><b>Recommendation:</b> 01→A · 02→B · 03→C · 04→D · 05→E (order of the approved system).</div>
+            <button class="btn" data-go="s1">View template picker →</button>
+          </div>
+          <div class="card decision">
+            <span class="chip open">G4 · OPEN — Board to rule</span>
+            <h3>Starter inside 7 routes</h3>
+            <p>Template E is a single-page Starter, but the approved public IA fixes seven routes. How do they meet?</p>
+            <div class="rec"><b>Recommendation:</b> Option A — Home renders everything; the six sub-routes 308-redirect home (M2.5 Hybrid precedent).</div>
+            <button class="btn" data-go="s2">Compare options →</button>
+          </div>
+          <div class="card decision">
+            <span class="chip open">G5 · OPEN — field proposal</span>
+            <h3>Project Portfolio fields</h3>
+            <p><code>showcase_projects</code> is frozen but column-underspecified
+            (<code>content_jsonb</code> carrier). What does a vendor actually author?</p>
+            <div class="rec"><b>Recommendation:</b> the field set mirroring the public case-study surface (P-PUB-25), shown in the editor.</div>
+            <button class="btn" data-go="s3">View authoring surface →</button>
+          </div>
+        </div>
+
+        <div class="rv" style="margin-top: var(--iv-space-6)"><b>G2 rider (no screen needed).</b> The template amendment’s 5-item public nav
+        diverges from the approved canonical seven. This prototype builds <b>nothing</b> from the amendment; the recommendation in the plan is to
+        re-affirm the seven and treat the amendment’s merges as within-page content arrangement.</div>
+      </section>
+
+      <!-- ================= Screen 1 — Template picker (S10 / DS-W2 / G3) ================= -->
+      <section class="screen" id="s1">
+        <div class="crumb">Digital Showcase · Microsite &amp; Branding · <b>Builder — template</b></div>
+        <h1>Choose your microsite template</h1>
+        <p class="sub">One content model, five presentations. Changing template never changes your content
+        — it changes only how the public site presents it.</p>
+
+        <div class="rv"><b>G3 — PROPOSED mapping, Board to mint.</b> The name↔letter binding below is a <b>proposal</b>;
+        the frozen field is <code>marketplace.microsites.layout_template ∈ {A…E}</code> (written via <code>update_microsite.v1</code> at wiring, Phase 4).
+        Thumbnails are abstract structure sketches derived from the approved Template System v1.0 — the hi-fi visuals live in
+        <code>prototypes/vendor-profile-templates/</code>. Nav topology: canonical seven (G2 rider).</div>
+
+        <div class="tpl-grid" id="tplGrid">
+          <button class="tpl" data-tpl="A" data-name="01 · Corporate Classic" aria-pressed="true">
+            <span class="letter">A</span>
+            <div class="thumb">
+              <div class="tb accent" style="height:8px"></div>
+              <div class="tb gold" style="height:22px"></div>
+              <div class="row"><div class="tb"></div><div class="tb"></div><div class="tb"></div></div>
+              <div class="tb" style="height:8px"></div>
+            </div>
+            <h3>01 · Corporate Classic</h3>
+            <div class="desc">Formal, credential-forward. Traditional industrial supplier.</div>
+            <span class="chip multi">Multi-page · 7 routes</span>
+          </button>
+
+          <button class="tpl" data-tpl="B" data-name="02 · Modern Industrial" aria-pressed="false">
+            <span class="letter">B</span>
+            <div class="thumb">
+              <div class="tb accent" style="height:8px"></div>
+              <div class="row"><div class="tb gold" style="flex:2"></div><div class="tb"></div></div>
+              <div class="row"><div class="tb"></div><div class="tb accent"></div></div>
+            </div>
+            <h3>02 · Modern Industrial</h3>
+            <div class="desc">Bold split-hero, capability-led storytelling.</div>
+            <span class="chip multi">Multi-page · 7 routes</span>
+          </button>
+
+          <button class="tpl" data-tpl="C" data-name="03 · Product Catalogue" aria-pressed="false">
+            <span class="letter">C</span>
+            <div class="thumb">
+              <div class="tb accent" style="height:8px"></div>
+              <div class="tb" style="height:10px"></div>
+              <div class="row"><div class="tb"></div><div class="tb"></div><div class="tb"></div><div class="tb"></div></div>
+              <div class="row"><div class="tb"></div><div class="tb"></div><div class="tb"></div><div class="tb"></div></div>
+            </div>
+            <h3>03 · Product Catalogue</h3>
+            <div class="desc">Catalog-first grid for deep product ranges.</div>
+            <span class="chip multi">Multi-page · 7 routes</span>
+          </button>
+
+          <button class="tpl" data-tpl="D" data-name="04 · Portfolio &amp; Projects" aria-pressed="false">
+            <span class="letter">D</span>
+            <div class="thumb">
+              <div class="tb accent" style="height:8px"></div>
+              <div class="row"><div class="tb gold" style="flex:2"></div><div class="tb" style="flex:1"></div></div>
+              <div class="row"><div class="tb" style="flex:1"></div><div class="tb gold" style="flex:2"></div></div>
+            </div>
+            <h3>04 · Portfolio &amp; Projects</h3>
+            <div class="desc">Case-study-led; projects carry the story. EPC &amp; fabricators.</div>
+            <span class="chip multi">Multi-page · 7 routes</span>
+          </button>
+
+          <button class="tpl" data-tpl="E" data-name="05 · Business Landing" aria-pressed="false">
+            <span class="letter">E</span>
+            <div class="thumb">
+              <div class="tb gold" style="height:18px"></div>
+              <div class="tb" style="height:8px"></div>
+              <div class="tb" style="height:8px"></div>
+              <div class="tb accent" style="height:8px"></div>
+              <div class="tb" style="height:8px"></div>
+              <div class="tb" style="height:8px"></div>
+            </div>
+            <h3>05 · Business Landing</h3>
+            <div class="desc">Single-page Starter — everything on one scroll. New vendors.</div>
+            <span class="chip single">Single-page Starter</span>
+          </button>
+        </div>
+
+        <div class="picked" id="picked">Selected: <b>01 · Corporate Classic</b> → writes <code>layout_template = 'A'</code> <span class="rv-tag">PROPOSED MAPPING</span></div>
+        <div style="margin-top: var(--iv-space-4); display:flex; gap: var(--iv-space-2)">
+          <button class="btn" disabled title="Wired at Phase 4 (update_microsite.v1) — honest pre-wiring state">Save template</button>
+          <button class="btn ghost" data-go="s2">How the Starter meets the 7 routes →</button>
+        </div>
+      </section>
+
+      <!-- ================= Screen 2 — Starter semantics (G4) ================= -->
+      <section class="screen" id="s2">
+        <div class="crumb">Decision packet · <b>G4 — Template E inside the canonical 7-route IA</b></div>
+        <h1>Single-page Starter, seven canonical routes</h1>
+        <p class="sub">The approved public IA fixes seven routes under <code>/vendors/[slug]</code>. Template E renders as one page.
+        Two ways to reconcile — toggle to compare.</p>
+
+        <div class="rv"><b>G4 — Board to rule.</b> Recommendation is <b>Option A</b> (the plan §10 ask 2): it preserves the canonical
+        route contract for links/SEO while keeping the Starter genuinely single-page. Precedent: the M2.5 Hybrid ruling
+        (sub-route redirect stubs → section anchors). Byte-equivalent 404 (Inv #11) holds identically under both options.</div>
+
+        <div class="opt-toggle" role="group" aria-label="Compare options">
+          <button id="optA" aria-pressed="true">Option A — redirect home (recommended)</button>
+          <button id="optB" aria-pressed="false">Option B — thin section pages</button>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead><tr><th>Route</th><th>Templates A–D (multi-page)</th><th id="eHead">Template E — Option A</th></tr></thead>
+            <tbody id="routeRows"></tbody>
+          </table>
+        </div>
+
+        <h2>What each option trades</h2>
+        <div class="decisions">
+          <div class="card">
+            <span class="chip">Option A</span>
+            <p style="font-size: var(--iv-text-xs); margin-top: 8px">One true page; deep links land on the right section via
+            <code>#anchors</code>; zero duplicated content; the seven routes stay live as a contract. Cost: redirect hop on sub-route entry.</p>
+          </div>
+          <div class="card">
+            <span class="chip">Option B</span>
+            <p style="font-size: var(--iv-text-xs); margin-top: 8px">No redirects; every route renders something. Cost: seven
+            near-duplicate thin pages of the same single-page content — weaker SEO signals, more surface to keep honest, and the
+            “single-page Starter” promise quietly stops being true.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= Screen 3 — Project Portfolio (DS-W1 / G5) ================= -->
+      <section class="screen" id="s3">
+        <div class="crumb">Digital Showcase · <b>Project Portfolio</b></div>
+        <h1>Project Portfolio</h1>
+        <p class="sub">Showcase completed work as case studies on your public site. Draft privately; publish when ready.</p>
+
+        <div class="rv"><b>G5 — field set is a PROPOSAL</b> to resolve <code>[ESC-6-SCHEMA-SHOWCASE]</code>.
+        Frozen today: aggregate root + <code>content_jsonb</code> + interim <code>display_order</code>/<code>is_visible</code> only.
+        Proposed fields mirror the public case-study surface (P-PUB-25 / benchmark §6.9) so authoring = rendering.
+        Client identity is a <b>descriptor, never a fabricated name</b>; no figures are invented. Sample rows are illustrative mock data.</div>
+
+        <div class="split">
+          <div>
+            <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: var(--iv-space-3)">
+              <span class="chip">3 projects · ordered by <code style="font-family:var(--iv-font-mono)">display_order</code> <span class="rv-tag frozen">FROZEN</span></span>
+              <button class="btn" disabled title="Wired at Phase 4 (create_showcase_project.v1) — honest pre-wiring state">+ Add project</button>
+            </div>
+
+            <button class="proj" data-p="0" aria-pressed="true">
+              <div class="t"><h3>High-pressure valve skid — urea plant BMR</h3><span class="chip pub">Published</span></div>
+              <div class="meta">Fertilizer &amp; chemicals · Narayanganj · 2025</div>
+              <p>Design, fabrication and commissioning of a high-pressure valve manifold skid for a brownfield urea plant modernization.</p>
+            </button>
+            <button class="proj" data-p="1" aria-pressed="false">
+              <div class="t"><h3>Fire-water ring main upgrade</h3><span class="chip pub">Published</span></div>
+              <div class="meta">Power generation · Chattogram · 2024</div>
+              <p>Supply and installation of gate and butterfly valves with hydro-testing for a combined-cycle plant’s fire-water loop.</p>
+            </button>
+            <button class="proj" data-p="2" aria-pressed="false">
+              <div class="t"><h3>Steam distribution retrofit</h3><span class="chip draft">Draft</span></div>
+              <div class="meta">Textiles · Gazipur · 2026 (ongoing)</div>
+              <p>Phased replacement of steam isolation valves across four production sheds — draft until client handover completes.</p>
+            </button>
+          </div>
+
+          <aside class="card editor" id="editor">
+            <h3>Edit project</h3>
+            <div class="field"><label>Title <span class="rv-tag">PROPOSED</span></label><input id="f-title" value="" /></div>
+            <div class="field"><label>Sector <span class="rv-tag">PROPOSED</span></label><input id="f-sector" value="" />
+              <div class="hint">Free text in this proposal; taxonomy binding is a wiring-time question, not coined here.</div></div>
+            <div class="field"><label>Client descriptor <span class="rv-tag">PROPOSED</span></label><input id="f-client" value="" />
+              <div class="hint">Descriptor only (e.g. “state-owned fertilizer producer”) — never a fabricated company name.</div></div>
+            <div class="field"><label>Year / period <span class="rv-tag">PROPOSED</span></label><input id="f-year" value="" /></div>
+            <div class="field"><label>Summary <span class="rv-tag">PROPOSED</span></label><textarea id="f-summary"></textarea></div>
+            <div class="field"><label>Scope highlights <span class="rv-tag">PROPOSED</span></label><textarea id="f-scope"></textarea>
+              <div class="hint">One per line; renders as the case-study bullet list.</div></div>
+            <div class="field"><label>Gallery <span class="rv-tag">PROPOSED</span></label>
+              <button class="btn ghost" disabled title="Blob upload rides M0 storage (file_ref) — adjacent ESC-7-API/upload; disabled, not faked">Add images (disabled)</button></div>
+            <div class="field"><label>Display order <span class="rv-tag frozen">FROZEN (interim)</span></label><input id="f-order" value="" /></div>
+            <div class="field"><label>Visibility <span class="rv-tag frozen">FROZEN (interim)</span></label>
+              <select id="f-vis"><option>Draft (private to your organization)</option><option>Published (public case study)</option></select>
+              <div class="hint">Service-visibility over <code style="font-family:var(--iv-font-mono)">is_visible</code> — no status enum exists; none coined.</div></div>
+            <div class="actions">
+              <button class="btn" disabled title="Wired at Phase 4 (update_showcase_project.v1)">Save</button>
+              <button class="btn ghost" disabled title="Wired at Phase 4 (publish_showcase_project.v1 — emits no event; none exists to emit)">Publish</button>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+  // ---- Screen switching ----
+  const screens = document.querySelectorAll(".screen");
+  const navBtns = document.querySelectorAll("[data-go]");
+  function go(id) {
+    screens.forEach((s) => s.classList.toggle("on", s.id === id));
+    document.querySelectorAll(".nav-item, .nav-child").forEach((b) => {
+      b.classList.toggle("active", b.dataset.go === id);
+    });
+    document.querySelector("main").scrollTop = 0;
+  }
+  navBtns.forEach((b) => b.addEventListener("click", () => go(b.dataset.go)));
+
+  // ---- Review/Preview toggle ----
+  const rvToggle = document.getElementById("rvToggle");
+  rvToggle.addEventListener("click", () => {
+    const on = rvToggle.getAttribute("aria-pressed") === "true";
+    rvToggle.setAttribute("aria-pressed", String(!on));
+    document.getElementById("rvState").textContent = on ? "OFF" : "ON";
+    document.body.classList.toggle("preview", on);
+  });
+
+  // ---- Template picker ----
+  const picked = document.getElementById("picked");
+  document.querySelectorAll(".tpl").forEach((t) => {
+    t.addEventListener("click", () => {
+      document.querySelectorAll(".tpl").forEach((x) => x.setAttribute("aria-pressed", "false"));
+      t.setAttribute("aria-pressed", "true");
+      picked.innerHTML =
+        "Selected: <b>" + t.dataset.name + "</b> → writes <code>layout_template = '" + t.dataset.tpl +
+        "'</code> <span class=\"rv-tag\">PROPOSED MAPPING</span>";
+      if (document.body.classList.contains("preview"))
+        picked.querySelector(".rv-tag").style.display = "none";
+    });
+  });
+
+  // ---- G4 route table ----
+  const ROUTES = [
+    ["/", "Home — curated landing, links out", "Renders the ENTIRE site (all sections)", "Renders hero + section index"],
+    ["/about", "About page", "308 → /#about", "Thin page: About section only"],
+    ["/products", "Products page", "308 → /#products", "Thin page: Products section only"],
+    ["/projects", "Projects page", "308 → /#projects", "Thin page: Projects section only"],
+    ["/industries", "Industries page", "308 → /#industries", "Thin page: Industries section only"],
+    ["/resources", "Resources umbrella page", "308 → /#resources", "Thin page: Resources section only"],
+    ["/contact", "Contact page", "308 → /#contact", "Thin page: Contact section only"],
+  ];
+  const rows = document.getElementById("routeRows");
+  const eHead = document.getElementById("eHead");
+  function renderRoutes(optionA) {
+    eHead.textContent = optionA ? "Template E — Option A (recommended)" : "Template E — Option B";
+    rows.innerHTML = ROUTES.map(
+      (r) =>
+        "<tr><td><code>" + r[0] + "</code></td><td class='route-note'>" + r[1] + "</td><td>" +
+        (optionA ? r[2] : r[3]) + "</td></tr>",
+    ).join("");
+  }
+  renderRoutes(true);
+  const optA = document.getElementById("optA"), optB = document.getElementById("optB");
+  function setOpt(a) {
+    optA.setAttribute("aria-pressed", String(a));
+    optB.setAttribute("aria-pressed", String(!a));
+    renderRoutes(a);
+  }
+  optA.addEventListener("click", () => setOpt(true));
+  optB.addEventListener("click", () => setOpt(false));
+
+  // ---- Project editor ----
+  const PROJECTS = [
+    {
+      title: "High-pressure valve skid — urea plant BMR",
+      sector: "Fertilizer & chemicals",
+      client: "State-owned fertilizer producer",
+      year: "2025",
+      summary: "Design, fabrication and commissioning of a high-pressure valve manifold skid for a brownfield urea plant modernization.",
+      scope: "Detail engineering & shop fabrication\nHydro-testing to client spec\nSite installation & commissioning support",
+      order: "1", vis: 1,
+    },
+    {
+      title: "Fire-water ring main upgrade",
+      sector: "Power generation",
+      client: "Independent power producer",
+      year: "2024",
+      summary: "Supply and installation of gate and butterfly valves with hydro-testing for a combined-cycle plant's fire-water loop.",
+      scope: "Valve supply (gate, butterfly)\nLoop hydro-testing\nAs-built documentation",
+      order: "2", vis: 1,
+    },
+    {
+      title: "Steam distribution retrofit",
+      sector: "Textiles",
+      client: "Export-oriented textile group",
+      year: "2026 (ongoing)",
+      summary: "Phased replacement of steam isolation valves across four production sheds — draft until client handover completes.",
+      scope: "Phased shutdown planning\nValve replacement across 4 sheds",
+      order: "3", vis: 0,
+    },
+  ];
+  function loadProject(i) {
+    const p = PROJECTS[i];
+    document.getElementById("f-title").value = p.title;
+    document.getElementById("f-sector").value = p.sector;
+    document.getElementById("f-client").value = p.client;
+    document.getElementById("f-year").value = p.year;
+    document.getElementById("f-summary").value = p.summary;
+    document.getElementById("f-scope").value = p.scope;
+    document.getElementById("f-order").value = p.order;
+    document.getElementById("f-vis").selectedIndex = p.vis;
+  }
+  document.querySelectorAll(".proj").forEach((b) => {
+    b.addEventListener("click", () => {
+      document.querySelectorAll(".proj").forEach((x) => x.setAttribute("aria-pressed", "false"));
+      b.setAttribute("aria-pressed", "true");
+      loadProject(Number(b.dataset.p));
+    });
+  });
+  loadProject(0);
+</script>
+</body>
+</html>

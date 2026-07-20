@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Digital Showcase — Workspace Authoring Flow (NON-AUTHORITATIVE)</title>
+<link rel="stylesheet" href="_assets/tokens.css" />
+<style>
+  /* ============================================================
+     DS-W2B + DS-W3 workspace authoring journey (three steps).
+     Stage-3 prototype · NON-PRODUCTION. Tokens mirror the frozen
+     Doc-7B system. Motion 150–250ms ease-out, ≤8px translate,
+     prefers-reduced-motion respected (motion standard).
+     ============================================================ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--iv-font-sans); background: var(--iv-bg); color: var(--iv-fg);
+    font-size: var(--iv-text-sm); line-height: 1.55;
+  }
+  button, input, textarea, select { font: inherit; }
+  button { cursor: pointer; background: none; border: none; color: inherit; }
+  /* keyboard-only focus ring (reuses the existing brand token; invisible to mouse users) */
+  :focus-visible { outline: 2px solid var(--iv-brand-500); outline-offset: 2px; }
+  .app { display: flex; flex-direction: column; height: 100vh; }
+
+  /* ---- harness (prototype chrome, not product UI) ---- */
+  .harness {
+    display: flex; align-items: center; gap: var(--iv-space-4);
+    padding: var(--iv-space-2) var(--iv-space-4);
+    background: var(--iv-navy-950); color: #cbd5e1; font-size: var(--iv-text-xs);
+  }
+  .harness .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--iv-amber-400); flex: none; }
+  .harness strong { color: #fff; font-weight: 600; }
+  .harness .spacer { flex: 1; }
+  .harness .chip { border: 1px solid #334155; border-radius: var(--iv-radius-full); padding: 2px 10px; color: #94a3b8; white-space: nowrap; }
+  .harness .toggle { display: flex; align-items: center; gap: 6px; border: 1px solid #334155; border-radius: var(--iv-radius-full); padding: 3px 10px; color: #e2e8f0; }
+  .harness .toggle[aria-pressed="true"] { background: var(--iv-navy-700); border-color: var(--iv-navy-500); }
+
+  .frame { display: flex; flex: 1; min-height: 0; }
+
+  /* ---- vendor sidebar (ratified navy) ---- */
+  .sidebar { width: 244px; flex: none; overflow-y: auto; background: var(--iv-navy-900); color: #cbd5e1; padding: var(--iv-space-4) 0 var(--iv-space-6); }
+  .brand { display: flex; align-items: baseline; gap: 8px; padding: 0 var(--iv-space-4) var(--iv-space-4); border-bottom: 1px solid rgba(255,255,255,.08); margin-bottom: var(--iv-space-3); }
+  .brand b { color: #fff; font-size: var(--iv-text-base); letter-spacing: -.01em; }
+  .brand span { font-size: var(--iv-text-2xs); color: #8ba0c6; text-transform: uppercase; letter-spacing: .08em; }
+  .nav-label { padding: var(--iv-space-3) var(--iv-space-4) var(--iv-space-1); font-size: var(--iv-text-2xs); text-transform: uppercase; letter-spacing: .1em; color: #5a74a3; }
+  .nav-item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px var(--iv-space-4); text-align: left; color: #b7c6e0; border-left: 2px solid transparent; font-size: var(--iv-text-xs); transition: background var(--iv-duration-fast) var(--iv-ease-out); }
+  .nav-item[disabled] { color: #5a74a3; cursor: not-allowed; }
+  .nav-item:not([disabled]):hover { background: rgba(255,255,255,.05); }
+  .nav-item.active { background: rgba(255,255,255,.08); color: #fff; border-left-color: var(--iv-amber-400); }
+  .step-n { width: 18px; height: 18px; flex: none; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.1); font-size: 10px; font-weight: 700; }
+  .nav-item.active .step-n { background: var(--iv-amber-400); color: #1a1204; }
+  .nav-item.done .step-n { background: var(--iv-success-base); color: #fff; }
+  .gate { margin-left: auto; font-size: 10px; font-weight: 600; background: var(--iv-amber-500); color: #1a1204; border-radius: var(--iv-radius-sm); padding: 1px 5px; flex: none; }
+  .sidebar footer { margin-top: var(--iv-space-6); padding: var(--iv-space-3) var(--iv-space-4) 0; border-top: 1px solid rgba(255,255,255,.08); font-size: var(--iv-text-2xs); color: #5a74a3; line-height: 1.7; }
+
+  /* ---- main ---- */
+  main { flex: 1; overflow-y: auto; padding: var(--iv-space-6) var(--iv-space-8) var(--iv-space-16); }
+  .screen { display: none; max-width: 1060px; margin: 0 auto; }
+  .screen.on { display: block; animation: enter var(--iv-duration-normal) var(--iv-ease-out); }
+  @keyframes enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .screen.on { animation: none; } * { transition: none !important; } }
+
+  .crumb { font-size: var(--iv-text-xs); color: var(--iv-fg-muted); margin-bottom: var(--iv-space-2); }
+  .crumb b { color: var(--iv-fg-secondary); font-weight: 500; }
+  h1 { font-size: var(--iv-text-2xl); color: var(--iv-fg-heading-strong); letter-spacing: -.02em; margin-bottom: var(--iv-space-1); }
+  .sub { color: var(--iv-fg-muted); margin-bottom: var(--iv-space-5); max-width: 72ch; }
+  h2 { font-size: var(--iv-text-lg); color: var(--iv-fg-heading); margin: var(--iv-space-8) 0 var(--iv-space-3); }
+  h3 { font-size: var(--iv-text-base); color: var(--iv-fg-heading); }
+
+  /* review-only annotations */
+  .rv { border: 1px dashed var(--iv-amber-500); background: var(--iv-amber-50); border-radius: var(--iv-radius-md); padding: var(--iv-space-3) var(--iv-space-4); font-size: var(--iv-text-xs); color: var(--iv-amber-800); margin-bottom: var(--iv-space-5); }
+  .rv b { color: var(--iv-amber-900); }
+  .tag { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .04em; border-radius: var(--iv-radius-sm); padding: 0 5px; vertical-align: middle; }
+  .tag.prop { background: var(--iv-amber-100); color: var(--iv-amber-800); border: 1px solid var(--iv-amber-300); }
+  .tag.frozen { background: var(--iv-navy-100); color: var(--iv-navy-700); border: 1px solid var(--iv-navy-300); }
+  body.preview .rv, body.preview .tag { display: none; }
+
+  .card { background: var(--iv-surface); border: 1px solid var(--iv-border); border-radius: var(--iv-radius-lg); box-shadow: var(--iv-elevation-1); padding: var(--iv-space-5); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; background: var(--iv-primary); color: #fff; font-weight: 500; border-radius: var(--iv-radius-md); padding: 8px 14px; transition: filter var(--iv-duration-fast) var(--iv-ease-out); }
+  .btn:hover:not([disabled]) { filter: brightness(1.1); }
+  .btn.ghost { background: transparent; color: var(--iv-fg-secondary); border: 1px solid var(--iv-border); }
+  .btn[disabled] { opacity: .45; cursor: not-allowed; filter: none; }
+  .btn.sm { padding: 5px 10px; font-size: var(--iv-text-xs); }
+  .chip { display: inline-block; font-size: var(--iv-text-2xs); font-weight: 500; border-radius: var(--iv-radius-full); padding: 2px 10px; background: var(--iv-surface-2); color: var(--iv-fg-secondary); border: 1px solid var(--iv-border); }
+  .chip.pub { background: var(--iv-success-subtle); color: var(--iv-success-ink); border-color: transparent; }
+  .chip.draft { background: var(--iv-neutral-subtle); color: var(--iv-neutral-ink); border-color: transparent; }
+  .chip.open { background: var(--iv-warning-subtle); color: var(--iv-warning-ink); border-color: transparent; }
+  .chip.single { background: var(--iv-info-subtle); color: var(--iv-info-ink); border-color: transparent; }
+
+  /* ---- journey map ---- */
+  .journey { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: var(--iv-space-2); margin-bottom: var(--iv-space-5); }
+  .jstep { background: var(--iv-surface); border: 1px solid var(--iv-border); border-radius: var(--iv-radius-md); padding: var(--iv-space-3); text-align: left; width: 100%; transition: border-color var(--iv-duration-fast) var(--iv-ease-out); }
+  .jstep:hover { border-color: var(--iv-brand-400); }
+  .jstep .k { font-size: var(--iv-text-2xs); text-transform: uppercase; letter-spacing: .08em; color: var(--iv-fg-muted); }
+  .jstep .v { font-weight: 600; color: var(--iv-fg-heading); font-size: var(--iv-text-sm); }
+  .jstep .d { font-size: var(--iv-text-xs); color: var(--iv-fg-muted); margin-top: 2px; }
+  /* current step — the same amber active-step language the sidebar uses */
+  .jstep[aria-current="step"] { border-color: var(--iv-amber-400); cursor: default; }
+  .jstep[aria-current="step"] .k { color: var(--iv-amber-700); }
+
+  /* ---- summary rows (overview) ---- */
+  .kv { display: flex; align-items: baseline; justify-content: space-between; gap: var(--iv-space-3); font-size: var(--iv-text-xs); color: var(--iv-fg-secondary); padding: 6px 0; border-bottom: 1px solid var(--iv-border); }
+  .kv:last-of-type { border-bottom: none; }
+  .kv b { color: var(--iv-fg-heading); font-weight: 600; }
+  .kv code { font-family: var(--iv-font-mono); color: var(--iv-fg-heading); }
+  .actions { display: flex; gap: var(--iv-space-2); margin-top: var(--iv-space-4); }
+  .bar { display: flex; flex-wrap: wrap; gap: var(--iv-space-2); margin-top: var(--iv-space-6); }
+
+  /* ---- templates (DS-W2B) ---- */
+  .tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px,1fr)); gap: var(--iv-space-4); }
+  .tpl { text-align: left; background: var(--iv-surface); border: 1.5px solid var(--iv-border); border-radius: var(--iv-radius-lg); padding: var(--iv-space-4); position: relative; width: 100%; transition: border-color var(--iv-duration-fast) var(--iv-ease-out), box-shadow var(--iv-duration-fast) var(--iv-ease-out); }
+  .tpl:hover { box-shadow: var(--iv-elevation-2); }
+  .tpl[aria-pressed="true"] { border-color: var(--iv-brand-600); box-shadow: var(--iv-glow-brand); }
+  .tpl .letter { position: absolute; top: 12px; right: 12px; width: 24px; height: 24px; display: grid; place-items: center; background: var(--iv-navy-700); color: #fff; font-weight: 700; font-size: var(--iv-text-xs); border-radius: var(--iv-radius-sm); }
+  .thumb { height: 96px; border: 1px solid var(--iv-border); border-radius: var(--iv-radius-md); background: var(--iv-light-muted); margin-bottom: var(--iv-space-3); padding: 7px; display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+  .tb { background: var(--iv-navy-200); border-radius: 2px; }
+  .tb.accent { background: var(--iv-navy-600); }
+  .tb.gold { background: var(--iv-amber-300); }
+  .row { display: flex; gap: 4px; flex: 1; }
+  .row .tb { flex: 1; }
+  .tpl .desc { font-size: var(--iv-text-xs); color: var(--iv-fg-muted); margin: 3px 0 var(--iv-space-2); }
+  .tpl .emph { font-size: var(--iv-text-2xs); color: var(--iv-fg-secondary); margin-bottom: var(--iv-space-2); }
+  .tpl .foot { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .guide { background: var(--iv-info-subtle); border: 1px solid transparent; border-radius: var(--iv-radius-md); padding: var(--iv-space-3) var(--iv-space-4); font-size: var(--iv-text-xs); color: var(--iv-info-ink); margin-bottom: var(--iv-space-4); }
+  .guide b { color: var(--iv-info-ink); }
+  .selected-bar { margin-top: var(--iv-space-5); font-size: var(--iv-text-xs); color: var(--iv-fg-secondary); background: var(--iv-surface); border: 1px solid var(--iv-border); border-radius: var(--iv-radius-md); padding: var(--iv-space-3) var(--iv-space-4); }
+  .selected-bar code { font-family: var(--iv-font-mono); color: var(--iv-fg-heading); }
+  .selected-bar .indep { display: block; margin-top: 4px; color: var(--iv-fg-muted); }
+
+  /* ---- sections (arrangement) ---- */
+  .sec-list { display: flex; flex-direction: column; gap: 6px; }
+  .sec { display: flex; align-items: center; gap: var(--iv-space-3); background: var(--iv-surface); border: 1px solid var(--iv-border); border-radius: var(--iv-radius-md); padding: 9px var(--iv-space-3); transition: opacity var(--iv-duration-fast) var(--iv-ease-out); }
+  .sec.hidden-sec { opacity: .5; }
+  .sec .ord { font-family: var(--iv-font-mono); font-size: var(--iv-text-2xs); color: var(--iv-fg-muted); width: 18px; }
+  .sec .nm { flex: 1; font-size: var(--iv-text-sm); color: var(--iv-fg-heading); }
+  .sec .src { font-size: var(--iv-text-2xs); color: var(--iv-fg-muted); }
+  .icon-btn { border: 1px solid var(--iv-border); border-radius: var(--iv-radius-sm); width: 24px; height: 24px; display: grid; place-items: center; color: var(--iv-fg-secondary); font-size: var(--iv-text-xs); }
+  .icon-btn:hover:not([disabled]) { background: var(--iv-hover); }
+  .icon-btn[disabled] { opacity: .3; cursor: not-allowed; }
+  .arr-row { display: flex; flex-wrap: wrap; gap: var(--iv-space-2); margin-bottom: var(--iv-space-3); }
+  .arr { border: 1px solid var(--iv-border); border-radius: var(--iv-radius-full); padding: 5px 12px; font-size: var(--iv-text-xs); color: var(--iv-fg-secondary); background: var(--iv-surface); }
+  .arr:hover { border-color: var(--iv-brand-400); color: var(--iv-fg-heading); }
+
+  /* ---- preview & publish ---- */
+  table { width: 100%; border-collapse: collapse; font-size: var(--iv-text-xs); }
+  th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--iv-border); }
+  th { color: var(--iv-fg-muted); font-weight: 500; text-transform: uppercase; font-size: var(--iv-text-2xs); letter-spacing: .06em; }
+  td code { font-family: var(--iv-font-mono); color: var(--iv-fg-heading); }
+  .pv-frame { border: 1px solid var(--iv-border); border-radius: var(--iv-radius-lg); overflow: hidden; background: var(--iv-surface); }
+  .pv-bar { display: flex; align-items: center; gap: 8px; padding: 7px var(--iv-space-3); background: var(--iv-surface-2); border-bottom: 1px solid var(--iv-border); font-size: var(--iv-text-2xs); color: var(--iv-fg-muted); }
+  .pv-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--iv-border); }
+  .pv-views { margin-left: auto; display: flex; gap: 2px; flex: none; }
+  .pv-btn { border: 1px solid var(--iv-border); border-radius: var(--iv-radius-sm); padding: 2px 8px; font-size: var(--iv-text-2xs); color: var(--iv-fg-secondary); background: var(--iv-surface); }
+  .pv-btn:hover[aria-pressed="false"] { background: var(--iv-hover); }
+  .pv-btn[aria-pressed="true"] { background: var(--iv-navy-700); border-color: var(--iv-navy-700); color: #fff; }
+  .pv-body { padding: var(--iv-space-4); display: flex; flex-direction: column; gap: 7px; min-height: 210px; transition: max-width var(--iv-duration-normal) var(--iv-ease-out); }
+  .pv-frame.is-mobile .pv-body { max-width: 320px; margin: 0 auto; }
+  .pv-head { display: flex; align-items: center; gap: 8px; font-size: var(--iv-text-xs); font-weight: 600; color: var(--iv-fg-heading); padding-bottom: 7px; border-bottom: 1px solid var(--iv-border); }
+  /* binary Verified badge — present or absent, never a score/rating/percentage/count */
+  .vbadge { font-size: var(--iv-text-2xs); font-weight: 600; border-radius: var(--iv-radius-full); padding: 1px 8px; background: var(--iv-success-subtle); color: var(--iv-success-ink); }
+  .pv-sec { border: 1px dashed var(--iv-border); border-radius: var(--iv-radius-sm); padding: 8px 10px; font-size: var(--iv-text-xs); color: var(--iv-fg-secondary); background: var(--iv-light-muted); }
+  .pv-sec.hero { background: var(--iv-navy-700); color: #fff; border-style: solid; border-color: var(--iv-navy-700); font-weight: 500; }
+  .two { display: grid; grid-template-columns: 1fr 340px; gap: var(--iv-space-5); align-items: start; }
+  @media (max-width: 980px) { .two { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="harness">
+    <span class="dot"></span>
+    <span><strong>NON-AUTHORITATIVE PROTOTYPE</strong> · Digital Showcase — workspace authoring flow (DS-W2B · DS-W3) · coins nothing · sample data is illustrative</span>
+    <span class="spacer"></span>
+    <span class="chip">Prototype v0.2 · Plan v0.9 · Audit v0.2</span>
+    <button class="toggle" id="rvToggle" aria-pressed="true" title="Show/hide review-only governance annotations">Review annotations: <b id="rvState">ON</b></button>
+  </div>
+
+  <div class="frame">
+    <nav class="sidebar" aria-label="Vendor workspace (prototype)">
+      <div class="brand"><b>iVendorz</b><span>Vendor</span></div>
+
+      <div class="nav-label">Authoring journey</div>
+      <button class="nav-item active" data-go="s1"><span class="step-n">1</span> Overview</button>
+      <button class="nav-item" data-go="s2"><span class="step-n">2</span> Choose Template + Arrange Sections <span class="gate">G3</span></button>
+      <button class="nav-item" data-go="s3"><span class="step-n">3</span> Preview &amp; Publish <span class="gate">G4</span></button>
+
+      <div class="nav-label">Digital Showcase</div>
+      <button class="nav-item" disabled title="Built in production — out of prototype scope">Company Profile</button>
+      <button class="nav-item" disabled title="Built in production — out of prototype scope">Product Portfolio</button>
+      <button class="nav-item" disabled title="Built in production — a content surface, not an authoring-journey step">Project Portfolio</button>
+      <button class="nav-item" disabled title="Built in production — out of prototype scope">Categories · Spec Library</button>
+      <button class="nav-item" disabled title="Built in production — out of prototype scope">Advertising</button>
+
+      <footer>
+        Stage-3 authoring-flow prototype.<br />
+        DS-W2B · DS-W3 (plan §6 Phase 1).<br />
+        Frozen Doc-7B tokens · light theme primary.
+      </footer>
+    </nav>
+
+    <main>
+      <!-- ============ Step 1 · Overview ============ -->
+      <section class="screen on" id="s1">
+        <div class="crumb">Digital Showcase · Authoring journey · <b>Step 1 · Overview</b></div>
+        <h1>Publish your showcase</h1>
+        <p class="sub">Your content already lives in your workspace. Two decisions turn it into a public site:
+        how it looks, and what it leads with. Neither one changes the content itself.</p>
+
+        <div class="rv"><b>Scope.</b> This prototype walks the plan's Phase-1 presentation work packages —
+        <b>DS-W2B</b> (named template selection) and <b>DS-W3</b> (preview &amp; publish alignment), together with the
+        <code>profile_sections</code> arrangement mechanism that carries them. Company Profile / Products /
+        <b>Project Portfolio</b> / Categories / Spec Library / Advertising are <b>content surfaces</b> built in
+        production — they feed the showcase but are not authoring-journey steps and are out of prototype scope.
+        Sample vendor content is illustrative only.</div>
+
+        <div class="journey">
+          <button class="jstep" aria-current="step" data-go="s1"><div class="k">Step 1</div><div class="v">Overview</div><div class="d">you are here</div></button>
+          <button class="jstep" data-go="s2"><div class="k">Step 2</div><div class="v">Choose Template + Arrange Sections</div><div class="d">style &amp; emphasis</div></button>
+          <button class="jstep" data-go="s3"><div class="k">Step 3</div><div class="v">Preview &amp; Publish</div><div class="d">draft → published</div></button>
+        </div>
+
+        <h2 style="margin-top:0">Your showcase right now</h2>
+        <div class="two">
+          <div class="card">
+            <div class="kv"><span>Showcase status</span> <span><span class="chip draft" id="ovStatus">Draft</span></span></div>
+            <div class="kv"><span>Selected template</span> <span><b id="ovTpl">Corporate Classic</b> <code id="ovLetter">A</code></span></div>
+            <div class="kv"><span>Sections visible on your public site</span> <span><b id="ovSec">8 of 8</b></span></div>
+            <p style="font-size:var(--iv-text-xs); color:var(--iv-fg-secondary); margin-top:var(--iv-space-3)">
+              Nothing is public until you publish. Until then the settings below are yours alone.</p>
+            <div class="actions">
+              <button class="btn" data-go="s2">Continue: Choose Template + Arrange Sections →</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom:var(--iv-space-2)">Content readiness</h3>
+            <div class="kv"><span>Company profile</span> <span class="chip pub">Complete</span></div>
+            <div class="kv"><span>Products published</span> <span><b>12</b></span></div>
+            <div class="kv"><span>Content sections available</span> <span><b>8</b></span></div>
+            <div class="kv"><span>Capability flags</span> <span><code>can_supply</code> <code>can_fabricate</code></span></div>
+          </div>
+        </div>
+
+        <h2>The governing idea</h2>
+        <div class="two">
+          <div class="card">
+            <h3>Content ≠ Presentation</h3>
+            <p style="font-size:var(--iv-text-xs); color:var(--iv-fg-secondary); margin-top:8px">
+              Your profile, products, specs and projects are <b>one content model</b>. A template changes
+              layout, hierarchy, density and visual grammar — never what the content <em>is</em>, who owns it,
+              or who may see it. Switching templates re-presents the same published material; it never
+              rewrites, republishes, or hides anything you didn't hide yourself.</p>
+            <p style="font-size:var(--iv-text-xs); color:var(--iv-fg-secondary); margin-top:8px">
+              <b>Your business type never locks you to a template.</b> It may <em>suggest</em> which sections to
+              emphasize — you always choose the template, and nothing is switched for you.</p>
+          </div>
+          <div class="card">
+            <h3>What's gated</h3>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px; font-size:var(--iv-text-xs)">
+              <div><span class="chip open">G3</span> &nbsp;Template name → letter mapping ready, not yet minted</div>
+              <div><span class="chip open">G4</span> &nbsp;Business Landing single-page route semantics undecided</div>
+              <div><span class="chip open">G3A</span> &nbsp;Business Landing has no design artifact yet</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ Step 2 · DS-W2B template + section arrangement ============ -->
+      <section class="screen" id="s2">
+        <div class="crumb">Digital Showcase · Authoring journey · <b>Step 2 · Choose Template + Arrange Sections</b></div>
+        <h1>Choose your template and arrange your sections</h1>
+        <p class="sub">Two independent choices on one page. The <b>template</b> sets the visual style; the section
+        <b>arrangement</b> sets what your public site leads with. Changing either never changes the other, and
+        neither changes your content.</p>
+
+        <div class="rv"><b>DS-W2B · G3 — mapping PROPOSED, Board mint pending.</b> The canonical axis is <b>visual layout
+        style</b> (owner ruling, hybrid model); the letter binding below is proposed, not yet minted. Frozen field:
+        <code>marketplace.microsites.layout_template ∈ {A…E}</code> (written via <code>update_microsite.v1</code> at wiring).
+        Thumbnails are abstract structure sketches; hi-fi visuals live in the approved template prototype.</div>
+
+        <div class="guide" id="guideBox"></div>
+
+        <div class="tpl-grid" id="tplGrid"></div>
+
+        <div class="selected-bar" id="selBar"></div>
+
+        <h2>Arrange your sections</h2>
+
+        <div class="rv"><b>This section is the hybrid ruling's mechanism.</b> Section emphasis lives in
+        <code>profile_sections</code> (<code>display_order</code> + <code>is_visible</code>
+        <span class="tag frozen">FROZEN</span>) — <b>not</b> in template identity. That is why a business shape can be
+        emphasized without minting a template per business type or locking a vendor to one. The starting points below
+        are <b>documented arrangements</b> (the audited reference set): applying one <b>reorders sections only and never
+        changes your template</b>. The converse holds too — choosing a template above never touches your section order
+        or visibility. That two-way independence is the proof that arrangement ⟂ template.</div>
+
+        <h3 style="margin-bottom:var(--iv-space-3)">Start from an arrangement <span class="tag prop">GUIDANCE</span></h3>
+        <div class="arr-row">
+          <button class="arr" data-arr="manufacturer">Manufacturer / fabricator</button>
+          <button class="arr" data-arr="service">Engineering service</button>
+          <button class="arr" data-arr="catalogue">Catalogue / retailer</button>
+          <button class="arr" data-arr="hybrid">Hybrid supply &amp; service</button>
+          <button class="arr" data-arr="reset">Reset to default order</button>
+        </div>
+        <div id="arrNote" style="font-size:var(--iv-text-xs); color:var(--iv-fg-muted); margin-bottom:var(--iv-space-4)">
+          No arrangement applied — default order.
+        </div>
+
+        <div class="sec-list" id="secList"></div>
+
+        <div class="bar">
+          <button class="btn" disabled title="Wired at Phase 4 — update_microsite.v1 (template) + update_profile_sections.v1 (order &amp; visibility)">Save design</button>
+          <button class="btn ghost" data-go="s3">Next: Preview &amp; Publish →</button>
+          <button class="btn ghost" data-go="s1" style="margin-left:auto">← Back to overview</button>
+        </div>
+      </section>
+
+      <!-- ============ Step 3 · DS-W3 preview & publish ============ -->
+      <section class="screen" id="s3">
+        <div class="crumb">Digital Showcase · Authoring journey · <b>Step 3 · Preview &amp; Publish</b></div>
+        <h1>Preview &amp; publish</h1>
+        <p class="sub">See exactly what the public will see, then publish. Nothing you haven't published is ever visible.</p>
+
+        <div class="rv"><b>DS-W3.</b> Preview renders the chosen template over the canonical seven public routes.
+        <b>G4 open</b> — Business Landing (single-page) route semantics are undecided; the recommendation shown is
+        "everything on Home, sub-routes 308-redirect." Preview and published rendering must share one composition engine
+        over different governed projections (DS-P3 proof 10). <b>No draft ever leaks to the public surface</b> (Doc-5D R5).</div>
+
+        <div class="two">
+          <div>
+            <div class="pv-frame" id="pvFrame">
+              <div class="pv-bar">
+                <span class="pv-dot"></span><span class="pv-dot"></span><span class="pv-dot"></span>
+                <span id="pvUrl" style="font-family:var(--iv-font-mono)">/vendors/your-company</span>
+                <span class="pv-views" role="group" aria-label="Preview width">
+                  <button class="pv-btn" data-view="desktop" aria-pressed="true">Desktop</button>
+                  <button class="pv-btn" data-view="mobile" aria-pressed="false">Mobile</button>
+                </span>
+                <span id="pvTpl">Template A</span>
+              </div>
+              <div class="pv-body" id="pvBody"></div>
+            </div>
+            <div style="font-size:var(--iv-text-2xs); color:var(--iv-fg-muted); margin-top:8px">
+              Structural preview only — abstract section blocks in your chosen order, not the rendered design.
+            </div>
+
+            <h2>Public routes</h2>
+            <div class="card" style="padding:0; overflow:hidden">
+              <table>
+                <thead><tr><th>Route</th><th id="routeHead">Behavior</th></tr></thead>
+                <tbody id="routeRows"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <aside class="card">
+            <h3>Publication</h3>
+            <div style="margin:var(--iv-space-3) 0; display:flex; align-items:center; gap:8px">
+              <span>Status:</span> <span id="pubChip" class="chip draft">Draft</span>
+            </div>
+            <p style="font-size:var(--iv-text-xs); color:var(--iv-fg-secondary)">
+              Publishing makes your current draft the live public site. Your content is not copied or rewritten —
+              publication changes visibility only.</p>
+            <div class="actions" style="flex-direction:column; align-items:stretch">
+              <button class="btn" id="pubBtn" disabled title="Wired at Phase 4 — publish_microsite.v1 (emits MicrositePublished)">Publish microsite</button>
+              <button class="btn ghost" id="unpubBtn" disabled title="Wired at Phase 4 — unpublish_microsite.v1">Unpublish</button>
+            </div>
+            <div class="rv" style="margin:var(--iv-space-4) 0 0">
+              Publish/unpublish are <b>disabled</b> — honest pre-wiring state. On wiring they emit only the frozen
+              events (<code>MicrositePublished</code> / <code>ProfileUnpublished</code>); no event is invented.
+            </div>
+            <h3 style="margin-top:var(--iv-space-5)">Trust on the public site</h3>
+            <p style="font-size:var(--iv-text-xs); color:var(--iv-fg-secondary); margin-top:6px">
+              Your public site shows a <b>Verified badge only</b> — present or absent. No score, rating, percentage,
+              or job count is ever displayed.</p>
+            <div class="rv" style="margin-top:var(--iv-space-3)">
+              <b>DS-W2A-B1 guardrail.</b> The audited reference kits each led with a fabricated trust panel
+              (numeric score · stars · performance % · job counts). That panel breaches the trust-display firewall and
+              <b>must never be recreated</b> in any template.
+            </div>
+          </aside>
+        </div>
+
+        <div class="bar">
+          <button class="btn ghost" data-go="s2">← Back to template &amp; sections</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+  /* ---------- screen routing (hash-addressable so browser Back works) ---------- */
+  var SCREENS = [
+    { id: "s1", slug: "overview" },
+    { id: "s2", slug: "template-sections" },
+    { id: "s3", slug: "preview-publish" },
+  ];
+  function slugOf(id) {
+    for (var i = 0; i < SCREENS.length; i++) if (SCREENS[i].id === id) return SCREENS[i].slug;
+    return SCREENS[0].slug;
+  }
+  function idFromHash() {
+    var h = location.hash.replace("#", "");
+    for (var i = 0; i < SCREENS.length; i++) if (SCREENS[i].slug === h) return SCREENS[i].id;
+    return SCREENS[0].id;
+  }
+  function render(id) {
+    document.querySelectorAll(".screen").forEach(function (s) { s.classList.toggle("on", s.id === id); });
+    document.querySelectorAll(".nav-item[data-go]").forEach(function (b) { b.classList.toggle("active", b.dataset.go === id); });
+    document.querySelector("main").scrollTop = 0;
+    if (id === "s1") renderOverview();
+    if (id === "s3") renderPreview();
+  }
+  document.querySelectorAll("[data-go]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var next = "#" + slugOf(b.dataset.go);
+      if (location.hash === next) render(b.dataset.go);   /* no hashchange will fire */
+      else location.hash = next;                          /* pushes history → Back works */
+    });
+  });
+  window.addEventListener("hashchange", function () { render(idFromHash()); });
+
+  /* ---------- review/preview toggle ---------- */
+  var rvToggle = document.getElementById("rvToggle");
+  rvToggle.addEventListener("click", function () {
+    var on = rvToggle.getAttribute("aria-pressed") === "true";
+    rvToggle.setAttribute("aria-pressed", String(!on));
+    document.getElementById("rvState").textContent = on ? "OFF" : "ON";
+    document.body.classList.toggle("preview", on);
+  });
+
+  /* ---------- DS-W2B · templates (presentation state) ---------- */
+  var TEMPLATES = [
+    { letter: "A", name: "Corporate Classic", desc: "Formal and credential-forward.", emph: "Emphasis: capabilities · credentials · balanced overview",
+      single: false, thumb: '<div class="tb accent" style="height:7px"></div><div class="tb gold" style="height:20px"></div><div class="row"><div class="tb"></div><div class="tb"></div><div class="tb"></div></div><div class="tb" style="height:7px"></div>' },
+    { letter: "B", name: "Modern Industrial", desc: "Bold split hero, capability-led.", emph: "Emphasis: capabilities · services · visual impact",
+      single: false, thumb: '<div class="tb accent" style="height:7px"></div><div class="row"><div class="tb gold" style="flex:2"></div><div class="tb"></div></div><div class="row"><div class="tb"></div><div class="tb accent"></div></div>' },
+    { letter: "C", name: "Product Catalogue", desc: "Catalogue-first for deep ranges.", emph: "Emphasis: products · categories · faceted browsing",
+      single: false, thumb: '<div class="tb accent" style="height:7px"></div><div class="tb" style="height:9px"></div><div class="row"><div class="tb"></div><div class="tb"></div><div class="tb"></div><div class="tb"></div></div><div class="row"><div class="tb"></div><div class="tb"></div><div class="tb"></div><div class="tb"></div></div>' },
+    { letter: "D", name: "Portfolio & Projects", desc: "Case-study led; projects carry the story.", emph: "Emphasis: projects · case studies · delivered work",
+      single: false, thumb: '<div class="tb accent" style="height:7px"></div><div class="row"><div class="tb gold" style="flex:2"></div><div class="tb" style="flex:1"></div></div><div class="row"><div class="tb" style="flex:1"></div><div class="tb gold" style="flex:2"></div></div>' },
+    { letter: "E", name: "Business Landing", desc: "Single-page starter — everything on one scroll.", emph: "Emphasis: a concise introduction",
+      single: true, thumb: '<div class="tb gold" style="height:16px"></div><div class="tb" style="height:7px"></div><div class="tb" style="height:7px"></div><div class="tb accent" style="height:7px"></div><div class="tb" style="height:7px"></div><div class="tb" style="height:7px"></div>' },
+  ];
+  /* frozen DEFAULT 'A' */
+  var selected = "A";
+
+  var tplGrid = document.getElementById("tplGrid");
+  TEMPLATES.forEach(function (t) {
+    var b = document.createElement("button");
+    b.className = "tpl";
+    b.dataset.letter = t.letter;
+    b.setAttribute("aria-pressed", String(t.letter === selected));
+    b.innerHTML =
+      '<span class="letter">' + t.letter + '</span>' +
+      '<div class="thumb">' + t.thumb + '</div>' +
+      '<h3>' + t.name + '</h3>' +
+      '<div class="desc">' + t.desc + '</div>' +
+      '<div class="emph">' + t.emph + '</div>' +
+      '<div class="foot"><span class="chip' + (t.single ? ' single' : '') + '">' +
+        (t.single ? 'Single page' : 'Multi-page · 7 routes') + '</span>' +
+      '<span class="chip">Preview</span></div>';
+    b.addEventListener("click", function () {
+      /* TEMPLATE STATE ONLY — this handler never reads or writes `sections`. */
+      selected = t.letter;
+      document.querySelectorAll(".tpl").forEach(function (x) {
+        x.setAttribute("aria-pressed", String(x.dataset.letter === selected));
+      });
+      renderSelBar();
+      renderOverview();
+    });
+    tplGrid.appendChild(b);
+  });
+
+  function tpl(letter) {
+    for (var i = 0; i < TEMPLATES.length; i++) if (TEMPLATES[i].letter === letter) return TEMPLATES[i];
+    return TEMPLATES[0];
+  }
+  function visibleCount() {
+    return sections.filter(function (s) { return s.visible; }).length;
+  }
+  function renderSelBar() {
+    var t = tpl(selected);
+    document.getElementById("selBar").innerHTML =
+      "Selected: <b>" + t.name + '</b> → writes <code>layout_template = \'' + t.letter + "'</code> " +
+      '<span class="tag prop">PROPOSED MAPPING</span>' +
+      (t.single ? ' &nbsp;<span class="tag prop">G4 OPEN — route semantics undecided</span>' : "") +
+      '<span class="indep">Section arrangement unchanged — ' + sections.length + " sections, " +
+      visibleCount() + " visible, order untouched. Template and arrangement are separate settings.</span>";
+  }
+
+  /* non-binding guidance — content availability + 4-flag capability matrix ONLY.
+     Never a vendor-type taxonomy (ESC-MKT-VENDORTYPE open); never auto-mutates the selection. */
+  document.getElementById("guideBox").innerHTML =
+    "<b>Suggestion, not a rule.</b> Based on what you've published — <b>12 products</b>, <b>3 projects</b>, " +
+    "capability flags <b>can_supply</b> + <b>can_fabricate</b> — templates <b>Product Catalogue</b> and " +
+    "<b>Portfolio &amp; Projects</b> would show your strongest material first. " +
+    "You can pick any template; your choice is never changed for you.";
+
+  /* ---------- section arrangement (presentation state — independent of `selected`) ---------- */
+  var DEFAULT_SECTIONS = [
+    { id: "overview",     label: "Overview / hero",        src: "vendor profile",      visible: true },
+    { id: "capabilities", label: "Capabilities",           src: "capability matrix",   visible: true },
+    { id: "products",     label: "Products",               src: "products",            visible: true },
+    { id: "projects",     label: "Projects",               src: "showcase_projects",   visible: true },
+    { id: "categories",   label: "Categories",             src: "category assignments",visible: true },
+    { id: "credentials",  label: "Credentials",            src: "profile_sections",    visible: true },
+    { id: "about",        label: "About / company story",  src: "profile_sections",    visible: true },
+    { id: "contact",      label: "Contact",                src: "vendor profile",      visible: true },
+  ];
+  var ARRANGEMENTS = {
+    manufacturer: { note: "Manufacturer / fabricator — capabilities and delivered work lead.",
+      order: ["overview","capabilities","products","projects","credentials","about","categories","contact"], hide: [] },
+    service: { note: "Engineering service — disciplines and delivered projects lead; product catalogue hidden.",
+      order: ["overview","capabilities","projects","about","credentials","contact","products","categories"], hide: ["products","categories"] },
+    catalogue: { note: "Catalogue / retailer — breadth of range leads; projects de-emphasized.",
+      order: ["overview","categories","products","credentials","about","contact","capabilities","projects"], hide: ["projects"] },
+    hybrid: { note: "Hybrid supply & service — products and capabilities share top billing.",
+      order: ["overview","products","capabilities","projects","about","credentials","categories","contact"], hide: [] },
+  };
+  var sections = DEFAULT_SECTIONS.map(function (s) { return { id: s.id, label: s.label, src: s.src, visible: s.visible }; });
+
+  function renderSections() {
+    var list = document.getElementById("secList");
+    list.innerHTML = "";
+    sections.forEach(function (s, i) {
+      var row = document.createElement("div");
+      row.className = "sec" + (s.visible ? "" : " hidden-sec");
+      row.innerHTML =
+        '<span class="ord">' + (i + 1) + "</span>" +
+        '<span class="nm">' + s.label + "</span>" +
+        '<span class="src">' + s.src + "</span>";
+      var up = document.createElement("button");
+      up.className = "icon-btn"; up.textContent = "↑"; up.title = "Move up";
+      up.setAttribute("aria-label", "Move " + s.label + " up");
+      up.disabled = i === 0;
+      up.addEventListener("click", function () { swap(i, i - 1); });
+      var dn = document.createElement("button");
+      dn.className = "icon-btn"; dn.textContent = "↓"; dn.title = "Move down";
+      dn.setAttribute("aria-label", "Move " + s.label + " down");
+      dn.disabled = i === sections.length - 1;
+      dn.addEventListener("click", function () { swap(i, i + 1); });
+      var vis = document.createElement("button");
+      vis.className = "icon-btn"; vis.textContent = s.visible ? "◉" : "○";
+      vis.title = s.visible ? "Visible — click to hide" : "Hidden — click to show";
+      vis.setAttribute("aria-label", (s.visible ? "Hide " : "Show ") + s.label);
+      vis.setAttribute("aria-pressed", String(s.visible));
+      vis.addEventListener("click", function () { s.visible = !s.visible; renderSections(); });
+      row.appendChild(up); row.appendChild(dn); row.appendChild(vis);
+      list.appendChild(row);
+    });
+    /* arrangement changed → the summaries that report it refresh; `selected` is never touched */
+    renderSelBar();
+    renderOverview();
+  }
+  function swap(a, b) {
+    var t = sections[a]; sections[a] = sections[b]; sections[b] = t; renderSections();
+  }
+
+  document.querySelectorAll(".arr").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      /* ARRANGEMENT STATE ONLY — this handler never assigns `selected`. */
+      var key = btn.dataset.arr;
+      var before = selected; /* read only, to prove it is unchanged */
+      if (key === "reset") {
+        sections = DEFAULT_SECTIONS.map(function (s) { return { id: s.id, label: s.label, src: s.src, visible: true }; });
+        document.getElementById("arrNote").innerHTML = "No arrangement applied — default order.";
+      } else {
+        var a = ARRANGEMENTS[key];
+        sections = a.order.map(function (id) {
+          var base = DEFAULT_SECTIONS.filter(function (s) { return s.id === id; })[0];
+          return { id: base.id, label: base.label, src: base.src, visible: a.hide.indexOf(id) === -1 };
+        });
+        document.getElementById("arrNote").innerHTML =
+          a.note + " &nbsp;<b>Template unchanged: " + tpl(before).name +
+          " (" + before + ")</b> — arrangement and template are independent.";
+      }
+      renderSections();
+    });
+  });
+
+  /* ---------- overview summary ---------- */
+  function renderOverview() {
+    var t = tpl(selected);
+    document.getElementById("ovTpl").textContent = t.name;
+    document.getElementById("ovLetter").textContent = t.letter;
+    document.getElementById("ovSec").textContent = visibleCount() + " of " + sections.length;
+  }
+
+  /* ---------- DS-W3 preview & publish ---------- */
+  var ROUTES = ["/", "/about", "/products", "/projects", "/industries", "/resources", "/contact"];
+  var pvView = "desktop";
+  document.querySelectorAll(".pv-btn").forEach(function (b) {
+    b.addEventListener("click", function () {
+      pvView = b.dataset.view;
+      document.querySelectorAll(".pv-btn").forEach(function (x) {
+        x.setAttribute("aria-pressed", String(x.dataset.view === pvView));
+      });
+      document.getElementById("pvFrame").classList.toggle("is-mobile", pvView === "mobile");
+    });
+  });
+
+  function renderPreview() {
+    var t = tpl(selected);
+    document.getElementById("pvTpl").textContent = "Template " + t.letter + " · " + t.name;
+    var body = document.getElementById("pvBody");
+    body.innerHTML = "";
+
+    /* public vendor header — binary Verified badge ONLY (never a score, rating, % or count) */
+    var head = document.createElement("div");
+    head.className = "pv-head";
+    head.innerHTML = 'Your Company Ltd <span class="vbadge">✓ Verified</span>';
+    body.appendChild(head);
+
+    var vis = sections.filter(function (s) { return s.visible; });
+    vis.forEach(function (s, i) {
+      var d = document.createElement("div");
+      d.className = "pv-sec" + (i === 0 ? " hero" : "");
+      d.textContent = s.label;
+      body.appendChild(d);
+    });
+    if (!vis.length) {
+      var none = document.createElement("div");
+      none.className = "pv-sec";
+      none.textContent = "All sections hidden — nothing would render.";
+      body.appendChild(none);
+    }
+    var hidden = sections.length - vis.length;
+    if (hidden > 0) {
+      var n = document.createElement("div");
+      n.style.cssText = "font-size:var(--iv-text-2xs);color:var(--iv-fg-muted);margin-top:4px";
+      n.textContent = hidden + " hidden section" + (hidden > 1 ? "s" : "") + " — absent from the public site entirely.";
+      body.appendChild(n);
+    }
+
+    document.getElementById("routeHead").textContent = t.single ? "Behavior — single page (G4 recommendation)" : "Behavior — multi-page";
+    var rows = document.getElementById("routeRows");
+    rows.innerHTML = ROUTES.map(function (r) {
+      var behavior;
+      if (t.single) behavior = r === "/" ? "Renders the entire site (all visible sections)" : "308 → /" + "#" + r.slice(1);
+      else behavior = r === "/" ? "Curated landing; links out to each page" : "Dedicated page";
+      return "<tr><td><code>" + r + "</code></td><td>" + behavior + "</td></tr>";
+    }).join("");
+  }
+
+  /* ---------- boot ---------- */
+  renderSections();   /* also primes selBar + overview */
+  render(idFromHash());
+</script>
+</body>
+</html>

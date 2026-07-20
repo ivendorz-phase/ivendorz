@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Digital Showcase — Sidebar IA Prototype (Stage-3, NON-AUTHORITATIVE)</title>
+<style>
+  /* Tokens — copied VERBATIM from app/globals.css (--iv-*). Do not "improve" values. */
+  :root {
+    --iv-brand-100: #e0e7ff;
+    --iv-brand-600: #4f46e5;
+    --iv-brand-700: #4338ca;
+    --iv-navy-700: #1f3154;
+    --iv-navy-800: #182643;
+    --iv-navy-900: #111c33;
+    --iv-amber-500: #b8860b;
+    --iv-light-base: #f8fafc;
+    --iv-light-raised: #ffffff;
+    --iv-light-muted: #f1f5f9;
+    --iv-light-border: #e2e8f0;
+    --iv-nav-bg: #f2f5f9;
+    --iv-nav-hover-bg: rgba(15, 23, 42, 0.05);
+    --iv-nav-selected-bg: var(--iv-brand-100);
+    --iv-nav-selected-fg: var(--iv-brand-700);
+    --fg: #0f172a;
+    --fg-muted: #64748b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+    background: var(--iv-light-base);
+    color: var(--fg);
+    font-size: 14px;
+  }
+  header.page {
+    background: var(--iv-navy-900);
+    color: #fff;
+    padding: 20px 28px;
+  }
+  header.page h1 { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
+  header.page p { margin: 0; color: #b7c6e0; font-size: 13px; max-width: 72ch; }
+  .banner {
+    background: #fbf7ea;
+    border-bottom: 1px solid #ebd99a;
+    color: #5f4406;
+    padding: 8px 28px;
+    font-size: 12px;
+  }
+  main { padding: 24px 28px 48px; }
+  .compare {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    align-items: start;
+    max-width: 1180px;
+  }
+  .pane { background: var(--iv-light-raised); border: 1px solid var(--iv-light-border); border-radius: 10px; overflow: hidden; }
+  .pane > h2 {
+    margin: 0;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--iv-light-border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pane .tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+    padding: 2px 7px; border-radius: 99px; text-transform: uppercase;
+  }
+  .tag.current { background: var(--iv-light-muted); color: var(--fg-muted); }
+  .tag.rec { background: var(--iv-brand-100); color: var(--iv-brand-700); }
+  .tag.alt { background: #fbf7ea; color: #7c5807; }
+  .pane .note { padding: 10px 16px; font-size: 12px; color: var(--fg-muted); border-bottom: 1px solid var(--iv-light-border); line-height: 1.5; }
+
+  /* Sidebar replica — mirrors app/(app)/_components/shell/sidebar.tsx light theme */
+  .sidebar { background: var(--iv-nav-bg); padding: 10px 8px 16px; }
+  .section-label {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--fg-muted); padding: 10px 10px 4px;
+  }
+  .nav a, .nav button {
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; text-align: left;
+    padding: 7px 10px; border: 0; background: none; border-radius: 7px;
+    font: inherit; color: var(--fg); cursor: pointer; text-decoration: none;
+  }
+  .nav a:hover, .nav button:hover { background: var(--iv-nav-hover-bg); }
+  .nav a.active { background: var(--iv-nav-selected-bg); color: var(--iv-nav-selected-fg); font-weight: 600; }
+  .nav .chev { margin-left: auto; transition: transform 0.15s ease-out; color: var(--fg-muted); }
+  .nav details[open] .chev { transform: rotate(180deg); }
+  .nav details > summary { list-style: none; }
+  .nav details > summary::-webkit-details-marker { display: none; }
+  .nav .kids { padding-left: 22px; display: flex; flex-direction: column; gap: 2px; margin-top: 2px; }
+  .nav .kids a { padding: 6px 10px; font-size: 13.5px; }
+  .icon { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.7; }
+  .ext { width: 13px; height: 13px; margin-left: auto; color: var(--fg-muted); }
+  .ghost { color: var(--fg-muted); font-size: 12.5px; padding: 6px 10px; }
+
+  .rationale { max-width: 1180px; margin-top: 28px; background: var(--iv-light-raised); border: 1px solid var(--iv-light-border); border-radius: 10px; padding: 18px 22px; }
+  .rationale h2 { font-size: 14px; margin: 0 0 10px; }
+  .rationale ul { margin: 0; padding-left: 18px; line-height: 1.7; font-size: 13px; }
+  .rationale .frozen { color: var(--iv-brand-700); font-weight: 600; }
+  kbd.route { font-family: ui-monospace, monospace; font-size: 11.5px; background: var(--iv-light-muted); border: 1px solid var(--iv-light-border); border-radius: 4px; padding: 0 4px; color: var(--fg-muted); }
+</style>
+</head>
+<body>
+<header class="page">
+  <h1>Digital Showcase — Sidebar IA rearrangement</h1>
+  <p>
+    All 9 entries kept, zero routes changed, zero shell-type changes — the proposal only uses
+    grouping primitives the shell already ships (<code>NavSection.label</code> +
+    <code>NavItem.children</code>). Click groups to expand/collapse; click a leaf to see its
+    active state.
+  </p>
+</header>
+<div class="banner">
+  <strong>Stage-3 prototype — NON-AUTHORITATIVE, coins nothing.</strong> Labels marked PROPOSED await
+  owner approval. Every href is an existing production route; none is invented here.
+</div>
+<main>
+  <div class="compare">
+
+    <!-- CURRENT -->
+    <div class="pane">
+      <h2>Current <span class="tag current">as shipped</span></h2>
+      <div class="note">One accordion, 9 flat children. The guided journey sits first but reads as
+        just another link; content pages and presentation pages are interleaved with no seam.</div>
+      <div class="sidebar nav">
+        <details open>
+          <summary><button type="button">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/></svg>
+            Digital Showcase
+            <svg class="icon chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </button></summary>
+          <div class="kids">
+            <a href="#" data-nav>Authoring journey</a>
+            <a href="#" data-nav>Company Profile</a>
+            <a href="#" data-nav>Product Portfolio</a>
+            <a href="#" data-nav>Project Portfolio</a>
+            <a href="#" data-nav>Categories</a>
+            <a href="#" data-nav>Spec Library</a>
+            <a href="#" data-nav>Microsite &amp; Branding</a>
+            <a href="#" data-nav>Advertising</a>
+            <a href="#" data-nav>View Public Page</a>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- OPTION A -->
+    <div class="pane">
+      <h2>Option A — labeled section, 3 chunks <span class="tag rec">recommended</span></h2>
+      <div class="note">"Digital Showcase" becomes a <em>section heading</em> (always visible, like
+        "Trust" / "Communication"). The builder gets top billing as a flat item; the 8 destinations
+        split into <strong>Content</strong> and <strong>Publish &amp; Promote</strong> — the nav
+        itself teaches the frozen Content ≠ Presentation rule.</div>
+      <div class="sidebar nav">
+        <div class="section-label">Digital Showcase</div>
+        <a href="#" data-nav class="active">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2l2.4 4.9L20 8l-4 3.9.9 5.6L12 14.9 7.1 17.5 8 11.9 4 8l5.6-1.1z"/></svg>
+          Showcase Builder <span style="font-size:9px;color:var(--iv-amber-500);font-weight:700">PROPOSED NAME</span>
+        </a>
+        <details open>
+          <summary><button type="button">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM4 10h16"/></svg>
+            Content
+            <svg class="icon chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </button></summary>
+          <div class="kids">
+            <a href="#" data-nav>Company Profile</a>
+            <a href="#" data-nav>Product Portfolio</a>
+            <a href="#" data-nav>Project Portfolio</a>
+            <a href="#" data-nav>Categories</a>
+            <a href="#" data-nav>Spec Library</a>
+          </div>
+        </details>
+        <details open>
+          <summary><button type="button">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+            Publish &amp; Promote
+            <svg class="icon chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </button></summary>
+          <div class="kids">
+            <a href="#" data-nav>Microsite &amp; Branding</a>
+            <a href="#" data-nav>Advertising</a>
+            <a href="#" data-nav>View Public Page
+              <svg class="icon ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4L10 14M18 13v7H4V6h7"/></svg>
+            </a>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- OPTION B -->
+    <div class="pane">
+      <h2>Option B — single group, reordered <span class="tag alt">minimal change</span></h2>
+      <div class="note">Keeps the one-accordion shape; only reorders children into the same logical
+        run (builder → content → presentation) with the builder renamed. Cheapest diff, but the
+        seams stay invisible and 9 flat links still exceed a comfortable scan.</div>
+      <div class="sidebar nav">
+        <details open>
+          <summary><button type="button">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/></svg>
+            Digital Showcase
+            <svg class="icon chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </button></summary>
+          <div class="kids">
+            <a href="#" data-nav>Showcase Builder</a>
+            <div class="ghost">— content —</div>
+            <a href="#" data-nav>Company Profile</a>
+            <a href="#" data-nav>Product Portfolio</a>
+            <a href="#" data-nav>Project Portfolio</a>
+            <a href="#" data-nav>Categories</a>
+            <a href="#" data-nav>Spec Library</a>
+            <div class="ghost">— publish &amp; promote —</div>
+            <a href="#" data-nav>Microsite &amp; Branding</a>
+            <a href="#" data-nav>Advertising</a>
+            <a href="#" data-nav>View Public Page</a>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <div class="rationale">
+    <h2>What changes · what does not</h2>
+    <ul>
+      <li><strong>Nothing deleted, nothing moved off its route.</strong> All 9 destinations keep their
+        existing hrefs — <kbd class="route">/sell/company/journey</kbd>, <kbd class="route">/sell/company</kbd>,
+        <kbd class="route">/sell/company/products</kbd>, <kbd class="route">/sell/company/projects</kbd>,
+        <kbd class="route">/sell/company/categories</kbd>, <kbd class="route">/sell/company/spec-library</kbd>,
+        <kbd class="route">/sell/microsite</kbd>, <kbd class="route">/sell/microsite/ads</kbd>. Only
+        <code>vendor-shell-vm.ts</code> (presentation config) is edited.</li>
+      <li><strong>Groups mirror the frozen seam.</strong> <span class="frozen">Content ≠ Presentation</span>
+        (Invariant #9 / Golden Rule 4): "Content" = what buyers read; "Publish &amp; Promote" = how it
+        looks and reaches them. The vendor learns the platform's own model from the nav.</li>
+      <li><strong>The guided path gets top billing.</strong> The 3-step journey (Overview → Template &amp;
+        Sections → Preview &amp; Publish) is an <em>action</em>, not a destination — a flat, iconed item
+        above the groups, exactly per DS-W0-R1 ("listed first because it is where a vendor starts").</li>
+      <li><strong>Rename "Authoring journey" → "Showcase Builder" (proposed).</strong> "Authoring
+        journey" is internal design language; "Showcase Builder" says what the vendor gets. Alternatives
+        considered: "Setup Guide" (implies one-time), "Getting Started" (implies you finish and leave).</li>
+      <li><strong>"View Public Page" gains an external-link affordance</strong> (visual only — same
+        destination as today, the page hosting <code>live_url</code>; the vendor side still never
+        constructs a public slug URL).</li>
+      <li><strong>Zero shell changes.</strong> <code>NavSection.label</code> and one-level
+        <code>NavItem.children</code> already exist and render exactly this way for Trust /
+        Communication / Business Docs.</li>
+    </ul>
+  </div>
+</main>
+<script>
+  // Leaf click ⇒ simulate active state within its pane (presentation demo only).
+  document.querySelectorAll("[data-nav]").forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      e.preventDefault();
+      var pane = a.closest(".pane");
+      pane.querySelectorAll("[data-nav]").forEach(function (x) { x.classList.remove("active"); });
+      a.classList.add("active");
+    });
+  });
+</script>
+</body>
+</html>

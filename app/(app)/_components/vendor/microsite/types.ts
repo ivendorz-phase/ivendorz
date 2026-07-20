@@ -39,8 +39,35 @@ export interface MicrositeSectionView {
   section_name?: string;
   /** Display label from the contract — NOT a hardcoded enum (section_type set is contract-owned). */
   section_type?: string;
+  /**
+   * Publication axis — carries `profile_sections.publish_state` (Doc-6D Pass2 §3.4.2).
+   *
+   * ⚠️ TOKEN MISMATCH, flagged not silently renamed: the frozen enum values are
+   * `('draft','published')` and PUB-1 explicitly coins no third value, but this field reuses
+   * `AssetVisibility` (`'draft' | 'public'`), which belongs to branding assets — and those have no
+   * `publish_state` column of their own at all. Renaming the shared type touches the branding, SEO
+   * and domain panels, so it is raised for the owner rather than changed under a journey refactor.
+   */
   visibility?: AssetVisibility;
+  /**
+   * Visibility axis — `profile_sections.is_visible` (frozen; `boolean NOT NULL DEFAULT true`).
+   *
+   * SEPARATE from `visibility` above and load-bearing: the frozen public-read RLS policy requires
+   * BOTH (`Doc-6D Pass2:270` — `publish_state = 'published' AND is_visible`). Deriving "visible on
+   * your public page" from the publication axis alone would count a published-but-hidden section as
+   * public. Use `isPubliclyVisibleSection` rather than testing either field on its own.
+   */
+  is_visible?: boolean;
   order?: number;
+}
+
+/**
+ * Does this section actually reach the public page? Mirrors the frozen `profile_sections`
+ * public-read policy exactly (Doc-6D Pass2:270): published AND visible. Both axes are required, and
+ * an unread field is treated as "not established" rather than assumed true.
+ */
+export function isPubliclyVisibleSection(section: MicrositeSectionView): boolean {
+  return section.visibility === "public" && section.is_visible === true;
 }
 
 export interface BrandingAssetView {

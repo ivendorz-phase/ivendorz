@@ -16,6 +16,15 @@ export {
   type PresentationContextBannerProps,
 } from "./presentation-context-banner";
 export { MicrositeStatusChip, DomainStatusChip, VisibilityChip } from "./status-chips";
+export {
+  TEMPLATE_CATALOG,
+  DEFAULT_LAYOUT_TEMPLATE,
+  templateEntry,
+  type TemplateCatalogEntry,
+} from "./template-catalog";
+
+/** The frozen two-axis public-visibility predicate for sections — never test either axis alone. */
+export { isPubliclyVisibleSection } from "./types";
 
 export type {
   MicrositeStatus,

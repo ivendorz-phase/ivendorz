@@ -63,6 +63,15 @@ export const VENDOR_NAV: NavSection[] = [
         href: `${BASE}/company`,
         icon: "showcase",
         children: [
+          // DS-W0-R1 (owner ruling 2026-07-20): the group's guided path — THREE steps (Overview →
+          // Choose Template + Arrange Sections → Preview & Publish) on one route, selected by the
+          // allowlisted `?step=` param. Listed first because it is where a vendor starts, not
+          // another destination. `activeAcrossQuery` keeps this entry lit across its own `?step=`
+          // variants (the same opt-in the RFQ Inbox ⇄ Pipeline toggle uses).
+          //
+          // Project Portfolio is deliberately NOT a step in that journey — writing up a case study
+          // is content work that FEEDS the showcase. It keeps its own entry below and its own route.
+          { label: "Authoring journey", href: `${BASE}/company/journey`, activeAcrossQuery: true },
           { label: "Company Profile", href: `${BASE}/company` },
           { label: "Product Portfolio", href: `${BASE}/company/products` },
           { label: "Project Portfolio", href: `${BASE}/company/projects` },

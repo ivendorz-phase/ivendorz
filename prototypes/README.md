@@ -34,6 +34,9 @@ build, Node (not python) per the local-server lesson on this box.
 |---|---|---|---|---|
 | Admin Console | [`admin-console/`](admin-console/) | M8 staff console — 29 surfaces | **Stage-4 APPROVED** (2026-07-08) | Planning v0.3 · Brief v0.2 · Prototype **v1.0** |
 | Review System | [`review-system/`](review-system/) | 3 rating lanes (public/admin/CRM) | Visual-approved (owner) | see `review_system_planning_and_design.md` |
+| Digital Showcase Decisions | [`digital-showcase-decisions/`](digital-showcase-decisions/) | G3/G4/G5 decision packet — template mapping, Starter semantics, Project Portfolio fields | Stage-3 (G3 axis since ruled — hybrid model) | Planning `digital_showcase_planning_and_design.md` v0.2 · Prototype **v0.1** |
+| Digital Showcase Workspace | [`digital-showcase-workspace/`](digital-showcase-workspace/) | Vendor authoring journey, **three steps** — Overview · DS-W2B Choose Template + Arrange Sections · DS-W3 Preview & Publish | Stage-3 (awaits owner/Board review) | Planning v0.9 · Audit v0.2 · Prototype **v0.2** |
+| Digital Showcase Nav | [`digital-showcase-nav/`](digital-showcase-nav/) | Sidebar IA rearrangement — Current vs Option A (labeled section, Content / Publish & Promote sub-groups) vs Option B (reordered single group); all 9 entries kept | Stage-3 (awaits owner approval) | `vendor-shell-vm.ts` VX-01 group · Prototype **v0.1** |
 
 ## Conventions
 
