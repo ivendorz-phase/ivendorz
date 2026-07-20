@@ -93,11 +93,20 @@ declarations on EXISTING events** (additive per Doc-4A §20.2 "new consumer decl
 (BC-OPS-2-emitted, Doc-2 :666). The M6 conversation event is T4's to mint, M4 merely declares
 consumption when it exists.
 
-## 3. T2 — Doc-3 POLICY keys (indicative names; values Doc-3-only)
+## 3. T2 — Doc-3 POLICY keys — ✅ **RESOLVED-BY-CONFIRMATION (Option A, owner 2026-07-19)**
 
-`operations.buyer_relationships_page_size_max` · import-control family
-`operations.buyer_relationship_import_*` (bounds/rates — the D2 "strict controls", flow deferred
-per design plan §10 step 6). Naming per Doc-4A §3.2 (dotted lowercase, Doc-3 §12.2).
+**No Doc-3 patch; zero new keys.** Registry sweep against
+`Doc-3_Policy_Key_Registration_Patch_v1.4_Operations` showed full coverage by the existing
+module-scoped keys: **`operations.list_page_size_max`** (module-wide M4 list-read bound) covers
+`ops.list_buyer_relationships.v1`; **`operations.idempotency_dedup_window`** covers the new
+`Idempotency: required` commands (the one-module-scoped-key model the Board ratified 2026-07-15,
+ESC-RFQ-POLICY/ESC-OPS-POLICY). The indicative `operations.buyer_relationships_page_size_max`
+named in earlier revisions of this section is **SUPERSEDED** — it would have duplicated the
+module-scoped key. Import-control keys register **with the future import-contract patch** (v1.4's
+minimal-registration rule: only wire-referenced keys; design plan gate 6). **T3 binds both
+existing keys by pointer and carries a one-line note extending v1.4's illustrative list-read
+enumeration to include `list_buyer_relationships`.** Disposition precedent: ESC-RFQ-AUDIT
+(Board note, no patch).
 
 ## 4. Provenance-tier ↔ event mapping — ⚑ ONE OPEN SUB-DECISION
 
@@ -167,8 +176,40 @@ frozen leads aggregate — Vendor Lead (transaction-axis) and Vendor Buyer Relat
 G1  Owner/Architecture Board: approve the structural amendment in principle
     (M4 aggregates 7→8, contexts 5→6, BC-OPS-6) ......................... PENDING
 G2  Owner: rule §4 tier-mapping Option A / B ............................. PENDING
-G3  T1 Doc-2 patch authored → human-approved → folded .................... blocked on G1–G2
-G4  T2/T3/T5 in train order; T4 independent (M6 lane); T4b after T4 ...... blocked on G3
+G3  T1 Doc-2 patch authored → human-approved → folded .................... ✅ FOLDED 2026-07-19
+    (Doc-2_Patch_v1.0.9 / PATCH-D2-08; 2 MAJOR + 2 MINOR review corrections + focused
+     verification; Authority-Map-registered; ESC-OPS-BUYER-CRM minted-CLOSED; commit 573a349)
+G4  T2 ✅ RESOLVED-BY-CONFIRMATION (Option A — §3); T4 independent (M6 lane);
+    T4b after T4; T5 with T3/build ....................................... IN TRAIN
+G5  T3 Review-A: PATCH REQUIRED (1/4/6/1) → dispositions ratified → v1.1 →
+    FOCUSED VERIFICATION (same agent): RA-01→12 ALL CLOSED; NF-01..05
+    raised → applied → **v1.2. Verifier: fold YES once G5a folds.** ...... ✅ VERIFIED
+G5a Doc-4E `VendorInvited` payload patch — independent RFQ-lane review:
+    PATCH REQUIRED (0 BLK / RQ-01..03 MAJ / RQ-04 MIN / RQ-05 NIT; addition
+    itself sound: authority/compatibility/disclosure all PASS) → RQ
+    corrections APPLIED → **v1.1 (full §16.3 declaration; version PINNED
+    unchanged per Doc-4A §16.4; `buyer_organization_id : always`/MUST —
+    also resolves Review-A's OBS-A) — AWAITING OWNER FOLD (before/with T3;
+    suggested ID PATCH-4E-VIP-01)** ...................................... FOLD-READY
+G5b `ESC-IDN-ORG-DISPLAY-LABEL` (Identity-lane display projection;
+    registry-registered; gates the name-search FEATURE only, never the T3
+    fold; generalizes ESC-7G-ENG-02) ..................................... OPEN
+G6  ✅ EXECUTED 2026-07-19 (Board-authorized sequence): PATCH-4E-VIP-01 FOLDED
+    (`generatedDocs/Doc-4E_VendorInvited_Payload_Additive_Patch_v1.0.md`) →
+    7-point pointer re-verification PASS (0·0·0) → **T3 FOLDED as
+    `generatedDocs/Doc-4F_BCOPS6_Additive_Patch_v1.0.md` (PATCH-4F-BCOPS6-01)**;
+    both Authority-Map-registered.
+
+POST-FOLD TRAIN STATE (Board-recorded 2026-07-19):
+  T1   Doc-2 v1.0.9                     FOLDED
+  T2   Doc-3 POLICY                     RESOLVED (by confirmation, Option A)
+  T2b  VendorInvited payload            FOLDED (PATCH-4E-VIP-01)
+  T3   BC-OPS-6 contracts               FOLDED (PATCH-4F-BCOPS6-01)
+  T4   M6 conversation event            OPEN
+  T4b  M4 conversation consumer         BLOCKED ON T4
+  T5   Audit serialization              OPEN
+  ID1  Organization display-label seam  OPEN (ESC-IDN-ORG-DISPLAY-LABEL —
+       gates name resolution/search only; blocks no other implementation)
 ```
 
 Until G3 folds, the FE surface remains exactly as shipped (`fb86e66`): rename + "—" tiles +
