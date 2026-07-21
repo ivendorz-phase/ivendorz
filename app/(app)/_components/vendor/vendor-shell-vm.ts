@@ -55,33 +55,57 @@ export const VENDOR_NAV: NavSection[] = [
       { label: "Buyer Relationships", href: `${BASE}/buyer-relationships`, icon: "crm" },
     ],
   },
+  // DS-NAV (owner-approved Option A, 2026-07-20 · prototype `prototypes/digital-showcase-nav/`):
+  // "Digital Showcase" is a labeled SECTION (like Trust / Communication), not a single 9-child
+  // accordion. All nine entries and every href are unchanged — this is a re-grouping only:
+  //
+  //   1. "Showcase Builder" (renamed from "Authoring journey" — vendor-goal language, owner-picked)
+  //      keeps top billing as a flat iconed item per DS-W0-R1 ("listed first because it is where a
+  //      vendor starts"). Same route, same allowlisted `?step=` journey; `activeAcrossQuery` keeps
+  //      it lit across its own `?step=` variants (the RFQ Inbox ⇄ Pipeline opt-in).
+  //   2. "Content" groups what buyers READ; 3. "Publish & Promote" groups how it LOOKS and reaches
+  //      them — the split mirrors the frozen Content ≠ Presentation seam (Invariant #9 / Golden
+  //      Rule 4) so the nav itself teaches the platform's model.
   {
     id: "showcase",
+    label: "Digital Showcase",
     items: [
       {
-        label: "Digital Showcase",
+        label: "Showcase Builder",
+        href: `${BASE}/company/journey`,
+        icon: "builder",
+        activeAcrossQuery: true,
+      },
+      {
+        label: "Content",
         href: `${BASE}/company`,
-        icon: "showcase",
+        icon: "company",
         children: [
-          // DS-W0-R1 (owner ruling 2026-07-20): the group's guided path — THREE steps (Overview →
-          // Choose Template + Arrange Sections → Preview & Publish) on one route, selected by the
-          // allowlisted `?step=` param. Listed first because it is where a vendor starts, not
-          // another destination. `activeAcrossQuery` keeps this entry lit across its own `?step=`
-          // variants (the same opt-in the RFQ Inbox ⇄ Pipeline toggle uses).
-          //
-          // Project Portfolio is deliberately NOT a step in that journey — writing up a case study
-          // is content work that FEEDS the showcase. It keeps its own entry below and its own route.
-          { label: "Authoring journey", href: `${BASE}/company/journey`, activeAcrossQuery: true },
-          { label: "Company Profile", href: `${BASE}/company` },
+          // `exactPath`: every other `/sell/company/*` page is its OWN nav entry here, so the
+          // parent path must not also light up on those sub-paths (the pre-existing prefix-match
+          // double-highlight the DS-NAV restructure made visible).
+          { label: "Company Profile", href: `${BASE}/company`, exactPath: true },
           { label: "Product Portfolio", href: `${BASE}/company/products` },
+          // Project Portfolio is deliberately NOT a step in the builder journey (DS-W0-R1) —
+          // writing up a case study is content work that FEEDS the showcase. It lives here with
+          // its content siblings and keeps its own route.
           { label: "Project Portfolio", href: `${BASE}/company/projects` },
           { label: "Categories", href: `${BASE}/company/categories` },
           { label: "Spec Library", href: `${BASE}/company/spec-library` },
-          { label: "Microsite & Branding", href: `${BASE}/microsite` },
+        ],
+      },
+      {
+        label: "Publish & Promote",
+        href: `${BASE}/microsite`,
+        icon: "branding",
+        children: [
+          // `exactPath` on both `/microsite` entries: "Advertising" lives at a sub-path, and the
+          // parent path must not light up alongside it (same defect class as "Company Profile").
+          { label: "Microsite & Branding", href: `${BASE}/microsite`, exactPath: true },
           { label: "Advertising", href: `${BASE}/microsite/ads` },
           // Same real destination as "Microsite & Branding" — that page hosts the actual
           // `live_url` external link; the vendor side never constructs a public slug URL itself.
-          { label: "View Public Page", href: `${BASE}/microsite` },
+          { label: "View Public Page", href: `${BASE}/microsite`, exactPath: true },
         ],
       },
     ],

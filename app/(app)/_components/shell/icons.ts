@@ -17,6 +17,7 @@ import {
   Inbox,
   KeyRound,
   LayoutDashboard,
+  LayoutTemplate,
   LifeBuoy,
   Library,
   Lock,
@@ -89,6 +90,9 @@ export const NAV_ICONS = {
   showcase: Globe,
   inquiries: MessageSquare,
   award: Trophy,
+  // Digital Showcase sidebar IA (DS-NAV, owner-approved Option A 2026-07-20) — the guided
+  // builder journey's top-billed entry.
+  builder: LayoutTemplate,
 } as const satisfies Record<string, LucideIcon>;
 
 export type NavIconKey = keyof typeof NAV_ICONS;

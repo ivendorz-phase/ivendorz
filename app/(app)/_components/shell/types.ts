@@ -50,6 +50,15 @@ export interface NavItem {
    */
   activeAcrossQuery?: boolean;
   /**
+   * Opt-in active-highlight TIGHTENING — the mirror image of `activeAcrossQuery`: when `true`, this
+   * item highlights ONLY on an exact pathname match, never on sub-paths. Default (unset) keeps the
+   * prefix rule (`/rfqs` stays lit on `/rfqs/123`). Set it on a PARENT-PATH item whose sub-paths are
+   * OTHER nav entries' destinations — e.g. "Company Profile" (`/sell/company`), whose siblings
+   * (`/sell/company/products`, `/sell/company/journey`, …) would otherwise double-highlight it on
+   * every visit (DS-NAV, 2026-07-20).
+   */
+  exactPath?: boolean;
+  /**
    * Optional one-level grouping (IA — Buyer sidebar sub-groups, e.g. "RFQs" containing "My RFQs" /
    * "Draft Requests" / "Closed RFQs"). When present, the client nav components (`Sidebar`/`MobileNav`)
    * render this item as a non-interactive group header (icon + label, `href` unused for the header

@@ -27,12 +27,15 @@ import type { NavItem, NavSection, ShellOrg, SurfaceSwitchItem } from "./types";
 /** Mirrors the desktop `Sidebar`'s `isActive` — see its comment for why `search` is needed
  *  (query-bearing hrefs like `/rfqs?state=draft` never match on `pathname` alone) and for the
  *  `activeAcrossQuery` opt-in (a surface-parent like the merged `/sell/rfqs` stays lit across its
- *  own `?view=`/`?state=` variants — Cluster #1 · Team-1 F2). */
+ *  own `?view=`/`?state=` variants — Cluster #1 · Team-1 F2) and the `exactPath` opt-in (a
+ *  parent-path item like "Company Profile" `/sell/company` never lights on sub-path siblings —
+ *  DS-NAV). */
 function isActive(
   pathname: string,
   search: string,
   href: string,
   activeAcrossQuery = false,
+  exactPath = false,
 ): boolean {
   const qIndex = href.indexOf("?");
   const hrefPath = qIndex === -1 ? href : href.slice(0, qIndex);
@@ -40,7 +43,7 @@ function isActive(
   if (hrefQuery) return pathname === hrefPath && search === hrefQuery;
   return (
     (pathname === hrefPath && (activeAcrossQuery || search === "")) ||
-    (hrefPath !== "/" && pathname.startsWith(hrefPath + "/"))
+    (!exactPath && hrefPath !== "/" && pathname.startsWith(hrefPath + "/"))
   );
 }
 
@@ -58,7 +61,7 @@ function NavLink({
   indented?: boolean;
 }) {
   const Icon = item.icon ? NAV_ICONS[item.icon] : null;
-  const active = isActive(pathname, search, item.href, item.activeAcrossQuery);
+  const active = isActive(pathname, search, item.href, item.activeAcrossQuery, item.exactPath);
   return (
     <SheetClose asChild>
       <Link
@@ -97,7 +100,9 @@ function NavGroup({
 }) {
   const Icon = item.icon ? NAV_ICONS[item.icon] : null;
   const hasActiveChild =
-    item.children?.some((c) => isActive(pathname, search, c.href, c.activeAcrossQuery)) ?? false;
+    item.children?.some((c) =>
+      isActive(pathname, search, c.href, c.activeAcrossQuery, c.exactPath),
+    ) ?? false;
   const panelId = `mobile-nav-group-${item.label.replace(/\s+/g, "-").toLowerCase()}`;
   return (
     <li>
@@ -135,7 +140,11 @@ function NavGroup({
 function findActiveGroupLabel(nav: NavSection[], pathname: string, search: string): string | null {
   for (const section of nav) {
     for (const item of section.items) {
-      if (item.children?.some((c) => isActive(pathname, search, c.href, c.activeAcrossQuery)))
+      if (
+        item.children?.some((c) =>
+          isActive(pathname, search, c.href, c.activeAcrossQuery, c.exactPath),
+        )
+      )
         return item.label;
     }
   }
