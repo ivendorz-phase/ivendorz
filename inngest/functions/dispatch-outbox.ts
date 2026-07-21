@@ -1,4 +1,8 @@
-import { archiveDispatchedEvents, dispatchOutboxEvents } from "@/modules/core/contracts";
+import {
+  archiveDispatchedEvents,
+  dispatchOutboxEvents,
+  type OutboxTransport,
+} from "@/modules/core/contracts";
 import { inngest } from "../client";
 
 // M0 transactional-outbox event pump (REPOSITORY_STRUCTURE §7; Doc-4B §B6 — M0 owns the outbox).
@@ -36,6 +40,32 @@ import { inngest } from "../client";
 /** Internal infrastructure control signal (NOT a Doc-2 §8 domain event) — an immediate-drain nudge. */
 export const OUTBOX_DRAIN_REQUESTED = "core/outbox.drain.requested" as const;
 
+/**
+ * Consumer-facing transport namespace (P2-A1): a drained Doc-2 §8 envelope is forwarded as the
+ * Inngest event `outbox/<EventName>` (e.g. `outbox/InvitationIssued`, `outbox/InvitationConverted`).
+ * A NAMESPACE prefix over the frozen Doc-4J catalog names — no event is coined or renamed; the
+ * data is the persisted `payload_jsonb` verbatim (thin IDs + the stamped `event_id`/`occurred_at`).
+ */
+export const OUTBOX_TRANSPORT_EVENT_PREFIX = "outbox/" as const;
+
+/**
+ * The concrete P2-A1 outbox transport — constructed HERE because the inngest layer owns the
+ * delivery mechanism (M0 never imports inngest; it receives this by injection through
+ * `@/modules/core/contracts` — the One-Module rule is intact). PER-EVENT, may throw: a failed
+ * `inngest.send` propagates to the dispatcher, which leaves that row `pending` for the next drain
+ * (send-then-mark, at-least-once). The envelope `event_id` rides BOTH as the Inngest event `id`
+ * (broker-side dedup) and inside `data.event_id` (the stamped envelope field) so consumers are
+ * idempotent on it. TRANSPORT ONLY — no consumer functions are registered here (the M6/M7
+ * consumers live on their owning wave branches — Lane B).
+ */
+const inngestOutboxTransport: OutboxTransport = async (event) => {
+  await inngest.send({
+    id: event.eventId,
+    name: `${OUTBOX_TRANSPORT_EVENT_PREFIX}${event.eventName}`,
+    data: event.payload,
+  });
+};
+
 /** Steady-state poll cadence for the outbox pump. Mechanical infra cadence, not a business rule. */
 const OUTBOX_DISPATCH_CRON = "* * * * *" as const; // every minute
 
@@ -51,8 +81,12 @@ export const dispatchOutbox = inngest.createFunction(
   },
   [{ cron: OUTBOX_DISPATCH_CRON }, { event: OUTBOX_DRAIN_REQUESTED }],
   async ({ step }) => {
-    // Step 1 — the §B6 dispatch worker (pending → dispatched, POLICY-bounded retry/backoff/DLQ + recon).
-    const dispatch = await step.run("dispatch-outbox-events", () => dispatchOutboxEvents());
+    // Step 1 — the §B6 dispatch worker (pending → dispatched, POLICY-bounded retry/backoff/DLQ +
+    // recon), now with the P2-A1 consumer-transport leg injected: each envelope is forwarded as
+    // `outbox/<EventName>` via `inngest.send` BEFORE its row is marked dispatched (send-then-mark).
+    const dispatch = await step.run("dispatch-outbox-events", () =>
+      dispatchOutboxEvents(undefined, { transport: inngestOutboxTransport }),
+    );
 
     // Step 2 — the §B6 archival worker (dispatched → archived, retention-bounded). DISTINCT step so the
     // two legs are separately durable and separately observed (Doc-8B §7.2).

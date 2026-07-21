@@ -31,6 +31,7 @@ import type {
   FeatureFlagEvaluateResult,
   OutboxArchiveInput,
   OutboxArchiveResult,
+  OutboxDispatchDeps,
   OutboxDispatchInput,
   OutboxDispatchResult,
   WriteOutboxEventInput,
@@ -87,8 +88,12 @@ export type WriteOutboxEvent = (
  * System/platform-staff actor, in its own transaction. EMITTER-AGNOSTIC (R-a / ESC-W1-OUTBOX): it
  * advances whatever rows exist and coins NO domain event. Idempotent; forward-only (DB-trigger-enforced).
  * This is the dispatch entry point invoked by the Inngest outbox job (`inngest/functions`).
+ * Accepts the optional P2-A1 transport deps (send-then-mark); absent, status-only legacy behavior.
  */
-export type DrainOutbox = (input?: DrainOutboxInput) => Promise<DrainOutboxResult>;
+export type DrainOutbox = (
+  input?: DrainOutboxInput,
+  deps?: OutboxDispatchDeps,
+) => Promise<DrainOutboxResult>;
 
 /**
  * `core.phase2_dispatch_outbox_events.v1` (Doc-4B §B6 — System/Phase-2 worker). Advances re-attempt-
@@ -97,8 +102,20 @@ export type DrainOutbox = (input?: DrainOutboxInput) => Promise<DrainOutboxResul
  * coins NO domain event (§B6 Events-Produced: none). Appends ONE System-attributed audit record per
  * run that advanced ≥ 1 row (the realized [D-5] run/batch audit leg — Doc-4B_OutboxAuditToken_Patch_v1.0,
  * Board-approved 2026-07-10). Invoked by the Inngest outbox job (`inngest/functions`).
+ *
+ * TRANSPORT LEG (P2-A1): accepts an optionally-injected `OutboxTransport` — SEND-THEN-MARK, per
+ * event, at-least-once: each eligible envelope is forwarded via the transport and the row is
+ * advanced `pending → dispatched` only on a resolved send; a transport throw leaves the row
+ * `pending` (attempts bumped so the §B6 backoff/dead-letter policy governs the retry). With no
+ * transport, the status-only legacy behavior is preserved (backward compatible). The concrete
+ * transport is constructed by the inngest layer — core never imports inngest. Sends run OUTSIDE
+ * any DB transaction (short read tx → per-event send → short per-row mark/bump tx — L-A2-MAJOR-1):
+ * a slow broker can never abort/roll back committed marks, and per-row outcomes are isolated.
  */
-export type DispatchOutboxEvents = (input?: OutboxDispatchInput) => Promise<OutboxDispatchResult>;
+export type DispatchOutboxEvents = (
+  input?: OutboxDispatchInput,
+  deps?: OutboxDispatchDeps,
+) => Promise<OutboxDispatchResult>;
 
 /**
  * `core.phase2_archive_dispatched_events.v1` (Doc-4B §B6 — System/Phase-2 worker). Advances
@@ -188,7 +205,7 @@ export const writeOutboxEvent: WriteOutboxEvent = writeOutboxEventImpl;
  * cross-module access; the contracts→infrastructure binding is same-module-legal — the canonical DDD
  * facade pattern). Emitter-agnostic + idempotent + forward-only; coins no event (R-a / ESC-W1-OUTBOX).
  */
-export const drainOutbox: DrainOutbox = (input) => drainOutboxImpl(input);
+export const drainOutbox: DrainOutbox = (input, deps) => drainOutboxImpl(input, deps);
 
 /**
  * Concrete `core.phase2_dispatch_outbox_events.v1` (Doc-4B §B6), bound to the M0 infrastructure adapter
@@ -198,8 +215,8 @@ export const drainOutbox: DrainOutbox = (input) => drainOutboxImpl(input);
  * [D-5] run/batch audit leg is realized (one System audit record per advancing run —
  * Doc-4B_OutboxAuditToken_Patch_v1.0, Board-approved 2026-07-10).
  */
-export const dispatchOutboxEvents: DispatchOutboxEvents = (input) =>
-  dispatchOutboxEventsImpl(input);
+export const dispatchOutboxEvents: DispatchOutboxEvents = (input, deps) =>
+  dispatchOutboxEventsImpl(input, deps);
 
 /**
  * Concrete `core.phase2_archive_dispatched_events.v1` (Doc-4B §B6), bound to the M0 infrastructure
