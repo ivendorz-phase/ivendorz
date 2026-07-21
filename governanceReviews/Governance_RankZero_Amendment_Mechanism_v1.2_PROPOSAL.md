@@ -1,6 +1,29 @@
 # Governance_RankZero_Amendment_Mechanism_v1.2_PROPOSAL.md
 ### → intended fold form **ADR-027 — Rank-Zero Amendment Mechanism**
 
+> # 🛑 PARKED — owner ruling 2026-07-21. NOT converging. Do not fold, do not build on it.
+>
+> Three independent Review-A rounds: v1.0 **1B/9MAJ/10MIN** · v1.1 **1B/9MAJ/7MIN** · v1.2
+> **1B/10MAJ/12MIN**. Majors rising; round 3 names **three respects in which v1.2 is worse than
+> v1.1**. Record: `ReviewA_Record_RankZero_Amendment_Mechanism_v1.2.md`.
+>
+> **Parked, not rejected.** The route (complete reissue, immutable superseded artifact, discrete
+> Board act) is sound; the grounding is not. Resuming requires at minimum: the full **13-document
+> rank-0 sweep** — only Master was swept, and rank 0 is Master + Doc-2 + Doc-3 + Doc-4A…4M
+> (`00_AUTHORITY_MAP.md:18`) — an **RZ-1 trigger with an additive carve-out and a named decider**
+> (as written it captures ordinary additive rank-0 patches and is evadable by calling a change
+> "editorial"), an **authority level and home for the adoption record** (zero corpus precedent), and
+> a **decidable §7.3 bundle** (it omits the `REPOSITORY_STRUCTURE.md` stamp that
+> `Governance_Freeze_v1.0.md:49–53` requires).
+>
+> ⚠️ **Known bad anchor:** `ADR_Compendium_v1.md:57` is cited three times; the quoted text is at
+> **`:58`**, and `:58` concerns a **never-issued ADR number**, not reuse of an issued version label —
+> so RZ-8 rule 2 has no rank-1 support.
+>
+> **The product need it was blocking is unblocked by an additive route instead:**
+> `Doc-4D_VendorTypePreset_Values_Patch_v1.0.4_PROPOSAL.md`. **P-1, P-2, C-6 and G-1 remain OPEN**
+> and still require this track.
+
 > **STATUS: DRAFT — AWAITS HUMAN ARCHITECTURE BOARD APPROVAL.** Architecture-affecting under
 > `CLAUDE.md:149`; approvable only by a human Board, never by a skill (`CLAUDE.md:139–140`).
 >
