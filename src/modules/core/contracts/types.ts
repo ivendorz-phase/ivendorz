@@ -73,27 +73,32 @@ export interface AppendAuditRecordResult {
   auditId: string;
 }
 
-// ── `core.write_outbox_event.v1` (Doc-4B — the M0 transactional-outbox producer surface) ──────
-// The platform's FIRST producer use lands with the Growth Hub slice (M1 `InvitationIssued` /
-// `InvitationConverted` — Doc-2 v1.0.10 §4; catalog Doc-4J v1.0.1; flow Doc-4L v1.0.1). M0
-// TRANSPORTS envelopes and authors no event; the event name/version/payload are owned by the
-// emitting module's frozen declaration (bound by pointer, never coined here).
+// ── `core.write_outbox_event.v1` (Doc-4B §16 — the M0 transactional-outbox WRITE primitive) ───
+// [growth/integration MERGE UNION] Lane A (M1 Growth Hub producer — `InvitationIssued` /
+// `InvitationConverted`, Doc-2 v1.0.10 §4; catalog Doc-4J v1.0.1; flow Doc-4L v1.0.1) and
+// W3-BILL-4 (`SubscriptionPurchased`) each realized this ONE Doc-4B contract; the merged surface
+// keeps the union of both declarations (optional `aggregateId` — Lane A call sites omit it for
+// synthetic transport fixtures; billing call sites always pass it). M0 TRANSPORTS envelopes and
+// authors no event; the event name/version/payload are the emitting module's frozen Doc-2 §8
+// declaration (bound by pointer, never coined here — §16.4/§16.6), which also owns the
+// thin-payload rule (§16.5) and the Privacy-Review assertion (§16.3).
 
 /**
- * Input to `core.write_outbox_event.v1` (Doc-4B). Appends exactly one `pending` envelope row to
+ * Input to `core.write_outbox_event.v1` (Doc-4B §16). Appends exactly one `pending` envelope row to
  * `core.outbox_events` (Doc-2 §10.1) — MUST ride the caller's transaction (business write + event
- * insert in ONE txn; Doc-6A §7.1 write+emit atomicity).
+ * insert in ONE txn; Doc-4B §16.2 / Doc-6A §7.1 write+emit atomicity).
  */
 export interface WriteOutboxEventInput {
   /** The Doc-2 §8 event name (authoritative catalog Doc-4J — by pointer; never invented here). */
   eventName: string;
-  /** The declared event version (Doc-2 §8 / Doc-4J). */
+  /** The declared event version (≥ 1 — Doc-2 §8 / Doc-4J §16.4). */
   eventVersion: number;
   /** The emitting aggregate's id (bare UUID — Doc-2 §10.1 Ref; no cross-schema FK). Optional. */
   aggregateId?: string | null;
   /**
-   * The thin domain payload (IDs + metadata only, no blobs — Doc-2 §10.1 / §16.5). The envelope
-   * fields `event_id` / `occurred_at` are stamped by this service, not by the caller.
+   * The thin domain payload (IDs + metadata only, no protected facts, no blobs — Doc-2 §10.1 /
+   * §16.3 / §16.5). The envelope fields `event_id` / `occurred_at` are stamped by this service,
+   * not by the caller.
    */
   payload: Record<string, unknown>;
 }

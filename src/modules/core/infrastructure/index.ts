@@ -11,5 +11,8 @@ export {
   dispatchOutboxEvents,
   drainOutbox,
 } from "./events/drain-outbox.service";
+// [growth/integration MERGE UNION] `core.write_outbox_event.v1` — ONE adapter post-merge:
+// Lane A's envelope-stamping writer, bound to the W3-BILL-4 SECURITY DEFINER function (see the
+// service header). The billing-side `data/outbox-event.service.ts` was folded into it.
 export { writeOutboxEvent } from "./events/write-outbox-event.service";
 export type { DrainOutboxOptions, DrainOutboxResult } from "./events/drain-outbox.service";

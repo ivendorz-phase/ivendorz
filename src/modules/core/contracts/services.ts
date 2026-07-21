@@ -46,6 +46,9 @@ import type {
  */
 export interface CoreServiceExecutor {
   $queryRawUnsafe<T = unknown>(query: string, ...values: unknown[]): Promise<T>;
+  /** For a value-less primitive (e.g. the `RETURNS void` `core.write_outbox_event` function) — runs the
+   *  statement without deserializing a result set. Both the shared client and a tx client satisfy it. */
+  $executeRawUnsafe(query: string, ...values: unknown[]): Promise<number>;
 }
 
 /**
@@ -71,11 +74,14 @@ export type AppendAuditRecord = (
 ) => Promise<AppendAuditRecordResult>;
 
 /**
- * `core.write_outbox_event.v1` (Doc-4B).
+ * `core.write_outbox_event.v1` (Doc-4B §16).
  * Appends exactly one `pending` envelope row to `core.outbox_events` (Doc-2 §10.1). MUST be bound
- * to the caller's transaction (business write + event insert in ONE txn — Doc-6A §7.1 write+emit
- * atomicity). M0 transports the envelope and authors NO event — the name/version/payload are the
- * emitting module's frozen Doc-2 §8 declaration (catalog Doc-4J, by pointer).
+ * to the caller's transaction (business write + event insert in ONE txn — §16.2 / Doc-6A §7.1
+ * write+emit atomicity). The adapter writes via the M0-owned SECURITY DEFINER function (billing's
+ * `core_write_outbox_event` migration), so a tenant-context emitter passes the direct-table
+ * platform-staff RLS. Structural insert only — M0 transports the envelope and authors NO event;
+ * the name/version/payload are the emitting module's frozen Doc-2 §8 declaration (catalog Doc-4J,
+ * by pointer; §16.4/§16.6), incl. thin-payload (§16.5) and Privacy-Review (§16.3).
  */
 export type WriteOutboxEvent = (
   input: WriteOutboxEventInput,
@@ -189,13 +195,15 @@ export const allocateHumanReference: AllocateHumanReference = allocateHumanRefer
 export const appendAuditRecord: AppendAuditRecord = appendAuditRecordImpl;
 
 /**
- * Concrete `core.write_outbox_event.v1` (Doc-4B), bound to the M0 infrastructure adapter. Appends
- * exactly one `pending` envelope to `core.outbox_events`; participates in the caller's transaction
- * when an executor is supplied (write+emit atomic — Doc-6A §7.1). Consumed cross-module via
- * `@/modules/core/contracts` (strictly contracts/-only; the contracts→infrastructure binding is
- * same-module-legal — the canonical DDD facade pattern). The append is NON-`RETURNING` (the
- * audit-record precedent — staff-only SELECT posture) and coins nothing: names/versions/payloads
- * are the emitter's frozen Doc-2 §8 declaration (catalog Doc-4J), by pointer.
+ * Concrete `core.write_outbox_event.v1` (Doc-4B §16), bound to the M0 infrastructure adapter (the
+ * SECURITY DEFINER `core.write_outbox_event` function — the `allocate_human_ref` precedent; admits
+ * tenant-context emitters past the direct-table platform-staff RLS). Appends exactly one `pending`
+ * envelope to `core.outbox_events`, atomic with the caller's business write when an executor is
+ * supplied (§16.2 / Doc-6A §7.1). Consumed cross-module via `@/modules/core/contracts` (strictly
+ * contracts/-only; the contracts→infrastructure binding is same-module-legal — the canonical DDD
+ * facade pattern). The write is value-less/NON-`RETURNING` (staff-only SELECT posture; the id is
+ * app-minted) and coins nothing: names/versions/payloads are the emitter's frozen Doc-2 §8
+ * declaration (catalog Doc-4J), by pointer (§16.4/§16.6).
  */
 export const writeOutboxEvent: WriteOutboxEvent = writeOutboxEventImpl;
 

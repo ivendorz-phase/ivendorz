@@ -564,3 +564,394 @@ model InvitationDeliveryRef {
   @@map("invitation_delivery_refs")
   @@schema("identity")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M7 — Monetization / Billing (`billing`) — Doc-6I (FROZEN)
+//
+// W3-BILL-1 [Wave-3 M7 pilot slice] realizes the Plans & Entitlements grouping
+// (Doc-6I §3.1 — `plans` + `entitlements` + `plan_entitlements`): the platform-owned
+// plan catalog behind the two authenticated Platform-Public reads
+// `billing.get_plan.v1` / `billing.list_plans.v1` (Doc-4I §HB-1.4 / Doc-5I §4).
+// Columns are [Doc-2 §10.8 binding]; physical specifics [Doc-6I §2.5]. Enums / RLS /
+// composite-PK live raw-SQL in the `billing_plan_catalog_pilot` migration
+// (tables/columns managed by Prisma). The logical `status` (draft|active|retired) is
+// DERIVED, never a stored column (Doc-2 §10.8: `plans` carries no `status` — `is_active`
+// + soft-delete `SD = retire`): retired ⟺ soft-deleted, active ⟺ is_active, draft otherwise.
+//
+// OUT OF SCOPE (land with their own M7 slices): subscriptions (+events), usage_ledger,
+// lead_credit_accounts (+transactions), platform_invoices (+payments), reward_accounts
+// (+transactions), referrals — Doc-6I §3.2–§3.6.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// §3.1.1 — billing.plans (platform-owned marketing catalog; public-read + admin-write RLS).
+model Plan {
+  id           String       @id @db.Uuid
+  name         String
+  billingCycle BillingCycle @map("billing_cycle")
+  price        Decimal      @db.Decimal
+  currency     String       @default("BDT") @db.Char(3)
+  isActive     Boolean      @default(false) @map("is_active")
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy    String?      @map("created_by") @db.Uuid
+  updatedBy    String?      @map("updated_by") @db.Uuid
+  deletedAt    DateTime?    @map("deleted_at") @db.Timestamptz
+  deletedBy    String?      @map("deleted_by") @db.Uuid
+  deleteReason String?      @map("delete_reason")
+
+  planEntitlements PlanEntitlement[]
+  subscriptions    Subscription[]
+
+  @@map("plans")
+  @@schema("billing")
+}
+
+// §3.1.2 — billing.entitlements (typed catalog; `slug` UNIQUE; NO soft-delete — Doc-2 §10.8).
+model Entitlement {
+  id           String          @id @db.Uuid
+  slug         String
+  type         EntitlementType
+  defaultValue Json?           @map("default_value") @db.JsonB
+  createdAt    DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy    String?         @map("created_by") @db.Uuid
+  updatedBy    String?         @map("updated_by") @db.Uuid
+
+  planEntitlements PlanEntitlement[]
+  usageLedger      UsageLedger[]
+
+  @@unique([slug], map: "entitlements_slug_uq")
+  @@map("entitlements")
+  @@schema("billing")
+}
+
+// §3.1.3 — billing.plan_entitlements (M:N per-plan value; composite PK; append/upsert — no SD, no updated_at).
+model PlanEntitlement {
+  planId        String   @map("plan_id") @db.Uuid
+  entitlementId String   @map("entitlement_id") @db.Uuid
+  valueJsonb    Json     @map("value_jsonb") @db.JsonB
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  createdBy     String?  @map("created_by") @db.Uuid
+
+  plan        Plan        @relation(fields: [planId], references: [id], map: "plan_entitlements_plan_fk")
+  entitlement Entitlement @relation(fields: [entitlementId], references: [id], map: "plan_entitlements_entitlement_fk")
+
+  @@id([planId, entitlementId], map: "plan_entitlements_pkey")
+  @@map("plan_entitlements")
+  @@schema("billing")
+}
+
+enum BillingCycle {
+  monthly
+  annual
+
+  @@map("billing_cycle")
+  @@schema("billing")
+}
+
+// DB values are `'boolean' | 'numeric' | 'enum'` (Doc-2 §10.8 / Doc-6I). `enum` is a Prisma keyword,
+// so its member is `enum_`, @map'd to the DB literal `enum`; the module maps client → wire string.
+enum EntitlementType {
+  boolean
+  numeric
+  enum_   @map("enum")
+
+  @@map("entitlement_type")
+  @@schema("billing")
+}
+
+// §3.2 — billing.subscriptions (Doc-6I §3.2.1 / Doc-2 §10.8 + §5.7) — org-tenant; one active per org
+// (partial-unique WHERE state='active'; raw-SQL in the migration). W3-BILL-4.
+model Subscription {
+  id             String            @id @db.Uuid
+  organizationId String            @map("organization_id") @db.Uuid
+  planId         String            @map("plan_id") @db.Uuid
+  state          SubscriptionState @default(pending_payment)
+  periodStart    DateTime?         @map("period_start") @db.Timestamptz
+  periodEnd      DateTime?         @map("period_end") @db.Timestamptz
+  autoRenew      Boolean           @default(true) @map("auto_renew")
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy      String?           @map("created_by") @db.Uuid
+  updatedBy      String?           @map("updated_by") @db.Uuid
+  deletedAt      DateTime?         @map("deleted_at") @db.Timestamptz
+  deletedBy      String?           @map("deleted_by") @db.Uuid
+  deleteReason   String?           @map("delete_reason")
+
+  plan   Plan                @relation(fields: [planId], references: [id], map: "subscriptions_plan_fk")
+  events SubscriptionEvent[]
+
+  @@map("subscriptions")
+  @@schema("billing")
+}
+
+// §3.2.2 — billing.subscription_events (Doc-6I §3.2.2 / Doc-2 §10.8) — append-only (immutability trigger
+// in the migration); NO soft-delete, NO updated_at.
+model SubscriptionEvent {
+  id             String                @id @db.Uuid
+  subscriptionId String                @map("subscription_id") @db.Uuid
+  eventType      SubscriptionEventType @map("event_type")
+  occurredAt     DateTime              @default(now()) @map("occurred_at") @db.Timestamptz
+  payloadJsonb   Json?                 @map("payload_jsonb") @db.JsonB
+  createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamptz
+  createdBy      String?               @map("created_by") @db.Uuid
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], map: "subscription_events_subscription_fk")
+
+  @@map("subscription_events")
+  @@schema("billing")
+}
+
+enum SubscriptionState {
+  pending_payment
+  active
+  expired
+
+  @@map("subscription_state")
+  @@schema("billing")
+}
+
+enum SubscriptionEventType {
+  purchase
+  renew
+  expire
+  cancel
+
+  @@map("subscription_event_type")
+  @@schema("billing")
+}
+
+/// billing.usage_ledger (Doc-6I §3.3) — append-only quota metering; Controlling-Org attribution. W3-BILL-6
+/// realizes the table + the read authorities (enforce_quota/get_usage); the sole writer record_usage is
+/// deferred on [ESC-BILL-USAGE-ENTID] (entitlement_id NOT-NULL FK unpopulatable by the frozen contract).
+model UsageLedger {
+  id                String      @id @db.Uuid
+  entitlementId     String      @map("entitlement_id") @db.Uuid
+  organizationId    String      @map("organization_id") @db.Uuid
+  actingUserId      String?     @map("acting_user_id") @db.Uuid
+  consumingEntityId String?     @map("consuming_entity_id") @db.Uuid
+  quotaKey          String      @map("quota_key")
+  amount            Decimal     @db.Decimal
+  period            String?
+  source            UsageSource
+  createdAt         DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  createdBy         String?     @map("created_by") @db.Uuid
+
+  entitlement Entitlement @relation(fields: [entitlementId], references: [id], map: "usage_ledger_entitlement_fk")
+
+  @@index([organizationId, quotaKey, period], map: "usage_ledger_org_quota_idx")
+  @@map("usage_ledger")
+  @@schema("billing")
+}
+
+enum UsageSource {
+  rfq_response
+  lead_access
+  ad_launch
+
+  @@map("usage_source")
+  @@schema("billing")
+}
+
+/// billing.lead_credit_accounts (Doc-6I §3.4) — org lead-credit balance head (one live per org). W3-BILL-7
+/// realizes the table + the reads (get_lead_balance/list_lead_transactions); credit/debit writes next slice.
+model LeadCreditAccount {
+  id             String    @id @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  balance        Decimal   @default(0) @db.Decimal
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy      String?   @map("created_by") @db.Uuid
+  updatedBy      String?   @map("updated_by") @db.Uuid
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy      String?   @map("deleted_by") @db.Uuid
+  deleteReason   String?   @map("delete_reason")
+
+  transactions LeadCreditTransaction[]
+
+  @@map("lead_credit_accounts")
+  @@schema("billing")
+}
+
+/// billing.lead_credit_transactions (Doc-6I §3.4) — append-only credit/debit ledger (source of truth).
+/// `source_invoice_id` → platform_invoices FK is DEFERRED to BC-BILL-5 (nullable column only for now).
+model LeadCreditTransaction {
+  id                  String            @id @db.Uuid
+  leadCreditAccountId String            @map("lead_credit_account_id") @db.Uuid
+  txnType             LeadCreditTxnType @map("txn_type")
+  amount              Decimal           @db.Decimal
+  sourceInvoiceId     String?           @map("source_invoice_id") @db.Uuid
+  createdAt           DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  createdBy           String?           @map("created_by") @db.Uuid
+
+  account LeadCreditAccount @relation(fields: [leadCreditAccountId], references: [id], map: "lead_credit_transactions_account_fk")
+
+  @@map("lead_credit_transactions")
+  @@schema("billing")
+}
+
+enum LeadCreditTxnType {
+  credit
+  debit
+
+  @@map("lead_credit_txn_type")
+  @@schema("billing")
+}
+
+/// billing.platform_invoices (Doc-6I §3.5) — the platform's OWN revenue invoice (≠ operations.trade_invoices;
+/// firewalled, no operations FK). `amount`/`currency` = real money. W3-BILL-8 realizes the table + the reads
+/// (get_platform_invoice/list_platform_invoices); issue/update_status writes + record_payment land next slice.
+/// `subscription_id` FK → subscriptions is DB-enforced (migration) but not modeled as a Prisma relation
+/// (nullable, peripheral, not traversed by the reads).
+model PlatformInvoice {
+  id             String         @id @db.Uuid
+  humanRef       String         @map("human_ref")
+  organizationId String         @map("organization_id") @db.Uuid
+  subscriptionId String?        @map("subscription_id") @db.Uuid
+  amount         Decimal        @db.Decimal
+  currency       String         @default("BDT") @db.Char(3)
+  status         InvoiceStatus  @default(issued)
+  purpose        InvoicePurpose
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy      String?        @map("created_by") @db.Uuid
+  updatedBy      String?        @map("updated_by") @db.Uuid
+
+  payments PlatformPayment[]
+
+  @@unique([humanRef], map: "platform_invoices_human_ref_uq")
+  @@index([organizationId, status], map: "platform_invoices_org_status_idx")
+  @@map("platform_invoices")
+  @@schema("billing")
+}
+
+/// billing.platform_payments (Doc-6I §3.5) — gateway payment records (platform-owned; record_payment
+/// callback advances status/gateway_ref). No `amount` (the invoice carries it). W3-BILL-8 models it for the
+/// get_platform_invoice `payments` sub-list; the record_payment writer lands next slice.
+model PlatformPayment {
+  id                String         @id @db.Uuid
+  platformInvoiceId String         @map("platform_invoice_id") @db.Uuid
+  gateway           PaymentGateway
+  gatewayRef        String?        @map("gateway_ref")
+  status            PaymentStatus  @default(initiated)
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy         String?        @map("created_by") @db.Uuid
+  updatedBy         String?        @map("updated_by") @db.Uuid
+
+  invoice PlatformInvoice @relation(fields: [platformInvoiceId], references: [id], map: "platform_payments_invoice_fk")
+
+  @@map("platform_payments")
+  @@schema("billing")
+}
+
+enum InvoiceStatus {
+  issued
+  paid
+  overdue
+  void
+
+  @@map("invoice_status")
+  @@schema("billing")
+}
+
+enum InvoicePurpose {
+  subscription
+  lead_package
+  advertising
+  microsite
+  service
+
+  @@map("invoice_purpose")
+  @@schema("billing")
+}
+
+enum PaymentGateway {
+  sslcommerz
+  bkash
+  nagad
+  bank
+
+  @@map("payment_gateway")
+  @@schema("billing")
+}
+
+enum PaymentStatus {
+  initiated
+  succeeded
+  failed
+  refunded
+
+  @@map("payment_status")
+  @@schema("billing")
+}
+
+/// billing.reward_accounts (Doc-6I §3.6) — org reward-POINTS balance head (one live per org). W3-BILL-11
+/// realizes the table + the reads (get_reward_balance/list_referrals); credit_reward writes land next slice.
+model RewardAccount {
+  id             String    @id @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  balance        Decimal   @default(0) @db.Decimal
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy      String?   @map("created_by") @db.Uuid
+  updatedBy      String?   @map("updated_by") @db.Uuid
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy      String?   @map("deleted_by") @db.Uuid
+  deleteReason   String?   @map("delete_reason")
+
+  transactions RewardTransaction[]
+
+  @@map("reward_accounts")
+  @@schema("billing")
+}
+
+/// billing.reward_transactions (Doc-6I §3.6) — append-only points credit/debit ledger (source of truth).
+model RewardTransaction {
+  id              String         @id @db.Uuid
+  rewardAccountId String         @map("reward_account_id") @db.Uuid
+  txnType         RewardTxnType  @map("txn_type")
+  amount          Decimal        @db.Decimal
+  reason          String?
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  createdBy       String?        @map("created_by") @db.Uuid
+
+  account RewardAccount @relation(fields: [rewardAccountId], references: [id], map: "reward_transactions_account_fk")
+
+  @@map("reward_transactions")
+  @@schema("billing")
+}
+
+/// billing.referrals (Doc-6I §3.6) — referral tracking; state pending→qualified→rewarded (NO SD). Anchored
+/// on the REFERRER org. W3-BILL-11 realizes the table + list_referrals; track/advance writes land next slice.
+model Referral {
+  id                     String        @id @db.Uuid
+  referrerOrganizationId String        @map("referrer_organization_id") @db.Uuid
+  referredOrganizationId String?       @map("referred_organization_id") @db.Uuid
+  state                  ReferralState @default(pending)
+  createdAt              DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  createdBy              String?       @map("created_by") @db.Uuid
+  updatedBy              String?       @map("updated_by") @db.Uuid
+
+  @@index([referrerOrganizationId, state], map: "referrals_referrer_idx")
+  @@map("referrals")
+  @@schema("billing")
+}
+
+enum RewardTxnType {
+  credit
+  debit
+
+  @@map("reward_txn_type")
+  @@schema("billing")
+}
+
+enum ReferralState {
+  pending
+  qualified
+  rewarded
+
+  @@map("referral_state")
+  @@schema("billing")
+}

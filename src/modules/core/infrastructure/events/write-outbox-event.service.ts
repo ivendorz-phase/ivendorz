@@ -12,21 +12,22 @@
 // envelope fields without the caller restating them. Dispatch/архival is the SEPARATE Doc-4B §B6
 // worker surface (`drain-outbox.service.ts`) — this service only appends `pending`.
 //
-// NON-RETURNING (the audit-record.service precedent): `createMany` (single-row) emits an INSERT
-// with NO `RETURNING` clause. `core.outbox_events` SELECT is platform-staff-only RLS (`core_init`
-// §7) — a `RETURNING` under a non-staff context would abort with SQLSTATE 42501 and roll back the
-// caller's business write. The id is app-minted, so no DB-returned key is needed.
+// NON-RETURNING / VALUE-LESS (the audit-record.service precedent): the write goes through the
+// M0-owned SECURITY DEFINER function `core.write_outbox_event(...)` (`RETURNS void` — the
+// `allocate_human_ref` precedent; migration `20260711180000_core_write_outbox_event`, landed with
+// W3-BILL-4). `core.outbox_events` SELECT is platform-staff-only RLS (`core_init` §7); the id is
+// app-minted, so no DB-returned key is needed.
 //
-// RLS ADMISSION [logged judgment call — carried flag]: `core.outbox_events` carries ONLY the
-// platform-staff FOR-ALL policy (`core_init` §7), whose implicit INSERT `WITH CHECK` admits the
-// staff/System GUC leg alone — there is (yet) no ADR-021-class context-bound tenant INSERT policy
-// (the `audit_records_context_append` precedent). Producers therefore append under the
-// staff/System transaction context (the provisioning txn already is; the create_invitation
-// targeted leg escalates transaction-locally — see its header). An ADR-021-class outbox
-// INSERT-admission widening is a carried M0 follow-up, escalated in the slice report — never
-// resolved locally here.
+// RLS ADMISSION [growth/integration MERGE UNION]: Lane A's original Prisma-insert adapter carried a
+// flagged judgment call — the direct-table platform-staff FOR-ALL policy admits only the
+// staff/System GUC leg, so producers had to escalate transaction-locally. The W3-BILL-4 SECURITY
+// DEFINER function IS the sanctioned privileged write path (a tenant-context emitter, e.g.
+// `billing.purchase_subscription` under `withActiveOrg`, inserts inside its own txn without the
+// direct-table RLS rejecting it); the merge binds this adapter to it, uniting Lane A's envelope
+// stamping with billing's admission mechanism. The broader ADR-021-class INSERT-policy question
+// stays the escalated Board item (routing doc "Blocked-until" list) — never resolved locally here.
 
-import { prisma, Prisma, type DbExecutor } from "../../../../shared/db";
+import { prisma, type DbExecutor } from "../../../../shared/db";
 import { uuidv7 } from "../../../../shared/ids";
 import type { WriteOutboxEvent, CoreServiceExecutor } from "../../contracts/services";
 import type { WriteOutboxEventInput } from "../../contracts/types";
@@ -42,20 +43,20 @@ async function append(input: WriteOutboxEventInput, db: DbExecutor): Promise<{ e
     ...input.payload,
     event_id: eventId,
     occurred_at: new Date().toISOString(),
-  } as Prisma.InputJsonValue;
+  };
 
-  await db.outboxEvent.createMany({
-    data: [
-      {
-        id: eventId,
-        aggregateId: input.aggregateId ?? null,
-        eventName: input.eventName,
-        eventVersion: input.eventVersion,
-        payloadJsonb,
-        // status: `pending` (DB default — Doc-2 §10.1; the §B6 worker advances it, never this leg).
-      },
-    ],
-  });
+  // The frozen function signature is core.write_outbox_event(uuid, text, integer, uuid, jsonb) —
+  // the payload is passed as a JSON string cast to jsonb (never string-interpolated).
+  // `$executeRawUnsafe` (not `$queryRawUnsafe`) because the function RETURNS void — nothing to
+  // deserialize. status stays `pending` (DB default — Doc-2 §10.1; the §B6 worker advances it).
+  await db.$executeRawUnsafe(
+    "SELECT core.write_outbox_event($1::uuid, $2, $3::integer, $4::uuid, $5::jsonb)",
+    eventId,
+    input.eventName,
+    input.eventVersion,
+    input.aggregateId ?? null,
+    JSON.stringify(payloadJsonb),
+  );
 
   return { eventId };
 }
