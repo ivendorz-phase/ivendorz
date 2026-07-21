@@ -64,3 +64,11 @@ export {
   handleAdvanceReferral,
   type RewardHandlerDeps,
 } from "./reward.route-handler";
+
+// Growth Hub server-rendered DATA face (Doc-7E_GrowthHub_Patch_v1.0.1 §2(a)) — the `/account/rewards`
+// page reads via this composition (Doc-7C server-side data layer), not a client self-fetch.
+export {
+  loadActiveOrgGrowthHub,
+  type ActiveOrgGrowthHubOutcome,
+  type GrowthHubDataDeps,
+} from "./growth-hub.data";

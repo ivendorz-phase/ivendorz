@@ -1,42 +1,28 @@
 "use client";
 
-// Referral history — the reference's "Referral History" card, implemented against our domain model
-// (P-ACC-22 · Doc-7E · frozen `billing.list_referrals` BC-BILL-6, Doc-4I §HB-6.3).
+// Referral history — the Growth Hub "Referral history" card, wired to the frozen
+// `billing.list_referrals` read (BC-BILL-6, Doc-4I §HB-6.3; Doc-7E_GrowthHub_Patch_v1.0.1 §1).
 //
-// This is the ONE Client Component on the Referral surface, and only because the reference's
-// PENDING/VERIFIED segmented control is a real, useful affordance: a client-side filter over the
-// FROZEN referral state machine. It reuses the Doc-7B kit `Tabs` primitive for the segmented control
-// (never a hand-rolled one — re-implementing a kit primitive is a duplication finding) and holds only
-// ephemeral filter state; it fetches nothing and mutates nothing (Content ≠ Presentation, Inv #9).
+// This is a CLIENT component only for the segmented filter: a client-side filter over the FROZEN
+// referral state machine (`pending → qualified → rewarded`). It reuses the Doc-7B kit `Tabs`
+// primitive for the segmented control (never a hand-rolled one) and holds only ephemeral filter
+// state; it fetches nothing and mutates nothing (Content ≠ Presentation, Inv #9). The rows are the
+// WIRED `ReferralItem` DTOs the server page resolved — consumed by contract type, never re-shaped.
 //
-// FIELD DISCIPLINE — the reference's row model is stripped to what `list_referrals` actually projects
-// (`{ referral_id, referred_organization_id, state }`, §HB-6.3:1324). Every fabricated column is gone:
-//  • "Professional Invited" (a person's name)  — NOT projected. Dropped.
-//  • "Company Entity" (an org display NAME)     — NOT projected; only the OPAQUE org ref is. The
-//     referred org is shown as its `referred_organization_id`, never a coined trade name.
-//  • "Credits Issued · 500 PTS" (per-referral)  — NOT projected; the reward is a SEPARATE `credit_reward`
-//     movement (§HB-6.1) whose value is a `[ESC-BILL-POLICY]` key, not a field on this row. Dropped.
-//  • "2 DAYS AGO" (a relative date)             — NOT projected. Dropped.
-//  • "FOLLOW UP" (a row action)                 — no backing contract. Dropped.
-//  • The PENDING/VERIFIED toggle                — "verified" is not a referral state. The filter is keyed
-//     on the FROZEN machine instead: pending → qualified → rewarded (§HB-6.2). No state is coined.
+// FIELD DISCIPLINE — exactly what `list_referrals` projects: `{ referralId,
+// referredOrganizationId, state }`. The referred org is an OPAQUE ref (never a display name —
+// Doc-7E v1.0.1 §3 non-disclosure); a `null` ref (a referral whose referred org is not yet
+// resolved) renders an explicit em-dash, never an invented placeholder id. No per-referral reward,
+// no dates, no row actions — none are projected.
 import * as React from "react";
 import { Gift } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/frontend/primitives/tabs";
 import { StatusChip, type StatusTone } from "@/frontend/components/status-chip";
 import { EmptyState } from "@/frontend/components/empty-state";
+import type { ReferralItem, ReferralState } from "@/modules/billing/contracts";
 
-// The frozen §HB-6.2 machine — the only referral states there are.
-export type ReferralState = "pending" | "qualified" | "rewarded";
-
-export interface Referral {
-  referralId: string;
-  referredOrgRef: string; // referred_organization_id (opaque)
-  state: ReferralState;
-}
-
-// state → presentation label + tone. The surface derives the label from the contract state; the chip
-// invents none (Doc-7B BR3).
+// state → presentation label + tone. The surface derives the label from the contract state; the
+// chip invents none (Doc-7B BR3).
 export const STATE_META: Record<ReferralState, { label: string; tone: StatusTone }> = {
   pending: { label: "Pending", tone: "info" },
   qualified: { label: "Qualified", tone: "warning" },
@@ -52,7 +38,7 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: "rewarded", label: "Rewarded" },
 ];
 
-export function ReferralHistory({ referrals }: { referrals: Referral[] }) {
+export function ReferralHistory({ referrals }: { referrals: ReferralItem[] }) {
   const [filter, setFilter] = React.useState<Filter>("all");
   const rows = filter === "all" ? referrals : referrals.filter((r) => r.state === filter);
 
@@ -104,9 +90,18 @@ export function ReferralHistory({ referrals }: { referrals: Referral[] }) {
                   className="border-b border-border last:border-0 hover:bg-muted/50"
                 >
                   <td className="whitespace-nowrap px-5 py-3">
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {r.referredOrgRef}
-                    </span>
+                    {r.referredOrganizationId !== null ? (
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {r.referredOrganizationId}
+                      </span>
+                    ) : (
+                      <span
+                        aria-label="Referred organization not yet linked"
+                        className="text-xs text-muted-foreground/70"
+                      >
+                        —
+                      </span>
+                    )}
                   </td>
                   <td className="px-5 py-3">
                     <StatusChip label={STATE_META[r.state].label} tone={STATE_META[r.state].tone} />

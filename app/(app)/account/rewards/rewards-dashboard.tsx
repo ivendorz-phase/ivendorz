@@ -1,136 +1,85 @@
-// Rewards & referrals dashboard — P-ACC-22 (Doc-7E · T-DASHBOARD). SERVER COMPONENT (read-only).
-// PRESENTATION-ONLY.
+// Growth Hub dashboard — the wired `/account/rewards` surface (Doc-7E_GrowthHub_Patch_v1.0.1
+// §2(a) — the ER6 Rewards row extended; visual precursor = the P-ACC-22 presentation build, §4).
+// SERVER COMPONENT: a pure function of the server-resolved DATA the page loads via
+// `loadActiveOrgGrowthHub` (Doc-7C server-side data layer) — no fetching here, no client state.
 //
-// ── REFERENCE-DRIVEN LAYOUT (owner-supplied "Reward Center / Growth Hub" mockup, 2026-07-18) ──────────
-// Rebuilt to the reference's composition — a navy promo hero (eyebrow · headline · sub · CTA · stat
-// band) over a filterable referral-history card — under the repo standard for reference use
-// (`docs/frontend/architecture/visual_reference_implementation.md` §2: "copy the composition; implement
-// the platform") and the owner's standing ruling (match the visual hierarchy/spacing/proportions; do
-// NOT invent data or metrics; where a reference widget is not backed by our domain model, substitute a
-// semantically-equivalent, data-backed component of the same footprint — "keep the footprint, drop the
-// fabricated payload"). The owner's directive here was explicit: keep only legitimate ITEMS; the layout
-// is free to change. Divergences from the mockup are enumerated below; the row model's divergences live
-// in `referral-history.tsx`.
+// WIRED READS ONLY (VX-03 wired-read-or-placeholder; Doc-7E v1.0.1 §2(a)):
+//  • `get_reward_balance` → `balance` (reward POINTS — an entitlement perk, never money/BDT).
+//  • `list_referrals` → items `{ referralId, referredOrganizationId, state }`; the referred org is
+//    an OPAQUE ref and `state` is the frozen `pending → qualified → rewarded` machine. The hero
+//    counts are DERIVED from this list, so they can never disagree with the table; when the
+//    bounded server walk was truncated, counts render as lower bounds ("N+") — never fabricated.
 //
-// FIELD DISCIPLINE (invent nothing) — the two frozen reads this surface is allowed (BC-BILL-6, Doc-4I
-// §HB-6.3) are the ONLY sources:
-//  • `get_reward_balance` → `{ balance : numeric }`. Rewards are POINTS (an entitlement, Inv #10), not a
-//    currency — no BDT, and the mockup's "Sourcing Credits / 4,000 Credits Earned / 500 PTS" wording is
-//    normalized to "reward points".
-//  • `list_referrals` → items EXACTLY `{ referral_id, referred_organization_id, state }` (§HB-6.3:1324);
-//    the referred org is an OPAQUE ref and `state` is the frozen §HB-6.2 machine (pending → qualified →
-//    rewarded). No display name, per-referral reward, or date is projected, so none is shown.
-//  • Rewards/referrals are a loyalty program — they NEVER affect procurement matching, routing, or
-//    standing (the moat; Doc-4I H.9).
+// FUNNEL HONESTY (§2(a) re-map): Sent (= invitation `issued`) · Accepted (= conversion `started`)
+// · Registered (= conversion `registered`) have NO wired read (`Doc-5C v1.0.1` §6 seam) —
+// **the tiles are NOT rendered** (`[ESC-7-API]`, §5; no placeholder figures, no fabricated
+// counts). They mount only when the future additive Doc-4C+Doc-5C read pair lands. A single
+// figure-free footnote discloses the deferral honestly.
 //
-// MOCKUP WIDGETS THAT ARE NOT REPRODUCED, AND WHY:
-//  1. "Top 5% · Network Rank" — a percentile/ranking with NO backing read anywhere; a fabricated
-//     traction claim. DROPPED (no substitute — a rank is a concept, not a fixture value for a real
-//     field). The 4th hero stat is instead a true state-count ("Qualified").
-//  2. "12 Total Referrals / 08 Verified Accounts" — the mockup's counts contradict its own 3 rows. The
-//     hero stats are DERIVED from the actual list (total = list length; Qualified/Rewarded = state
-//     counts), so they can never disagree with the table. "Verified" is not a referral state → the
-//     terminal-state tile is labelled by the frozen state, "Rewarded".
-//  3. "IVZ-BUY-DHAKA-2026" referral code + COPY — there is NO referral-code field or read in the corpus;
-//     a referral is org→org, keyed on `referred_organization_id` (§HB-6.2), not a shareable code. The
-//     code chip is DROPPED rather than fabricated.
-//  4. "INVITE NOW" → the hero CTA maps to the REAL frozen capability `track_referral` ("org self-
-//     initiates a referral", §HB-6.2) and is labelled for it ("Refer an organization"). It is an
-//     affordance only — this surface stays read-only (no mutation is wired here), exactly as the page
-//     charter states; it fabricates nothing.
-//  5. "Credit processing may take up to 48 hours after … level 2 business verification" — a specific
-//     SLA + a coined verification tier, both `[ESC-BILL-POLICY]` territory we do not know. DROPPED in
-//     favour of the true moat/privacy notes retained at the foot.
-import { Info, Sparkles, UserPlus } from "lucide-react";
-import { Button } from "@/frontend/primitives/button";
-import { ReferralHistory, type Referral } from "./referral-history";
+// CTA (§B8 mandate): "Invite a business" — the create-invitation flow (`invite-business.tsx`
+// client island), mounted ONLY for holders of `can_manage_growth_invites` (§3 — UX gating; the M1
+// app layer enforces).
+import { Info, Sparkles } from "lucide-react";
+import type { ReferralItem } from "@/modules/billing/contracts";
+import { InviteBusinessDialog } from "./invite-business";
+import { ReferralHistory } from "./referral-history";
 
-// Presentation seed — a wired build resolves BALANCE from `get_reward_balance` and REFERRALS from
-// `list_referrals` (opaque refs + frozen state only). BALANCE is an independent seed, NOT derived from a
-// per-referral rate (that rate is unknown to us — a `[ESC-BILL-POLICY]` key), so nothing implies "N
-// rewarded × X points".
-const BALANCE = 900;
+export interface RewardsDashboardData {
+  /** `get_reward_balance` — reward POINTS (0 when the org has no account yet). */
+  balance: number;
+  /** `list_referrals` — the referrer org's referrals, newest first. */
+  referrals: ReferralItem[];
+  /** True iff more referrals exist beyond the server's bounded walk — counts are lower bounds. */
+  referralsTruncated: boolean;
+  /** Doc-7E v1.0.1 §3 — UX gating only for the CTA (the server enforces on the write path). */
+  canManageGrowthInvites: boolean;
+}
 
-const REFERRALS: Referral[] = [
-  {
-    referralId: "ref_01",
-    referredOrgRef: "0192f0c1-7c3d-7e21-e001-0000000000e1",
-    state: "rewarded",
-  },
-  {
-    referralId: "ref_02",
-    referredOrgRef: "0192f0c1-7c3d-7e21-e002-0000000000e2",
-    state: "rewarded",
-  },
-  {
-    referralId: "ref_03",
-    referredOrgRef: "0192f0c1-7c3d-7e21-e003-0000000000e3",
-    state: "qualified",
-  },
-  {
-    referralId: "ref_04",
-    referredOrgRef: "0192f0c1-7c3d-7e21-e004-0000000000e4",
-    state: "pending",
-  },
-  {
-    referralId: "ref_05",
-    referredOrgRef: "0192f0c1-7c3d-7e21-e005-0000000000e5",
-    state: "pending",
-  },
-];
-
-// Hero stats — presentation figures over the seed above (a wired build reads BALANCE from
-// get_reward_balance and the counts from the rendered referral list). No invented totals, no rank, no
-// percentile (see this file's header, items 1–2); the hero is labelled "sample" below so the figures
-// are never mistaken for a live balance.
-function heroStats() {
-  const total = REFERRALS.length;
-  const qualified = REFERRALS.filter((r) => r.state === "qualified").length;
-  const rewarded = REFERRALS.filter((r) => r.state === "rewarded").length;
+/** Hero stats — derived from the WIRED data only (no invented totals, no rank, no percentile).
+ *  A truncated walk renders "N+" (a true lower bound), never a fabricated exact figure. */
+function heroStats(data: RewardsDashboardData) {
+  const suffix = data.referralsTruncated ? "+" : "";
+  const count = (state: ReferralItem["state"]) =>
+    data.referrals.filter((r) => r.state === state).length;
   return [
-    { label: "Reward points", value: BALANCE.toLocaleString("en-US"), accent: true },
-    { label: "Total referrals", value: String(total) },
-    { label: "Qualified", value: String(qualified) },
-    { label: "Rewarded", value: String(rewarded) },
+    { label: "Reward points", value: data.balance.toLocaleString("en-US"), accent: true },
+    { label: "Total referrals", value: `${data.referrals.length}${suffix}` },
+    { label: "Qualified", value: `${count("qualified")}${suffix}` },
+    { label: "Rewarded", value: `${count("rewarded")}${suffix}` },
   ];
 }
 
 /**
- * Navy promo hero — the mockup's "Reward Center" band. A permanently-navy brand surface (the ratified
- * navy palette; it reads identically in light/dark because it is always dark, like `AuthBrandAside`).
- * Server-render-friendly: no hooks, no clipboard (the code chip is dropped), the CTA is a plain Button.
+ * Navy promo hero — a permanently-navy brand surface (the ratified navy palette; reads identically
+ * in light/dark because it is always dark). Server-render-friendly: no hooks here — the CTA is the
+ * client island, mounted only for §3 slug holders.
  */
-function ReferralHero() {
-  const stats = heroStats();
+function ReferralHero({ data }: { data: RewardsDashboardData }) {
+  const stats = heroStats(data);
   return (
     <section className="overflow-hidden rounded-xl bg-gradient-to-br from-iv-navy-800 via-iv-navy-900 to-iv-navy-950 shadow-iv-md">
       <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.4fr_1fr] lg:gap-0">
-        {/* Left — the pitch + the one real affordance. */}
+        {/* Left — the pitch + the §B8 CTA (slug-gated UX; the M1 app layer enforces). */}
         <div className="flex flex-col items-start lg:pr-8">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-2xs font-semibold uppercase tracking-widest text-iv-amber-400">
             <Sparkles aria-hidden className="size-3.5" />
             Network growth rewards
           </span>
           <h2 className="mt-4 text-3xl font-bold leading-[1.1] tracking-tight text-white sm:text-4xl">
-            Refer a colleague,
+            Invite a business,
             <br />
             earn reward points
           </h2>
           <p className="mt-3 max-w-md text-sm leading-relaxed text-white/70">
-            Invite other procurement teams to iVendorz. When an organization you refer completes
-            verification, you earn reward points toward premium sourcing services.
+            Invite other businesses to iVendorz. When an organization you invite registers and
+            reaches the qualification milestone, you earn reward points toward premium sourcing
+            services.
           </p>
-          <Button variant="amber" size="lg" className="mt-6 gap-2">
-            <UserPlus aria-hidden />
-            Refer an organization
-          </Button>
-          <p className="mt-4 text-2xs text-white/40">
-            Sample data — your live balance and referrals appear here once the read path is wired.
-          </p>
+          {data.canManageGrowthInvites ? <InviteBusinessDialog /> : null}
         </div>
 
-        {/* Right — 2×2 stat band, divided by hairlines like the mockup. White on navy; the balance is
-            the amber hero figure. `lg:border-l` sets it off from the pitch column on wide screens. */}
+        {/* Right — 2×2 stat band over the WIRED reads, divided by hairlines. White on navy; the
+            balance is the amber hero figure. */}
         <dl className="grid grid-cols-2 self-stretch lg:border-l lg:border-white/10">
           {stats.map((s, i) => (
             <div
@@ -160,19 +109,23 @@ function ReferralHero() {
   );
 }
 
-export function RewardsDashboard() {
+export function RewardsDashboard({ data }: { data: RewardsDashboardData }) {
   return (
     <div className="max-w-5xl space-y-6">
-      <ReferralHero />
+      <ReferralHero data={data} />
 
-      <ReferralHistory referrals={REFERRALS} />
+      <ReferralHistory referrals={data.referrals} />
 
-      {/* True foot notes — the privacy fact (opaque refs) and the moat fact (H.9). These replace the
-          mockup's fabricated 48h/"level 2 verification" SLA. */}
+      {/* True foot notes — the privacy fact (opaque refs), the honest funnel deferral
+          ([ESC-7-API] — figure-free, tiles unmounted), and the moat fact (Doc-4I H.9). */}
       <div className="space-y-2">
         <p className="text-xs text-muted-foreground">
           Referrals are shown by their organization reference — display names aren’t part of this
           list.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Invitation stages (Sent · Accepted · Registered) aren’t shown yet — they’ll appear here
+          once their data feed lands.
         </p>
         <div className="flex items-start gap-2 rounded-md border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
           <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
