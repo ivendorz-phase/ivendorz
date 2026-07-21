@@ -1,5 +1,24 @@
 # Growth Hub — P0 Additive Patch Set v1.4
 
+> ## 🏛 BOARD RESOLUTION (2026-07-19) — RECORDED
+> - **Growth Hub Architecture — STATUS: FROZEN.**
+> - **Growth Hub P0 Additive Patch Set — STATUS: APPROVED.**
+> - **10 linked additive patches — STATUS: FOLDED** (corpus copies in `generatedDocs/`, registered in
+>   `00_AUTHORITY_MAP.md` + `CORPUS_INDEX.md` §3b; the Doc-2/Doc-3 chains now effective v1.0.10 / v1.14).
+> - **Authority:** `GrowthHub_P0_Additive_Patch_Set` v1.4 (this document).
+> - **Implementation Status: AUTHORIZED.**
+>
+> Precondition met: **Final-Gate Set Integrity Audit** (3 lanes · 7 scopes: traceability, versions,
+> permission, events, POLICY, schema, open items) = **BLOCKER 0 · MAJOR 0 · MINOR 0 · Dangling
+> Reference 0** — after the audit's own findings (the 5.11 `revoke`-executor flag, the Authority-Map
+> anchor re-pins) were fixed and fix-verified. Every patch individually review-clean
+> (Review-A → Review-B → fix → fix-verification, 0·0·0 each). All 42 open items carry a named channel
+> (Board-pending / ESC / future-additive / implementation-scope). **Still Board-owned, not executed
+> here:** the `ESC-GROWTH-INVITE` registry entry; the open Q-3/4/5/6/7/9-upgrade/11/12 rulings.
+>
+> *(The earlier stamp block below records the 2026-07-19 design freeze + authoring authorization that
+> preceded the per-patch pipeline; it stands as history.)*
+
 > ## ✅ STAMPED (2026-07-19)
 > - **Growth Hub Architecture — STATUS: FROZEN.**
 > - **Growth Hub P0 Additive Patch Set v1.4 — STATUS: APPROVED FOR AUTHORING.**
