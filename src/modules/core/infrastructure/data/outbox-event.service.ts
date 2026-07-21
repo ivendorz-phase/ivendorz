@@ -1,38 +1,68 @@
-// M0 infrastructure — realizes `core.write_outbox_event.v1` (Doc-4B §16) by invoking the M0-owned
-// SECURITY DEFINER function `core.write_outbox_event(...)` (the `allocate_human_ref` precedent,
-// Doc-6B §3.3). The row is inserted into `core.outbox_events` (status `pending`) INSIDE the caller's
-// transaction — atomic with the business write (Doc-4B §16.2) — and the SECURITY DEFINER function
-// bypasses the direct-table `outbox_events_platform_staff` RLS so a tenant-context emitter (e.g.
-// `billing.purchase_subscription`) can write it. This is M0 calling its OWN schema (allowed); other
-// modules consume this via the contract surface, never raw `core` SQL (One Module, One Owner).
+// M0 infrastructure — realizes `core.write_outbox_event.v1` (Doc-4B §B10): inserts exactly one row into
+// core.outbox_events (Doc-2 §10.1) with `status = 'pending'`, inside the CALLER's transaction (atomic with
+// the caller's business write — §16.2). The row's `id` is a time-ordered UUIDv7, minted in-process via the
+// shared ID generator (Doc-4B §8). This is the producer-emit twin of `core.append_audit_record.v1`; it is
+// M0 writing its OWN schema (allowed) — other modules invoke it via the contract surface only.
 //
-// STRUCTURAL insert only (Doc-4B §16): the service does not validate business semantics — the OWNING
-// module (§16.6) is responsible for `event_name` existing in Doc-2 §8, event ownership, thin-payload
-// (§16.5), and the Privacy-Review assertion (§16.3). Idempotency is the caller's (§14.3): a safe replay
-// of the caller's command must not re-emit — the outbox write inherits the caller's transaction.
+// COINS NO EVENT (Doc-4B §B10 Ownership/validation): the owning (emitting) module supplies an `event_name`
+// that MUST exist in Doc-2 §8 (§16.4/§16.6); this primitive persists the row STRUCTURALLY and does NOT
+// validate the catalog or business semantics. A non-existent event name is a caller-side conformance
+// failure (escalation), never a runtime invention here.
+//
+// NON-RETURNING (mirrors audit-record.service.ts): we use `createMany` (NOT `create`), so the INSERT
+// carries NO `RETURNING` clause. `core.outbox_events` SELECT is platform-staff-only (`outbox_events_platform_staff`,
+// core_init); a `RETURNING` under a non-staff caller could abort with SQLSTATE 42501 (the audit-twin
+// pitfall). `id` is minted app-side so no DB-returned key is needed. Do NOT revert to `create()`.
+//
+// NO SECURITY DEFINER + no output (owner ruling 2026-07-12, [ESC-CORE-OUTBOX-MECH] Q1/Q2/Q3): the no-SD
+// caller-context INSERT is the canonical mechanism for ALL M0 append primitives; the frozen §B10 contract
+// declares no Response, so this returns void. RLS admission: the runtime emit rides the privileged app
+// connection (RLS = defense-in-depth backstop, not the model — CLAUDE.md §2); the staff-GUC leg admits an
+// in-band staff/System write under `outbox_events_platform_staff`. A tenant-admitting INSERT `WITH CHECK`
+// policy on `core.outbox_events` (Doc-6B additive patch — backstop parity for tenant-context emitters such
+// as `billing.purchase_subscription`) is DEFERRED by owner decision 2026-07-22; until it lands, the
+// restricted-role RLS backstop rejects a direct tenant-context outbox INSERT (fail-closed).
 
-import { prisma, type DbExecutor } from "../../../../shared/db";
+import { prisma, Prisma, type DbExecutor } from "../../../../shared/db";
 import { uuidv7 } from "../../../../shared/ids";
 import type { CoreServiceExecutor, WriteOutboxEvent } from "../../contracts/services";
+import { CoreServiceError, type WriteOutboxEventInput } from "../../contracts/types";
+
+async function write(input: WriteOutboxEventInput, db: DbExecutor): Promise<void> {
+  const outboxEventId = uuidv7();
+  try {
+    // `createMany` (single-row) emits a NON-`RETURNING` INSERT — see the NON-RETURNING note above.
+    // Exactly one row with the frozen Doc-2 §10.1 columns; `status`/`attempts` set explicitly (they also
+    // carry DB defaults). Delivery is asynchronous via the dispatcher (§B6).
+    await db.outboxEvent.createMany({
+      data: [
+        {
+          id: outboxEventId,
+          aggregateId: input.aggregateId,
+          eventName: input.eventName,
+          eventVersion: input.eventVersion,
+          payloadJsonb: input.payload as Prisma.InputJsonValue,
+          status: "pending",
+          attempts: 0,
+        },
+      ],
+    });
+  } catch (cause) {
+    // Doc-4B §B10: Error → `core_outbox_write_failed` (SYSTEM). The throw rolls the CALLER's transaction
+    // back — the business write cannot commit without its outbox row (§16.2 atomicity). Preserve the
+    // underlying DB fault as `cause`.
+    throw new CoreServiceError(
+      "core_outbox_write_failed",
+      "core.write_outbox_event.v1: the outbox-row INSERT failed; the caller's transaction is rolled back.",
+      { cause },
+    );
+  }
+}
 
 /**
- * Write one `pending` outbox event (Doc-4B §16). Runs on the supplied transaction executor when present
- * (atomic with the caller's business write — Doc-4B §16.2); otherwise on the shared client. The outbox
- * `id` is a time-ordered UUIDv7 minted in-process (the dispatcher orders by it).
+ * Write one `core.outbox_events` row (Doc-4B §B10 / Doc-2 §10.1). Runs on the supplied transaction
+ * executor when present (the emit is atomic with the caller's business write — Doc-4B §16.2); otherwise
+ * on the shared client. Returns void — the frozen §B10 contract declares no Response.
  */
-export const writeOutboxEvent: WriteOutboxEvent = async (input, executor?: CoreServiceExecutor) => {
-  const db = (executor as DbExecutor | undefined) ?? prisma;
-  const eventId = uuidv7();
-  // The frozen function signature is core.write_outbox_event(uuid, text, integer, uuid, jsonb) — the
-  // payload is passed as a JSON string cast to jsonb (never string-interpolated). `$executeRawUnsafe`
-  // (not `$queryRawUnsafe`) because the function RETURNS void — nothing to deserialize.
-  await db.$executeRawUnsafe(
-    "SELECT core.write_outbox_event($1::uuid, $2, $3::integer, $4::uuid, $5::jsonb)",
-    eventId,
-    input.eventName,
-    input.eventVersion,
-    input.aggregateId,
-    JSON.stringify(input.payload),
-  );
-  return { eventId };
-};
+export const writeOutboxEvent: WriteOutboxEvent = (input, executor?: CoreServiceExecutor) =>
+  write(input, (executor as DbExecutor | undefined) ?? prisma);

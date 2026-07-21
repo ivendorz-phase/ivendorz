@@ -38,6 +38,10 @@ export function uuidv7(): string {
   );
 }
 
-/** Canonical UUID syntax matcher (any version) — the platform-wide SYNTAX gate for a machine id on an
- *  API surface (Doc-4A §9). Format only (a well-formed UUID string); never a UUIDv7-version assertion. */
+/**
+ * Canonical UUID string shape (any RFC-4122 version; case-insensitive) — the platform-wide SYNTAX check
+ * for a machine identifier at a trust boundary (Doc-4A §11.2 category 1). Framework-shared so modules
+ * bind ONE source instead of re-declaring the regex per command (the `UUID_RE` copies dotted across the
+ * codebase). Additive; changes no existing behavior.
+ */
 export const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
