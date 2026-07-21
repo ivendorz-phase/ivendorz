@@ -115,8 +115,10 @@ export async function ensureRestrictedRlsRole(): Promise<void> {
     `GRANT SELECT, INSERT, UPDATE ON billing.plans, billing.entitlements, billing.plan_entitlements TO ${RESTRICTED_RLS_ROLE}`,
   );
   // W3-BILL-4 — BC-BILL-2 subscriptions: SELECT proves the `subscriptions_tenant` RLS scopes reads to the
-  // org (tenant isolation). The `core.write_outbox_event` SECURITY DEFINER function needs only PUBLIC
-  // EXECUTE (default) + core USAGE (granted above) — a tenant role invokes it without an outbox_events grant.
+  // org (tenant isolation). NO `core.outbox_events` grant on purpose (Option A, owner ruling 2026-07-12 —
+  // no SECURITY DEFINER): the runtime emit rides the privileged app connection; the restricted role's
+  // missing grant IS the fail-closed backstop the outbox case asserts (tenant-admitting Doc-6B policy
+  // deferred, owner 2026-07-22 — add the grant alongside that patch).
   // W3-BILL-5 adds UPDATE on `subscriptions` so the cancel-write fence is provable fail-closed: a non-staff
   // role in org B's context that attempts the cancel CAS on org A's subscription affects 0 rows (the RLS
   // `USING`/`WITH CHECK` scopes it), not a bare permission-denied (the identity_authz full-CRUD precedent).
