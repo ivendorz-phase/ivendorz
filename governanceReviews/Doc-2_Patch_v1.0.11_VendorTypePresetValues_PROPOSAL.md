@@ -1,5 +1,20 @@
 # Doc-2_Patch_v1.0.11_VendorTypePresetValues_PROPOSAL.md
 
+> **🛑 STATUS: SUPERSEDED 2026-07-22 by
+> `governanceReviews/Doc-2_Patch_v1.0.12_VendorTypePresetValues_PROPOSAL.md`.** Never folded.
+> Review-A returned 🟠 REVISION REQUIRED (0 BLOCKER / 4 MAJOR / 7 MINOR / 2 NIT / 4 OBS); all
+> findings are dispositioned in v1.0.12 §10. **Retained on disk for the review trail — do not
+> delete.** Two defects in this draft are load-bearing and must not be cited from here:
+> **(a)** the banner's `Doc-4A_Content_v1.0_Pass5.md:242` quotation is **fabricated** — no such
+> sentence exists in the corpus, and `:242` is the entity-state row (corrected at v1.0.12 §3.1);
+> **(b)** the `Doc-4A_Content_v1.0_Pass3.md:46` "Doc-2 §3" anchor is section-mismatched — Doc-2 §3
+> is the Entity Catalog and carries no attributes (corrected at v1.0.12 §3.2). Row 1's identifier
+> `service_provider_consultant` is superseded by `consultant` (owner ruling 2026-07-22).
+>
+> ---
+>
+> *Original status block follows, unaltered:*
+>
 > **STATUS: DRAFT — ADDITIVE PATCH; AWAITS HUMAN APPROVAL.** Doc-2 is **rank-0 frozen architecture**
 > (`00_AUTHORITY_MAP.md:18`); changing it requires an **additive architecture patch with human
 > approval** (`CLAUDE.md:139–140`) — never a skill decision. Not folded by any AI action.
