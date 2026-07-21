@@ -1,3 +1,15 @@
+> **✅ STATUS: APPROVED (Board resolution 2026-07-19) + FOLDED into the corpus.**
+> Corpus copy `generatedDocs/Doc-4C_GrowthInvitation_Patch_v1.0.3.md`, registered in `00_AUTHORITY_MAP.md` + `CORPUS_INDEX.md`,
+> carried **alongside** its unedited frozen base document(s) — **no frozen file edited in place.**
+> Origin/provenance: `governanceReviews/Doc-4C_GrowthInvitation_Patch_v1.0.3_PROPOSAL.md` (the authoring + per-patch
+> Review-A/Review-B/fix-verification record).
+>
+> **Atomic linked set:** one of the **10 Growth Hub patches folded together** under
+> `GrowthHub_P0_Additive_Patch_Set` v1.4. Board resolution: Growth Hub Architecture = **FROZEN** ·
+> P0 Additive Patch Set = **APPROVED** · 10 linked additive patches = **FOLDED** · Implementation =
+> **AUTHORIZED**. Final-Gate Set Integrity Audit (3 lanes, 7 scopes): **BLOCKER 0 · MAJOR 0 ·
+> MINOR 0 · Dangling Reference 0**.
+
 # Doc-4C — Additive Patch v1.0.3 (Growth Invitation Contracts) — M1 Identity
 
 | Field | Value |

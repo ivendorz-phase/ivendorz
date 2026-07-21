@@ -1,12 +1,13 @@
-# Doc-2 — Additive Patch v1.0.9 (PATCH-D2-08) — Growth Hub Domain Additions
+# Doc-2 — Additive Patch v1.0.10 (PATCH-D2-09) — Growth Hub Domain Additions
 
 | Field | Value |
 |---|---|
-| **Status** | **PROPOSED** — gated on per-patch Review-A → Review-B → Board fold (implementation governance). Additive; patches frozen `Doc-2_Domain_Model_And_Database_Blueprint` v1.0.8 **without editing it in place** (the `Doc-2_Patch_v1.0.6/v1.0.8` mechanism). |
+| **Status** | **PROPOSED** — gated on per-patch Review-A → Review-B → Board fold (implementation governance). Additive; patches the **effective Doc-2 = v1.0.9** (base v1.0.2 + folded patches v1.0.3–v1.0.9) **without editing it in place** (the `Doc-2_Patch_v1.0.6/v1.0.8` mechanism). |
+| **Renumber note** | Authored as v1.0.9 / PATCH-D2-08; **renumbered v1.0.10 / PATCH-D2-09** (2026-07-19): the parallel governance train folded the **Vendor-Buyer-Relationship** patch as `Doc-2_Patch_v1.0.9.md` / PATCH-D2-08 (commit `573a349`), consuming both the number and the patch ID **and** the §7 count transition (tenant 36→37, total 45→46 — now this patch's baseline). Board re-verifies the number at the atomic fold (the Doc-3 v1.13→v1.14 contingency's Doc-2 analog). |
 | **Date** | 2026-07-19 |
 | **Kind** | Additive only — **2 entities** (§10.2), **2 state machines** (§5), **1 tenant permission slug** (§7), **2 §8 events**, **2 §9 audit actions**. Coins exactly these; changes/removes nothing existing. |
 | **Authority** | Growth Hub Architecture (**FROZEN** 2026-07-19, `GrowthHub_P0_Additive_Patch_Set` v1.4 §A); Board ratifications Q-13/Q-14/Q-15/Q-16 + GI-1/2/3; the additive channels Doc-2 §5/§7/§8/§9/§10.2; Inv #5 (Users act, Orgs own) · #7 (one module, one owner) · #8 (nothing hard-deleted) · #11 (private exclusion). Mechanism precedents: `Doc-2_Patch_v1.0.6` (adds a column), `Doc-2_Patch_v1.0.8` (adds slugs, count overlay). |
-| **Linked set (atomic)** | Doc-3 `…v1.13_GrowthHub` · Doc-4C `…v1.0.3` · Doc-4H `GrowthDelivery` · Doc-4I `GrowthReferral` · Doc-4J `…v1.0.1` · Doc-4L `…v1.0.1` · Doc-5C `…v1.0.1` · **Doc-6C `…v1.0.4`** (realizes §10.2 + the §7 count overlay) · Doc-7E `…v1.0.1`. A partial fold dangles references. |
+| **Linked set (atomic)** | Doc-3 `…v1.14_GrowthHub` (renumbered from the packet's v1.13 — collision) · Doc-4C `…v1.0.3` · Doc-4H `GrowthDelivery_v1.0.1` · Doc-4I `GrowthReferral_v1.0.1` · Doc-4J `…v1.0.1` · Doc-4L `…v1.0.1` · Doc-5C `…v1.0.1` · **Doc-6C `…v1.0.4`** (realizes §10.2 + the §7 count overlay) · Doc-7E `…v1.0.1`. A partial fold dangles references. |
 | **Coins** | Entities `identity.growth_invitations`, `identity.invitation_conversions` · states `issued/expired/revoked`, `started/registered` · slug `can_manage_growth_invites` · events `InvitationIssued`, `InvitationConverted` · audit actions `growth_invitation_created`, `invitation_converted`. **No** ADR/ownership/firewall/money-boundary change. |
 
 ---
@@ -96,9 +97,11 @@ Appended to the §7 slug table (same `| Entity / Action Area | Permission Slugs 
 |---|---|
 | Growth Hub invitation (create / manage growth invitations) | `can_manage_growth_invites` (O,D,M) |
 
-**Count overlay:** tenant slug catalog **36 → 37**; total catalog **45 → 46** (staff unchanged at 9). Realized
-by `Doc-6C_…v1.0.4` (the count-overlay pattern of `Doc-6C_Patch_v1.0.1/.3`). A dedicated slug (Growth ≠
-Billing — Q-2): server authorization is in the M1 application layer; UI gating is UX-only (Doc-7E §7.2).
+**Count overlay:** tenant slug catalog **37 → 38**; total catalog **46 → 47** (staff unchanged at 9) — the
+**v1.0.9 baseline** (the folded Vendor-Buyer-Relationship patch already took tenant 36→37 / total 45→46;
+renumber note above). Realized by `Doc-6C_…v1.0.4` (the count-overlay pattern of `Doc-6C_Patch_v1.0.1/.3`;
+its assertion re-bases the same way — 46→47). A dedicated slug (Growth ≠ Billing — Q-2): server
+authorization is in the M1 application layer; UI gating is UX-only (Doc-7E §7.2).
 
 ---
 
@@ -110,7 +113,7 @@ insert in one txn) applies:
 
 | Emitting Module | Entity | Events |
 |---|---|---|
-| identity | growth_invitations | `InvitationIssued` — fires **only** on `create_invitation` for a **targeted** `recipient_type` (email/sms/whatsapp); **never** for open link/qr (no delivery). Thin payload: `{event_id, occurred_at, growth_invitation_id, recipient_type, delivery_reference_id}` — **no raw token, no recipient_identifier** (§16.5 thin-payload / GI-3) |
+| identity | growth_invitations | `InvitationIssued` — fires **only** on `create_invitation` for a **targeted** `recipient_type` (email/sms/whatsapp); **never** for open link/qr (no delivery). Thin payload: `{event_id, occurred_at, growth_invitation_id, recipient_type, delivery_reference_id}` — **no raw token, no recipient_identifier** (Doc-4A §16.5 thin-payload / GI-3) |
 | identity | invitation_conversions | `InvitationConverted` — fires on conversion `→ registered` (attribution bound). Payload `{event_id, occurred_at, conversion_id, growth_invitation_id, campaign_key, recipient_type, referrer_organization_id, referred_organization_id}` — **no recipient_identifier** (GI-3) |
 
 **Primary consumers (added to the §8 consumers paragraph):** `InvitationIssued` → **Communication (M6)**
@@ -126,8 +129,10 @@ contracts; consumers own their effects — the `VendorBanned` model).
 ## §5 — §9 (Audit Mapping) — Organization domain extended (2 actions)
 
 The **Organization** domain row is extended (business semantics only; no wire tokens — those are pinned in
-`Doc-4C_…v1.0.3`, the `buyer_profile` linked-pair precedent). **Extend the EFFECTIVE v1.0.8 row** (which already
-carries the `Doc-2_Patch_v1.0.4` buyer-profile actions — Review-A MAJOR-2, do NOT revert to the base row):
+`Doc-4C_…v1.0.3`, the `buyer_profile` linked-pair precedent). **Extend the EFFECTIVE v1.0.9 row** — content-
+identical to the effective v1.0.8 row (it already carries the `Doc-2_Patch_v1.0.4` buyer-profile actions —
+Review-A MAJOR-2, do NOT revert to the base row; the folded v1.0.9 VBR patch **appended a separate Buyer
+Relationships domain row** and left the Organization row untouched):
 
 > Organization | create, membership invite/accept/suspend/remove, role/permission change, ownership
 > change/succession, workflow settings change, subscription change, **buyer profile create, buyer profile
@@ -163,12 +168,23 @@ Doc-4C patch resolves the wire token.
 
 `Doc-6C_…v1.0.4` (DDL, RLS, the GI-2 immutability trigger, the §7 count overlay) · `Doc-4C_…v1.0.3` (the 3
 contracts + `provisionIdentity` attribution extension + the §9 audit-token realization) · `Doc-4J_…v1.0.1`
-(event catalog) · `Doc-4L_…v1.0.1` (flow + L3 permission row) · `Doc-3_…v1.13` (`identity.growth_invite_*`
-POLICY keys for TTL/dedup/quota/resolve-rate-limit) · `Doc-4H`/`Doc-4I` (M6 delivery / M7 System branch) ·
+(event catalog) · `Doc-4L_…v1.0.1` (flow + L3 permission row) · `Doc-3_…v1.14_GrowthHub` (the 7
+`identity.*` keys — `growth_invite_*` TTL/dedup/quota/resolve-rate-limit/delivery-URL-TTL + the campaign
+registry — and the 2 `billing.*` referral keys) · `Doc-4H`/`Doc-4I` (M6 delivery / M7 System branch) ·
 `Doc-5C_…v1.0.1` (API rows) · `Doc-7E_…v1.0.1` (Growth Hub surface).
+
+**⚠ Un-executed 5.11 transitions (flagged — coined here, execution follows additively; Final-Gate
+L3-M1):** the machine's two outbound edges have **no executing contract in this set**: **`revoke`**
+(`issued → revoked`, referrer/staff actor — the frozen membership-invitation `revoke_invitation.v1`
+serves a DIFFERENT aggregate and cannot be reused) is a **flagged follow-up additive Doc-4C 21.4
+command** (+ its Doc-5C wire row + Doc-7E affordance — the same future-pair channel as the funnel
+reads); **`expire`** (System sweep) is the `Doc-6C_…v1.0.4` §7 flagged follow-up (cadence key +
+executor). Every revocation/expiry **consequence** is realized now (resolve `valid=false`, M6 never
+retries, GI-1 rejects non-`issued`); only the two initiating executors follow. Not fold-blocking —
+routed, named channels.
 
 *Additive Doc-2 patch — coins two entities, two state machines, one tenant slug, two §8 events, two §9
 audit actions; verbatim to the Growth Hub FROZEN architecture (v1.4 §A). PROPOSED — awaiting per-patch
-Review-A → Review-B → Board fold. Edits no frozen base text; carried alongside frozen Doc-2 v1.0.8. Changes
+Review-A → Review-B → Board fold. Edits no frozen base text; carried alongside the effective Doc-2 v1.0.9. Changes
 no ADR, ownership boundary, governance signal, firewall, or money boundary. Any change requires Board
 approval.*

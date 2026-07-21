@@ -126,6 +126,27 @@ review/patch/audit trail is grouped by category.
 
 ---
 
+## 3b. Growth Hub P0 Additive Patch Set (10 linked patches — FOLDED 2026-07-19, Board resolution)
+
+Atomic set (Invite-to-Register Growth Hub; authority `governanceReviews/GrowthHub_P0_Additive_Patch_Set_PROPOSAL_v1.0.md` content v1.4; Final-Gate Set Integrity Audit BLOCKER 0 · MAJOR 0 · MINOR 0 · Dangling 0):
+
+| Corpus copy | Extends |
+|------|------|
+| `Doc-2_Patch_v1.0.10_GrowthHub.md` (PATCH-D2-09) | Doc-2 → effective v1.0.10 (2 M1 entities · machines 5.11/5.12 · slug 46→47 · M1's first 2 §8 events · 2 §9 actions) |
+| `Doc-3_Policy_Key_Registration_Patch_v1.14_GrowthHub.md` | Doc-3 §12.2 (7 `identity.*` + 2 `billing.*` keys; Q-6/Q-12 values Board-pending) |
+| `Doc-4C_GrowthInvitation_Patch_v1.0.3.md` | Doc-4C (§C13 3 contracts + `provisionIdentity` attribution + §C12.7 flip + audit tokens) |
+| `Doc-4H_GrowthDelivery_Patch_v1.0.1.md` | Doc-4H (BC-COMM-3 `dispatch_invitation_delivery` consumer + §H.7 flip + retry guard) |
+| `Doc-4I_GrowthReferral_Patch_v1.0.1.md` | Doc-4I (`track_referral` System event-create branch, Q-15 guards + Events flips) |
+| `Doc-4J_GrowthEvent_Patch_v1.0.1.md` | Doc-4J (event-catalog registration of the 2 M1 events) |
+| `Doc-4L_GrowthFlow_Patch_v1.0.1.md` | Doc-4L (new L9 flow section + L3 permission row) |
+| `Doc-5C_GrowthInvitation_Patch_v1.0.1.md` (PATCH-5C-GRW-01) | Doc-5C (wire rows 36/37 — M1's first Public endpoint; out-of-wire 7→8) |
+| `Doc-6C_GrowthInvitation_Patch_v1.0.4.md` | Doc-6C → effective v1.0.4 (3 enums + 2 tables DDL/RLS/triggers + GI-1/2/3 + count 47) |
+| `Doc-7E_GrowthHub_Patch_v1.0.1.md` | Doc-7E (Growth Hub surface + `(public)` token landing; wired-reads-only) |
+
+Origins/provenance: the matching `governanceReviews/*_PROPOSAL.md` files (per-patch Review-A/Review-B/fix-verification records).
+
+---
+
 ## 4. Doc-4 Series — Cross-Family Governance & Freeze
 
 | File | Purpose |
