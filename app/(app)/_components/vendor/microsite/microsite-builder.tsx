@@ -3,13 +3,16 @@
 // contract-owned (not a hardcoded enum); section content editing is integration-phase. Reorder is a
 // visual handle only (no drag logic). Uncontrolled controls; Save disabled (no mock business logic).
 //
-// DS-W2B (2026-07-20): the opaque "Template A…E" select is replaced by NAMED template cards, using
-// the name↔letter binding in `template-catalog.ts` (plan §3A.0). That binding is **PROPOSED — Board
-// mint pending (G3 READY)**, so nothing here treats it as authoritative semantics: the written value
-// is unchanged — still the frozen `layout_template` enum — and the letters stay opaque slots. Native
-// radio inputs keep this Server-render-friendly (no hooks, works without JS); the vendor's choice is
-// never mutated for them, and business type never restricts which templates are offered (all five
-// are always selectable).
+// DS-W2B (2026-07-20; card layout retained, LABELS REVERTED 2026-07-21): the select is replaced by
+// template CARDS driven by `template-catalog.ts`. The cards now carry the NEUTRAL labels
+// `Template A`…`Template E`, not the owner-proposed names — **G3 is BLOCKED** and its mint proposal
+// was REJECTED FOR FOLD (owner/Board 2026-07-21) because the frozen corpus already binds different
+// names to the letters at rank 0 and rank 1 (`Master…FINAL.md:569`, `ADR_Compendium_v1.md:1008`).
+// See the `template-catalog.ts` header for the full record. The written value is unchanged — still
+// the frozen `layout_template` enum. Native radio inputs keep this Server-render-friendly (no hooks,
+// works without JS); the vendor's choice is never mutated for them, and business TYPE never
+// restricts which templates are offered. (Entitlement-based availability — the frozen
+// `template_access_level` — is a separate, still-effective mechanism and is not denied here.)
 //
 // DS-W0-R1 (2026-07-20, owner ruling): this surface is ALSO step 2 of the Digital Showcase authoring
 // journey ("Choose Template + Arrange Sections"), composed by `/sell/company/journey?step=design`.
@@ -89,6 +92,11 @@ export function MicrositeBuilder({ microsite, sections }: MicrositeBuilderProps)
               Choose how your public showcase looks. Your content stays the same — the template
               changes only how it is presented, and you can change it at any time.
             </p>
+            {/* Descriptions are deliberately absent while G3 is BLOCKED. Per-template copy would
+                either restate the frozen semantics or restate the owner-proposed ones; the second
+                is the blocked mapping wearing a neutral title. Neutral means neutral until the
+                Master §8.4 + ADR-020 packet folds. */}
+            <p className="text-xs text-muted-foreground">Template details are not available yet.</p>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {TEMPLATE_CATALOG.map((entry) => (
                 <label
@@ -105,17 +113,12 @@ export function MicrositeBuilder({ microsite, sections }: MicrositeBuilderProps)
                       value={entry.template}
                       // An UNREAD `layout_template` is an absence, never the frozen DB default
                       // dressed up as the vendor's choice: falling back to `DEFAULT_LAYOUT_TEMPLATE`
-                      // here would pre-select "Corporate Classic" on a surface where step 1 says
-                      // "Not chosen yet" and step 3 says "No template chosen", and would submit a
-                      // choice the vendor never made once Save is wired.
+                      // here would pre-select Template A on a surface where step 1 says "Not chosen
+                      // yet" and step 3 says "No template chosen", and would submit a choice the
+                      // vendor never made once Save is wired.
                       defaultChecked={microsite?.layout_template === entry.template}
                       className="mt-0.5 size-4 shrink-0 accent-primary"
                     />
-                  </span>
-                  <span className="text-xs text-muted-foreground">{entry.description}</span>
-                  <span className="text-xs text-muted-foreground">{entry.emphasis}</span>
-                  <span className="mt-1 text-xs font-medium text-muted-foreground">
-                    {entry.pageModel === "single" ? "Single page" : "Multi-page"}
                   </span>
                 </label>
               ))}

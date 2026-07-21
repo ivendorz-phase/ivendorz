@@ -106,12 +106,35 @@ would have had to encode vendor type, pressing on `vendor_type_preset` whose val
 under the **open** `ESC-MKT-VENDORTYPE` and colliding with Invariant #1 (capability is a 4-flag
 matrix, not a label). The hybrid ruling avoids that entirely.
 
-**Frozen-corpus verification (2026-07-20, no conflict):** `layout_template` is an **opaque** enum in
-every frozen occurrence — Doc-2:744 (`layout_template(A–E)`), Doc-4D PassB:18
-(`enum(A|B|C|D|E) : required` on create), Doc-6D Pass2:146 (`CREATE TYPE marketplace.microsite_layout
-AS ENUM ('A'…'E')`). **No frozen document assigns any meaning to any letter, and none of the five
-template names appears anywhere in `generatedDocs/`.** The mapping is therefore a free mint, not an
-override. **One consequence to note at the mint:** Doc-6D Pass2:152 freezes
+**🛑 RETRACTED 2026-07-21 — this verification was WRONG, and the conclusion it supported is
+reversed.** It is preserved here, struck, because the *method* failure is the lesson.
+
+> ~~**Frozen-corpus verification (2026-07-20, no conflict):** `layout_template` is an **opaque** enum
+> in every frozen occurrence — Doc-2:744, Doc-4D PassB:18, Doc-6D Pass2:146. **No frozen document
+> assigns any meaning to any letter, and none of the five template names appears anywhere in
+> `generatedDocs/`.** The mapping is therefore a free mint, not an override.~~
+
+**What the corpus actually says.** `Master_System_Architecture_v1.0_FINAL.md:569` (**rank 0,
+CANONICAL**) and `ADR_Compendium_v1.md:1008` (**rank 1**, ADR-020), both unamended:
+
+> "**Layout Templates** — predefined structures: **A Directory Style · B Engineering Company ·
+> C Manufacturer · D Service Company · E Corporate Microsite.** Each defines hero, section, and
+> contact ordering."
+
+So the corpus already binds a **name and behaviour** to every letter. The proposed mapping is a
+**REMAP of rank-0/rank-1 text, not a free mint** — it requires an additive Master §8.4 patch plus an
+ADR-020 amendment, with human Board approval. Anchor correction: the `Doc-4D PassB:18` citation above
+was also false — `Doc-4D_Content_v1.0_PassB.md` is a 160-line part-file **manifest** containing no
+`layout_template`; the real anchor is **`Doc-4D_Content_v1.0_PassB_ProfileExperience.md:18`**, and
+`Doc-2:744` is properly cited as **`Doc-2 §10.3`** (line 744).
+
+**Method failure (recorded so it does not recur).** Every sweep searched the identifier
+`layout_template` — 5 corpus hits, all DDL/column-list/contract — and the five *proposed* names,
+which return 0 hits precisely *because* the conflicting mapping uses different words. Ranks 0 and 1
+write in **prose**; "Layout Templates … A Directory Style" contains no such token, so no
+identifier-scoped grep could reach it. **Semantic review of an enum must search: identifier names ·
+literal enum values · human-readable prose names · rank-0 and rank-1 sources · amendment and
+supersession records.** **One consequence to note at the mint:** Doc-6D Pass2:152 freezes
 `layout_template … DEFAULT 'A'`, so **A → Corporate Classic makes Corporate Classic the DB-level
 default** for any microsite row created without an explicit choice (the Doc-4D create contract marks
 the field `required`, so the default is a backstop, not the normal path). Flagged for the Board's
@@ -237,7 +260,7 @@ an individual template.
 | **G1-C** | Fold Doc-7D §11 Host Canonicalization → **v1.2** (its ADR-024 is already folded — no instrument dependency). Verify: version bump; §11 present. | Human records action | Host-resolution work cites corpus, not a proposal |
 | **G1-D** | Authority Map + dependent-pointer verification sweep: Doc-7D row shows v1.2 with no "folds pending" remnant; `esc_registry`/companion pointers re-checked; **T3 prep-artifact governance commit executes** (per its own Board-ruled sequence). | Human records action + verification | T3 artifact commit; any nav/IA change; Phase 2 |
 | **G2** | Rule the template-amendment nav (F2): re-affirm canonical seven (recommended — treat the amendment's merges as *within-page content arrangement*, not nav topology) or approve a Doc-7D additive patch | Owner/Board | Amended template visuals in production |
-| **G3** | 🟡 **READY — owner-PROPOSED binding, formal Board mint PENDING** (status corrected 2026-07-20, owner ruling §4; the earlier "MINTED" entry overstated an in-chat owner statement — see the v0.9 Disposition Log). Proposed: **A→Corporate Classic · B→Modern Industrial · C→Product Catalogue · D→Portfolio & Projects · E→Business Landing**. Axis = visual layout style (§3A.0); corpus verified conflict-free (the five names appear NOWHERE in `generatedDocs/`); frozen `DEFAULT 'A'` ⇒ Corporate Classic would become the DB-level default. Kit↔template binding **struck**. The naming lives in one presentation module (`app/(app)/_components/vendor/microsite/template-catalog.ts`), whose header records the PROPOSED status; **nothing derives behaviour from a name and no production code treats the binding as authoritative**. Mint requires a formal G3 governance artifact: created → reviewed → folded into `generatedDocs/` → registered in the Authority Map. | Owner/Board — **mint pending** | DS-W2B is BUILT on the proposed labels; authoritative semantics await the mint |
+| **G3** | 🛑 **PARKED INDEFINITELY — WORKSTREAM STOPPED (owner ruling 2026-07-21).** No further review or drafting effort on template names; the name-collision ruling and revision authorization are DEFERRED until the Board explicitly reopens this work. Production stays neutral `Template A`…`Template E`. Instrument 1 continues separately on its own merits and does **not** by itself resume G3. **BLOCKED — conflicts with the frozen corpus (on Review-B).** The G3 mint proposal is **REJECTED FOR FOLD**. `Master_System_Architecture_v1.0_FINAL.md:569` (rank 0, CANONICAL) and `ADR_Compendium_v1.md:1008` (rank 1, ADR-020) already bind **A Directory Style · B Engineering Company · C Manufacturer · D Service Company · E Corporate Microsite**, *"each defines hero, section, and contact ordering"* — both unamended. The proposed **A→Corporate Classic · B→Modern Industrial · C→Product Catalogue · D→Portfolio & Projects · E→Business Landing** is therefore a **REMAP of rank-0/rank-1 text**, not an additive register, and cannot be minted by any lower-ranked instrument. The hybrid layout-style model remains **owner product direction pending architecture amendment**. Unblocking requires ONE ATOMIC Board packet — an additive **Master §8.4** patch **+** an **ADR-020 amendment/superseding ADR** — drafted at `governanceReviews/G3_TemplateSemantics_Amendment_Packet_v1.0_PROPOSAL.md`. Production reverted to neutral `Template A`…`Template E`. | Human Board — **amendment required** | Named template semantics; DS-W2B labels; any template-driven rendering |
 | **G3A** | 🔴 **OPEN** — canonical Template 05 (Business Landing, single-page) has **no design artifact**: locate or explicitly commission it. *(Kit↔template correspondence leg struck per §3A.0; licensing leg closed per §3A.1.)* | Owner | DS-P2 composition scope complete (all five renderable) |
 | ~~**G3B**~~ | ✅ **RETIRED 2026-07-20 (§3A.1)** — kit source removed; no code/token/asset reuse and no continuing licensing dependency, so provenance no longer gates implementation. Historical note preserved in the audit §4. | — | — |
 | **G4** | Rule Layout-05 single-page semantics inside the 7-route IA (F4) | Board | Template E (Starter) rendering |

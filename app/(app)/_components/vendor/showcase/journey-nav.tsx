@@ -40,7 +40,7 @@ export interface JourneyStepRailProps {
 
 export function JourneyStepRail({ active, basePath = "/sell" }: JourneyStepRailProps) {
   return (
-    <nav aria-label="Authoring journey">
+    <nav aria-label="Showcase Builder">
       <ol className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         {JOURNEY_STEPS.map((step, index) => {
           const isActive = step === active;

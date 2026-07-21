@@ -31,7 +31,9 @@ import {
 import { MicrositeBuilder } from "../../../../_components/vendor/microsite/microsite-builder";
 import { PreviewPublishPanel } from "../../../../_components/vendor/microsite/preview-publish-panel";
 
-export const metadata: Metadata = { title: "Authoring journey" };
+// USER-FACING label is "Showcase Builder" (DS-NAV, owner-approved 2026-07-20); the internal design
+// term stays "authoring journey" (route path, component names, and plan-doc language unchanged).
+export const metadata: Metadata = { title: "Showcase Builder" };
 
 const STEP_DESCRIPTIONS = {
   overview:
@@ -55,7 +57,7 @@ export default async function AuthoringJourneyPage({
     <div className="space-y-6">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          {step === "overview" ? "Authoring journey" : JOURNEY_STEP_LABELS[step]}
+          {step === "overview" ? "Showcase Builder" : JOURNEY_STEP_LABELS[step]}
         </h1>
         <p className="text-sm text-muted-foreground">{STEP_DESCRIPTIONS[step]}</p>
       </header>
