@@ -8,6 +8,6 @@ import { handleInviteIngress } from "@/server/auth/invite-ingress";
 
 export const dynamic = "force-dynamic";
 
-export function GET(request: Request): Response {
+export function GET(request: Request): Promise<Response> {
   return handleInviteIngress(request);
 }

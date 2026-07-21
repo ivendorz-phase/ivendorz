@@ -93,7 +93,7 @@ describe("P2 landing: row-37 anti-oracle resolve + /invite URL-redacting ingress
 
   it("/invite ingress: HttpOnly cookie carriage + redirect to a TOKEN-FREE landing URL", async () => {
     const rawToken = `ivz_inv_test_${uuidv7()}`;
-    const response = handleInviteIngress(
+    const response = await handleInviteIngress(
       new Request(`https://ivendorz.example/invite?token=${rawToken}`),
     );
 
@@ -115,10 +115,36 @@ describe("P2 landing: row-37 anti-oracle resolve + /invite URL-redacting ingress
   });
 
   it("/invite ingress with NO token: same token-free redirect, no carriage cookie written", async () => {
-    const response = handleInviteIngress(new Request("https://ivendorz.example/invite"));
+    const response = await handleInviteIngress(new Request("https://ivendorz.example/invite"));
 
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toBe(`https://ivendorz.example${INVITE_LANDING_PATH}`);
     expect(response.headers.get("set-cookie")).toBeNull();
+  });
+
+  it("/invite ingress SIGNED MODE (Lane-C wiring): invalid signed legs → NO cookie, SAME token-free redirect (uniform)", async () => {
+    const rawToken = `ivz_inv_test_${uuidv7()}`;
+    // Fabricated/invalid legs — unknown nonce, arbitrary expiry, bogus signature. The redemption
+    // guard must collapse this to the ONE uniform failure: no cookie, same redirect target.
+    const badLegs = await handleInviteIngress(
+      new Request(
+        `https://ivendorz.example/invite?token=${rawToken}&n=${uuidv7()}&e=${Math.floor(Date.now() / 1000) + 900}&s=deadbeef`,
+      ),
+    );
+    expect(badLegs.status).toBe(303);
+    expect(badLegs.headers.get("location")).toBe(`https://ivendorz.example${INVITE_LANDING_PATH}`);
+    expect(badLegs.headers.get("set-cookie")).toBeNull(); // the guarded link never downgrades
+    expect(badLegs.headers.get("cache-control")).toBe("no-store");
+
+    // A PARTIAL signed-leg set (a stripped `s`) is STILL signed mode — never silently treated as
+    // a bare link (that would defeat the one-time property by stripping the guard).
+    const partialLegs = await handleInviteIngress(
+      new Request(`https://ivendorz.example/invite?token=${rawToken}&n=${uuidv7()}`),
+    );
+    expect(partialLegs.status).toBe(303);
+    expect(partialLegs.headers.get("location")).toBe(
+      `https://ivendorz.example${INVITE_LANDING_PATH}`,
+    );
+    expect(partialLegs.headers.get("set-cookie")).toBeNull();
   });
 });
