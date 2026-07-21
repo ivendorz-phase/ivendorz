@@ -275,6 +275,17 @@ export type {
   TrackReferralContext,
   TrackReferralDeps,
 } from "../application/commands/track-referral.command";
+
+// ── W3-BILL-GRW-1 (Growth Hub P2 Lane B-1) — the SYSTEM EVENT-CREATE branch of the SAME contract-ID
+//    `billing.track_referral.v1` (Doc-4I_GrowthReferral_Patch_v1.0.1 §1; F4I-PA-M1 — actor-branched,
+//    never split). Reachable ONLY from M7's registered `InvitationConverted` Inngest consumer (Q-15
+//    guard 1) — exported here solely for that consumer + tests; NO wire face, Doc-5C has NO row. ──
+
+export {
+  trackReferralFromEventCommand as trackReferralFromEvent,
+  validateTrackReferralFromEventInput,
+} from "../application/commands/track-referral.command";
+export type { TrackReferralFromEventDeps } from "../application/commands/track-referral.command";
 export {
   advanceReferralCommand as advanceReferral,
   validateAdvanceReferralInput,

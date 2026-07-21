@@ -3,6 +3,7 @@ import { dispatchOutbox } from "./dispatch-outbox";
 import { expireDelegationGrantsPump } from "./expire-delegation-grants";
 import { expireInvitationsPump } from "./expire-invitations";
 import { activateMembershipWorker } from "./activate-membership";
+import { trackReferralOnInvitationConverted } from "./track-referral-on-invitation-converted";
 
 // Inngest job functions registry — outbox consumers (REPOSITORY_STRUCTURE §7).
 //
@@ -21,9 +22,15 @@ import { activateMembershipWorker } from "./activate-membership";
 // invite-expiry SWEEP (`invited → removed`, cron; window POLICY-keyed) and verification-complete ACTIVATION
 // (`pending → active`, the DC-4 signal seam). Both consumed via `@/modules/identity/contracts`; M0
 // audit/config facades injected inside the functions. Out-of-wire; audited per mutation; coin no event ([DC-1]).
+//
+// `trackReferralOnInvitationConverted` (W3-BILL-GRW-1) — M7's registered consumer for the M1-owned
+// `InvitationConverted` §8 event (`outbox/InvitationConverted`; Doc-4L L9-2): the System event-create
+// branch of `billing.track_referral.v1` (Doc-4I_GrowthReferral_Patch_v1.0.1) → referral `pending`.
+// Consumed via `@/modules/billing/contracts` (contracts-only); M0 audit facade injected inside; emits none.
 export const functions: InngestFunction.Any[] = [
   dispatchOutbox,
   expireDelegationGrantsPump,
   expireInvitationsPump,
   activateMembershipWorker,
+  trackReferralOnInvitationConverted,
 ];

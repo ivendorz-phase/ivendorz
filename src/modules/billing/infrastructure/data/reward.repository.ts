@@ -178,6 +178,22 @@ export async function referralPairExists(
   return row !== null;
 }
 
+/** The existing referral for a `(referrer, referred)` pair (`{ id, state }`), or `null` when none exists.
+ *  W3-BILL-GRW-1: on the SYSTEM event-create branch the pair is a NATURAL KEY (Doc-4I_GrowthReferral_
+ *  Patch_v1.0.1 §1 stage-8 — every conversion mints a FRESH referred org, so a same-pair delivery can only
+ *  be the same conversion re-delivered) — the branch resolves a hit as idempotent success returning this row. */
+export async function findReferralByPair(
+  referrerOrganizationId: string,
+  referredOrganizationId: string,
+  db: DbExecutor,
+): Promise<{ id: string; state: "pending" | "qualified" | "rewarded" } | null> {
+  const row = await db.referral.findFirst({
+    where: { referrerOrganizationId, referredOrganizationId },
+    select: { id: true, state: true },
+  });
+  return row === null ? null : { id: row.id, state: row.state };
+}
+
 /** Insert a referral at `pending` (Doc-4I §HB-6.2 track). Returns the minted id. */
 export async function insertReferral(
   input: {
