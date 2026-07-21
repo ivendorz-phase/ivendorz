@@ -12,6 +12,7 @@ import {
   dispatchOutboxEvents,
   drainOutbox,
   featureFlagEvaluate,
+  readOutboxEvent,
   writeOutboxEvent,
 } from "./infrastructure";
 
@@ -22,6 +23,7 @@ export const coreServices: CoreServices = {
   drainOutbox: (input) => drainOutbox(input),
   dispatchOutboxEvents: (input) => dispatchOutboxEvents(input),
   archiveDispatchedEvents: (input) => archiveDispatchedEvents(input),
+  readOutboxEvent,
   configValueQuery,
   featureFlagEvaluate,
 };

@@ -99,16 +99,23 @@ describe("billing.purchase_subscription.v1 (command) — Doc-4I §HB-2.1", () =>
     // The platform's FIRST §8 event — written to the outbox (pending) via the M0 SECURITY DEFINER primitive.
     const outbox = await prisma.outboxEvent.findFirst({
       where: { aggregateId: subId, eventName: "SubscriptionPurchased" },
-      select: { payloadJsonb: true, status: true, eventVersion: true },
+      select: { id: true, payloadJsonb: true, status: true, eventVersion: true },
     });
     expect(outbox).not.toBeNull();
     expect(outbox?.status).toBe("pending");
     expect(outbox?.eventVersion).toBe(1);
-    expect(outbox?.payloadJsonb).toEqual({
+    // [growth/integration MERGE] the merged writer stamps the Doc-2 §8 envelope (event_id +
+    // occurred_at) INTO the persisted payload alongside the thin domain fields; assert the thin
+    // payload rides and the envelope is stamped (event_id === row id — the consumer dedup invariant).
+    expect(outbox?.payloadJsonb).toMatchObject({
       subscription_id: subId,
       organization_id: org,
       plan_id: plan,
+      event_id: outbox?.id,
     });
+    expect((outbox?.payloadJsonb as Record<string, unknown>)["occurred_at"]).toEqual(
+      expect.any(String),
+    );
 
     // Audit — USER-attributed (not admin), org-scoped, enumerated §9 Financial "subscription purchase".
     const audit = await prisma.auditRecord.findFirst({

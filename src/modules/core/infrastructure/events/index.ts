@@ -5,3 +5,4 @@
 
 export { archiveDispatchedEvents, dispatchOutboxEvents, drainOutbox } from "./drain-outbox.service";
 export type { DrainOutboxOptions, DrainOutboxResult } from "./drain-outbox.service";
+export { readOutboxEvent } from "./read-outbox-event.service";

@@ -206,9 +206,11 @@ import {
 } from "../application/commands/create-invitation.command";
 import { resolveInvitationToken as resolveInvitationTokenQuery } from "../application/queries/resolve-invitation-token.query";
 import { resolveInvitationDeliveryPayload as resolveInvitationDeliveryPayloadQuery } from "../application/queries/resolve-invitation-delivery-payload.query";
+import { redeemSignedInvitationUrl as redeemSignedInvitationUrlCommand } from "../application/commands/redeem-signed-invitation-url.command";
 import type {
   CreateInvitationInput,
   CreateInvitationOutcome,
+  RedeemSignedInvitationUrlOutcome,
   ResolveInvitationDeliveryPayloadInput,
   ResolveInvitationDeliveryPayloadOutcome,
   ResolveInvitationTokenInput,
@@ -1391,6 +1393,16 @@ export type ResolveInvitationDeliveryPayload = (
 ) => Promise<ResolveInvitationDeliveryPayloadOutcome>;
 export const resolveInvitationDeliveryPayload: ResolveInvitationDeliveryPayload = (input) =>
   resolveInvitationDeliveryPayloadQuery(input);
+
+/** The §C13 signed-URL REDEMPTION / replay guard (B2-2 — the Doc-6C v1.0.4 §5 one-time leg:
+ *  verify signature + TTL, atomically consume the minted nonce). Caller: the invite ingress seam
+ *  (Lane-C wiring); NEVER a public wire row. Anti-oracle: uniform `{valid:false}` on every
+ *  failure; the raw token surfaces ONLY on the single valid redemption (the HttpOnly cookie hop). */
+export type RedeemSignedInvitationUrl = (
+  urlString: string,
+) => Promise<RedeemSignedInvitationUrlOutcome>;
+export const redeemSignedInvitationUrl: RedeemSignedInvitationUrl = (urlString) =>
+  redeemSignedInvitationUrlCommand(urlString);
 
 // The M1 WIRE FACES for the two caller-facing §C13 contracts (outcome → Doc-5A envelope + §6.2
 // status) — the One-Owner placement; the app-layer composition edge consumes them via

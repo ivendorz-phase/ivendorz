@@ -16,6 +16,7 @@ import {
   dispatchOutboxEvents as dispatchOutboxEventsImpl,
   drainOutbox as drainOutboxImpl,
   featureFlagEvaluate as featureFlagEvaluateImpl,
+  readOutboxEvent as readOutboxEventImpl,
   writeOutboxEvent as writeOutboxEventImpl,
 } from "../infrastructure";
 import type {
@@ -34,6 +35,8 @@ import type {
   OutboxDispatchDeps,
   OutboxDispatchInput,
   OutboxDispatchResult,
+  PersistedOutboxEventRecord,
+  ReadOutboxEventInput,
   WriteOutboxEventInput,
   WriteOutboxEventResult,
 } from "./types";
@@ -131,6 +134,18 @@ export type DispatchOutboxEvents = (
 export type ArchiveDispatchedEvents = (input?: OutboxArchiveInput) => Promise<OutboxArchiveResult>;
 
 /**
+ * The persisted-envelope read over `core.outbox_events` (Doc-4B — M0 owns the outbox; W3-COMM-GRW-1
+ * B2-5). Realizes the read leg the folded `Doc-4H_GrowthDelivery_Patch_v1.0.1` §2 binds to Doc-4B
+ * by pointer: a consumer's retry orchestration recovers thin payload fields by re-reading the
+ * PERSISTED envelope for a `source_event_id` — never a new channel-log column, never a producer
+ * table read. Read-only (own short staff-GUC transaction; no audit §17.1, no event, no lifecycle
+ * advance — the §B6 workers own the status machine). Returns `null` for an unknown envelope.
+ */
+export type ReadOutboxEvent = (
+  input: ReadOutboxEventInput,
+) => Promise<PersistedOutboxEventRecord | null>;
+
+/**
  * `core.config_value_query.v1` (Doc-4B §B8 — internal-service, 21.3 Query).
  * Resolves a POLICY value by key at runtime (Doc-4A §18: owning engines read POLICY values via
  * M0, never literals). Key format `core.system_configuration.<domain>.<key_name>` (§18.2); the
@@ -162,6 +177,7 @@ export interface CoreServices {
   drainOutbox: DrainOutbox;
   dispatchOutboxEvents: DispatchOutboxEvents;
   archiveDispatchedEvents: ArchiveDispatchedEvents;
+  readOutboxEvent: ReadOutboxEvent;
   configValueQuery: ConfigValueQuery;
   featureFlagEvaluate: FeatureFlagEvaluate;
 }
@@ -233,6 +249,15 @@ export const dispatchOutboxEvents: DispatchOutboxEvents = (input, deps) =>
  */
 export const archiveDispatchedEvents: ArchiveDispatchedEvents = (input) =>
   archiveDispatchedEventsImpl(input);
+
+/**
+ * Concrete persisted-envelope read (Doc-4B — the W3-COMM-GRW-1 B2-5 retry-guard re-read leg), bound
+ * to the M0 infrastructure adapter. Consumed cross-module via `@/modules/core/contracts` (strictly
+ * contracts/-only; the contracts→infrastructure binding is same-module-legal — the canonical DDD
+ * facade pattern). Read-only; runs its own short staff-GUC transaction (`core.outbox_events` SELECT
+ * is platform-staff-only RLS); returns the persisted `payload_jsonb` verbatim; coins nothing.
+ */
+export const readOutboxEvent: ReadOutboxEvent = (input) => readOutboxEventImpl(input);
 
 /**
  * Concrete `core.config_value_query.v1` (Doc-4B §B8), bound to the M0 infrastructure adapter

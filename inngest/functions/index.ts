@@ -4,6 +4,8 @@ import { expireDelegationGrantsPump } from "./expire-delegation-grants";
 import { expireInvitationsPump } from "./expire-invitations";
 import { activateMembershipWorker } from "./activate-membership";
 import { trackReferralOnInvitationConverted } from "./track-referral-on-invitation-converted";
+import { dispatchInvitationDeliveryConsumer } from "./dispatch-invitation-delivery";
+import { retryInvitationDeliveriesJob } from "./retry-invitation-deliveries";
 
 // Inngest job functions registry — outbox consumers (REPOSITORY_STRUCTURE §7).
 //
@@ -27,10 +29,17 @@ import { trackReferralOnInvitationConverted } from "./track-referral-on-invitati
 // `InvitationConverted` §8 event (`outbox/InvitationConverted`; Doc-4L L9-2): the System event-create
 // branch of `billing.track_referral.v1` (Doc-4I_GrowthReferral_Patch_v1.0.1) → referral `pending`.
 // Consumed via `@/modules/billing/contracts` (contracts-only); M0 audit facade injected inside; emits none.
+// `dispatchInvitationDeliveryConsumer` + `retryInvitationDeliveriesJob` (W3-COMM-GRW-1) — the M6
+// BC-COMM-3 growth-delivery pair: the registered consumer of the M1-owned `InvitationIssued`
+// (`outbox/InvitationIssued` — Doc-4H GrowthDelivery Patch v1.0.1 §HB-3.6; Doc-4L L9-1) and the §2
+// guarded invitation retry job. Both consumed via `@/modules/communication/contracts`
+// (contracts-only); M6 emits no §8 event — ownership stays with M1.
 export const functions: InngestFunction.Any[] = [
   dispatchOutbox,
   expireDelegationGrantsPump,
   expireInvitationsPump,
   activateMembershipWorker,
   trackReferralOnInvitationConverted,
+  dispatchInvitationDeliveryConsumer,
+  retryInvitationDeliveriesJob,
 ];

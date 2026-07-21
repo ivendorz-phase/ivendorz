@@ -165,6 +165,21 @@ export async function ensureRestrictedRlsRole(): Promise<void> {
   await prisma.$executeRawUnsafe(
     `GRANT SELECT, INSERT ON billing.reward_transactions TO ${RESTRICTED_RLS_ROLE}`,
   );
+  // W3-COMM-1 — the M6 support-ticket RLS conformance gate (`support_tickets_party` org+staff;
+  // `ticket_messages_party` via-parent + append-only). Full CRUD on `support_tickets` (proving the party
+  // policy's WITH CHECK admits/rejects + tenant-isolated reads); SELECT/INSERT/UPDATE/DELETE on
+  // `ticket_messages` so the immutability-trigger + party checks are reached (not a bare permission-denied).
+  // The role stays non-owner/NOBYPASSRLS, so RLS enforces against every grant.
+  await prisma.$executeRawUnsafe(`GRANT USAGE ON SCHEMA communication TO ${RESTRICTED_RLS_ROLE}`);
+  await prisma.$executeRawUnsafe(
+    `GRANT SELECT, INSERT, UPDATE, DELETE ON communication.support_tickets, communication.ticket_messages TO ${RESTRICTED_RLS_ROLE}`,
+  );
+  // W3-COMM-1 (MIN-4) — the `communication.command_dedup` replay store holds full wire response bodies
+  // (incl. subject / Location); prove `command_dedup_actor` blocks a cross-actor SELECT at the DB level.
+  // SELECT/INSERT so a WITH-CHECK/USING probe reaches the policy (not a bare permission-denied).
+  await prisma.$executeRawUnsafe(
+    `GRANT SELECT, INSERT ON communication.command_dedup TO ${RESTRICTED_RLS_ROLE}`,
+  );
 }
 
 /**

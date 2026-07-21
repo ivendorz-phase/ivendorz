@@ -15,4 +15,5 @@ export {
 // Lane A's envelope-stamping writer, bound to the W3-BILL-4 SECURITY DEFINER function (see the
 // service header). The billing-side `data/outbox-event.service.ts` was folded into it.
 export { writeOutboxEvent } from "./events/write-outbox-event.service";
+export { readOutboxEvent } from "./events/read-outbox-event.service";
 export type { DrainOutboxOptions, DrainOutboxResult } from "./events/drain-outbox.service";

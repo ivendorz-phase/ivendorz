@@ -464,6 +464,166 @@ model CommandDedup {
   @@schema("identity")
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// M6 — Communication (`communication`) — Doc-6H (FROZEN) — W3-COMM-1 BC-COMM-4 Support Communications.
+//
+// The Support Ticket aggregate (Doc-2 §10.7): support_tickets (org + staff; status; SD) +
+// ticket_messages (append-only; NO SD — the immutability trigger guards it). Columns are
+// [Doc-2 §10.7 binding]; physical specifics [Doc-6H §2.5]. The enum, the immutability trigger, RLS, and
+// the 2 POLICY seeds live raw-SQL in the `communication_support_tickets` migration (tables/columns
+// managed by Prisma). NO `human_ref` (Doc-2 §10.7 declares none). `communication.command_dedup` (the
+// Doc-6A §10.3 Idempotency-Key replay vehicle) lives in the `communication_command_dedup` migration.
+//
+// OUT OF SCOPE (land with their own M6 slices): threads/messages/thread_participants (BC-COMM-1),
+// notifications (BC-COMM-2), email/sms/whatsapp logs (BC-COMM-3) — Doc-6H Pass-1/Pass-2.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// §3.4.1 — communication.support_tickets (org + staff; status; soft-delete = yes).
+model SupportTicket {
+  id             String              @id @db.Uuid
+  organizationId String              @map("organization_id") @db.Uuid
+  openedBy       String?             @map("opened_by") @db.Uuid
+  status         SupportTicketStatus @default(open)
+  subject        String
+  priority       String?
+  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime            @default(now()) @map("updated_at") @db.Timestamptz
+  createdBy      String?             @map("created_by") @db.Uuid
+  updatedBy      String?             @map("updated_by") @db.Uuid
+  deletedAt      DateTime?           @map("deleted_at") @db.Timestamptz
+  deletedBy      String?             @map("deleted_by") @db.Uuid
+  deleteReason   String?             @map("delete_reason")
+
+  messages TicketMessage[]
+
+  @@index([organizationId, status], map: "support_tickets_org_status_idx")
+  @@map("support_tickets")
+  @@schema("communication")
+}
+
+// §3.4.2 — communication.ticket_messages (append-only; NO soft-delete; in-module FK → support_tickets).
+model TicketMessage {
+  id              String   @id @db.Uuid
+  supportTicketId String   @map("support_ticket_id") @db.Uuid
+  authorId        String?  @map("author_id") @db.Uuid
+  body            String
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  createdBy       String?  @map("created_by") @db.Uuid
+
+  ticket SupportTicket @relation(fields: [supportTicketId], references: [id], map: "ticket_messages_ticket_fk")
+
+  @@map("ticket_messages")
+  @@schema("communication")
+}
+
+enum SupportTicketStatus {
+  open
+  in_progress
+  resolved
+  closed
+
+  @@map("support_ticket_status")
+  @@schema("communication")
+}
+
+// W3-COMM-1 — the M6 Idempotency-Key replay store (Doc-6A §10.3 realization vehicle; NOT a Doc-2 §10.7
+// entity — an operational replay cache). The `UNIQUE NULLS NOT DISTINCT` scope key is raw-SQL in the
+// `communication_command_dedup` migration (Prisma cannot express it); this model is Prisma's handle over
+// the same table for the read/delete legs. Mirrors `identity.command_dedup`.
+model CommunicationCommandDedup {
+  id              String   @id @db.Uuid
+  contractId      String   @map("contract_id")
+  actorUserId     String   @map("actor_user_id") @db.Uuid
+  organizationId  String?  @map("organization_id") @db.Uuid
+  idempotencyKey  String   @map("idempotency_key")
+  responseStatus  Int      @map("response_status")
+  responseBody    Json     @map("response_body") @db.JsonB
+  responseHeaders Json?    @map("response_headers") @db.JsonB
+  executedAt      DateTime @default(now()) @map("executed_at") @db.Timestamptz
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@map("command_dedup")
+  @@schema("communication")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// W3-COMM-GRW-1 (B2-1) — BC-COMM-3 Outbound Log channel structures (Doc-6H §3.3 FROZEN, realized
+// VERBATIM): `email_logs` / `sms_logs` / `whatsapp_logs` — append-only delivery records; column-scoped
+// immutability (only `status` advances `queued → sent → delivered | failed` + `provider_ref` set-once —
+// the trigger lives raw-SQL in the `communication_channel_logs` migration, with RLS: admin READ, no
+// in-band write policy — the delivery worker [owner-role] writes). NO SD (permanent delivery audit).
+// Identical shape for all three channels (Doc-6H: "sms_logs / whatsapp_logs structurally identical").
+// BC-COMM-1/-2 stay out of scope (their own M6 slices).
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum DeliveryLogStatus {
+  queued
+  sent
+  delivered
+  failed
+
+  @@map("delivery_log_status")
+  @@schema("communication")
+}
+
+// §3.3 — communication.email_logs (append-only; NO soft-delete; bare UUIDs → M0/M1, no cross-schema FK).
+model EmailLog {
+  id                     String            @id @db.Uuid
+  recipientRef           String            @map("recipient_ref")
+  recipientOrganizationId String?          @map("recipient_organization_id") @db.Uuid
+  sourceEventId          String?           @map("source_event_id") @db.Uuid
+  template               String
+  status                 DeliveryLogStatus @default(queued)
+  providerRef            String?           @map("provider_ref")
+  createdAt              DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime          @default(now()) @map("updated_at") @db.Timestamptz
+  createdBy              String?           @map("created_by") @db.Uuid
+  updatedBy              String?           @map("updated_by") @db.Uuid
+
+  @@index([sourceEventId], map: "email_logs_event_idx")
+  @@map("email_logs")
+  @@schema("communication")
+}
+
+// §3.3 — communication.sms_logs (structurally identical to email_logs — Doc-6H §3.3).
+model SmsLog {
+  id                     String            @id @db.Uuid
+  recipientRef           String            @map("recipient_ref")
+  recipientOrganizationId String?          @map("recipient_organization_id") @db.Uuid
+  sourceEventId          String?           @map("source_event_id") @db.Uuid
+  template               String
+  status                 DeliveryLogStatus @default(queued)
+  providerRef            String?           @map("provider_ref")
+  createdAt              DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime          @default(now()) @map("updated_at") @db.Timestamptz
+  createdBy              String?           @map("created_by") @db.Uuid
+  updatedBy              String?           @map("updated_by") @db.Uuid
+
+  @@index([sourceEventId], map: "sms_logs_event_idx")
+  @@map("sms_logs")
+  @@schema("communication")
+}
+
+// §3.3 — communication.whatsapp_logs (structurally identical to email_logs — Doc-6H §3.3).
+model WhatsappLog {
+  id                     String            @id @db.Uuid
+  recipientRef           String            @map("recipient_ref")
+  recipientOrganizationId String?          @map("recipient_organization_id") @db.Uuid
+  sourceEventId          String?           @map("source_event_id") @db.Uuid
+  template               String
+  status                 DeliveryLogStatus @default(queued)
+  providerRef            String?           @map("provider_ref")
+  createdAt              DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime          @default(now()) @map("updated_at") @db.Timestamptz
+  createdBy              String?           @map("created_by") @db.Uuid
+  updatedBy              String?           @map("updated_by") @db.Uuid
+
+  @@index([sourceEventId], map: "whatsapp_logs_event_idx")
+  @@map("whatsapp_logs")
+  @@schema("communication")
+}
+
 // Doc-6C_GrowthInvitation_Patch_v1.0.4 §2 — identity.growth_invitations (the issued growth-invite
 // artifact; GI-2 immutable core — the at-create column trigger, the partial-unique-live token_hash
 // index, Band-H indexes and RLS live raw-SQL-only in the `identity_growth_hub` migration; the house
@@ -560,6 +720,9 @@ model InvitationDeliveryRef {
   createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   growthInvitation GrowthInvitation @relation(fields: [growthInvitationId], references: [id], map: "invitation_delivery_refs_invitation_fk")
+
+  secret   InvitationDeliverySecret?
+  urlNonces InvitationDeliveryUrlNonce[]
 
   @@map("invitation_delivery_refs")
   @@schema("identity")
@@ -954,4 +1117,42 @@ enum ReferralState {
 
   @@map("referral_state")
   @@schema("billing")
+}
+
+// W3-COMM-GRW-1 (B2-2) — the §C13 SECURE DELIVERY STORE (M1-owned; the P1 Board carry). Two
+// §10.3-class OPERATIONAL stores riding the Doc-6C v1.0.4 §5 `[ESC-6-API]` physical-shape marker
+// (semantics pinned by the folded Doc-4C v1.0.3 §C13 + Doc-3 v1.14 — never re-authored here):
+//   • invitation_delivery_secrets — token CIPHERTEXT + nonce (AES-256-GCM; key from env, never
+//     logged) written by `create_invitation` in the SAME issuing txn (targeted only). The raw token
+//     is recoverable ONLY for signed-URL minting inside `resolve_invitation_delivery_payload`
+//     (M6 sole caller); the plaintext-never-persisted rule holds (Doc-2 v1.0.10 §1).
+//   • invitation_delivery_url_nonces — the ONE-TIME signed-URL replay state (lifetime =
+//     `identity.growth_invite_delivery_url_ttl`, the seeded 15m POLICY key; consumed on first
+//     redemption — the §C13 replay guard).
+// Staff-GUC-only RLS (service plumbing, never a tenant surface) — raw SQL in the
+// `identity_growth_delivery_store` migration. NOT Doc-2 aggregates; regenerable operational state.
+model InvitationDeliverySecret {
+  deliveryReferenceId String   @id @map("delivery_reference_id") @db.Uuid
+  tokenCiphertext     String   @map("token_ciphertext")
+  tokenNonce          String   @map("token_nonce")
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  deliveryRef InvitationDeliveryRef @relation(fields: [deliveryReferenceId], references: [deliveryReferenceId], map: "invitation_delivery_secrets_ref_fk")
+
+  @@map("invitation_delivery_secrets")
+  @@schema("identity")
+}
+
+model InvitationDeliveryUrlNonce {
+  id                  String    @id @db.Uuid
+  deliveryReferenceId String    @map("delivery_reference_id") @db.Uuid
+  expiresAt           DateTime  @map("expires_at") @db.Timestamptz
+  consumedAt          DateTime? @map("consumed_at") @db.Timestamptz
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  deliveryRef InvitationDeliveryRef @relation(fields: [deliveryReferenceId], references: [deliveryReferenceId], map: "invitation_delivery_url_nonces_ref_fk")
+
+  @@index([deliveryReferenceId], map: "invitation_delivery_url_nonces_ref_idx")
+  @@map("invitation_delivery_url_nonces")
+  @@schema("identity")
 }

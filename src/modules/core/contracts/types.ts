@@ -251,6 +251,35 @@ export interface OutboxTransportEvent {
   payload: Record<string, unknown>;
 }
 
+// ── Persisted-envelope read (W3-COMM-GRW-1 / B2-5 — the Doc-4H GrowthDelivery §2 retry-guard
+// re-read, bound to Doc-4B by pointer) ────────────────────────────────────────────────────────
+
+/** Input to the persisted-envelope read: the envelope `event_id` (= the row id — the
+ *  write-service invariant). */
+export interface ReadOutboxEventInput {
+  /** The `core.outbox_events.id` / envelope `event_id` (UUIDv7). */
+  eventId: string;
+}
+
+/**
+ * One PERSISTED `core.outbox_events` envelope (Doc-2 §10.1 row facts, verbatim — nothing
+ * re-authored). Returned by the M0 read so a consumer's retry orchestration can recover thin
+ * payload fields from the envelope of record (Doc-4H GrowthDelivery Patch v1.0.1 §2 — "re-reading
+ * the persisted M0 outbox event payload … never a new channel-log column, never an M1 table read").
+ */
+export interface PersistedOutboxEventRecord {
+  /** The row id = the envelope `event_id` (UUIDv7). */
+  eventId: string;
+  /** The Doc-2 §8 event name (catalog Doc-4J — by pointer). */
+  eventName: string;
+  /** The declared event version (Doc-2 §8 / Doc-4J). */
+  eventVersion: number;
+  /** The emitting aggregate's id (bare UUID; Doc-2 §10.1). Nullable. */
+  aggregateId: string | null;
+  /** The persisted `payload_jsonb` VERBATIM — thin IDs + stamped envelope fields (§16.5). */
+  payload: Record<string, unknown>;
+}
+
 /**
  * The injected outbox transport (P2-A1). PER-EVENT so partial failure is expressible: the
  * dispatcher forwards ONE envelope per call and marks that row `dispatched` only on a resolved
