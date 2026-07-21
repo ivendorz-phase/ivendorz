@@ -19,3 +19,27 @@ export const SupportTicketErrorCode = {
 
 export type SupportTicketErrorCodeValue =
   (typeof SupportTicketErrorCode)[keyof typeof SupportTicketErrorCode];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BC-COMM-3 delivery-dispatch codes (W3-COMM-GRW-1 — the `comm_` namespace, Doc-4H §H.4; code
+// STRINGS are dev-doc realization, classes/triggers are the frozen registers). The M1-SIDE codes
+// (`identity_growth_invite_delivery_not_resolvable` / `…_delivery_unavailable`) are DELIBERATELY
+// NOT re-declared here — Doc-4H GrowthDelivery §HB-3.6 item 9: "No new error code coined here
+// (both M1-side codes are Doc-4C's)"; the dispatch outcome carries them THROUGH verbatim.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const DeliveryDispatchErrorCode = {
+  /** VALIDATION (§HB-3.6 stage 1 SYNTAX — malformed consumed-event fields; terminal). */
+  INVALID_EVENT: "comm_delivery_invalid_event",
+  /** STATE (frozen §HB-3.3 stage 6 — a retry on a non-`failed` record). */
+  INVALID_STATE: "comm_delivery_invalid_state",
+  /** REFERENCE (frozen §HB-3.3 stage 7 — the channel-log record does not exist; definitive). */
+  RECORD_NOT_FOUND: "comm_delivery_record_not_found",
+  /** CONFLICT (a lost concurrency race on the status CAS — distinct from STATE; retryable). */
+  CONFLICT: "comm_delivery_conflict",
+  /** DEPENDENCY (the channel provider transiently unavailable — retryable; §HB-3.6 stage 7). */
+  PROVIDER_UNAVAILABLE: "comm_delivery_provider_unavailable",
+} as const;
+
+export type DeliveryDispatchErrorCodeValue =
+  (typeof DeliveryDispatchErrorCode)[keyof typeof DeliveryDispatchErrorCode];

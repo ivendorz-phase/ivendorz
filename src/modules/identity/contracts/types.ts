@@ -1503,3 +1503,12 @@ export interface ResolveInvitationDeliveryPayloadResult {
 export type ResolveInvitationDeliveryPayloadOutcome =
   | { ok: true; result: ResolveInvitationDeliveryPayloadResult }
   | { ok: false; error: GrowthInvitationError };
+
+/**
+ * Outcome of the signed-invitation-URL redemption (the §C13 one-time/replay guard — B2-2; the
+ * Doc-6C v1.0.4 §5 "consumed on first redemption" leg). ANTI-ORACLE: every failure cause
+ * (malformed / bad signature / expired / replayed / unknown) collapses uniformly to
+ * `{valid:false}`. On the single valid redemption the RAW TOKEN carried by the URL is surfaced to
+ * the ingress caller for the HttpOnly cookie hop — never logged, never persisted.
+ */
+export type RedeemSignedInvitationUrlOutcome = { valid: true; token: string } | { valid: false };

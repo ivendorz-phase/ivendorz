@@ -45,3 +45,44 @@ export const SupportTicketAuditAction = {
 
 export type SupportTicketAuditActionToken =
   (typeof SupportTicketAuditAction)[keyof typeof SupportTicketAuditAction];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BC-COMM-3 Outbound Log delivery audit actions (W3-COMM-GRW-1). Doc-2 §9 enumerates NO
+// Communication/Delivery audit domain, so — UNLIKE the four support-ticket tokens (which ride a
+// folded Doc-4H audit-token patch) — these bind INTERIM BY POINTER on the frozen
+// **`[ESC-COMM-AUDIT]`** channel, exactly as the frozen Part-3 H.6 + the folded
+// `Doc-4H_GrowthDelivery_Patch_v1.0.1` §HB-3.6 item 7 direct ("nearest enumerated §9 action by
+// pointer; NO action invented"): nearest family = Doc-2 §9 Platform "service-role sensitive
+// operations" (the M0 outbox-worker `[D-5]` precedent — System-attributed infrastructure legs).
+// The token STRINGS are the Doc-4H-class serialization (the support-ticket-slice approach for
+// M6-owned actions — DISCLOSED in the WP report; a future Doc-4H audit-token patch ratifies or
+// renames them, never reopening Doc-2). Imported as NAMED CONSTANTS — never hardcoded literals
+// (Board ruling 2026-06-30).
+//
+// GI-3 (binding on every call site — Doc-4H GrowthDelivery §HB-3.6 item 7/§5): a delivery audit
+// record carries NO `recipient_identifier` and NO signed URL — the external address lives ONLY in
+// the channel-log `recipient_ref`; the payload is ids + status facts only.
+//
+// The audit `entity_type` is the frozen `<channel>_logs` literal — derived per row via
+// `channelLogEntityType` (domain/value-objects/delivery-channel.ts), never restated here.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Canonical BC-COMM-3 delivery audit actions (interim `[ESC-COMM-AUDIT]` serializations):
+ *   DISPATCHED → `comm.dispatch_invitation_delivery.v1` (§HB-3.6 — the consumed-event dispatch
+ *                effect; the channel-log row created at `queued`; System actor;
+ *                `new_value = {status:'queued', source_event_id, delivery_reference_id}` — NO
+ *                recipient, NO URL).
+ *   RETRIED    → the minimal `comm.retry_delivery.v1` slice (frozen §HB-3.3 — `failed → queued`
+ *                re-dispatch; System actor; `old_value={status:'failed'}`,
+ *                `new_value={status:'queued'}`).
+ */
+export const DeliveryAuditAction = {
+  /** `[ESC-COMM-AUDIT]` — invitation-delivery dispatch (§HB-3.6 item 7; System). */
+  DISPATCHED: "invitation_delivery_dispatched",
+  /** `[ESC-COMM-AUDIT]` — delivery retry `failed → queued` (frozen §HB-3.3 item 7; System). */
+  RETRIED: "delivery_retried",
+} as const;
+
+export type DeliveryAuditActionToken =
+  (typeof DeliveryAuditAction)[keyof typeof DeliveryAuditAction];

@@ -221,3 +221,99 @@ export type ReleaseCommandDedupRecord = (
 ) => Promise<void>;
 export const releaseCommandDedupRecord: ReleaseCommandDedupRecord = (scope, db) =>
   releaseCommandDedupRecordImpl(scope, db);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BC-COMM-3 — `comm.dispatch_invitation_delivery.v1` (the fifth BC-COMM-3 contract, added
+// additively — Doc-4H_GrowthDelivery_Patch_v1.0.1 §HB-3.6) + the §2 invitation retry guard
+// (W3-COMM-GRW-1). Both are 21.5 SYSTEM effects — never user-initiated; the callers are the
+// registered Inngest consumer (`outbox/InvitationIssued`) and the invitation retry job.
+// Cross-module reads ride contracts ONLY: M1 via `identity.resolve_invitation_delivery_payload.v1`
+// (DH-1 — the SOLE M1 data path; GI-3) and M0 via `readOutboxEvent` (the §2 persisted-envelope
+// recovery) — never a foreign table. Defaults below bind the CONCRETE cross-module contract
+// callables + the infra no-op transport; tests/composition may override by the same TYPES.
+// ─────────────────────────────────────────────────────────────────────────────
+
+import { appendAuditRecord, readOutboxEvent } from "@/modules/core/contracts";
+import { resolveInvitationDeliveryPayload } from "@/modules/identity/contracts";
+import {
+  dispatchInvitationDeliveryCommand,
+  type DispatchInvitationDeliveryDeps,
+} from "../application/commands/dispatch-invitation-delivery.command";
+import {
+  retryInvitationDeliveryWorkflow,
+  type RetryInvitationDeliveryDeps,
+} from "../application/workflows/retry-invitation-delivery.workflow";
+import { noopDeliveryProviderTransport } from "../infrastructure/delivery/delivery-provider";
+import { listFailedInvitationOriginRows } from "../infrastructure/data/outbound-log.repository";
+import type {
+  DispatchInvitationDeliveryInput,
+  DispatchInvitationDeliveryOutcome,
+  RetryInvitationDeliveryInput,
+  RetryInvitationDeliveryOutcome,
+} from "./types";
+
+// The deps shapes + the infra transport seam types, re-exported so the Inngest composition and
+// tests bind them via `@/modules/communication/contracts` (contracts-only).
+export type { DispatchInvitationDeliveryDeps, RetryInvitationDeliveryDeps };
+export type {
+  DeliveryDispatchRequest,
+  DeliveryProviderTransport,
+} from "../infrastructure/delivery/delivery-provider";
+export { noopDeliveryProviderTransport } from "../infrastructure/delivery/delivery-provider";
+
+// The BC-COMM-3 delivery error-code register slice (dev-doc realization; module-owned single
+// source — the SupportTicketErrorCode precedent). M1-side delivery codes pass through verbatim.
+export { DeliveryDispatchErrorCode } from "../domain/error-codes";
+export type { DeliveryDispatchErrorCodeValue } from "../domain/error-codes";
+
+/** The default dep set: concrete M0 audit + M1 resolve + the infra no-op transport (B2-4 — the
+ *  real provider adapter replaces the transport behind the same seam; config infra-owned). */
+function defaultDispatchDeps(): DispatchInvitationDeliveryDeps {
+  return {
+    appendAuditRecord,
+    resolveDeliveryPayload: resolveInvitationDeliveryPayload,
+    transport: noopDeliveryProviderTransport,
+  };
+}
+
+/** `comm.dispatch_invitation_delivery.v1` (Doc-4H GrowthDelivery §HB-3.6 — 21.5 System
+ *  consumed-event effect on `outbox/InvitationIssued`; flow Doc-4L L9-1). Idempotent on
+ *  `event_id`; definitive not-resolvable → terminal no-dispatch (no row, never retried);
+ *  transient → `DEPENDENCY` retryable. Audited `[ESC-COMM-AUDIT]` in-transaction (System;
+ *  no recipient, no URL — GI-3). */
+export type DispatchInvitationDelivery = (
+  input: DispatchInvitationDeliveryInput,
+  deps?: Partial<DispatchInvitationDeliveryDeps>,
+) => Promise<DispatchInvitationDeliveryOutcome>;
+export const dispatchInvitationDelivery: DispatchInvitationDelivery = (input, deps) =>
+  dispatchInvitationDeliveryCommand(input, { ...defaultDispatchDeps(), ...deps });
+
+/** The §2 invitation retry orchestration (guard-first, then the minimal frozen §HB-3.3
+ *  `failed → queued` slice with a FRESH signed URL). Not-live → permanent failure: the record
+ *  stays `failed`, never re-queued (packet §B4). */
+export type RetryInvitationDelivery = (
+  input: RetryInvitationDeliveryInput,
+  deps?: Partial<RetryInvitationDeliveryDeps>,
+) => Promise<RetryInvitationDeliveryOutcome>;
+export const retryInvitationDelivery: RetryInvitationDelivery = (input, deps) =>
+  retryInvitationDeliveryWorkflow(input, {
+    appendAuditRecord,
+    readOutboxEvent,
+    resolveDeliveryPayload: resolveInvitationDeliveryPayload,
+    transport: noopDeliveryProviderTransport,
+    ...deps,
+  });
+
+/** List the `failed` invitation-origin rows for one channel (the retry-job scan surface —
+ *  bounded, oldest-first; invitation-origin = non-null `source_event_id`, patch §2). */
+export type ListFailedInvitationDeliveries = (
+  channel: "email" | "sms" | "whatsapp",
+  limit: number,
+) => Promise<Array<{ deliveryLogId: string }>>;
+export const listFailedInvitationDeliveries: ListFailedInvitationDeliveries = async (
+  channel,
+  limit,
+) => {
+  const rows = await listFailedInvitationOriginRows(channel, limit);
+  return rows.map((r) => ({ deliveryLogId: r.id }));
+};

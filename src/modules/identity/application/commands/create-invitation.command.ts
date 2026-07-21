@@ -22,8 +22,15 @@
 // IFF targeted (email/sms/whatsapp); open link/qr emit NONE. Thin payload = {growth_invitation_id,
 // recipient_type, delivery_reference_id} — NO raw token, NO recipient_identifier (GI-3 / §16.5).
 // The targeted leg also writes the §10.3-class delivery-reference row
-// (`invitation_delivery_refs`: delivery_reference_id → invitation mapping ONLY in P1 — no token
-// material; the secure token/nonce store is the Board-recorded P2 carry with the M6 consumer).
+// (`invitation_delivery_refs`: delivery_reference_id → invitation mapping ONLY — no token
+// material) PLUS, since W3-COMM-GRW-1 (B2-2 — the P2 secure-store carry landed), the
+// `invitation_delivery_secrets` row: the raw token AES-256-GCM-ENCRYPTED (key from env, never
+// logged) so the M6-sole-caller delivery-payload resolve can mint the §C13 signed URL
+// just-in-time. Plaintext is still NEVER persisted (Doc-2 v1.0.10 §1 holds); open link/qr
+// invitations never reach M6 (no event fires — Doc-2 §8 row) and store NO ciphertext. A missing/
+// malformed store key FAILS the targeted create (tx rollback) [logged judgment call — a targeted
+// invitation whose delivery could never be honored must not silently issue; service
+// misconfiguration surfaces as a SYSTEM failure, never a degraded permanent-transient delivery].
 //
 // STAFF-GUC ESCALATION [logged judgment call — the deactivate-own-account precedent]: the
 // delivery-ref insert (staff-GUC-only RLS, Doc-6C v1.0.4 §5 model) and the outbox append
@@ -48,6 +55,8 @@ import type {
 import { CoreServiceError } from "@/modules/core/contracts";
 import { prisma, type DbExecutor } from "../../../../shared/db";
 import { uuidv7 } from "../../../../shared/ids";
+import { encryptInvitationToken } from "../../infrastructure/security/invitation-delivery-cipher";
+import { persistDeliverySecret } from "../../infrastructure/data/invitation-delivery-store.repository";
 import { buildUserAuditInput } from "./_audit";
 import { policyDurationToMs } from "../../domain/value-objects/policy-duration";
 import {
@@ -291,10 +300,20 @@ export async function createInvitationCommand(
       data: {
         deliveryReferenceId,
         growthInvitationId,
-        // P1: the store holds ONLY the reference→invitation mapping — NO token material ("raw
-        // token is never stored" holds absolutely; the secure token/nonce store is the P2 carry).
+        // The ref store holds ONLY the reference→invitation mapping — NO token material
+        // ("raw token is never stored" holds absolutely; mapping-only is binding).
       },
     });
+
+    // B2-2 — the §C13 secure-store leg (same issuing txn): persist the token CIPHERTEXT + nonce
+    // (`invitation_delivery_secrets`) so the delivery-payload resolve can recover the raw token
+    // ONLY for signed-URL minting. AES-256-GCM; key from env; a missing key throws → the whole
+    // targeted create rolls back (see header). Plaintext never persisted.
+    const encrypted = encryptInvitationToken(token);
+    await persistDeliverySecret(
+      { deliveryReferenceId, ciphertext: encrypted.ciphertext, nonce: encrypted.nonce },
+      db,
+    );
 
     const payload: InvitationIssuedPayload = {
       growth_invitation_id: growthInvitationId,

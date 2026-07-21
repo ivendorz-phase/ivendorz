@@ -98,7 +98,8 @@ export interface CreateTicketResult {
 
 /** Outcome of `comm.create_ticket.v1`. */
 export type CreateTicketOutcome =
-  { ok: true; result: CreateTicketResult } | { ok: false; error: SupportTicketError };
+  | { ok: true; result: CreateTicketResult }
+  | { ok: false; error: SupportTicketError };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // §HB-4.2 — comm.update_ticket.v1 (User / Admin; status/progress).
@@ -120,7 +121,8 @@ export interface UpdateTicketResult {
 
 /** Outcome of `comm.update_ticket.v1`. */
 export type UpdateTicketOutcome =
-  { ok: true; result: UpdateTicketResult } | { ok: false; error: SupportTicketError };
+  | { ok: true; result: UpdateTicketResult }
+  | { ok: false; error: SupportTicketError };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // §HB-4.3 — comm.add_ticket_message.v1 (User / Admin; append-only).
@@ -145,7 +147,8 @@ export interface AddTicketMessageResult {
 
 /** Outcome of `comm.add_ticket_message.v1`. */
 export type AddTicketMessageOutcome =
-  { ok: true; result: AddTicketMessageResult } | { ok: false; error: SupportTicketError };
+  | { ok: true; result: AddTicketMessageResult }
+  | { ok: false; error: SupportTicketError };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // §HB-4.4 — comm.close_ticket.v1 (User / Admin; `resolved → closed`, terminal).
@@ -165,7 +168,8 @@ export interface CloseTicketResult {
 
 /** Outcome of `comm.close_ticket.v1`. */
 export type CloseTicketOutcome =
-  { ok: true; result: CloseTicketResult } | { ok: false; error: SupportTicketError };
+  | { ok: true; result: CloseTicketResult }
+  | { ok: false; error: SupportTicketError };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // §HB-4.5 — comm.get_ticket.v1 · comm.list_tickets.v1 (User / Admin; reads — unaudited).
@@ -251,3 +255,69 @@ export interface StoredCommandResponse {
   /** Stored standard HTTP infrastructure headers (e.g. the create `Location`), when any. */
   headers?: Record<string, string>;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BC-COMM-3 — `comm.dispatch_invitation_delivery.v1` + the §2 invitation retry guard
+// (W3-COMM-GRW-1; Doc-4H_GrowthDelivery_Patch_v1.0.1 §HB-3.6/§2). Field names/semantics owned by
+// the folded patch + Doc-2 v1.0.10 §4 (the thin `InvitationIssued` payload) — bound by pointer.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The frozen targeted channel set (Doc-2 §10.7 — selects `email_logs`/`sms_logs`/`whatsapp_logs`;
+ *  = the targeted `recipient_type` values 1:1, §HB-3.6). */
+export type DeliveryChannelValue = "email" | "sms" | "whatsapp";
+
+/**
+ * Input to `comm.dispatch_invitation_delivery.v1` (§HB-3.6 item 2 — the consumed
+ * `InvitationIssued` THIN payload, Doc-2 v1.0.10 §4 verbatim: {event_id, occurred_at,
+ * growth_invitation_id, recipient_type, delivery_reference_id}). NO raw token, NO
+ * `recipient_identifier` ride the event (GI-3/§16.5) — M6 fetches them just-in-time.
+ */
+export interface DispatchInvitationDeliveryInput {
+  /** The consumed event id — the idempotency key (§B4 duplicate-consumer suppression). */
+  eventId: string;
+  /** The envelope timestamp (carried — not dispatch-relevant; §HB-3.6 item 2). */
+  occurredAt?: string;
+  /** Opaque M1 reference — never dereferenced by table (§HB-3.6 item 2). */
+  growthInvitationId: string;
+  /** The targeted recipient type (maps 1:1 to the frozen `channel` enum). */
+  recipientType: string;
+  /** The handle for `identity.resolve_invitation_delivery_payload.v1`. */
+  deliveryReferenceId: string;
+}
+
+/** Error outcome of a BC-COMM-3 dispatch/retry effect (§HB-3.6 item 9 / frozen §HB-3.3 item 9 —
+ *  REFERENCE ≠ DEPENDENCY and STATE ≠ CONFLICT never merged). `retryable` mirrors the register:
+ *  DEPENDENCY-transient → true; definitive/terminal → false. M1-side codes pass through verbatim
+ *  (no new code coined for them — §HB-3.6 item 9). */
+export interface DeliveryDispatchError {
+  errorClass: "VALIDATION" | "REFERENCE" | "STATE" | "CONFLICT" | "DEPENDENCY";
+  errorCode: string;
+  message: string;
+  retryable: boolean;
+}
+
+/** Outcome of `comm.dispatch_invitation_delivery.v1` (21.5 System — `Response: none` on the wire;
+ *  this is the INTERNAL result: the created/found channel-log row at `queued`). `deduplicated`
+ *  marks the §HB-3.6 item-10 idempotent re-delivery (same row, no new audit, no new send). */
+export type DispatchInvitationDeliveryOutcome =
+  | {
+      ok: true;
+      result: { deliveryLogId: string; channel: DeliveryChannelValue; deduplicated: boolean };
+    }
+  | { ok: false; error: DeliveryDispatchError };
+
+/** Input to the invitation retry orchestration (patch §2): one invitation-origin channel-log row. */
+export interface RetryInvitationDeliveryInput {
+  /** The Outbound Log channel (selects the channel structure). */
+  channel: string;
+  /** The `failed` channel-log row to re-dispatch. */
+  deliveryLogId: string;
+}
+
+/** Outcome of the guarded invitation retry (patch §2 + the minimal frozen §HB-3.3 slice):
+ *  `requeued` = the `failed → queued` re-dispatch happened with a FRESH signed URL. A not-live
+ *  invitation returns the DEFINITIVE M1 code with `retryable:false` — the record STAYS `failed`,
+ *  never re-queued. */
+export type RetryInvitationDeliveryOutcome =
+  | { ok: true; result: { deliveryLogId: string; channel: DeliveryChannelValue; requeued: true } }
+  | { ok: false; error: DeliveryDispatchError };

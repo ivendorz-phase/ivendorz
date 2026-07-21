@@ -12,4 +12,5 @@ export {
   drainOutbox,
 } from "./events/drain-outbox.service";
 export { writeOutboxEvent } from "./events/write-outbox-event.service";
+export { readOutboxEvent } from "./events/read-outbox-event.service";
 export type { DrainOutboxOptions, DrainOutboxResult } from "./events/drain-outbox.service";

@@ -3,6 +3,8 @@ import { dispatchOutbox } from "./dispatch-outbox";
 import { expireDelegationGrantsPump } from "./expire-delegation-grants";
 import { expireInvitationsPump } from "./expire-invitations";
 import { activateMembershipWorker } from "./activate-membership";
+import { dispatchInvitationDeliveryConsumer } from "./dispatch-invitation-delivery";
+import { retryInvitationDeliveriesJob } from "./retry-invitation-deliveries";
 
 // Inngest job functions registry — outbox consumers (REPOSITORY_STRUCTURE §7).
 //
@@ -21,9 +23,17 @@ import { activateMembershipWorker } from "./activate-membership";
 // invite-expiry SWEEP (`invited → removed`, cron; window POLICY-keyed) and verification-complete ACTIVATION
 // (`pending → active`, the DC-4 signal seam). Both consumed via `@/modules/identity/contracts`; M0
 // audit/config facades injected inside the functions. Out-of-wire; audited per mutation; coin no event ([DC-1]).
+//
+// `dispatchInvitationDeliveryConsumer` + `retryInvitationDeliveriesJob` (W3-COMM-GRW-1) — the M6
+// BC-COMM-3 growth-delivery pair: the registered consumer of the M1-owned `InvitationIssued`
+// (`outbox/InvitationIssued` — Doc-4H GrowthDelivery Patch v1.0.1 §HB-3.6; Doc-4L L9-1) and the §2
+// guarded invitation retry job. Both consumed via `@/modules/communication/contracts`
+// (contracts-only); M6 emits no §8 event — ownership stays with M1.
 export const functions: InngestFunction.Any[] = [
   dispatchOutbox,
   expireDelegationGrantsPump,
   expireInvitationsPump,
   activateMembershipWorker,
+  dispatchInvitationDeliveryConsumer,
+  retryInvitationDeliveriesJob,
 ];
