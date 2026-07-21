@@ -23,6 +23,12 @@ env:
   # the direct connection (never the Supabase pooler).
   DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ivendorz
   DIRECT_URL: postgresql://postgres:postgres@localhost:5432/ivendorz
+  # Growth invitation delivery store key (M1 · W3-COMM-GRW-1 B2-2). Runtime-required: without it a
+  # targeted `create_invitation` fails closed (transaction rollback), so the growth tests need it.
+  # This is a CI-ONLY THROWAWAY (64 hex zeros = 32 zero bytes) — obviously fake, NEVER a real
+  # secret, and never used to protect real data. Staging/production provision a unique real value
+  # via the hosting secret store (see .env.example).
+  GROWTH_INVITE_DELIVERY_STORE_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
 
 jobs:
   verify:
@@ -52,6 +58,8 @@ jobs:
         run: node scripts/check-structure.mjs
       - name: Secret scan
         run: node scripts/check-no-secrets.mjs
+      - name: Environment contract (required vars present + well-formed)
+        run: node scripts/check-env.mjs
       - name: No cross-schema FK (migrations)
         run: node scripts/check-no-cross-schema-fk.mjs
       - name: No suppressed conformance tests (.only/.skip = red gate, Doc-8B §8)

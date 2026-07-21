@@ -16,6 +16,10 @@ Deliberately lightweight — this file points, it never restates.
 
 Practicalities: pnpm is the canonical package manager (`pnpm-lock.yaml`; pinned via the
 `packageManager` field — supersedes F-06 Option A per owner directive 2026-07-15). Verification
-gates: `node scripts/check-structure.mjs`, `pnpm run typecheck && pnpm run lint`, tests via
-`pnpm test`. All AI-generated code requires review before merge; architecture-affecting
-changes require human approval.
+gates: `node scripts/check-structure.mjs`, `pnpm run check:env`, `pnpm run typecheck && pnpm run
+lint`, tests via `pnpm test`. Release readiness additionally requires the runtime env contract to
+hold in the target environment — `pnpm run check:env -- --mode=production` — because a missing or
+malformed required var (e.g. `GROWTH_INVITE_DELIVERY_STORE_KEY`, which fails targeted invitation
+creation CLOSED) is a deploy blocker, not a warning; the contract itself is documented in
+[`.env.example`](.env.example). All AI-generated code requires review before merge;
+architecture-affecting changes require human approval.

@@ -20,6 +20,7 @@
     "test:e2e": "playwright test",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
+    "check:env": "node scripts/check-env.mjs",
     "registry:build": "node scripts/build-registry.mjs",
     "prototype": "node scripts/serve-prototype.mjs",
     "prepare": "husky",
