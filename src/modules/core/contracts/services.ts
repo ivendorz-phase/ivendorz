@@ -76,7 +76,8 @@ export type AppendAuditRecord = (
  * owning (emitting) module supplies a Doc-2 §8 name (by pointer); this primitive persists the row
  * structurally and does not validate the catalog. Error → `core_outbox_write_failed` (SYSTEM; rolls
  * the caller's tx back). NOT separately audited (the business action is audited by the caller — §17).
- * NO OUTPUT — the frozen §B10 contract declares no Response (owner ruling 2026-07-12, Q3).
+ * Returns void — the frozen contract declares `Response: none` (Doc-4A §21.5 carve-out);
+ * [ESC-CORE-OUTBOX-MECH] Option A, owner-ruled 2026-07-12.
  */
 export type WriteOutboxEvent = (
   input: WriteOutboxEventInput,

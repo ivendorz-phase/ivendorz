@@ -73,37 +73,7 @@ export interface AppendAuditRecordResult {
   auditId: string;
 }
 
-// ── W3-TRUST-3 (Part A) — the producer-emit primitive `core.write_outbox_event.v1` (Doc-4B §B10) ─────
-// The transactional-outbox-WRITE mechanism every emitting module's §16.2 Events-Produced resolves to —
-// the twin of `core.append_audit_record.v1`. It INSERTs exactly one `core.outbox_events` row inside the
-// CALLER's transaction (atomic with the business write — §16.2). It COINS NO event name: the owning
-// (emitting) module supplies a name that MUST exist in Doc-2 §8 (by pointer); this primitive persists the
-// row structurally and does NOT validate the catalog (Doc-4B §B10 Ownership/validation).
-//
-// NO OUTPUT (owner ruling 2026-07-12, [ESC-CORE-OUTBOX-MECH] Q3): the frozen §B10 contract declares no
-// Response — the primitive returns void. Callers MUST NOT depend on a returned row id (the emit is
-// observed downstream via the dispatcher — §B6).
-
-/**
- * Input to `core.write_outbox_event.v1` (Doc-4B §B10). Field names/semantics owned by Doc-2 §10.1
- * (`event_name`, `event_version`, `aggregate_id`, `payload_jsonb`); bound by pointer, never re-authored.
- */
-export interface WriteOutboxEventInput {
-  /**
-   * `event_name` — MUST exist in Doc-2 §8 (by pointer); never coined (§16.4). The caller (the owning
-   * module per §16.6) is the only legal emitter of its events; this primitive does not validate the catalog.
-   */
-  eventName: string;
-  /** `event_version` — integer ≥ 1 (§16.4). */
-  eventVersion: number;
-  /** `aggregate_id` — the aggregate-root id the event concerns (Doc-2 §10.1 `aggregate_id`; §16.5). */
-  aggregateId: string;
-  /**
-   * `payload` — the THIN event payload per §16.5 (IDs + minimal metadata; no blobs). Privacy-Review is
-   * the caller's assertion — no protected facts (§16.3 / §7.5). Persisted to `payload_jsonb` (Doc-2 §10.1).
-   */
-  payload: Record<string, unknown>;
-}
+// ── W3-BILL-4 — `core.write_outbox_event.v1` (Doc-4B §16), the transactional-outbox WRITE primitive ──
 
 // ── W2-CORE-1 — config (POLICY) + feature-flag read services (Doc-4B §B8/§B9) ────────────────
 
@@ -270,3 +240,35 @@ export interface OutboxArchiveResult {
    */
   archived: number;
 }
+
+// ── W3-TRUST-3 (Part A) — the producer-emit primitive `core.write_outbox_event.v1` (Doc-4B §B10) ─────
+// The transactional-outbox-WRITE mechanism every emitting module's §16.2 Events-Produced resolves to —
+// the twin of `core.append_audit_record.v1`. It INSERTs exactly one `core.outbox_events` row inside the
+// CALLER's transaction (atomic with the business write — §16.2). It COINS NO event name: the owning
+// (emitting) module supplies a name that MUST exist in Doc-2 §8 (by pointer); this primitive persists the
+// row structurally and does NOT validate the catalog (Doc-4B §B10 Ownership/validation).
+
+/**
+ * Input to `core.write_outbox_event.v1` (Doc-4B §B10). Field names/semantics owned by Doc-2 §10.1
+ * (`event_name`, `event_version`, `aggregate_id`, `payload_jsonb`); bound by pointer, never re-authored.
+ */
+export interface WriteOutboxEventInput {
+  /**
+   * `event_name` — MUST exist in Doc-2 §8 (by pointer); never coined (§16.4). The caller (the owning
+   * module per §16.6) is the only legal emitter of its events; this primitive does not validate the catalog.
+   */
+  eventName: string;
+  /** `event_version` — integer ≥ 1 (§16.4). */
+  eventVersion: number;
+  /** `aggregate_id` — the aggregate-root id the event concerns (Doc-2 §10.1 `aggregate_id`; §16.5). */
+  aggregateId: string;
+  /**
+   * `payload` — the THIN event payload per §16.5 (IDs + minimal metadata; no blobs). Privacy-Review is
+   * the caller's assertion — no protected facts (§16.3 / §7.5). Persisted to `payload_jsonb` (Doc-2 §10.1).
+   */
+  payload: Record<string, unknown>;
+}
+
+// `core.write_outbox_event.v1` declares NO Response (Doc-4B §Write-Outbox-Event, `Response: none` —
+// Doc-4A §21.5 carve-out). The primitive returns void; callers derive no correlation handle from the emit
+// (the dispatcher observes delivery downstream — §B6). [ESC-CORE-OUTBOX-MECH] Option A, owner-ruled 2026-07-12.

@@ -9,6 +9,16 @@
 import { randomBytes } from "node:crypto";
 
 /**
+ * RFC-4122 UUID shape for path/id/wire-identifier SYNTAX checks (Doc-5A §5.4 — a malformed segment
+ * is SYNTAX, category 1; Doc-4A §11.2). Case-insensitive; matches any UUID version/variant (the
+ * mint-time UUIDv7-only policy is enforced separately, Coding Rules — this is a wire-shape check
+ * only). The single shared constant for a SYNTAX check needed by BOTH an `app/` route entry
+ * (REPOSITORY_STRUCTURE §9: `app/` reaches `src/shared/*` only, never a module internal) and its
+ * owning module's query/command layer — replaces what would otherwise be duplicated per call site.
+ */
+export const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
  * Generate a time-ordered UUIDv7 (RFC 9562 §5.7): 48-bit big-endian Unix-millisecond timestamp,
  * 4-bit version (0b0111), 12-bit random, 2-bit variant (0b10), 62-bit random. Lexicographic
  * order tracks creation time — required for the time-ordered `core.audit_records.audit_id` PK
@@ -37,11 +47,3 @@ export function uuidv7(): string {
     `${hex.slice(16, 20)}-${hex.slice(20, 32)}`
   );
 }
-
-/**
- * Canonical UUID string shape (any RFC-4122 version; case-insensitive) — the platform-wide SYNTAX check
- * for a machine identifier at a trust boundary (Doc-4A §11.2 category 1). Framework-shared so modules
- * bind ONE source instead of re-declaring the regex per command (the `UUID_RE` copies dotted across the
- * codebase). Additive; changes no existing behavior.
- */
-export const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

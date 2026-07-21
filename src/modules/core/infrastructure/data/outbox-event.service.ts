@@ -14,14 +14,10 @@
 // core_init); a `RETURNING` under a non-staff caller could abort with SQLSTATE 42501 (the audit-twin
 // pitfall). `id` is minted app-side so no DB-returned key is needed. Do NOT revert to `create()`.
 //
-// NO SECURITY DEFINER + no output (owner ruling 2026-07-12, [ESC-CORE-OUTBOX-MECH] Q1/Q2/Q3): the no-SD
-// caller-context INSERT is the canonical mechanism for ALL M0 append primitives; the frozen §B10 contract
-// declares no Response, so this returns void. RLS admission: the runtime emit rides the privileged app
-// connection (RLS = defense-in-depth backstop, not the model — CLAUDE.md §2); the staff-GUC leg admits an
-// in-band staff/System write under `outbox_events_platform_staff`. A tenant-admitting INSERT `WITH CHECK`
-// policy on `core.outbox_events` (Doc-6B additive patch — backstop parity for tenant-context emitters such
-// as `billing.purchase_subscription`) is DEFERRED by owner decision 2026-07-22; until it lands, the
-// restricted-role RLS backstop rejects a direct tenant-context outbox INSERT (fail-closed).
+// RLS admission (Doc-4B §B10 note): the `outbox_events_platform_staff` policy admits the INSERT only under
+// `app.is_platform_staff = true` (USING doubles as WITH CHECK). W3 producers are Admin (staff GUC) / System
+// (owner-role/SD) — the in-band INSERT is admitted on the caller's tx. A future non-staff emitter would need
+// the owner-role write path (out of scope; no new outbox RLS policy is added here).
 
 import { prisma, Prisma, type DbExecutor } from "../../../../shared/db";
 import { uuidv7 } from "../../../../shared/ids";
@@ -29,6 +25,8 @@ import type { CoreServiceExecutor, WriteOutboxEvent } from "../../contracts/serv
 import { CoreServiceError, type WriteOutboxEventInput } from "../../contracts/types";
 
 async function write(input: WriteOutboxEventInput, db: DbExecutor): Promise<void> {
+  // `id` is minted app-side (UUIDv7) purely for the INSERT; it is NOT returned — the frozen contract
+  // declares `Response: none` ([ESC-CORE-OUTBOX-MECH] Option A, owner-ruled 2026-07-12).
   const outboxEventId = uuidv7();
   try {
     // `createMany` (single-row) emits a NON-`RETURNING` INSERT — see the NON-RETURNING note above.
@@ -62,7 +60,7 @@ async function write(input: WriteOutboxEventInput, db: DbExecutor): Promise<void
 /**
  * Write one `core.outbox_events` row (Doc-4B §B10 / Doc-2 §10.1). Runs on the supplied transaction
  * executor when present (the emit is atomic with the caller's business write — Doc-4B §16.2); otherwise
- * on the shared client. Returns void — the frozen §B10 contract declares no Response.
+ * on the shared client.
  */
 export const writeOutboxEvent: WriteOutboxEvent = (input, executor?: CoreServiceExecutor) =>
   write(input, (executor as DbExecutor | undefined) ?? prisma);

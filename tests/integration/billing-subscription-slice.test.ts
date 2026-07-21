@@ -7,15 +7,12 @@ import { appendAuditRecord, writeOutboxEvent } from "../../src/modules/core/cont
 import { asRestrictedRole, ensureRestrictedRlsRole } from "../_harness/db";
 
 // W3-BILL-4 [Wave-3 M7] — BC-BILL-2 `purchase_subscription` (Doc-4I §HB-2.1) + `get_subscription`
-// (§HB-2.5), plus the M0 `core.write_outbox_event.v1` primitive (Doc-4B §B10) that carries the platform's
+// (§HB-2.5), plus the M0 `core.write_outbox_event.v1` primitive (Doc-4B §16) that carries the platform's
 // FIRST §8 event (`SubscriptionPurchased`). The org-scoped COMMAND/QUERY are exercised directly (an
 // injected `ctx` — the composition's `withActiveOrg` + `hasPermission` are M1-tested machinery); the DB
 // writes run under `prisma` (superuser, RLS bypassed) proving the app-layer + the actual persistence.
-// OUTBOX POSTURE (owner ruling 2026-07-12, [ESC-CORE-OUTBOX-MECH] Option A — no SECURITY DEFINER): the
-// runtime emit is a caller-context INSERT riding the privileged app connection (RLS = backstop, not the
-// model); the `asRestrictedRole` case proves the backstop FAIL-CLOSED — a non-staff tenant context cannot
-// write `core.outbox_events` directly (tenant-admitting Doc-6B policy DEFERRED, owner 2026-07-22) — and
-// `subscriptions_tenant` scopes reads to the org.
+// The `asRestrictedRole` cases prove the tenant-context guarantees: the SECURITY DEFINER outbox write is
+// admitted from a non-staff tenant context, and `subscriptions_tenant` scopes reads to the org.
 //
 // NOTE: subscriptions / subscription_events / outbox_events / audit_records are APPEND-ONLY (immutability
 // triggers block DELETE) — the test mints FRESH ids per case (no cleanup, no collisions).
@@ -99,8 +96,7 @@ describe("billing.purchase_subscription.v1 (command) — Doc-4I §HB-2.1", () =>
       }),
     ).not.toBeNull();
 
-    // The platform's FIRST §8 event — written to the outbox (pending) via the M0 primitive (no-SD
-    // caller-context INSERT on the privileged connection — the Option-A canonical mechanism).
+    // The platform's FIRST §8 event — written to the outbox (pending) via the M0 SECURITY DEFINER primitive.
     const outbox = await prisma.outboxEvent.findFirst({
       where: { aggregateId: subId, eventName: "SubscriptionPurchased" },
       select: { payloadJsonb: true, status: true, eventVersion: true },
@@ -156,24 +152,23 @@ describe("billing.get_subscription.v1 (query) — Doc-4I §HB-2.5", () => {
 });
 
 describe("core.write_outbox_event.v1 (M0) + subscriptions RLS backstop (Doc-8B §5)", () => {
-  it("a non-staff tenant context CANNOT write core.outbox_events directly (fail-closed backstop)", async () => {
-    // Option A (owner ruling 2026-07-12): no SECURITY DEFINER — the runtime emit rides the privileged
-    // app connection (proven by the wired purchase case above). The DB-level backstop stays staff-only:
-    // a restricted (non-BYPASSRLS) role in a tenant context is REJECTED on a direct INSERT — today as a
-    // missing-grant denial, and still rejected under `outbox_events_platform_staff` WITH CHECK once a
-    // grant exists. Flips to an admitted write ONLY when the deferred tenant-admitting Doc-6B policy
-    // lands (owner-deferred 2026-07-22) — update this case alongside that patch.
+  it("outbox RLS backstop: a non-staff tenant CANNOT write core.outbox_events directly (no SD; the real emit uses the privileged app connection — [ESC-CORE-OUTBOX-MECH] Option A)", async () => {
+    // Option A (owner-ruled 2026-07-12) withdrew the SECURITY DEFINER `core.write_outbox_event`
+    // function. The canonical primitive is a non-`RETURNING` insert on the CALLER's executor; in the
+    // app path it runs on the privileged (RLS-bypassing) connection — proven by the purchase_subscription
+    // flow tests above. Here we assert the defense-in-depth backstop: a non-staff NOBYPASSRLS tenant
+    // context is REJECTED writing the outbox directly (`core.outbox_events` stays staff-only).
     await expect(
       asRestrictedRole({ activeOrg: uuidv7() }, async (tx) => {
         await tx.$executeRawUnsafe(
-          "INSERT INTO core.outbox_events (id, aggregate_id, event_name, event_version, payload_jsonb) VALUES ($1::uuid, $2::uuid, 'SubscriptionPurchased', 1, $3::jsonb)",
+          `INSERT INTO core.outbox_events (id, aggregate_id, event_name, event_version, payload_jsonb, status, attempts)
+           VALUES ($1::uuid, $2::uuid, 'SubscriptionPurchased', 1, $3::jsonb, 'pending', 0)`,
           uuidv7(),
           uuidv7(),
           JSON.stringify({ subscription_id: uuidv7() }),
         );
-        return "wrote";
       }),
-    ).rejects.toThrow(); // permission denied / RLS WITH CHECK — never an admitted tenant write
+    ).rejects.toThrow();
   });
 
   it("subscriptions_tenant RLS scopes a non-staff role to its OWN org", async () => {
