@@ -24,7 +24,10 @@
 // SYSTEM/PLATFORM-STAFF ACTOR (§B6 Actor: System): each worker opens its OWN transaction and sets
 // `app.is_platform_staff = 'true'` TRANSACTION-LOCAL (`set_config(.,.,true)` — WP-1.3/1.4 GUC pattern)
 // so the Doc-6B §2.2 platform-staff RLS backstop admits the read/write; the GUC never leaks past the
-// transaction (no pooled-connection bleed, never session-global).
+// transaction (no pooled-connection bleed, never session-global). The P2-A1 TRANSPORT path splits the
+// dispatch pass into SEVERAL SHORT transactions (read page → per-row mark/bump → run audit), each
+// setting the same transaction-local GUC — NO network send ever runs inside a DB transaction
+// (L-A2-MAJOR-1); the status-only path keeps its original single transaction.
 //
 // POLICY-BOUNDED, NEVER LITERAL (Doc-4A §18.2): max attempts, retry backoff, dead-letter policy, and
 // archive retention are read from `core.system_configuration` via the W2-CORE-1 service
@@ -35,6 +38,7 @@ import { uuidv7 } from "../../../../shared/ids";
 import type {
   OutboxArchiveInput,
   OutboxArchiveResult,
+  OutboxDispatchDeps,
   OutboxDispatchInput,
   OutboxDispatchResult,
 } from "../../contracts/types";
@@ -94,12 +98,42 @@ const DEFAULT_BATCH_SIZE = 100 as const;
  * Reconciliation (§B6): `pending` rows stuck beyond the expected dispatch latency (the backoff cap)
  * with `attempts` in `[1, max)` are counted `reconciledStuck` — flagged for the next tick / alerted;
  * operational telemetry, not a business audit action (§17.1). No new entity or state is introduced.
+ *
+ * TRANSPORT LEG (P2-A1 — the injected consumer-transport seam): when `deps.transport` is present,
+ * each eligible envelope is FORWARDED first and the row is advanced `pending → dispatched` only on
+ * a resolved send (SEND-THEN-MARK, per event, at-least-once: a send that lands but whose mark is
+ * lost is re-sent next drain — consumers dedup on `event_id`). A transport THROW leaves the row
+ * `pending` with `attempts` bumped, so the §B6 backoff/dead-letter machinery governs the retry
+ * cadence and ceiling; the row is never dropped. With NO transport the historical status-only
+ * advance is preserved byte-for-byte (backward compatible). The concrete transport is constructed
+ * by the inngest layer and injected here — M0 never imports inngest (One Module, One Owner).
+ *
+ * NO NETWORK I/O INSIDE A DB TRANSACTION (L-A2-MAJOR-1): the transport path is structured as
+ * (1) one SHORT read transaction (policy + telemetry counts + the candidate page), (2) per-event
+ * sends OUTSIDE any transaction, each followed by its own SHORT per-row mark/bump transaction,
+ * (3) the [D-5] run audit in its own short transaction. A slow/unavailable broker therefore can
+ * never time out and roll back committed marks/bumps (which would re-send already-sent events
+ * unboundedly and freeze the attempts counter below the dead-letter ceiling), and no DB
+ * connection is held across network I/O. Per-row outcomes are ISOLATED: one row's send failure
+ * never entangles another row's committed advance.
  */
 export async function dispatchOutboxEvents(
   options: OutboxDispatchInput = {},
+  deps: OutboxDispatchDeps = {},
 ): Promise<OutboxDispatchResult> {
   const batchSize = options.batchSize ?? DEFAULT_BATCH_SIZE;
+  const transport = deps.transport;
+  return transport === undefined
+    ? dispatchStatusOnly(batchSize)
+    : dispatchViaTransport(batchSize, transport);
+}
 
+/**
+ * The historical status-only dispatch pass (no transport injected) — the pre-P2 behavior preserved
+ * byte-identically INSIDE its original single worker transaction (advances + the in-tx [D-5] audit
+ * are atomic — D7 rule 5). Backward compatible for every existing caller.
+ */
+async function dispatchStatusOnly(batchSize: number): Promise<OutboxDispatchResult> {
   return prisma.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT set_config('app.is_platform_staff', 'true', true)`;
 
@@ -185,6 +219,181 @@ export async function dispatchOutboxEvents(
   });
 }
 
+/** The candidate-row shape the transport path carries between its phases. */
+interface TransportCandidateRow {
+  id: string;
+  attempts: number;
+  updatedAt: Date;
+  eventName: string;
+  eventVersion: number;
+  payload: Record<string, unknown>;
+}
+
+/**
+ * The P2-A1 transport dispatch pass — SEND-THEN-MARK with NO network I/O inside any DB transaction
+ * (L-A2-MAJOR-1). Three phases:
+ *
+ *   1. One SHORT read transaction (staff GUC, transaction-local): policy + the §B6 dead-letter /
+ *      reconciliation telemetry counts + the candidate page (same predicate/order/take as the
+ *      status-only path, plus the envelope columns the transport needs).
+ *   2. OUTSIDE any transaction, per eligible row (same backoff-window filter): forward the envelope
+ *      via the transport. Success → a SHORT per-row transaction performing the same forward-only
+ *      compare-and-set mark (`pending → dispatched`; a row advanced by a concurrent pass between
+ *      the phase-1 select and this write — or between the send and this write — matches zero rows:
+ *      the duplicate send is the bounded at-least-once cost, the mark never double-advances).
+ *      Throw → a SHORT per-row transaction bumping `attempts` under the same `pending` status guard
+ *      (same-state update — trigger-admitted) so the §B6 backoff/dead-letter policy governs the
+ *      retry; the row is never dropped. Per-row transactions ⇒ per-row ISOLATION: one row's broker
+ *      failure can never roll back another row's committed advance, and a broker outage still
+ *      advances `attempts` toward the dead-letter ceiling.
+ *   3. The [D-5] run audit (ONE System record per run that advanced ≥ 1 row) in its own short
+ *      transaction after the loop. [Logged judgment call — L-A2-MAJOR-1 consequence: with per-row
+ *      marks, run-level atomicity of audit-with-advances is structurally impossible; the D5
+ *      run/batch granularity and the noise rule are preserved, and an append failure still throws
+ *      (surfaced to the job runner) — it can no longer roll back the already-committed advances.]
+ *
+ * Counters keep the exact `OutboxDispatchResult` shape (a failed send is simply not counted
+ * `dispatched`). Envelope facts reach the warn log by id/name ONLY — never the payload.
+ */
+async function dispatchViaTransport(
+  batchSize: number,
+  transport: NonNullable<OutboxDispatchDeps["transport"]>,
+): Promise<OutboxDispatchResult> {
+  // ── Phase 1 — short read tx: policy + telemetry counts + the candidate page. ──
+  // (`maxAttempts` is fully applied by the phase-1 candidate predicate — not needed in phase 2.)
+  const { backoff, dlqPolicy, deadLettered, reconciledStuck, candidates, now } =
+    await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT set_config('app.is_platform_staff', 'true', true)`;
+
+      const policy = await readOutboxDispatchPolicy(tx);
+      const readNow = new Date();
+
+      // Dead-letter backlog (§B6): parked rows at the ceiling — retained, never dropped; the count
+      // IS the alert surface (per core.outbox_dlq_policy).
+      const parked = await tx.outboxEvent.count({
+        where: { status: "pending", attempts: { gte: policy.maxAttempts } },
+      });
+
+      // Reconciliation (§B6): pending rows stuck beyond the expected dispatch latency (backoff cap)
+      // while still under the ceiling.
+      const stuckBefore = new Date(readNow.getTime() - policy.backoff.capMs);
+      const stuck = await tx.outboxEvent.count({
+        where: {
+          status: "pending",
+          attempts: { gte: 1, lt: policy.maxAttempts },
+          createdAt: { lt: stuckBefore },
+        },
+      });
+
+      // Advancement candidates: same predicate/order/take as the status-only path; the envelope
+      // columns ride along for the transport. Backoff eligibility is the per-row phase-2 check.
+      const rows = await tx.outboxEvent.findMany({
+        where: { status: "pending", attempts: { lt: policy.maxAttempts } },
+        orderBy: { createdAt: "asc" },
+        take: batchSize,
+        select: {
+          id: true,
+          attempts: true,
+          updatedAt: true,
+          eventName: true,
+          eventVersion: true,
+          payloadJsonb: true,
+        },
+      });
+
+      const page: TransportCandidateRow[] = rows.map((row) => ({
+        id: row.id,
+        attempts: row.attempts,
+        updatedAt: row.updatedAt,
+        eventName: row.eventName,
+        eventVersion: row.eventVersion,
+        // The persisted payload_jsonb is an object by construction (the producer spreads the
+        // caller's thin payload then stamps the envelope fields) — narrow structurally.
+        payload: (row.payloadJsonb ?? {}) as Record<string, unknown>,
+      }));
+
+      return {
+        backoff: policy.backoff,
+        dlqPolicy: policy.dlqPolicy,
+        deadLettered: parked,
+        reconciledStuck: stuck,
+        candidates: page,
+        now: readNow,
+      };
+    });
+
+  // ── Phase 2 — per-event send OUTSIDE any tx; short per-row mark/bump transactions. ──
+  let dispatched = 0;
+  let skippedBackoff = 0;
+  for (const row of candidates) {
+    if (!isBackoffElapsed(backoff, row.attempts, row.updatedAt, now)) {
+      // Re-attempt backoff not yet elapsed — leave pending for a later tick.
+      skippedBackoff += 1;
+      continue;
+    }
+
+    try {
+      await transport({
+        eventId: row.id,
+        eventName: row.eventName,
+        eventVersion: row.eventVersion,
+        payload: row.payload,
+      });
+    } catch (e) {
+      // Send failed → SHORT per-row tx: bump `attempts` under the `pending` status guard (a row
+      // advanced concurrently is left alone). The row stays `pending` for a later drain under the
+      // §B6 backoff/dead-letter policy. Log id/name only — never the payload.
+      await prisma.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT set_config('app.is_platform_staff', 'true', true)`;
+        await tx.outboxEvent.updateMany({
+          where: { id: row.id, status: "pending" },
+          data: { attempts: { increment: 1 } },
+        });
+      });
+      console.warn(
+        `outbox dispatch: transport send failed for event ${row.id} (${row.eventName}); row left pending for retry.`,
+        e instanceof Error ? e.message : e,
+      );
+      continue;
+    }
+
+    // Send resolved → SHORT per-row tx: the same forward-only compare-and-set advance as the
+    // status-only path (0-count no-op under a lost race keeps `dispatched` truthful).
+    const advanced = await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT set_config('app.is_platform_staff', 'true', true)`;
+      return tx.outboxEvent.updateMany({
+        where: { id: row.id, status: "pending" },
+        data: { status: "dispatched", dispatchedAt: now, attempts: { increment: 1 } },
+      });
+    });
+    if (advanced.count === 1) {
+      dispatched += 1;
+    }
+  }
+
+  // ── Phase 3 — the [D-5] run audit (run/batch granularity; noise rule: empty pass = no record). ──
+  if (dispatched >= 1) {
+    await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT set_config('app.is_platform_staff', 'true', true)`;
+      await appendAuditRecord(
+        {
+          actorType: "system",
+          actorId: null,
+          organizationId: null,
+          entityType: OUTBOX_DISPATCH_RUN_ENTITY_TYPE,
+          entityId: uuidv7(),
+          action: OutboxAuditAction.DISPATCHED,
+          oldValue: null,
+          newValue: { dispatched, batchSize },
+        },
+        tx,
+      );
+    });
+  }
+
+  return { dispatched, deadLettered, skippedBackoff, reconciledStuck, dlqPolicy };
+}
+
 /**
  * `core.phase2_archive_dispatched_events.v1` (Doc-4B §B6) — advance `dispatched` rows whose
  * `dispatched_at` is older than `core.outbox_archive_retention` to `archived` (the distinct, retention-
@@ -251,10 +460,14 @@ export async function archiveDispatchedEvents(
 /**
  * Legacy combined drain pass — kept so existing callers (the Inngest job, WP-1.8 observer) keep a
  * stable entry point. Runs the §B6 dispatch worker, then (when `options.archive`) the retention-bounded
- * archival worker, and maps their counters to the historical `DrainOutboxResult` shape.
+ * archival worker, and maps their counters to the historical `DrainOutboxResult` shape. Passes the
+ * optional P2-A1 transport deps through to the dispatch worker (absent = legacy status-only behavior).
  */
-export async function drainOutbox(options: DrainOutboxOptions = {}): Promise<DrainOutboxResult> {
-  const dispatch = await dispatchOutboxEvents({ batchSize: options.batchSize });
+export async function drainOutbox(
+  options: DrainOutboxOptions = {},
+  deps: OutboxDispatchDeps = {},
+): Promise<DrainOutboxResult> {
+  const dispatch = await dispatchOutboxEvents({ batchSize: options.batchSize }, deps);
   const archived = options.archive
     ? (await archiveDispatchedEvents({ batchSize: options.batchSize })).archived
     : 0;

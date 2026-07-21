@@ -225,6 +225,45 @@ export interface OutboxDispatchInput {
   batchSize?: number;
 }
 
+// ── Outbox consumer-transport seam (P2-A1 — the Doc-4B §B6 delivery leg) ─────────────────────
+// M0 TRANSPORTS envelopes and authors no event; the CONCRETE transport (Inngest) is constructed
+// and injected by the `inngest/` layer (`inngest/functions/dispatch-outbox.ts`) — core never
+// imports inngest (One Module, One Owner; REPOSITORY_STRUCTURE §7). This surface is the TYPE only.
+
+/**
+ * One drained `core.outbox_events` envelope handed to the injected transport — the persisted
+ * Doc-2 §10.1 row facts, nothing re-authored. The `payload` is the persisted `payload_jsonb`
+ * (the emitter's thin Doc-2 §8 payload + the stamped `event_id`/`occurred_at` envelope fields).
+ */
+export interface OutboxTransportEvent {
+  /** The row id = the envelope `event_id` (UUIDv7) — the consumer idempotency/dedup key. */
+  eventId: string;
+  /** The Doc-2 §8 event name (catalog Doc-4J — by pointer; e.g. `InvitationConverted`). */
+  eventName: string;
+  /** The declared event version (Doc-2 §8 / Doc-4J). */
+  eventVersion: number;
+  /** The persisted `payload_jsonb` — thin IDs + metadata + stamped envelope fields. */
+  payload: Record<string, unknown>;
+}
+
+/**
+ * The injected outbox transport (P2-A1). PER-EVENT so partial failure is expressible: the
+ * dispatcher forwards ONE envelope per call and marks that row `dispatched` only on a resolved
+ * send (send-then-mark, at-least-once — a throw leaves the row `pending` for the next drain
+ * under the §B6 retry/backoff/dead-letter policy). May throw per event.
+ */
+export type OutboxTransport = (event: OutboxTransportEvent) => Promise<void>;
+
+/**
+ * Injectable dependencies of the outbox dispatch workers. `transport` is OPTIONAL — absent, the
+ * workers preserve the status-only legacy behavior (advance with no forwarding), so existing
+ * callers are untouched (backward compatible).
+ */
+export interface OutboxDispatchDeps {
+  /** The consumer-transport leg (send-then-mark). Constructed by the inngest layer. */
+  transport?: OutboxTransport;
+}
+
 /**
  * Result of one `core.phase2_dispatch_outbox_events.v1` pass (Doc-4B §B6 — mechanical counters).
  * The dead-letter / reconciliation counts are the ops-telemetry alert surface (§B6: "never silently
