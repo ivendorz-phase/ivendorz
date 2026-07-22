@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Landing Taste Pass, Current vs Proposed (Stage-3 prototype, NON-AUTHORITATIVE)</title>
+<style>
+  /* ── Tokens: copied VERBATIM from app/globals.css (light theme). Do not "improve" values. ──── */
+  :root {
+    --iv-brand-50:#eef3fd; --iv-brand-100:#dbe6fa; --iv-brand-200:#b8cef5; --iv-brand-300:#8fb0ea;
+    --iv-brand-400:#5f8ad9; --iv-brand-500:#2f5eb8; --iv-brand-600:#23438f; --iv-brand-700:#1c3672;
+    --iv-brand-800:#162a58; --iv-brand-900:#101f40; --iv-brand-950:#0b1530;
+    --iv-navy-50:#f2f5f9; --iv-navy-100:#e2e9f2; --iv-navy-500:#33507f;
+    --iv-navy-600:#283f6a; --iv-navy-700:#1f3154; --iv-navy-800:#182643; --iv-navy-900:#111c33;
+    --iv-navy-950:#0b1322;
+
+    --iv-light-base:#f6f8fa; --iv-light-raised:#ffffff; --iv-light-muted:#f8fafc;
+    --iv-light-border:#e6e9ee; --iv-light-hover:#f8fafc;
+
+    --iv-bg:var(--iv-light-base); --iv-surface:var(--iv-light-raised); --iv-border:var(--iv-light-border);
+
+    --iv-fg-strong:#14213d; --iv-fg:#4a5568; --iv-fg-secondary:#4a5568; --iv-fg-muted:#5f6a7a;
+    --iv-fg-heading:#1a2b52; --iv-fg-heading-strong:#101f40;
+
+    --iv-success-base:#16a34a; --iv-success-bright:#4ade80; --iv-success-muted:#15803d;
+    --iv-warning-base:#ca8a04; --iv-danger-base:#dc2626;
+
+    --iv-cap-supply:#3b82f6; --iv-cap-service:#0d9488; --iv-cap-fabricate:#fbbf24; --iv-cap-consult:#22c55e;
+
+    --iv-radius-sm:4px; --iv-radius-md:8px; --iv-radius-lg:12px; --iv-radius-xl:16px; --iv-radius-full:9999px;
+    --iv-shadow-xs:0 1px 2px rgba(15,23,42,.06);
+    --iv-shadow-md:0 4px 8px rgba(15,23,42,.08), 0 2px 4px rgba(15,23,42,.06);
+    --iv-shadow-lg:0 12px 24px rgba(15,23,42,.1), 0 4px 8px rgba(15,23,42,.06);
+    --iv-shadow-xl:0 24px 48px rgba(15,23,42,.14), 0 8px 16px rgba(15,23,42,.08);
+    --iv-content-max:1280px; --iv-gutter:24px;
+    --iv-duration-normal:200ms; --iv-ease-out:cubic-bezier(0,0,.2,1);
+    --iv-font-sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --iv-font-mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+
+    /* prototype-only review chrome, deliberately OUTSIDE the token system */
+    --rv-bg:#0b1322; --rv-fg:#e2e8f0; --rv-line:#233049; --rv-accent:#8fb0ea;
+  }
+  @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
+
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:var(--iv-font-sans);background:var(--iv-bg);color:var(--iv-fg);
+    font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit}
+  [hidden]{display:none!important}
+  .ic{width:15px;height:15px;flex-shrink:0}
+  .container{max-width:var(--iv-content-max);margin:0 auto;padding:0 var(--iv-gutter)}
+
+  /* ── Review bar ────────────────────────────────────────────────────────────────────────────── */
+  #reviewbar{position:sticky;top:0;z-index:80;background:var(--rv-bg);color:var(--rv-fg);
+    border-bottom:1px solid var(--rv-line);font-size:12.5px}
+  #reviewbar .rb-in{max-width:1600px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;
+    gap:14px;flex-wrap:wrap}
+  #reviewbar .rb-title{font-weight:700;letter-spacing:.2px;color:#fff}
+  #reviewbar .rb-tag{font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+    border:1px solid var(--rv-line);border-radius:var(--iv-radius-full);padding:2px 8px;color:var(--rv-accent)}
+  .seg{display:inline-flex;border:1px solid var(--rv-line);border-radius:var(--iv-radius-full);
+    overflow:hidden;background:#131f36}
+  .seg button{background:none;border:0;padding:5px 14px;cursor:pointer;color:#94a3b8;font-size:12.5px}
+  .seg button[aria-pressed="true"]{background:var(--iv-brand-500);color:#fff;font-weight:600}
+  .rb-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+  #rbState{color:#94a3b8}
+  #previewBtn{background:#131f36;border:1px solid var(--rv-line);color:#e2e8f0;
+    border-radius:var(--iv-radius-full);padding:5px 14px;cursor:pointer}
+  body.preview #reviewbar{display:none}
+  #previewExit{position:fixed;right:16px;bottom:16px;z-index:90;display:none;background:var(--rv-bg);
+    color:#fff;border:1px solid var(--rv-line);border-radius:var(--iv-radius-full);
+    padding:9px 16px;cursor:pointer;box-shadow:var(--iv-shadow-lg);font-size:12.5px}
+  body.preview #previewExit{display:block}
+
+  /* ── Stage + findings panel ────────────────────────────────────────────────────────────────── */
+  #wrap{display:grid;grid-template-columns:minmax(0,1fr) 370px;align-items:start}
+  #panel{position:sticky;top:47px;max-height:calc(100vh - 47px);overflow-y:auto;
+    border-left:1px solid var(--iv-border);background:var(--iv-surface);padding:16px 16px 24px}
+  body.preview #wrap{grid-template-columns:minmax(0,1fr)}
+  body.preview #panel{display:none}
+  @media(max-width:1180px){#wrap{grid-template-columns:minmax(0,1fr)}#panel{position:static;max-height:none;
+    border-left:0;border-top:1px solid var(--iv-border)}}
+
+  #panel h2{font-size:13px;font-weight:700;color:var(--iv-fg-heading-strong);margin:0 0 4px;
+    text-transform:uppercase;letter-spacing:.6px}
+  #panel .p-sub{font-size:12px;color:var(--iv-fg-muted);margin:0 0 12px}
+  .p-master{display:flex;gap:8px;margin-bottom:14px}
+  .p-master button{flex:1;border:1px solid var(--iv-border);background:var(--iv-light-muted);
+    border-radius:var(--iv-radius-md);padding:7px 0;cursor:pointer;font-size:12.5px;font-weight:600;
+    color:var(--iv-fg-strong)}
+  .p-master button:hover{background:var(--iv-light-hover);border-color:var(--iv-brand-300)}
+  .find{border:1px solid var(--iv-border);border-radius:var(--iv-radius-lg);padding:11px 12px;
+    margin-bottom:10px;background:var(--iv-surface)}
+  .find.on{border-color:var(--iv-brand-300);background:var(--iv-brand-50)}
+  .find .f-head{display:flex;align-items:center;gap:8px}
+  .f-id{font-family:var(--iv-font-mono);font-size:10.5px;font-weight:700;color:var(--iv-navy-700);
+    background:var(--iv-navy-50);border-radius:var(--iv-radius-sm);padding:2px 6px}
+  .f-sev{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+    border-radius:var(--iv-radius-full);padding:2px 8px}
+  .sev-major{background:#fdeaea;color:#b42323}
+  .sev-minor{background:#fdf3e0;color:#96660a}
+  .sev-nit{background:var(--iv-light-muted);color:var(--iv-fg-muted);border:1px solid var(--iv-border)}
+  .sev-obs{background:var(--iv-navy-50);color:var(--iv-navy-600)}
+  .f-title{font-size:13px;font-weight:650;color:var(--iv-fg-heading);margin-left:auto;text-align:right}
+  .find dl{margin:8px 0 9px;font-size:12px}
+  .find dt{font-weight:700;color:var(--iv-fg-muted);font-size:10px;text-transform:uppercase;
+    letter-spacing:.6px;margin-top:6px}
+  .find dd{margin:1px 0 0;color:var(--iv-fg)}
+  .f-note{font-size:11.5px;color:var(--iv-fg-muted);border-top:1px dashed var(--iv-border);
+    padding-top:7px;margin-top:2px}
+  .f-toggle{display:flex;align-items:center;gap:7px;margin-top:8px;cursor:pointer;font-size:12.5px;
+    font-weight:600;color:var(--iv-fg-strong)}
+  .f-toggle input{accent-color:var(--iv-brand-600);width:15px;height:15px}
+  .p-gov{border:1px solid var(--iv-border);border-radius:var(--iv-radius-lg);background:var(--iv-light-muted);
+    padding:11px 12px;font-size:11.5px;color:var(--iv-fg);margin-top:14px}
+  .p-gov b{color:var(--iv-fg-heading)}
+  .p-ver{font-size:10.5px;color:var(--iv-fg-muted);margin-top:12px;font-family:var(--iv-font-mono)}
+
+  /* ── Public shell header (anonymous), mirrors app/(public)/_components/site-header.tsx ─────── */
+  header.site{border-bottom:1px solid var(--iv-border);background:var(--iv-surface)}
+  .row1{display:flex;height:64px;align-items:center;gap:16px}
+  .brand img{height:30px;display:block}
+  .searchbar{flex:1;min-width:0;max-width:576px}
+  .searchbar>div{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;
+    border:1px solid var(--iv-border);border-radius:var(--iv-radius-md);background:var(--iv-light-muted);
+    color:var(--iv-fg-muted);font-size:13.5px}
+  .row1-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .row2{border-top:1px solid var(--iv-border)}
+  .row2 .container{display:flex;height:44px;align-items:center;gap:4px}
+  .row2-right{margin-left:auto}
+
+  /* kit button variants */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 14px;
+    border-radius:var(--iv-radius-md);font-size:13px;font-weight:500;border:1px solid transparent;
+    cursor:pointer;background:none;white-space:nowrap;
+    transition:background var(--iv-duration-normal) var(--iv-ease-out)}
+  .btn-ghost{color:var(--iv-fg)} .btn-ghost:hover{background:var(--iv-light-hover);color:var(--iv-fg-heading)}
+  .btn-outline{border-color:var(--iv-border);background:var(--iv-surface);color:var(--iv-fg-strong)}
+  .btn-outline:hover{background:var(--iv-light-hover)}
+  .btn-primary{background:var(--iv-brand-600);color:#fff}
+  .btn-primary:hover{background:var(--iv-brand-700)}
+  .btn-secondary{background:var(--iv-navy-100);color:var(--iv-navy-800)}
+  .btn-secondary:hover{background:var(--iv-navy-50)}
+  .btn-lg{height:42px;padding:0 20px;font-size:14.5px}
+  .btn-sm{height:30px;padding:0 11px;font-size:12.5px}
+  .btn-pill{border-radius:var(--iv-radius-full)}
+  .btn-ghost-dark{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.05);color:#fff;
+    backdrop-filter:blur(4px)}
+  .btn-ghost-dark:hover{background:rgba(255,255,255,.15)}
+  .btn-on-navy{background:#fff;color:var(--iv-navy-800)}
+  .btn-on-navy:hover{background:var(--iv-light-muted)}
+  .btn[aria-disabled="true"]{opacity:.6;cursor:not-allowed}
+
+  /* ── Hero ──────────────────────────────────────────────────────────────────────────────────── */
+  .hero{position:relative;isolation:isolate;display:flex;align-items:center;min-height:56vh;
+    overflow:hidden;color:#fff}
+  @media(min-width:1024px){.hero{min-height:64vh}}
+  .hero-bg{position:absolute;inset:0;z-index:-2;background:url("_assets/hero-bg.jpg") center/cover no-repeat}
+  .hero-scrim{position:absolute;inset:0;z-index:-1;
+    background:linear-gradient(120deg,rgba(8,14,28,.86) 0%,rgba(12,22,45,.66) 46%,rgba(18,32,66,.34) 100%)}
+  .hero-grid{display:grid;width:100%;gap:40px;padding:48px 0;align-items:center}
+  @media(min-width:1024px){.hero-grid{grid-template-columns:1.05fr .95fr;gap:48px;padding:56px 0}}
+  .hero h1{font-size:36px;font-weight:800;line-height:1.05;letter-spacing:-.5px;color:#fff;margin:0;
+    text-shadow:0 1px 2px rgba(0,0,0,.25)}
+  @media(min-width:640px){.hero h1{font-size:46px}}
+  .hero .sub{margin:20px 0 0;max-width:36rem;font-size:17px;line-height:1.6;color:rgba(255,255,255,.8)}
+  .hero .ctas{margin-top:32px;display:flex;flex-wrap:wrap;gap:12px}
+  .hero .claims{margin:28px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;
+    gap:8px 24px;font-size:13.5px;color:rgba(255,255,255,.75)}
+  .hero .claims li{display:inline-flex;align-items:center;gap:8px}
+  .hero .claims .ic{color:var(--iv-success-bright)}
+
+  /* RFQ panel */
+  .rfq-panel{overflow:hidden;border-radius:var(--iv-radius-xl);border:1px solid rgba(0,0,0,.05);
+    background:#fff;color:var(--iv-fg-strong);box-shadow:var(--iv-shadow-xl)}
+  .rfq-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;color:#fff;
+    background:linear-gradient(135deg,var(--iv-navy-700),var(--iv-navy-900))}
+  .rfq-head .t{display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:700}
+  .rfq-head .t .ic{width:19px;height:19px;color:rgba(255,255,255,.85)}
+  .demo-chip{border:1px solid rgba(255,255,255,.3);border-radius:var(--iv-radius-full);padding:2px 8px;
+    font-family:var(--iv-font-mono);font-size:9px;font-weight:600;text-transform:uppercase;
+    letter-spacing:.8px;color:rgba(255,255,255,.8)}
+  .ticker{position:relative;height:300px;overflow:hidden;
+    -webkit-mask-image:linear-gradient(180deg,transparent,#000 8%,#000 90%,transparent);
+    mask-image:linear-gradient(180deg,transparent,#000 8%,#000 90%,transparent)}
+  .ticker:hover .mqy-track{animation-play-state:paused}
+  .mqy-track{display:flex;flex-direction:column;padding:12px 16px;animation:mqy 23s linear infinite}
+  .mqy-set{display:flex;flex-direction:column;gap:12px;padding-bottom:12px}
+  @keyframes mqy{to{transform:translateY(-50%)}}
+  .rfq-card{flex-shrink:0;border:1px solid var(--iv-border);border-radius:var(--iv-radius-lg);
+    background:#fff;padding:14px;box-shadow:var(--iv-shadow-xs)}
+  .rfq-card .r1{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .rfq-id{border-radius:var(--iv-radius-md);background:var(--iv-navy-800);color:#fff;padding:4px 8px;
+    font-family:var(--iv-font-mono);font-size:11px;font-weight:700;letter-spacing:.3px}
+  .rfq-id .demo{color:rgba(255,255,255,.6)}
+  .rfq-status{font-family:var(--iv-font-mono);font-size:10px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.7px}
+  .st-open{color:var(--iv-success-base)} .st-soon{color:var(--iv-warning-base)} .st-urgent{color:var(--iv-danger-base)}
+  .rfq-card .name{margin:8px 0 0;font-weight:600;color:var(--iv-navy-700)}
+  .rfq-card .loc{margin:4px 0 0;display:inline-flex;align-items:center;gap:6px;font-size:12px;
+    color:var(--iv-fg-muted)}
+  .rfq-card .loc .ic{width:13px;height:13px}
+  .rfq-foot{border-top:1px solid var(--iv-border);padding:16px}
+  .rfq-foot .btn{width:100%}
+
+  /* ── Logo strip ────────────────────────────────────────────────────────────────────────────── */
+  .logostrip{border-top:1px solid var(--iv-border);border-bottom:1px solid var(--iv-border);background:#fff}
+  .logostrip .container{display:flex;align-items:center;gap:24px;padding-top:20px;padding-bottom:20px}
+  .ls-label{flex-shrink:0;font-family:var(--iv-font-mono);font-size:11px;text-transform:uppercase;
+    letter-spacing:.8px;color:var(--iv-fg-muted)}
+  @media(max-width:640px){.ls-label{display:none}}
+  .ls-viewport{position:relative;min-width:0;flex:1;overflow:hidden;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
+    mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+  .ls-viewport:hover .mqx-track{animation-play-state:paused}
+  .mqx-track{display:flex;width:max-content;animation:mqx 30s linear infinite}
+  .mqx-set{display:flex;align-items:center;gap:32px;padding-right:32px}
+  @keyframes mqx{to{transform:translateX(-50%)}}
+  .ls-static{display:flex;align-items:center;gap:32px;overflow-x:auto}
+  .logo-slot{display:inline-flex;height:40px;width:128px;flex-shrink:0;align-items:center;
+    justify-content:center;gap:8px;border-radius:var(--iv-radius-md);border:1px dashed var(--iv-border);
+    background:var(--iv-light-muted);color:var(--iv-fg-muted);font-size:12px;font-weight:500}
+
+  /* ── Sections ──────────────────────────────────────────────────────────────────────────────── */
+  section.band{border-bottom:1px solid var(--iv-border);padding:36px 0}
+  @media(min-width:640px){section.band{padding:48px 0}}
+  .band-light{background:var(--iv-light-base)}
+  .eyebrow{font-family:var(--iv-font-mono);font-size:12px;font-weight:600;text-transform:uppercase;
+    letter-spacing:.8px;color:var(--iv-fg-heading-strong);margin:0}
+  .sec-head-c{max-width:42rem;margin:0 auto 26px;text-align:center}
+  .sec-head-c h2{margin:8px 0 0;font-size:28px;font-weight:800;letter-spacing:-.4px;color:var(--iv-fg-heading)}
+  .sec-head-c .d{margin:10px 0 0;color:var(--iv-fg-secondary)}
+  .sec-head-l{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;
+    gap:12px;margin-bottom:24px}
+  .sec-head-l .hgroup{max-width:42rem}
+  .sec-head-l h2{margin:0;font-size:23px;font-weight:700;letter-spacing:-.3px;color:var(--iv-fg-heading)}
+  .sec-head-l .eyebrow{margin-bottom:8px}
+  .sec-head-l .d{margin:4px 0 0;font-size:13.5px;color:var(--iv-fg-secondary)}
+
+  /* command center */
+  .cc{position:relative;margin:0 auto;width:100%;max-width:960px;border-radius:var(--iv-radius-xl);
+    border:1px solid var(--iv-border);background:#fff;padding:24px;box-shadow:var(--iv-shadow-xl)}
+  .cc-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .cc-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--iv-fg-heading);margin:0}
+  .kbd{display:inline-flex;align-items:center;gap:3px;border:1px solid var(--iv-border);
+    border-radius:var(--iv-radius-sm);padding:2px 6px;font-size:11px;color:var(--iv-fg-muted)}
+  .kbd .ic{width:11px;height:11px}
+  .cc-search{display:flex;align-items:center;gap:8px}
+  .cc-input{position:relative;flex:1}
+  .cc-input .ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--iv-fg-muted);
+    width:16px;height:16px;pointer-events:none}
+  .cc-input input{width:100%;height:44px;padding:0 12px 0 38px;border:1px solid var(--iv-border);
+    border-radius:var(--iv-radius-md);font:inherit;font-size:15px;color:var(--iv-fg-strong);background:#fff}
+  .cc-input input::placeholder{color:var(--iv-fg-muted)}
+  .cc-input input:focus{outline:2px solid var(--iv-brand-300);outline-offset:1px}
+  .cc-go{height:44px;width:48px;flex-shrink:0;border-radius:var(--iv-radius-md);border:0;cursor:pointer;
+    background:var(--iv-brand-600);color:#fff;display:inline-flex;align-items:center;justify-content:center}
+  .cc-go:hover{background:var(--iv-brand-700)}
+  .cc-rail{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+  .soon{margin-left:4px;border-radius:var(--iv-radius-full);background:var(--iv-light-muted);
+    border:1px solid var(--iv-border);color:var(--iv-fg-muted);font-size:10px;font-weight:600;
+    padding:1px 7px;text-transform:none;letter-spacing:0}
+  .cc-pop-label{margin:16px 0 6px;font-size:11px;font-weight:500;text-transform:uppercase;
+    letter-spacing:.6px;color:var(--iv-fg-muted)}
+  .cc-pop{display:flex;flex-wrap:wrap;gap:6px}
+  .cc-trust{margin-top:16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;
+    border-top:1px solid var(--iv-border);padding-top:12px;font-size:12px;color:var(--iv-fg-muted)}
+  .cc-trust span{display:inline-flex;align-items:center;gap:6px}
+  .cc-trust .ic{width:14px;height:14px}
+  .cc-trust .ok{color:var(--iv-success-base)}
+
+  /* cards */
+  .card{background:var(--iv-surface);border:1px solid var(--iv-border);border-radius:var(--iv-radius-lg);
+    box-shadow:var(--iv-shadow-xs)}
+  .grid{display:grid;gap:14px}
+  .g-products{grid-template-columns:repeat(2,minmax(0,1fr))}
+  @media(min-width:640px){.g-products{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media(min-width:1024px){.g-products{grid-template-columns:repeat(6,minmax(0,1fr))}}
+  .g-cats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  @media(min-width:640px){.g-cats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  .g-steps{grid-template-columns:repeat(1,minmax(0,1fr))}
+  @media(min-width:640px){.g-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(min-width:1024px){.g-steps{grid-template-columns:repeat(4,minmax(0,1fr))}}
+  .g-vendors{grid-template-columns:repeat(1,minmax(0,1fr))}
+  @media(min-width:640px){.g-vendors{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(min-width:1280px){.g-vendors{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+  .p-card{display:flex;flex-direction:column;overflow:hidden}
+  .p-thumb{display:flex;aspect-ratio:4/3;width:100%;align-items:center;justify-content:center;
+    border-bottom:1px solid var(--iv-border);background:var(--iv-light-muted);color:var(--iv-fg-muted)}
+  .p-thumb .ic{width:30px;height:30px}
+  .p-body{display:flex;flex:1;flex-direction:column;gap:4px;padding:12px}
+  .p-name{font-size:13px;font-weight:600;color:var(--iv-fg-heading);margin:0;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .p-meta{font-size:11.5px;color:var(--iv-fg-muted);margin:0;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis}
+  .p-price{margin-top:auto;padding-top:8px;font-size:13.5px;font-weight:600;color:var(--iv-fg-strong);
+    font-variant-numeric:tabular-nums}
+  .p-price .onreq{font-weight:500;color:var(--iv-fg-muted)}
+
+  .cat-tile{display:flex;align-items:center;gap:12px;padding:16px;transition:background var(--iv-duration-normal)}
+  .cat-tile:hover{border-color:var(--iv-brand-200);background:rgba(238,243,253,.4)}
+  .cat-ic{display:flex;width:40px;height:40px;flex-shrink:0;align-items:center;justify-content:center;
+    border-radius:var(--iv-radius-md);background:var(--iv-navy-50);color:var(--iv-navy-700)}
+  .cat-ic .ic{width:20px;height:20px}
+  .cat-name{font-size:13.5px;font-weight:600;color:var(--iv-fg-heading)}
+  .industry-card{margin-top:16px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+    gap:12px;background:rgba(242,245,249,.4);padding:16px}
+
+  .step-card{padding:22px}
+  .step-n{display:flex;width:36px;height:36px;align-items:center;justify-content:center;
+    border-radius:var(--iv-radius-md);background:var(--iv-navy-50);font-family:var(--iv-font-mono);
+    font-size:13px;font-weight:600;color:var(--iv-navy-700)}
+  .step-card .s-ic{margin-top:16px;color:var(--iv-navy-500)}
+  .step-card .s-ic .ic{width:24px;height:24px}
+  .step-card h3{margin:12px 0 0;font-size:15px;font-weight:600;color:var(--iv-fg-heading)}
+  .step-card p{margin:6px 0 0;font-size:13px;color:var(--iv-fg-secondary)}
+
+  .v-card{display:flex;flex-direction:column;padding:16px}
+  .v-head{display:flex;align-items:flex-start;gap:12px}
+  .v-logo{display:flex;width:44px;height:44px;flex-shrink:0;align-items:center;justify-content:center;
+    border-radius:var(--iv-radius-md);background:var(--iv-brand-600);color:#fff;font-size:14px;font-weight:700}
+  .v-name{margin:0;font-size:15px;font-weight:600;line-height:1.35;color:var(--iv-fg-heading);
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .v-cat{margin:2px 0 0;font-size:13px;color:var(--iv-navy-700);white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis}
+  .v-save{margin:-4px -4px 0 auto;display:flex;width:30px;height:30px;flex-shrink:0;align-items:center;
+    justify-content:center;border:0;background:none;border-radius:var(--iv-radius-md);cursor:pointer;
+    color:var(--iv-fg-muted)}
+  .v-save:hover{background:var(--iv-light-hover);color:var(--iv-fg-heading)}
+  .v-badges{margin-top:10px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+  .badge{display:inline-flex;align-items:center;gap:4px;border-radius:var(--iv-radius-full);
+    padding:2px 8px;font-size:10.5px;font-weight:600}
+  .badge .ic{width:12px;height:12px}
+  .badge-success{background:#e8f7ee;color:var(--iv-success-muted)}
+  .badge-brand{background:var(--iv-brand-50);color:var(--iv-brand-700)}
+  .v-loc{font-size:11.5px;color:var(--iv-fg-muted)}
+  .caps{margin:12px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+  .cap{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--iv-border);
+    border-radius:var(--iv-radius-sm);padding:2px 6px;font-size:10.5px;font-weight:500;
+    color:var(--iv-fg-strong);line-height:1}
+  .cap .dot{width:6px;height:6px;border-radius:var(--iv-radius-full);flex-shrink:0}
+  .cap.off{border-style:dashed;color:var(--iv-fg-muted)}
+  .cap.off .dot{background:rgba(95,106,122,.4)!important}
+  .v-actions{margin-top:auto;padding-top:16px;display:flex;gap:8px}
+  .v-actions .btn{flex:1}
+
+  /* FAQ */
+  .faq-wrap{max-width:48rem;margin:0 auto}
+  .faq-item{border-bottom:1px solid var(--iv-border)}
+  .faq-q{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;
+    background:none;border:0;padding:15px 2px;cursor:pointer;text-align:left;font-size:15px;
+    font-weight:500;color:var(--iv-fg-heading)}
+  .faq-q .ic{color:var(--iv-fg-muted);transition:transform var(--iv-duration-normal) var(--iv-ease-out)}
+  .faq-item.open .faq-q .ic{transform:rotate(180deg)}
+  .faq-a{display:none;padding:0 2px 16px;font-size:14.5px;line-height:1.6;color:var(--iv-fg-secondary)}
+  .faq-item.open .faq-a{display:block}
+
+  /* CTA band */
+  .cta-sec{padding:40px 0 56px}
+  .cta-card{overflow:hidden;border-radius:var(--iv-radius-xl);text-align:center;padding:44px 32px;
+    background:linear-gradient(135deg,var(--iv-navy-800),var(--iv-navy-950))}
+  .cta-card h2{margin:0 auto;max-width:42rem;font-size:30px;font-weight:800;letter-spacing:-.4px;color:#fff}
+  .cta-card p{margin:12px auto 0;max-width:36rem;color:rgba(255,255,255,.75)}
+  .cta-card .ctas{margin-top:32px;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:12px}
+  @media(min-width:640px){.cta-card .ctas{flex-direction:row}}
+
+  footer.site{border-top:1px solid var(--iv-border);background:var(--iv-surface)}
+  footer.site .container{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;
+    padding-top:22px;padding-bottom:22px;font-size:12.5px;color:var(--iv-fg-muted)}
+  footer.site nav{display:flex;flex-wrap:wrap;gap:16px;margin-left:auto}
+  footer.site a:hover{color:var(--iv-fg-heading)}
+</style>
+</head>
+<body>
+
+<!-- ═══ Inline icon sprite: path data extracted VERBATIM from the project's lucide-react package
+     (the production icon family), never hand-drawn. ═══ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="_stroke" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></g>
+  </defs>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></symbol>
+  <symbol id="i-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></symbol>
+  <symbol id="i-arrow-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></symbol>
+  <symbol id="i-map-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></symbol>
+  <symbol id="i-factory" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16h.01"/><path d="M16 16h.01"/><path d="M3 19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5a.5.5 0 0 0-.769-.422l-4.462 2.844A.5.5 0 0 1 15 10.5v-2a.5.5 0 0 0-.769-.422L9.77 10.922A.5.5 0 0 1 9 10.5V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/><path d="M8 16h.01"/></symbol>
+  <symbol id="i-sparkles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-boxes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19v-5.5l-5-3-4.03 2.42Z"/><path d="m7 16.5-4.74-2.85"/><path d="m7 16.5 5-3"/><path d="M7 16.5v5.17"/><path d="M12 13.5V19l3.97 2.38a2 2 0 0 0 2.06 0l3-1.8a2 2 0 0 0 .97-1.71v-3.24a2 2 0 0 0-.97-1.71L17 10.5l-5 3Z"/><path d="m17 16.5-5-3"/><path d="m17 16.5 4.74-2.85"/><path d="M17 16.5v5.17"/><path d="M7.97 4.42A2 2 0 0 0 7 6.13v4.37l5 3 5-3V6.13a2 2 0 0 0-.97-1.71l-3-1.8a2 2 0 0 0-2.06 0l-3 1.8Z"/><path d="M12 8 7.26 5.15"/><path d="m12 8 4.74-2.85"/><path d="M12 13.5V8"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-command" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol>
+  <symbol id="i-cog" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 10.27 7 3.34"/><path d="m11 13.73-4 6.93"/><path d="M12 22v-2"/><path d="M12 2v2"/><path d="M14 12h8"/><path d="m17 20.66-1-1.73"/><path d="m17 3.34-1 1.73"/><path d="M2 12h2"/><path d="m20.66 17-1.73-1"/><path d="m20.66 7-1.73 1"/><path d="m3.34 17 1.73-1"/><path d="m3.34 7 1.73 1"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="12" r="8"/></symbol>
+  <symbol id="i-hardhat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5"/><path d="M14 6a6 6 0 0 1 6 6v3"/><path d="M4 15v-3a6 6 0 0 1 6-6"/><rect x="2" y="15" width="20" height="4" rx="1"/></symbol>
+  <symbol id="i-flask" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"/><path d="M6.453 15h11.094"/><path d="M8.5 2h7"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="m19 8 3 8a5 5 0 0 1-6 0zV7"/><path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"/><path d="m5 8 3 8a5 5 0 0 1-6 0zV7"/><path d="M7 21h10"/></symbol>
+  <symbol id="i-waypoints" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.586 5.414-5.172 5.172"/><path d="m18.586 13.414-5.172 5.172"/><path d="M6 12h12"/><circle cx="12" cy="20" r="2"/><circle cx="12" cy="4" r="2"/><circle cx="20" cy="12" r="2"/><circle cx="4" cy="12" r="2"/></symbol>
+  <symbol id="i-award" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/><circle cx="12" cy="8" r="6"/></symbol>
+  <symbol id="i-chev-d" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></symbol>
+</svg>
+
+<!-- ═══ Review bar (prototype chrome; hidden in Preview) ═══ -->
+<div id="reviewbar">
+  <div class="rb-in">
+    <span class="rb-title">Landing Taste Pass</span>
+    <span class="rb-tag">Stage-3 prototype · non-authoritative</span>
+    <div class="seg" role="group" aria-label="State">
+      <button id="segCur" aria-pressed="true" type="button">Current</button>
+      <button id="segPro" aria-pressed="false" type="button">Proposed</button>
+    </div>
+    <span id="rbState">0 of 8 findings applied</span>
+    <div class="rb-right">
+      <button id="previewBtn" type="button">Preview (hide review chrome)</button>
+    </div>
+  </div>
+</div>
+
+<div id="wrap">
+<div id="stage">
+
+  <!-- ═══ Public shell header (anonymous), simplified mirror of site-header.tsx ═══ -->
+  <header class="site">
+    <div class="container row1">
+      <a class="brand" href="#"><img src="_assets/ivendorz-logo-long.svg" alt="iVendorz" /></a>
+      <div class="searchbar"><div><svg class="ic"><use href="#i-search"/></svg>Search the marketplace</div></div>
+      <div class="row1-right">
+        <button class="btn btn-ghost" type="button">Sign in</button>
+        <button class="btn btn-primary" type="button">Sign up</button>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="container">
+        <button class="btn btn-ghost" type="button">Marketplace</button>
+        <button class="btn btn-ghost" type="button">Suppliers</button>
+        <button class="btn btn-ghost" type="button">Pricing</button>
+        <button class="btn btn-ghost" type="button">Resources</button>
+        <button class="btn btn-ghost" type="button">How it works</button>
+        <div class="row2-right"><button class="btn btn-ghost" type="button">Support</button></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+  <!-- ═══ SEC-HERO ═══ -->
+  <section class="hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-scrim" aria-hidden="true"></div>
+    <div class="container hero-grid">
+      <div>
+        <h1>
+          <span data-f="f6" data-v="cur">The Industrial Procurement HUB for Bangladesh</span>
+          <span data-f="f6" data-v="pro" hidden>The Industrial Procurement Hub for Bangladesh</span>
+        </h1>
+        <p class="sub">Source, compare, and award with verified suppliers, from RFQ to delivery.</p>
+        <div class="ctas">
+          <button class="btn btn-primary btn-lg" type="button">
+            <span data-f="f3" data-v="cur">Let&rsquo;s Start Procurement</span>
+            <span data-f="f3" data-v="pro" hidden>Post an RFQ</span>
+            <svg class="ic"><use href="#i-arrow-r"/></svg>
+          </button>
+          <button class="btn btn-ghost-dark btn-lg" type="button">Explore the marketplace</button>
+        </div>
+        <ul class="claims" data-f="f2" data-v="cur">
+          <li><svg class="ic"><use href="#i-check"/></svg>No fees to post</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>Verified suppliers only</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>Quotes as scheduled</li>
+        </ul>
+      </div>
+
+      <div class="rfq-panel">
+        <div class="rfq-head">
+          <span class="t"><svg class="ic"><use href="#i-clipboard"/></svg>Requested RFQs</span>
+          <span class="demo-chip">Demo preview</span>
+        </div>
+        <div class="ticker">
+          <div class="mqy-track">
+            <div class="mqy-set">
+              <article class="rfq-card"><div class="r1"><span class="rfq-id">RFQ-001 <span class="demo">(Demo)</span></span><span class="rfq-status st-soon">Closes soon</span></div><p class="name">Stainless Steel Storage Tank</p><p class="loc"><svg class="ic"><use href="#i-map-pin"/></svg>Dhaka</p></article>
+              <article class="rfq-card"><div class="r1"><span class="rfq-id">RFQ-002 <span class="demo">(Demo)</span></span><span class="rfq-status st-open">Open</span></div><p class="name">Compressed Air Piping</p><p class="loc"><svg class="ic"><use href="#i-map-pin"/></svg>Gazipur</p></article>
+              <article class="rfq-card"><div class="r1"><span class="rfq-id">RFQ-003 <span class="demo">(Demo)</span></span><span class="rfq-status st-soon">Closes soon</span></div><p class="name">Industrial Pump Supply</p><p class="loc"><svg class="ic"><use href="#i-map-pin"/></svg>Chattogram</p></article>
+              <article class="rfq-card"><div class="r1"><span class="rfq-id">RFQ-004 <span class="demo">(Demo)</span></span><span class="rfq-status st-urgent">Urgent</span></div><p class="name">Industrial Pump Supply</p><p class="loc"><svg class="ic"><use href="#i-map-pin"/></svg>Chattogram</p></article>
+              <article class="rfq-card"><div class="r1"><span class="rfq-id">RFQ-005 <span class="demo">(Demo)</span></span><span class="rfq-status st-open">Open</span></div><p class="name">Industrial Pump Supply</p><p class="loc"><svg class="ic"><use href="#i-map-pin"/></svg>Chattogram</p></article>
+            </div>
+            <div class="mqy-set" aria-hidden="true">
+              <article class="rfq-card"><div class="r1"><span class="rfq-id">RFQ-001 <span class="demo">(Demo)</span></span><span class="rfq-status st-soon">Closes soon</span></div><p class="name">Stainless Steel Storage Tank</p><p class="loc"><svg class="ic"><use href="#i-map-pin"/></svg>Dhaka</p></article>
+              <article class="rfq-card"><div class="r1"><span class="rfq-id">RFQ-002 <span class="demo">(Demo)</span></span><span class="rfq-status st-open">Open</span></div><p class="name">Compressed Air Piping</p><p class="loc"><svg class="ic"><use href="#i-map-pin"/></svg>Gazipur</p></article>
+              <article class="rfq-card"><div class="r1"><span class="rfq-id">RFQ-003 <span class="demo">(Demo)</span></span><span class="rfq-status st-soon">Closes soon</span></div><p class="name">Industrial Pump Supply</p><p class="loc"><svg class="ic"><use href="#i-map-pin"/></svg>Chattogram</p></article>
+              <article class="rfq-card"><div class="r1"><span class="rfq-id">RFQ-004 <span class="demo">(Demo)</span></span><span class="rfq-status st-urgent">Urgent</span></div><p class="name">Industrial Pump Supply</p><p class="loc"><svg class="ic"><use href="#i-map-pin"/></svg>Chattogram</p></article>
+              <article class="rfq-card"><div class="r1"><span class="rfq-id">RFQ-005 <span class="demo">(Demo)</span></span><span class="rfq-status st-open">Open</span></div><p class="name">Industrial Pump Supply</p><p class="loc"><svg class="ic"><use href="#i-map-pin"/></svg>Chattogram</p></article>
+            </div>
+          </div>
+        </div>
+        <div class="rfq-foot">
+          <button class="btn btn-primary" type="button">
+            <span data-f="f3" data-v="cur">Post Your RFQ for free</span>
+            <span data-f="f3" data-v="pro" hidden>Post an RFQ</span>
+            <svg class="ic"><use href="#i-arrow-r"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Logo strip ═══ -->
+  <section class="logostrip">
+    <div class="container">
+      <span class="ls-label">Trusted by procurement teams at</span>
+      <div class="ls-viewport" data-f="f4" data-v="cur">
+        <div class="mqx-track">
+          <div class="mqx-set">
+            <span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span><span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span><span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span><span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span><span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span><span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span>
+          </div>
+          <div class="mqx-set" aria-hidden="true">
+            <span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span><span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span><span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span><span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span><span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span><span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span>
+          </div>
+        </div>
+      </div>
+      <div class="ls-static" data-f="f4" data-v="pro" hidden>
+        <span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span><span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span><span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span><span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span><span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span><span class="logo-slot"><svg class="ic"><use href="#i-image"/></svg>Logo</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Command Center band ═══ -->
+  <section class="band band-light">
+    <div class="container">
+      <div class="sec-head-c">
+        <p class="eyebrow">Start here</p>
+        <h2>Search the industrial marketplace</h2>
+        <p class="d">Find products, suppliers, and categories, or jump straight into an RFQ.</p>
+      </div>
+      <div class="cc">
+        <div class="cc-head">
+          <p class="cc-title">Industrial Procurement Command Center</p>
+          <span class="kbd"><svg class="ic"><use href="#i-command"/></svg>K</span>
+        </div>
+        <div class="cc-search">
+          <div class="cc-input">
+            <svg class="ic"><use href="#i-search"/></svg>
+            <input type="search" placeholder="Search products, suppliers, categories&hellip;" aria-label="Search products, suppliers, and categories" />
+          </div>
+          <button class="cc-go" type="button" aria-label="Search"><svg class="ic"><use href="#i-arrow-r"/></svg></button>
+        </div>
+        <div class="cc-rail">
+          <button class="btn btn-outline btn-sm" type="button"><svg class="ic"><use href="#i-grid"/></svg>Explore Categories</button>
+          <button class="btn btn-secondary btn-sm" type="button"><svg class="ic"><use href="#i-clipboard"/></svg>Create RFQ</button>
+          <button class="btn btn-secondary btn-sm" type="button"><svg class="ic"><use href="#i-factory"/></svg>Find Suppliers</button>
+          <button class="btn btn-outline btn-sm" type="button" aria-disabled="true"><svg class="ic"><use href="#i-sparkles"/></svg>AI Assistant<span class="soon">Soon</span></button>
+        </div>
+        <p class="cc-pop-label">Popular</p>
+        <div class="cc-pop">
+          <button class="btn btn-outline btn-sm btn-pill" type="button">gate valve</button>
+          <button class="btn btn-outline btn-sm btn-pill" type="button">MS plate</button>
+          <button class="btn btn-outline btn-sm btn-pill" type="button">VFD drive</button>
+          <button class="btn btn-outline btn-sm btn-pill" type="button">centrifugal pump</button>
+          <button class="btn btn-outline btn-sm btn-pill" type="button">safety helmet</button>
+        </div>
+        <div class="cc-trust">
+          <span><svg class="ic ok"><use href="#i-shield"/></svg>Verified suppliers</span>
+          <span><svg class="ic"><use href="#i-boxes"/></svg>Industrial categories</span>
+          <span><svg class="ic"><use href="#i-clock"/></svg><span data-f="f7" data-v="cur">Published-only, always current</span><span data-f="f7" data-v="pro" hidden>Published listings only</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SEC-PRODUCTS ═══ -->
+  <section class="band">
+    <div class="container">
+      <div class="sec-head-l">
+        <div class="hgroup">
+          <p class="eyebrow" data-f="f1" data-v="cur">Popular on iVendorz</p>
+          <h2>Popular products</h2>
+          <p class="d">A representative slice of the industrial catalog. Open any item to view the supplier.</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" type="button">Search the catalog<svg class="ic"><use href="#i-arrow-r"/></svg></button>
+      </div>
+      <div class="grid g-products">
+        <a class="card p-card" href="#"><span class="p-thumb"><svg class="ic"><use href="#i-package"/></svg></span><span class="p-body"><h3 class="p-name">Cast Steel Gate Valve DN100 PN16</h3><p class="p-meta">Padma Valve &amp; Fittings Ltd. · Valves &amp; Fittings</p><p class="p-meta">DN100 · PN16 · CS body · flanged</p><span class="p-price">&#2547;14,500</span></span></a>
+        <a class="card p-card" href="#"><span class="p-thumb"><svg class="ic"><use href="#i-package"/></svg></span><span class="p-body"><h3 class="p-name">MS Plate 10mm (ASTM A36)</h3><p class="p-meta">Bengal Steel Industries · Steel &amp; Metals</p><p class="p-meta">10mm · 1500&times;6000 · hot-rolled</p><span class="p-price"><span class="onreq">On request</span></span></span></a>
+        <a class="card p-card" href="#"><span class="p-thumb"><svg class="ic"><use href="#i-package"/></svg></span><span class="p-body"><h3 class="p-name">VFD Drive 22kW 3-Phase</h3><p class="p-meta">Jamuna Electrical &amp; Drives · Electrical &amp; Drives</p><p class="p-meta">22kW · 380-415V · IP20</p><span class="p-price">&#2547;78,000</span></span></a>
+        <a class="card p-card" href="#"><span class="p-thumb"><svg class="ic"><use href="#i-package"/></svg></span><span class="p-body"><h3 class="p-name">End-Suction Centrifugal Pump 15HP</h3><p class="p-meta">Meghna Pumps &amp; Motors · Pumps &amp; Motors</p><p class="p-meta">15HP · cast-iron · 50m head</p><span class="p-price">&#2547;96,000</span></span></a>
+        <a class="card p-card" href="#"><span class="p-thumb"><svg class="ic"><use href="#i-package"/></svg></span><span class="p-body"><h3 class="p-name">Industrial Safety Helmet (HDPE)</h3><p class="p-meta">Surma Safety Solutions · Safety &amp; PPE</p><p class="p-meta">HDPE shell · ratchet · EN 397</p><span class="p-price">&#2547;450</span></span></a>
+        <a class="card p-card" href="#"><span class="p-thumb"><svg class="ic"><use href="#i-package"/></svg></span><span class="p-body"><h3 class="p-name">Wafer Butterfly Valve DN150</h3><p class="p-meta">Padma Valve &amp; Fittings Ltd. · Valves &amp; Fittings</p><p class="p-meta">DN150 · EPDM seat · lever</p><span class="p-price">&#2547;8,200</span></span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SEC-CATEGORY + SEC-INDUSTRY ═══ -->
+  <section class="band">
+    <div class="container">
+      <div class="sec-head-l">
+        <div class="hgroup">
+          <p class="eyebrow" data-f="f1" data-v="cur">Sourcing categories</p>
+          <h2>Browse industrial categories</h2>
+          <p class="d">Source across industrial categories, from valves and steel to electrical drives, pumps, and safety.</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" type="button">All categories<svg class="ic"><use href="#i-arrow-r"/></svg></button>
+      </div>
+      <div class="grid g-cats">
+        <a class="card cat-tile" href="#"><span class="cat-ic"><svg class="ic"><use href="#i-gauge"/></svg></span><span class="cat-name">Valves &amp; Fittings</span></a>
+        <a class="card cat-tile" href="#"><span class="cat-ic"><svg class="ic"><use href="#i-layers"/></svg></span><span class="cat-name">Steel &amp; Metals</span></a>
+        <a class="card cat-tile" href="#"><span class="cat-ic"><svg class="ic"><use href="#i-zap"/></svg></span><span class="cat-name">Electrical &amp; Drives</span></a>
+        <a class="card cat-tile" href="#"><span class="cat-ic"><svg class="ic"><use href="#i-cog"/></svg></span><span class="cat-name">Pumps &amp; Motors</span></a>
+        <a class="card cat-tile" href="#"><span class="cat-ic"><svg class="ic"><use href="#i-hardhat"/></svg></span><span class="cat-name">Safety &amp; PPE</span></a>
+        <a class="card cat-tile" href="#"><span class="cat-ic"><svg class="ic"><use href="#i-flask"/></svg></span><span class="cat-name">Chemicals</span></a>
+      </div>
+      <div class="card industry-card">
+        <div style="display:flex;align-items:center;gap:12px;min-width:0">
+          <span class="cat-ic" style="background:var(--iv-navy-100)"><svg class="ic"><use href="#i-grid"/></svg></span>
+          <div style="min-width:0">
+            <p style="margin:0;font-size:13.5px;font-weight:600;color:var(--iv-fg-heading)">Browse more categories</p>
+            <p style="margin:2px 0 0;font-size:12px;color:var(--iv-fg-muted)">Drill through industries, categories, and specialisations to find the right suppliers.</p>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" type="button">Browse all categories<svg class="ic"><use href="#i-arrow-r"/></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SEC-PROCESS ═══ -->
+  <section class="band">
+    <div class="container">
+      <div class="sec-head-c">
+        <p class="eyebrow">How it works</p>
+        <h2>From request to awarded contract in four steps</h2>
+        <p class="d">Post once and let verified vendors compete. No cold-calling, no spreadsheets.</p>
+      </div>
+      <ol class="grid g-steps" style="list-style:none;margin:0;padding:0">
+        <li class="card step-card">
+          <span class="step-n" data-f="f5" data-v="cur">01</span>
+          <div class="s-ic"><svg class="ic"><use href="#i-clipboard"/></svg></div>
+          <h3>Post an RFQ</h3><p>Describe what you need: quantity, specification, budget. Takes under two minutes.</p>
+        </li>
+        <li class="card step-card">
+          <span class="step-n" data-f="f5" data-v="cur">02</span>
+          <div class="s-ic"><svg class="ic"><use href="#i-waypoints"/></svg></div>
+          <h3>Get matched</h3><p>Your request is routed to verified vendors that specialise in your category.</p>
+        </li>
+        <li class="card step-card">
+          <span class="step-n" data-f="f5" data-v="cur">03</span>
+          <div class="s-ic"><svg class="ic"><use href="#i-scale"/></svg></div>
+          <h3>Compare quotes</h3><p>Line up bids side by side with trust badges, lead times, and vendor capabilities.</p>
+        </li>
+        <li class="card step-card">
+          <span class="step-n" data-f="f5" data-v="cur">04</span>
+          <div class="s-ic"><svg class="ic"><use href="#i-award"/></svg></div>
+          <h3>Award &amp; track</h3><p>Award your chosen vendor, then track delivery and documents in-platform.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ═══ SEC-SUPPLIERS ═══ -->
+  <section class="band">
+    <div class="container">
+      <div class="sec-head-l">
+        <div class="hgroup">
+          <p class="eyebrow" data-f="f1" data-v="cur">Sourcing partners</p>
+          <h2>Verified suppliers</h2>
+          <p class="d">Credible industrial suppliers, with verification and capabilities you can check at a glance.</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" type="button">Browse directory<svg class="ic"><use href="#i-arrow-r"/></svg></button>
+      </div>
+      <div class="grid g-vendors">
+
+        <article class="card v-card">
+          <div class="v-head">
+            <span class="v-logo">PL</span>
+            <div style="min-width:0;flex:1">
+              <h3 class="v-name">Padma Valve &amp; Fittings Ltd.</h3>
+              <p class="v-cat">Valves &amp; Fittings</p>
+            </div>
+            <button class="v-save" type="button" aria-label="Save Padma Valve and Fittings Ltd."><svg class="ic"><use href="#i-pin"/></svg></button>
+          </div>
+          <div class="v-badges">
+            <span class="badge badge-success"><svg class="ic"><use href="#i-shield"/></svg>Verified</span>
+            <span class="badge badge-brand">Manufacturer</span>
+            <span class="v-loc">Dhaka · Tejgaon I/A</span>
+          </div>
+          <ul class="caps">
+            <li class="cap"><span class="dot" style="background:var(--iv-cap-supply)"></span>Supply</li>
+            <li class="cap"><span class="dot" style="background:var(--iv-cap-service)"></span>Service</li>
+            <li class="cap"><span class="dot" style="background:var(--iv-cap-fabricate)"></span>Fabricate</li>
+            <li class="cap off"><span class="dot"></span>Consult</li>
+          </ul>
+          <div class="v-actions">
+            <button class="btn btn-outline btn-sm" type="button">View profile</button>
+            <button class="btn btn-primary btn-sm" type="button">Send RFQ<svg class="ic"><use href="#i-arrow-r"/></svg></button>
+          </div>
+        </article>
+
+        <article class="card v-card">
+          <div class="v-head">
+            <span class="v-logo">BI</span>
+            <div style="min-width:0;flex:1">
+              <h3 class="v-name">Bengal Steel Industries</h3>
+              <p class="v-cat">Steel &amp; Metals</p>
+            </div>
+            <button class="v-save" type="button" aria-label="Save Bengal Steel Industries"><svg class="ic"><use href="#i-pin"/></svg></button>
+          </div>
+          <div class="v-badges">
+            <span class="badge badge-success"><svg class="ic"><use href="#i-shield"/></svg>Verified</span>
+            <span class="badge badge-brand">Manufacturer</span>
+            <span class="v-loc">Chattogram · Kalurghat</span>
+          </div>
+          <ul class="caps">
+            <li class="cap"><span class="dot" style="background:var(--iv-cap-supply)"></span>Supply</li>
+            <li class="cap off"><span class="dot"></span>Service</li>
+            <li class="cap"><span class="dot" style="background:var(--iv-cap-fabricate)"></span>Fabricate</li>
+            <li class="cap off"><span class="dot"></span>Consult</li>
+          </ul>
+          <div class="v-actions">
+            <button class="btn btn-outline btn-sm" type="button">View profile</button>
+            <button class="btn btn-primary btn-sm" type="button">Send RFQ<svg class="ic"><use href="#i-arrow-r"/></svg></button>
+          </div>
+        </article>
+
+        <article class="card v-card">
+          <div class="v-head">
+            <span class="v-logo">JD</span>
+            <div style="min-width:0;flex:1">
+              <h3 class="v-name">Jamuna Electrical &amp; Drives</h3>
+              <p class="v-cat">Electrical &amp; Drives</p>
+            </div>
+            <button class="v-save" type="button" aria-label="Save Jamuna Electrical and Drives"><svg class="ic"><use href="#i-pin"/></svg></button>
+          </div>
+          <div class="v-badges">
+            <span class="badge badge-brand">Supplier / Distributor</span>
+            <span class="v-loc">Dhaka · Tongi</span>
+          </div>
+          <ul class="caps">
+            <li class="cap"><span class="dot" style="background:var(--iv-cap-supply)"></span>Supply</li>
+            <li class="cap"><span class="dot" style="background:var(--iv-cap-service)"></span>Service</li>
+            <li class="cap off"><span class="dot"></span>Fabricate</li>
+            <li class="cap"><span class="dot" style="background:var(--iv-cap-consult)"></span>Consult</li>
+          </ul>
+          <div class="v-actions">
+            <button class="btn btn-outline btn-sm" type="button">View profile</button>
+            <button class="btn btn-primary btn-sm" type="button">Send RFQ<svg class="ic"><use href="#i-arrow-r"/></svg></button>
+          </div>
+        </article>
+
+        <article class="card v-card">
+          <div class="v-head">
+            <span class="v-logo">MM</span>
+            <div style="min-width:0;flex:1">
+              <h3 class="v-name">Meghna Pumps &amp; Motors</h3>
+              <p class="v-cat">Pumps &amp; Motors</p>
+            </div>
+            <button class="v-save" type="button" aria-label="Save Meghna Pumps and Motors"><svg class="ic"><use href="#i-pin"/></svg></button>
+          </div>
+          <div class="v-badges">
+            <span class="badge badge-success"><svg class="ic"><use href="#i-shield"/></svg>Verified</span>
+            <span class="badge badge-brand">Supplier / Distributor</span>
+            <span class="v-loc">Narayanganj · Fatullah</span>
+          </div>
+          <ul class="caps">
+            <li class="cap"><span class="dot" style="background:var(--iv-cap-supply)"></span>Supply</li>
+            <li class="cap"><span class="dot" style="background:var(--iv-cap-service)"></span>Service</li>
+            <li class="cap off"><span class="dot"></span>Fabricate</li>
+            <li class="cap off"><span class="dot"></span>Consult</li>
+          </ul>
+          <div class="v-actions">
+            <button class="btn btn-outline btn-sm" type="button">View profile</button>
+            <button class="btn btn-primary btn-sm" type="button">Send RFQ<svg class="ic"><use href="#i-arrow-r"/></svg></button>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SEC-FAQ ═══ -->
+  <section class="band">
+    <div class="container">
+      <div class="sec-head-c">
+        <p class="eyebrow" data-f="f1" data-v="cur">FAQ</p>
+        <h2>Questions, answered</h2>
+      </div>
+      <div class="faq-wrap">
+        <div class="faq-item open">
+          <button class="faq-q" type="button">Is it free to post an RFQ?<svg class="ic"><use href="#i-chev-d"/></svg></button>
+          <div class="faq-a">Yes. Posting an RFQ and receiving competing quotes is free for buyers.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" type="button">How are vendors verified?<svg class="ic"><use href="#i-chev-d"/></svg></button>
+          <div class="faq-a">Vendors submit trade licensing, tax registration, and capability documentation, which our team reviews before approval. Trust signals then update from delivery history and performance.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" type="button">How quickly will I get quotes?<svg class="ic"><use href="#i-chev-d"/></svg></button>
+          <div class="faq-a">Vendors are invited to quote as soon as your RFQ is routed to them. How quickly bids arrive varies by category and specification complexity.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" type="button">Do you support large or recurring orders?<svg class="ic"><use href="#i-chev-d"/></svg></button>
+          <div class="faq-a">
+            <span data-f="f8" data-v="cur">Yes. You can post one-off requests or set up recurring RFQs with standing vendor shortlists and scheduled reorders.</span>
+            <span data-f="f8" data-v="pro" hidden>Yes. You can post one-off or repeat requests.</span>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" type="button">Is my request visible to competitors?<svg class="ic"><use href="#i-chev-d"/></svg></button>
+          <div class="faq-a">Your company details stay private until you choose to invite a vendor. Only the request specification is shared for matching.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SEC-CTA ═══ -->
+  <section class="cta-sec">
+    <div class="container">
+      <div class="cta-card">
+        <h2>Ready to source smarter?</h2>
+        <p>Post your first RFQ in under two minutes and get competing quotes from verified suppliers.</p>
+        <div class="ctas">
+          <button class="btn btn-on-navy btn-lg" type="button"><svg class="ic"><use href="#i-plus"/></svg>Post an RFQ</button>
+          <button class="btn btn-ghost-dark btn-lg" type="button">Talk to us</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <footer class="site">
+    <div class="container">
+      <span>&copy; 2026 iVendorz</span>
+      <nav>
+        <a href="#">Marketplace</a><a href="#">Suppliers</a><a href="#">Pricing</a>
+        <a href="#">How it works</a><a href="#">Contact</a>
+      </nav>
+    </div>
+  </footer>
+
+</div><!-- /stage -->
+
+<!-- ═══ Findings panel (review chrome; hidden in Preview) ═══ -->
+<aside id="panel" aria-label="Findings and rulings">
+  <h2>Design-taste findings</h2>
+  <p class="p-sub">Raised 2026-07-22 against the live landing page. Toggle each finding to compare; severities follow CLAUDE.md &sect;13. Nothing here is applied to production until ruled.</p>
+  <div class="p-master">
+    <button id="allCur" type="button">All current</button>
+    <button id="allPro" type="button">All proposed</button>
+  </div>
+
+  <div class="find" data-find="f1">
+    <div class="f-head"><span class="f-id">F1</span><span class="f-sev sev-major">Major</span><span class="f-title">Eyebrow density</span></div>
+    <dl>
+      <dt>Current</dt><dd>6 uppercase eyebrow labels on 9 sections, all consecutive. The taste rule caps eyebrows at 3 per page, never on adjacent sections.</dd>
+      <dt>Proposed</dt><dd>Keep &ldquo;Start here&rdquo; and &ldquo;How it works&rdquo; only; the other four headlines stand on their own.</dd>
+    </dl>
+    <p class="f-note">Conflicts with the owner reference, which puts an eyebrow on every section head. Reference fidelity is binding, so this one is an owner ruling, not a dev fix.</p>
+    <label class="f-toggle"><input type="checkbox" data-t="f1" />Apply proposed</label>
+  </div>
+
+  <div class="find" data-find="f2">
+    <div class="f-head"><span class="f-id">F2</span><span class="f-sev sev-minor">Minor</span><span class="f-title">Hero trust strip</span></div>
+    <dl>
+      <dt>Current</dt><dd>Three checkmark claims inside the hero. &ldquo;No fees to post&rdquo; repeats the panel CTA, &ldquo;Verified suppliers&rdquo; repeats the subtext, and &ldquo;Quotes as scheduled&rdquo; reads oddly.</dd>
+      <dt>Proposed</dt><dd>Remove the strip. The free-to-post and verification claims already live in the FAQ and CTA band.</dd>
+    </dl>
+    <label class="f-toggle"><input type="checkbox" data-t="f2" />Apply proposed</label>
+  </div>
+
+  <div class="find" data-find="f3">
+    <div class="f-head"><span class="f-id">F3</span><span class="f-sev sev-minor">Minor</span><span class="f-title">One label per intent</span></div>
+    <dl>
+      <dt>Current</dt><dd>The same conversion intent carries three labels: &ldquo;Let&rsquo;s Start Procurement&rdquo;, &ldquo;Post Your RFQ for free&rdquo;, and &ldquo;Post an RFQ&rdquo;. All route to sign-in.</dd>
+      <dt>Proposed</dt><dd>&ldquo;Post an RFQ&rdquo; everywhere.</dd>
+    </dl>
+    <p class="f-note">&ldquo;Create RFQ&rdquo; in the Command Center is a spec-governed label (landing_page_spec &sect;2) and is deliberately NOT changed by this prototype.</p>
+    <label class="f-toggle"><input type="checkbox" data-t="f3" />Apply proposed</label>
+  </div>
+
+  <div class="find" data-find="f4">
+    <div class="f-head"><span class="f-id">F4</span><span class="f-sev sev-minor">Minor</span><span class="f-title">Logo strip motion</span></div>
+    <dl>
+      <dt>Current</dt><dd>The marquee auto-scrolls six empty placeholder slots: animated emphasis on emptiness.</dd>
+      <dt>Proposed</dt><dd>Static row while no permissioned logos exist; the marquee returns with real content.</dd>
+    </dl>
+    <label class="f-toggle"><input type="checkbox" data-t="f4" />Apply proposed</label>
+  </div>
+
+  <div class="find" data-find="f5">
+    <div class="f-head"><span class="f-id">F5</span><span class="f-sev sev-nit">Nit</span><span class="f-title">Step number badges</span></div>
+    <dl>
+      <dt>Current</dt><dd>Mono &ldquo;01&rdquo; to &ldquo;04&rdquo; badges beside icons in How-it-works.</dd>
+      <dt>Proposed</dt><dd>Icon only; the ordered layout already carries the sequence.</dd>
+    </dl>
+    <label class="f-toggle"><input type="checkbox" data-t="f5" />Apply proposed</label>
+  </div>
+
+  <div class="find" data-find="f6">
+    <div class="f-head"><span class="f-id">F6</span><span class="f-sev sev-obs">Obs</span><span class="f-title">Headline casing</span></div>
+    <dl>
+      <dt>Current</dt><dd>&ldquo;The Industrial Procurement HUB for Bangladesh&rdquo; with mid-sentence all-caps.</dd>
+      <dt>Proposed</dt><dd>&ldquo;Hub&rdquo; in title case.</dd>
+    </dl>
+    <p class="f-note">The corpus tagline reads &ldquo;Operating System&rdquo;, a separate wording question for the owner.</p>
+    <label class="f-toggle"><input type="checkbox" data-t="f6" />Apply proposed</label>
+  </div>
+
+  <div class="find" data-find="f7">
+    <div class="f-head"><span class="f-id">F7</span><span class="f-sev sev-obs">Obs</span><span class="f-title">Freshness claim</span></div>
+    <dl>
+      <dt>Current</dt><dd>&ldquo;Published-only, always current&rdquo; on a surface that fetches nothing yet.</dd>
+      <dt>Proposed</dt><dd>&ldquo;Published listings only&rdquo;.</dd>
+    </dl>
+    <label class="f-toggle"><input type="checkbox" data-t="f7" />Apply proposed</label>
+  </div>
+
+  <div class="find" data-find="f8">
+    <div class="f-head"><span class="f-id">F8</span><span class="f-sev sev-minor">Minor</span><span class="f-title">Unverified feature claim</span></div>
+    <dl>
+      <dt>Current</dt><dd>The FAQ promises &ldquo;recurring RFQs with standing vendor shortlists and scheduled reorders&rdquo;, features not verified against Doc-4E.</dd>
+      <dt>Proposed</dt><dd>&ldquo;Yes. You can post one-off or repeat requests.&rdquo; until the feature set is confirmed.</dd>
+    </dl>
+    <label class="f-toggle"><input type="checkbox" data-t="f8" />Apply proposed</label>
+  </div>
+
+  <div class="p-gov">
+    <b>Governance.</b> This prototype coins nothing: copy, seed data, tokens, and layout mirror the live page (with the 2026-07-22 em-dash and honest-claims copy fixes as the Current baseline). F1 and F3 touch reference-fidelity or spec-governed territory and need an owner ruling before implementation. Already applied in the working tree, not shown as findings: em-dash removal across all visible copy, and the FAQ answers that asserted a success-fee pricing model and a quote-timing SLA.
+  </div>
+  <p class="p-ver">Prototype v0.1 &middot; Audit: design-taste pass 2026-07-22 &middot; Baseline: landing PR #4 + uncommitted copy fixes</p>
+</aside>
+</div><!-- /wrap -->
+
+<button id="previewExit" type="button">Exit preview</button>
+
+<script>
+  var state = { f1:false, f2:false, f3:false, f4:false, f5:false, f6:false, f7:false, f8:false };
+  var KEYS = Object.keys(state);
+
+  function apply() {
+    document.querySelectorAll('[data-f]').forEach(function (el) {
+      var on = state[el.dataset.f];
+      el.hidden = el.dataset.v === 'cur' ? on : !on;
+    });
+    KEYS.forEach(function (k) {
+      var box = document.querySelector('input[data-t="' + k + '"]');
+      if (box) box.checked = state[k];
+      var card = document.querySelector('.find[data-find="' + k + '"]');
+      if (card) card.classList.toggle('on', state[k]);
+    });
+    var n = KEYS.filter(function (k) { return state[k]; }).length;
+    document.getElementById('rbState').textContent = n + ' of ' + KEYS.length + ' findings applied';
+    document.getElementById('segCur').setAttribute('aria-pressed', String(n === 0));
+    document.getElementById('segPro').setAttribute('aria-pressed', String(n === KEYS.length));
+  }
+
+  function setAll(v) { KEYS.forEach(function (k) { state[k] = v; }); apply(); }
+
+  document.querySelectorAll('input[data-t]').forEach(function (box) {
+    box.addEventListener('change', function () { state[box.dataset.t] = box.checked; apply(); });
+  });
+  document.getElementById('allCur').addEventListener('click', function () { setAll(false); });
+  document.getElementById('allPro').addEventListener('click', function () { setAll(true); });
+  document.getElementById('segCur').addEventListener('click', function () { setAll(false); });
+  document.getElementById('segPro').addEventListener('click', function () { setAll(true); });
+
+  document.getElementById('previewBtn').addEventListener('click', function () {
+    document.body.classList.add('preview');
+  });
+  document.getElementById('previewExit').addEventListener('click', function () {
+    document.body.classList.remove('preview');
+  });
+
+  /* FAQ accordion: single-open, first item open by default (mirrors the Radix Accordion config). */
+  document.querySelectorAll('.faq-q').forEach(function (q) {
+    q.addEventListener('click', function () {
+      var item = q.parentElement;
+      var wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(function (o) { o.classList.remove('open'); });
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+
+  apply();
+</script>
+</body>
+</html>

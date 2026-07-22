@@ -45,7 +45,7 @@ export function SupplierShowcase() {
                 <Button asChild variant="outline" size="sm" className="flex-1">
                   <Link href={vendorHref(vendor.slug)}>
                     View profile
-                    <span className="sr-only"> — {vendor.name}</span>
+                    <span className="sr-only"> for {vendor.name}</span>
                   </Link>
                 </Button>
                 <Button asChild size="sm" className="flex-1">

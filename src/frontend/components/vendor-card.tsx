@@ -139,7 +139,7 @@ export function VendorCard({ vendor, href, action, saveSlot, className }: Vendor
           <Button asChild variant="outline" size="sm" className="w-full">
             <Link href={href}>
               View profile
-              <span className="sr-only"> — {vendor.name}</span>
+              <span className="sr-only"> for {vendor.name}</span>
             </Link>
           </Button>
         </div>

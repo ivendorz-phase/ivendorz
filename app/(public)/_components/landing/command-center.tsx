@@ -166,8 +166,7 @@ export function CommandCenter({ popularSearches = DEFAULT_POPULAR_SEARCHES }: Co
                 role="note"
                 className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-[var(--iv-z-dropdown)] rounded-md border border-border bg-popover p-3 text-sm text-muted-foreground shadow-iv-md animate-iv-scale-in motion-reduce:animate-none"
               >
-                Marketplace search connects when the catalog is available — no results are shown
-                yet.
+                Marketplace search connects when the catalog is available. No results are shown yet.
               </div>
             )}
           </div>
@@ -202,7 +201,7 @@ export function CommandCenter({ popularSearches = DEFAULT_POPULAR_SEARCHES }: Co
           variant="outline"
           size="sm"
           aria-disabled="true"
-          aria-label="AI Assistant — coming soon"
+          aria-label="AI Assistant, coming soon"
           onClick={(e) => e.preventDefault()}
           className="gap-2 cursor-not-allowed opacity-60"
         >

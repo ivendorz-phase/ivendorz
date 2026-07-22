@@ -16,7 +16,7 @@ export function PopularProducts() {
       id="sec-products"
       eyebrow="Popular on iVendorz"
       title="Popular products"
-      description="A representative slice of the industrial catalog — open any item to view the supplier."
+      description="A representative slice of the industrial catalog. Open any item to view the supplier."
       viewAllHref="/marketplace"
       viewAllLabel="Search the catalog"
     >

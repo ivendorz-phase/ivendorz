@@ -16,7 +16,7 @@ interface Faq {
 const FAQS: readonly Faq[] = [
   {
     q: "Is it free to post an RFQ?",
-    a: "Yes. Posting an RFQ and receiving quotes is free for buyers — vendors are charged only when a contract is awarded, so your pricing stays clean.",
+    a: "Yes. Posting an RFQ and receiving competing quotes is free for buyers.",
   },
   {
     q: "How are vendors verified?",
@@ -24,7 +24,7 @@ const FAQS: readonly Faq[] = [
   },
   {
     q: "How quickly will I get quotes?",
-    a: "Most RFQs receive their first quotes within hours, and a fuller set of competing bids within a couple of days — depending on category and specification complexity.",
+    a: "Vendors are invited to quote as soon as your RFQ is routed to them. How quickly bids arrive varies by category and specification complexity.",
   },
   {
     q: "Do you support large or recurring orders?",

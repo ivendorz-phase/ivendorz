@@ -17,7 +17,7 @@ export function FeaturedCategories() {
       id="sec-category"
       eyebrow="Sourcing categories"
       title="Browse industrial categories"
-      description="Source across industrial categories — from valves and steel to electrical drives, pumps, and safety."
+      description="Source across industrial categories, from valves and steel to electrical drives, pumps, and safety."
       viewAllHref="/categories"
       viewAllLabel="All categories"
     >

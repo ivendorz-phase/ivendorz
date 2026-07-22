@@ -39,7 +39,7 @@ export default function HomePage() {
               Search the industrial marketplace
             </h2>
             <p className="mt-2 text-iv-ink-secondary">
-              Find products, suppliers, and categories — or jump straight into an RFQ.
+              Find products, suppliers, and categories, or jump straight into an RFQ.
             </p>
           </div>
           <CommandCenter />

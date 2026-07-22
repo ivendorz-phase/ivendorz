@@ -51,7 +51,7 @@ export function Hero() {
             The Industrial Procurement HUB for Bangladesh
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/80">
-            Source, compare, and award — from RFQ to delivery — with verified suppliers.
+            Source, compare, and award with verified suppliers, from RFQ to delivery.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -100,7 +100,7 @@ export function Hero() {
           <div className="border-t border-iv-light-border px-4 py-4">
             <Button asChild className="w-full gap-2">
               <Link href="/login">
-                Post Your RFQ — it&rsquo;s free <ArrowRight aria-hidden="true" />
+                Post Your RFQ for free <ArrowRight aria-hidden="true" />
               </Link>
             </Button>
           </div>

@@ -39,6 +39,7 @@ build, Node (not python) per the local-server lesson on this box.
 | Digital Showcase Nav | [`digital-showcase-nav/`](digital-showcase-nav/) | Sidebar IA rearrangement — Current vs Option A (labeled section, Content / Publish & Promote sub-groups) vs Option B (reordered single group); all 9 entries kept | **Owner-APPROVED Option A** (2026-07-20, built) | `vendor-shell-vm.ts` VX-01 group · Prototype **v0.1** |
 | Public Pages — Signed-in State | [`public-authed-shell/`](public-authed-shell/) | The `(public)` shell + every public-page conversion CTA, anonymous ⇄ signed in — all 28 `app/(public)` routes | Stage-3 (artifact for the pending Doc-7D session-aware-header ruling) | Prototype **v0.1** |
 | Digital Showcase Content | [`digital-showcase-content/`](digital-showcase-content/) | The Content-group pages populated with sample data — Company Profile (**S1–S5 tabs**, Categories folded in + its sidebar entry removed per owner directions 07-21) · Product Portfolio + editor (S6/S7) · Project Portfolio (DS-W1/G5) · Spec Library (P-VND-09) | Stage-3 (awaits owner review) | DS-NAV Option A sidebar · Prototype **v0.3** |
+| Landing Taste Pass | [`landing-taste-pass/`](landing-taste-pass/) | P-PUB-01 landing, Current ⇄ Proposed per design-taste finding (F1–F8: eyebrows, hero trust strip, CTA labels, logo-strip motion, step badges, H1 casing, freshness claim, FAQ feature claim) | Stage-3 (awaits owner ruling) | Design-taste audit 2026-07-22 · Prototype **v0.1** |
 
 ## Conventions
 

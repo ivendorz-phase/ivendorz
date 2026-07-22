@@ -17,7 +17,7 @@ const STEPS: readonly Step[] = [
     n: "01",
     icon: ClipboardList,
     title: "Post an RFQ",
-    desc: "Describe what you need — quantity, specification, budget. Takes under two minutes.",
+    desc: "Describe what you need: quantity, specification, budget. Takes under two minutes.",
   },
   {
     n: "02",
@@ -58,7 +58,7 @@ export function HowItWorks() {
             From request to awarded contract in four steps
           </h2>
           <p className="mt-3 text-iv-ink-secondary">
-            Post once and let verified vendors compete — no cold-calling, no spreadsheets.
+            Post once and let verified vendors compete. No cold-calling, no spreadsheets.
           </p>
         </div>
 
