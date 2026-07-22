@@ -1,6 +1,17 @@
 # Doc-2_Patch_v1.0.12_VendorTypePresetValues_PROPOSAL.md
 
-> **STATUS: DRAFT — ADDITIVE PATCH; AWAITS HUMAN APPROVAL.** Doc-2 is **rank-0 frozen architecture**
+> **🛑 SUPERSEDED 2026-07-22 — DO NOT FOLD.** Replaced by
+> `governanceReviews/Doc-2_Patch_v1.0.13_VendorTypePresetValues_PROPOSAL.md`. This draft bound **five**
+> values to the pre-re-freeze five-row register and argued whether slug-minting was additive
+> realization or re-keying. That question is now moot: the owner ruled **six rows** and
+> **AMD-MA-VTP-1** (`generatedDocs/Architecture_VendorTypePreset_Amendment_v1.0.md`) re-froze the
+> register at six, in force 2026-07-22. The v1.0.13 revision declares the **six**-member domain bound
+> to the re-frozen rows. **Retained, not deleted** — the review trail cites it (never delete a
+> superseded governance draft). Its Review-A disposition history (§10) remains valid provenance.
+>
+> ---
+>
+> **STATUS (historical): DRAFT — ADDITIVE PATCH; AWAITS HUMAN APPROVAL.** Doc-2 is **rank-0 frozen architecture**
 > (`generatedDocs/00_AUTHORITY_MAP.md:18`); a FROZEN document is *"changed only by additive patch +
 > (rank 0–1) human approval"* (`generatedDocs/00_AUTHORITY_MAP.md:42`; `CLAUDE.md:139–140`) — never
 > a skill decision. Not folded by any AI action.

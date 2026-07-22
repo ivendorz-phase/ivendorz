@@ -132,6 +132,9 @@ Atomic set (Invite-to-Register Growth Hub; authority `governanceReviews/GrowthHu
 
 | Corpus copy | Extends |
 |------|------|
+| `Architecture_VendorTypePreset_Amendment_v1.0.md` (AMD-MA-VTP-1) + `..._Verification_v1.0.md` | Master §Invariant 1 — **canonical base re-freeze** of the vendor-type preset register, five rows → six (row 1 → *Consultant*, row 4 → *Manufacturer / Workshop*, row 6 *Service Provider* added, service-only); resolves P-1 + P-2; NON-ADDITIVE, owner-ruled, independently verified, IN FORCE 2026-07-22 |
+| `Doc-2_Patch_v1.0.13_VendorTypePresetValues.md` (PATCH-D2-10) | Doc-2 → effective v1.0.13 (§10.3 closed six-member `vendor_type_preset` value domain bound by pointer to the re-frozen rows; overlay, base unedited; v1.0.11/v1.0.12 reserved-superseded; resolves `ESC-MKT-VENDORTYPE` values half) |
+| `Doc-4D_VendorTypePreset_Pointer_Patch_v1.0.4.md` (PATCH-4D-VTP-01) | Doc-4D → effective v1.0.4 (pointer-only: `(Doc-2 §10.3)` added to the 3 `vendor_type_preset` enum declarations; consumer-tolerance carried; linked-pair with Doc-2 v1.0.13) |
 | `Doc-2_Patch_v1.0.10_GrowthHub.md` (PATCH-D2-09) | Doc-2 → effective v1.0.10 (2 M1 entities · machines 5.11/5.12 · slug 46→47 · M1's first 2 §8 events · 2 §9 actions) |
 | `Doc-3_Policy_Key_Registration_Patch_v1.14_GrowthHub.md` | Doc-3 §12.2 (7 `identity.*` + 2 `billing.*` keys; Q-6/Q-12 values Board-pending) |
 | `Doc-4C_GrowthInvitation_Patch_v1.0.3.md` | Doc-4C (§C13 3 contracts + `provisionIdentity` attribution + §C12.7 flip + audit tokens) |
