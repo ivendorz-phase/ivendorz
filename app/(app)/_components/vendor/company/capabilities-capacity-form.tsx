@@ -10,6 +10,7 @@ import { CapabilityMatrix } from "@/frontend/components/capability-matrix";
 import { MatchingContextBanner } from "./matching-context-banner";
 import { PresentationFormNote, VENDOR_SELECT_CLASS } from "../shared";
 import { VerifiedMarker } from "./verified-marker";
+import { VENDOR_TYPE_PRESETS } from "./vendor-type-presets";
 import type { CapacityProfileView, VendorProfileView } from "./types";
 
 export interface CapabilitiesCapacityFormProps {
@@ -27,7 +28,7 @@ export function CapabilitiesCapacityForm({ profile, capacity }: CapabilitiesCapa
       <FormField
         id="vendor-type-preset"
         label="Vendor type"
-        description="A preset only seeds the capability flags below — matching reads the four flags, not the preset."
+        description="A preset only sets a starting point for the capability flags below — edit any of them afterwards. Matching reads the four flags, not the preset."
       >
         <select
           id="vendor-type-preset"
@@ -36,9 +37,11 @@ export function CapabilitiesCapacityForm({ profile, capacity }: CapabilitiesCapa
           className={VENDOR_SELECT_CLASS}
         >
           <option value="">Select a type…</option>
-          <option value="manufacturer">Manufacturer</option>
-          <option value="trader">Trader</option>
-          <option value="service_provider">Service provider</option>
+          {VENDOR_TYPE_PRESETS.map((preset) => (
+            <option key={preset.slug} value={preset.slug}>
+              {preset.label}
+            </option>
+          ))}
         </select>
       </FormField>
 

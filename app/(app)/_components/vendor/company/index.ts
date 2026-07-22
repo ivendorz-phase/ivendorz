@@ -27,6 +27,11 @@ export {
   type CategoryAssignmentListProps,
 } from "./category-assignment-list";
 export { VerifiedMarker, type VerifiedMarkerProps } from "./verified-marker";
+export {
+  VENDOR_TYPE_PRESETS,
+  vendorTypePresetLabel,
+  type VendorTypePreset,
+} from "./vendor-type-presets";
 export { MatchingContextBanner, type MatchingContextBannerProps } from "./matching-context-banner";
 export { GovernanceBandsPlaceholder } from "./governance-bands-placeholder";
 // PresentationFormNote + DescriptionList promoted to vendor/shared (Milestone 8) — import from there.

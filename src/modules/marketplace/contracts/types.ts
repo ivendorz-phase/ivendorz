@@ -53,7 +53,13 @@ export interface PublicVendorProfileView {
   humanRef: string;
   /** Vendor display name. */
   name: string;
-  /** Vendor-type preset (manufacturer | service_provider | trader | other); nullable. */
+  /**
+   * Vendor-type preset — one of the six governed slugs `consultant | mro_retail_supplier |
+   * importer_equipment_seller | manufacturer_workshop | engineering_firm | service_provider`
+   * (Doc-2 §10.3 value domain, `Doc-2_Patch_v1.0.13`); nullable. A UI preset label that seeds the
+   * four capability flags, never the capability source of truth (Invariant #1, MK-CR4). Typed
+   * `string | null` at the wire boundary; validated against the §10.3 domain in the mapper.
+   */
   vendorTypePreset: string | null;
   /** The four-flag capability matrix (Invariant #1). */
   capabilityFlags: VendorCapabilityFlags;

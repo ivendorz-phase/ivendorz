@@ -12,6 +12,7 @@ import { CategoryAssignmentList } from "./category-assignment-list";
 import { DescriptionList, type DescriptionItem } from "../shared";
 import { GovernanceBandsPlaceholder } from "./governance-bands-placeholder";
 import { TierChip } from "./tier-chip";
+import { vendorTypePresetLabel } from "./vendor-type-presets";
 import type {
   CapacityProfileView,
   CategoryAssignmentView,
@@ -54,7 +55,7 @@ export function ProfileOverview({ profile, capacity, categories }: ProfileOvervi
     { label: "Company name", value: profile?.name },
     { label: "Reference", value: profile?.human_ref },
     { label: "Public handle", value: profile?.slug },
-    { label: "Vendor type", value: profile?.vendor_type_preset },
+    { label: "Vendor type", value: vendorTypePresetLabel(profile?.vendor_type_preset) },
     { label: "Country", value: profile?.country },
     { label: "Division", value: profile?.division },
     { label: "District", value: profile?.district },
