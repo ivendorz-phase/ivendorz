@@ -196,7 +196,7 @@ function SidebarInner({ nav, search }: { nav: NavSection[]; search: string }) {
   }, []);
 
   // The RFQ create wizard is a focused, full-width task surface — no primary nav alongside it.
-  if (pathname === "/rfqs/new") return null;
+  if (pathname === "/buy/rfqs/new") return null;
 
   return (
     <div
@@ -207,10 +207,17 @@ function SidebarInner({ nav, search }: { nav: NavSection[]; search: string }) {
       )}
     >
       <nav aria-label="Primary" className="flex-1 overflow-y-auto p-3">
-        {nav.map((section) => (
-          <div key={section.id} className="mb-4 last:mb-0">
+        {nav.map((section, index) => (
+          <div
+            key={section.id}
+            // A visible divider + breathing room between every section, so the co-mounted surfaces
+            // (Buying / Selling / Trust) and their groups read as distinct blocks — never a run-on
+            // list. Reuses the shell's own nav-border token (no new token). In the collapsed icon-rail
+            // the divider is the ONLY separation between icon groups, so it is kept there too.
+            className={cn(index > 0 && "mt-3 border-t border-iv-nav-border pt-3")}
+          >
             {section.label && !collapsed ? (
-              <p className="px-3 pb-1 text-2xs font-semibold uppercase tracking-wide text-iv-nav-fg-muted">
+              <p className="px-3 pb-1.5 text-2xs font-semibold uppercase tracking-wide text-iv-nav-fg-muted">
                 {section.label}
               </p>
             ) : null}

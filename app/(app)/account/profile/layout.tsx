@@ -6,19 +6,13 @@
 // get_active_context, SR3 — PARKED). No client-supplied org id is trusted (Inv #5). The Account nav is
 // the SHARED account nav model (single source; also used by the overview hub), not a duplicated shell.
 import type { ReactNode } from "react";
-import { AppShell, type ShellViewModel } from "../../_components/shell";
-import { ACCOUNT_NAV, ACCOUNT_QUICK_BAR } from "../overview/account-nav-model";
+import { AppShell } from "../../_components/shell";
+import { accountShellVm } from "../overview/account-nav-model";
 
-const ACCOUNT_SHELL_VM: ShellViewModel = {
-  identity: {
-    user: { name: "Anisur Rahman", email: "anisur@padmavalve.com.bd" },
-    activeOrg: { id: "active", name: "Padma Valve & Fittings Ltd.", participation: "hybrid" },
-    organizations: [{ id: "active", name: "Padma Valve & Fittings Ltd.", participation: "hybrid" }],
-  },
-  nav: ACCOUNT_NAV,
-  quickBar: ACCOUNT_QUICK_BAR,
-  breadcrumb: [{ label: "Account", href: "/account/overview" }, { label: "Profile" }],
-};
+const ACCOUNT_SHELL_VM = accountShellVm([
+  { label: "Account", href: "/account/overview" },
+  { label: "Profile" },
+]);
 
 export default function UserProfileLayout({ children }: { children: ReactNode }) {
   return <AppShell vm={ACCOUNT_SHELL_VM}>{children}</AppShell>;

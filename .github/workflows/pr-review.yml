@@ -1,0 +1,58 @@
+name: PR Review (Claude Code)
+
+# Automated first-pass review on every PR — the CI analog of `/code-review`. This is a
+# REVIEWER, not a GATE: it raises findings, it never merges, approves, or blocks (CLAUDE.md
+# §13 Review & Findings Governance — Raise ≠ Accept). Findings are posted as PR comments using
+# this repo's severity ladder (BLOCKER/MAJOR/MINOR/NITPICK/OBS); a human — or the presiding
+# authority per CLAUDE.md §7 — evaluates and rules on each one. Architecture-affecting changes
+# still require human approval regardless of what this workflow reports (CLAUDE.md §8).
+#
+# Requires a repository secret `ANTHROPIC_API_KEY`. Runs on `pull_request` (never
+# `pull_request_target`) so forked-repo PRs never get secret access — the run simply has
+# nothing to post with in that case.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: Claude review
+    runs-on: ubuntu-latest
+    # Skip silently on forked PRs — no ANTHROPIC_API_KEY secret is available there by design.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--max-turns 8 --model claude-sonnet-5"
+          prompt: |
+            Review this pull request's diff against `main` for correctness bugs, security
+            issues (OWASP-class), and reuse/simplification/efficiency problems. This repo is
+            governed by `CLAUDE.md` (frozen architecture corpus, DDD module boundaries, the
+            Red-Flag Checklist) — read it first and flag any violation as BLOCKER.
+
+            Use this repo's severity ladder from CLAUDE.md §13 exactly, one finding per line:
+            - BLOCKER: violates the frozen corpus, an invariant, a Golden Rule, or is wrong/unsafe
+            - MAJOR: substantive defect that materially degrades correctness/security/conformance
+            - MINOR: real but contained defect
+            - NITPICK: style/clarity/polish (never blocking)
+            - OBS: neutral observation / future-watch item (never blocking)
+
+            For each finding: file:line, severity, one-sentence defect statement, and the
+            concrete failure scenario (inputs/state → wrong output). Post findings as a PR
+            review comment. You are raising findings only — do not approve, request changes,
+            or merge; that adjudication belongs to a human reviewer (Raise ≠ Accept, CLAUDE.md
+            §13). If you find nothing, post a short comment saying so — do not stay silent.

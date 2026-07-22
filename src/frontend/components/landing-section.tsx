@@ -47,7 +47,7 @@ export function LandingSection({
     ) : null);
 
   return (
-    <section id={id} aria-labelledby={headingId} className="border-b border-border py-12 sm:py-16">
+    <section id={id} aria-labelledby={headingId} className="border-b border-border py-9 sm:py-12">
       <Container>
         <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <div className="max-w-2xl">

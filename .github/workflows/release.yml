@@ -1,0 +1,48 @@
+name: Release
+
+# Tag-triggered release gate. Push a `vX.Y.Z` tag to cut a release:
+# the tagged commit is rebuilt from a clean checkout, then a GitHub Release is
+# created with auto-generated notes (commits/PRs since the previous tag).
+# No auto version-bumping — this workflow never decides the version, it only
+# publishes what was already tagged.
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build & publish GitHub Release
+    runs-on: ubuntu-latest
+    env:
+      # Same hermetic Postgres contract as ci.yml's verify job — the build needs
+      # a reachable DATABASE_URL/DIRECT_URL even though no schema work happens here.
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ivendorz
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/ivendorz
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client
+        run: pnpm run db:generate
+      - name: Build (Next.js)
+        run: pnpm run build
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "${{ github.ref_name }}" \
+            --generate-notes

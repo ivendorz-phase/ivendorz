@@ -1,10 +1,13 @@
 <!--
 Status:     Freeze Candidate (v0.9-rc)
 Coverage:   Complete - all EA Hard Review findings (B1-4, M5-10, MIN11-15) + the missing-intermediate-layer observation.
-Freeze:     WITHHELD (CLAUDE.md section 13 gate not met: BLOCKER=0/MAJOR=0/MINOR=0 not yet reached).
-Reason:     Pending Board (human) ratification of the remaining platform/authority BLOCKER:
-            [ESC-7G-A7]. [ESC-7G-SCORE-DISPLAY] and [ESC-7B-TRUSTSCORE] RESOLVED 2026-07-03
-            (see governanceReviews/BOARD-PACKET-VENDOR-FE-BLOCKERS_v1.0.md).
+Freeze:     BLOCKER = 0 (all three platform/authority BLOCKERs RESOLVED). [ESC-7G-A7] ruled
+            2026-07-12 (see governanceReviews/BOARD-PACKET-A7-HYBRID-COMOUNT-REALIZATION_v0.1.md);
+            [ESC-7G-SCORE-DISPLAY] and [ESC-7B-TRUSTSCORE] RESOLVED 2026-07-03 (see
+            governanceReviews/BOARD-PACKET-VENDOR-FE-BLOCKERS_v1.0.md). Promotion to FROZEN v1.0
+            requires a separate explicit Board/owner freeze action; the §10.1 MAJOR/MINOR
+            contract-gap items are tracked non-freeze-blocking per this doc's own §12.2 tally.
+Reason:     (superseded — see Freeze line above).
 Authority:  NON-AUTHORITATIVE design companion - realizes the UX of FROZEN Doc-7G.
             Coins no mechanism/contract/ownership/invariant. On any conflict the frozen
             generatedDocs/ corpus wins (CLAUDE.md section 7). NOT part of the frozen corpus -
@@ -598,7 +601,7 @@ The hardest constraint, consolidated. Binds to **Doc-7G GR11 / §10 / CHK-7-040 
 ### 10.1 Governance / contract escalations (Flag-and-Halt — do not resolve locally)
 | ID | Sev | Summary | Disposition needed |
 |---|---|---|---|
-| **[ESC-7G-A7]** | BLOCKER | Hybrid "mount both" (Doc-7A R6 / Doc-7C SR3) vs the draft's re-routing toggle; **also** the design-introduced `(vendor)` nested segment name (not frozen in Doc-7C). Re-routing toggle **not shipped**; co-mounted-grouped adopted. | Board: ratify how "mount both" is realized as IA and whether `(vendor)` is the segment name; Trust must not fold into an editable group. |
+| **[ESC-7G-A7]** | ✅ RESOLVED 2026-07-12 | Hybrid "mount both" (Doc-7A R6 / Doc-7C SR3) vs the draft's re-routing toggle; **also** the design-introduced `(vendor)` nested segment name (not frozen in Doc-7C). Re-routing toggle **not shipped**; co-mounted-grouped adopted. | **Ruling:** all 5 sub-decisions approved as recommended — co-mounted grouped-not-merged, Trust terminal; `(vendor)` ratified as a non-routing layout group under `(app)` (Option 1, no corpus patch). Full record: `BOARD-PACKET-A7-HYBRID-COMOUNT-REALIZATION_v0.1.md`. |
 | **[ESC-7G-SCORE-DISPLAY]** | ✅ RESOLVED 2026-07-03 | Doc-5G §5.3 "band + display score" vs Invariant-6 "bands only" — ruled: Invariant 6 is display-silent. | Board ruling: Trust Score (band + numeric + badges + factors) permitted on any public-facing surface; no corpus patch. Performance stays band-only. |
 | **[ESC-7B-TRUSTSCORE]** | ✅ RESOLVED 2026-07-03 | `trust-badge.score` renders raw 0–100 — now sanctioned for Trust. | Option 3 ratified: prop ships as-is; lint re-scoped to governance-only contexts. |
 | **[ESC-7G-A2]** | MAJOR | Org-Role→action gradations are an M1/Doc-4C concern; UI must consume server permission slugs, not a hard-coded table. | Doc-4C enumerate; UI binds to server flags. |
@@ -685,11 +688,11 @@ Vendor FE realization is **Wave-3-gated**; this is planning ahead of that gate a
 - **`[ESC-7-API]` #2 — caller-facing M1 participation read** (from `ESC-7G-05`). Owner: M1 Identity. Additive wire read exposing the active org's derived Platform Participation (Buyer/Vendor/Hybrid) from `has_buyer_profile`/`has_vendor_profile` — currently only on out-of-wire `identity.get_organization.v1`.
 
 ### 12.2 Corrected post-Track-2 gate tally (authoritative; supersedes §10 and the workflow report)
-- **BLOCKER = 1** — `[ESC-7G-A7]` (human Architecture Board; §8) — still open. `[ESC-7G-SCORE-DISPLAY]` and `[ESC-7B-TRUSTSCORE]` **RESOLVED 2026-07-03** (Board ruling — see `governanceReviews/BOARD-PACKET-VENDOR-FE-BLOCKERS_v1.0.md`); freeze remains WITHHELD pending `[ESC-7G-A7]` alone.
+- **BLOCKER = 0** — `[ESC-7G-A7]` **RESOLVED 2026-07-12** (Board ruling — see `governanceReviews/BOARD-PACKET-A7-HYBRID-COMOUNT-REALIZATION_v0.1.md`). `[ESC-7G-SCORE-DISPLAY]` and `[ESC-7B-TRUSTSCORE]` **RESOLVED 2026-07-03** (Board ruling — see `governanceReviews/BOARD-PACKET-VENDOR-FE-BLOCKERS_v1.0.md`). All three platform/authority BLOCKERs now resolved; promotion to FROZEN v1.0 is a separate explicit Board/owner action.
 - **MAJOR conformance defects = 0** — all five adjudicated; where a contract is absent the design degrades gracefully (non-numeric links).
 - **Open contract gaps → API Governance Board = 2** — the two `[ESC-7-API]` items above (one MAJOR-origin, one MINOR-origin).
 - **Carried on existing channels = 2** — `[ESC-BILL-SLUG]`, `[ESC-MKT-AUDIT]`.
-- **Gate verdict: still WITHHELD** (§13 needs BLOCKER=0/MAJOR=0/MINOR=0). The **engineering-resolvable surface is now exhausted** — every remaining item belongs to an authority (human Board ×3, API Governance Board ×2).
+- **Gate verdict: BLOCKER dimension cleared 2026-07-12** (all three human-Board BLOCKERs resolved). Remaining open items are non-freeze-blocking contract gaps routed to the API Governance Board (×2) and two carried channels. **Formal promotion to FROZEN v1.0 is a separate, explicit Board/owner action** — not self-declared here.
 
 ---
 

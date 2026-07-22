@@ -1,0 +1,83 @@
+name: Architecture / Governance Escalation
+description: Flag-and-Halt — a conflict with the frozen corpus, an invariant, a Golden Rule, or a gap the corpus doesn't resolve (an ESC-* item).
+title: "[ESC] "
+labels: ["governance", "needs-board-ruling"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this when you hit something the frozen corpus doesn't settle, or a change
+        would touch the Red-Flag Checklist (new module, ownership change, governance-signal
+        change, cross-module DB access, ADR override, editing a FROZEN document, etc.).
+        Per CLAUDE.md §11: **never resolve locally** — cite both sources and escalate.
+        This never gets fixed by an AI agent alone; it needs a human/Board ruling
+        (CLAUDE.md §8).
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options:
+        - M0 — Platform Core / Shared Kernel
+        - M1 — Identity & Organization
+        - M2 — Marketplace & Discovery
+        - M3 — RFQ Procurement Engine
+        - M4 — Business Operations
+        - M5 — Trust & Verification
+        - M6 — Communication
+        - M7 — Monetization
+        - M8 — Admin Operations
+        - M9 — AI Layer
+        - Cross-module / program-level
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: red-flags
+    attributes:
+      label: Does this touch a Red-Flag item? (CLAUDE.md Red-Flag Checklist)
+      options:
+        - label: Creates a new module
+        - label: Changes module ownership
+        - label: Changes a governance signal (Trust/Capacity/Financial Tier/Performance/Buyer Vendor Status)
+        - label: Changes "Users Act, Organizations Own"
+        - label: Introduces cross-module DB access (incl. cross-schema raw SQL)
+        - label: Introduces cross-module foreign keys
+        - label: Imports something other than another module's `contracts/`
+        - label: Lets a workflow own state, or a read-model become source of truth
+        - label: Lets Admin (M8) bypass an owning module's domain
+        - label: Overrides an ADR
+        - label: Modifies a FROZEN document
+        - label: None of the above — this is a gap the corpus is silent on, not a violation
+
+  - type: textarea
+    id: conflict
+    attributes:
+      label: The conflict or gap
+      description: Cite the specific frozen source(s) in tension, or the specific gap. Quote line/section references where possible (e.g. `Doc-2 §5.10`, `Doc-4E §E6.5`).
+    validations:
+      required: true
+
+  - type: textarea
+    id: where-found
+    attributes:
+      label: Where this was raised
+      description: Which review/PR/build step surfaced it (e.g. "Review-A RV-0148", "W2-IDN-6.6", a failing Doc-8 conformance suite).
+    validations:
+      required: false
+
+  - type: textarea
+    id: options
+    attributes:
+      label: Options considered
+      description: If you see candidate resolutions, list them neutrally — this is Raise, not Accept (CLAUDE.md §13). The Board rules; this issue doesn't pre-decide it.
+    validations:
+      required: false
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: What's blocked until this is ruled on
+      description: Which work package, module build, or gate is waiting on this escalation.
+    validations:
+      required: false

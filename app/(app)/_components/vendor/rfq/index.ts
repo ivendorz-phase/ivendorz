@@ -7,6 +7,14 @@
 // zero contract invention. Byte-equivalence (Invariant 11 / GR11 / CHK-7-040) is load-bearing: every
 // view is received/own data only — no competitor count, rank, score, or "why-not-invited" signal.
 export { InvitationInbox, type InvitationInboxProps } from "./invitation-inbox";
+export {
+  InboxStateFilter,
+  parseInboxStateFilter,
+  INBOX_STATE_FILTERS,
+  INBOX_STATE_FILTER_LABELS,
+  type InboxStateFilterKey,
+  type InboxStateFilterProps,
+} from "./inbox-state-filter";
 export { QuotationHomeSummary, type QuotationHomeSummaryProps } from "./quotation-home-summary";
 export { RfqSnapshot, type RfqSnapshotProps } from "./rfq-snapshot";
 export { InvitationResponse, type InvitationResponseProps } from "./invitation-response";

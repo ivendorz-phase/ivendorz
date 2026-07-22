@@ -12,5 +12,6 @@ export { QuickCreate } from "./quick-create";
 export { PageHeader } from "./page-header";
 export { Breadcrumbs } from "./breadcrumbs";
 export { BottomBar } from "./bottom-bar";
+export { composeNav } from "./hybrid-nav";
 export * from "./types";
 export * from "./icons";

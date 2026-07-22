@@ -1,5 +1,15 @@
 # Motion Standard — Enterprise UI Animation
 
+> **⚠️ AMENDMENT — App-wide motion disabled (owner directive 2026-07-12).** By owner directive, all
+> enterprise-kit animation/transition is currently switched **OFF across the whole app**,
+> unconditionally: page transitions (the `(public|app|auth)/template.tsx` `PageTransition` wrappers
+> were removed), hover/tap feedback, Radix menu/dialog open-close, skeleton shimmer, and stagger/
+> entrance utilities. The single surviving motion is the **marketing RFQ ticker slide** (JS
+> `transform`, not CSS). Implemented centrally as the "APP-WIDE MOTION DISABLE" block in
+> `app/globals.css`. The timing/easing tables below are therefore **dormant in practice** — they
+> remain the reference for if/when motion is re-enabled. To restore: delete that CSS block and
+> re-add the group `template.tsx` wrappers.
+
 **Status:** Living engineering standard v1.0 (2026-07-10, owner-directed). Applies to **every
 team and agent** touching frontend code. Non-authoritative under the frozen corpus; visual
 design authority stays with Doc-7. This document governs *how things move* and is the **single

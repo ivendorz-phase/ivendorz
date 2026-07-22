@@ -1,7 +1,7 @@
 // Accept-invitation route (`/accept-invitation`) — P-AUTH-07 (Auth template · Doc-7E §2.3; journey
 // J-BUY-05). The screen reached from an org invitation link, where an invited user joins an EXISTING
-// organization. Binds the frozen M1 command `accept_invitation` (Doc-4C §C6 — caller-facing). Lives in
-// the `(auth)` group; self-contained centered layout — does NOT add an `(auth)/layout.tsx`.
+// organization. Binds the frozen M1 command `accept_invitation` (Doc-4C §C6 — caller-facing). Composes
+// the shared split-screen `AuthShell` (redesigned 2026-07-12 to the kit).
 //
 // PRESENTATION-ONLY: composes the Doc-7B kit and joins NOTHING. GOVERNANCE:
 //  • The invitation token is SERVER-AUTHORITATIVE — the page never validates or trusts it; the org,
@@ -11,12 +11,15 @@
 //    leaks no org/account-existence signal.
 //  • The `?state=` preview (pending/loading/accepted/declined/invalid) is a DEV/QA harness — honored
 //    ONLY outside production (mirrors Search / P-AUTH-05/06).
+// The invitation is an ACCEPT/DECLINE of an already-resolved invite (not a full sign-up form) — the
+// user chose to keep that model and adopt the reference's org-card visuals only.
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ShieldAlert } from "lucide-react";
 import { BrandLogo } from "@/frontend/brand";
-import { Card } from "@/frontend/primitives/card";
 import { Button } from "@/frontend/primitives/button";
+import { AuthShell } from "../_components/auth-shell";
+import { AuthResultPanel } from "../_components/auth-result-panel";
 import { InvitationView } from "./invitation-view";
 
 export const metadata: Metadata = {
@@ -38,40 +41,46 @@ export default async function AcceptInvitationPage({
   const preview = raw === "loading" || raw === "accepted" || raw === "declined" ? raw : undefined;
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-muted/40 px-4 py-10">
-      <div className="w-full max-w-md">
-        <div className="mb-6 flex justify-center">
-          <Link
-            href="/"
-            className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            <BrandLogo height={36} />
-          </Link>
-        </div>
-
-        <Card className="p-6 shadow-iv-md sm:p-8">
-          {invalid ? (
-            // Uniform, non-disclosing outcome for a server-rejected (invalid/expired) invitation.
-            <div className="space-y-4">
-              <div className="flex flex-col items-center gap-2 rounded-md border border-border bg-iv-warning-subtle px-4 py-5 text-center">
-                <ShieldAlert aria-hidden="true" className="size-6 text-iv-warning-muted" />
-                <h1 className="text-lg font-semibold text-iv-ink-heading">
-                  This invitation is invalid or has expired
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  For your security, invitation links expire after a short time. Ask your team to
-                  send a new one.
-                </p>
-              </div>
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/login">Back to sign in</Link>
-              </Button>
-            </div>
-          ) : (
-            <InvitationView preview={preview} />
-          )}
-        </Card>
+    <AuthShell
+      aside={{
+        headline: "Your team is already sourcing here.",
+        subcopy:
+          "Accept the invite to join your organisation’s workspace — shared RFQs, vendor shortlists and approval workflows, all in one place.",
+        points: [
+          "Shared RFQs & quote comparisons",
+          "Role-based approval controls",
+          "One audit trail for the whole team",
+        ],
+        footNote:
+          "Organizations own their records — you’ll act on this org’s behalf with the role you’re given.",
+      }}
+    >
+      {/* Top bar — mobile brand (the aside is hidden below lg). */}
+      <div className="mb-8 flex items-center">
+        <Link
+          href="/"
+          className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:hidden"
+        >
+          <BrandLogo height={30} />
+        </Link>
       </div>
-    </main>
+
+      {invalid ? (
+        // Uniform, non-disclosing outcome for a server-rejected (invalid/expired) invitation.
+        <AuthResultPanel
+          tone="warning"
+          icon={<ShieldAlert />}
+          title="This invitation is invalid or has expired"
+          description="For your security, invitation links expire after a short time. Ask your team to send a new one."
+          action={
+            <Button asChild variant="outline" size="lg" className="w-full">
+              <Link href="/login">Back to sign in</Link>
+            </Button>
+          }
+        />
+      ) : (
+        <InvitationView preview={preview} />
+      )}
+    </AuthShell>
   );
 }

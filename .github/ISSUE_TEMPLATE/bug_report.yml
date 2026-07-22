@@ -1,0 +1,81 @@
+name: Bug Report
+description: Something is broken — wrong behavior, crash, or a conformance failure.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      description: Which module owns the affected code? (CLAUDE.md §3)
+      options:
+        - M0 — Platform Core / Shared Kernel
+        - M1 — Identity & Organization
+        - M2 — Marketplace & Discovery
+        - M3 — RFQ Procurement Engine
+        - M4 — Business Operations
+        - M5 — Trust & Verification
+        - M6 — Communication
+        - M7 — Monetization
+        - M8 — Admin Operations
+        - M9 — AI Layer
+        - Cross-module / not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: A clear description of the bug. Include the exact error message if there is one.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened instead? Point to the frozen doc/contract this violates, if you know it (e.g. `Doc-4E §...`, an invariant, a Golden Rule).
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: This repo's severity ladder (CLAUDE.md §13). Gating = BLOCKER/MAJOR/MINOR; NIT/OBS are non-gating.
+      options:
+        - BLOCKER — violates the frozen corpus / an invariant / a Golden Rule, or unsafe
+        - MAJOR — materially degrades correctness, security, or conformance
+        - MINOR — real but contained defect
+        - NITPICK — style/clarity/polish
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: Branch/commit, Node version, browser (if FE), local vs CI
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Logs, screenshots, links to a failing CI run, related PRs/issues.
+    validations:
+      required: false

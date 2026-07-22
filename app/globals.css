@@ -12,22 +12,23 @@
 @layer base {
   :root {
     /* -----------------------------------------------------------------------
-       BRAND — Electric Indigo (INTERACTIVE / secondary: links, focus rings,
-       selected-nav highlight, brand chips). NAVY (below) is the DOMINANT
-       primary/fill. 2026-06-30 palette migration: navy made dominant; indigo
-       confined to interactive states (purple footprint cut ~80%).
+       BRAND — Industrial Blue (2026-07-12 palette migration: retargeted from
+       Electric Indigo to the mockup's navy-blue brand — `iVendorz Kit-handoff`
+       landing.css `--brand`/`--brand-2`. Interactive states, focus rings,
+       selected-nav highlight, brand chips, and (below) --primary all read
+       this ramp now — collapses the old two-family indigo/navy split.
     ----------------------------------------------------------------------- */
-    --iv-brand-50: #eef2ff;
-    --iv-brand-100: #e0e7ff;
-    --iv-brand-200: #c7d2fe;
-    --iv-brand-300: #a5b4fc;
-    --iv-brand-400: #818cf8;
-    --iv-brand-500: #6366f1;
-    --iv-brand-600: #4f46e5;
-    --iv-brand-700: #4338ca;
-    --iv-brand-800: #3730a3;
-    --iv-brand-900: #312e81;
-    --iv-brand-950: #1e1b4b;
+    --iv-brand-50: #eef3fd;
+    --iv-brand-100: #dbe6fa;
+    --iv-brand-200: #b8cef5;
+    --iv-brand-300: #8fb0ea;
+    --iv-brand-400: #5f8ad9;
+    --iv-brand-500: #2f5eb8;
+    --iv-brand-600: #23438f;
+    --iv-brand-700: #1c3672;
+    --iv-brand-800: #162a58;
+    --iv-brand-900: #101f40;
+    --iv-brand-950: #0b1530;
 
     /* -----------------------------------------------------------------------
        NAVY — Deep Industrial Navy (DOMINANT brand · primary fills · sidebar)
@@ -61,23 +62,27 @@
 
     /* -----------------------------------------------------------------------
        SURFACE — Dark Mode (Primary Experience)
+       2026-07-12: base/raised/overlay/muted/border/hover retuned to match the
+       mockup's `body.dark` values (iVendorz Kit landing.css).
     ----------------------------------------------------------------------- */
-    --iv-surface-base: #0a0e1a;
-    --iv-surface-raised: #0f1424;
-    --iv-surface-overlay: #151b2e;
-    --iv-surface-muted: #1c2340;
-    --iv-surface-border: #252d47;
-    --iv-surface-hover: #1e2540;
-    --iv-surface-selected: #202745;
+    --iv-surface-base: #080d15;
+    --iv-surface-raised: #0f1826;
+    --iv-surface-overlay: #0f1826;
+    --iv-surface-muted: #0c1320;
+    --iv-surface-border: #1e2a3b;
+    --iv-surface-hover: #14203a;
+    --iv-surface-selected: #16233b;
 
     /* -----------------------------------------------------------------------
        SURFACE — Light Mode (Secondary Experience)
+       2026-07-12: base/muted/border retuned to match the mockup's `:root`
+       values (iVendorz Kit landing.css).
     ----------------------------------------------------------------------- */
-    --iv-light-base: #f8fafc;
+    --iv-light-base: #f6f8fa;
     --iv-light-raised: #ffffff;
     --iv-light-overlay: #ffffff;
-    --iv-light-muted: #f1f5f9;
-    --iv-light-border: #e2e8f0;
+    --iv-light-muted: #f8fafc;
+    --iv-light-border: #e6e9ee;
     --iv-light-hover: #f8fafc;
 
     /* -----------------------------------------------------------------------
@@ -209,7 +214,7 @@
     --iv-shadow-2xl: 0 28px 64px rgba(15, 23, 42, 0.16);
 
     /* Glow — interactive elements */
-    --iv-glow-brand: 0 0 0 1px rgba(99, 102, 241, 0.3), 0 0 20px rgba(99, 102, 241, 0.15);
+    --iv-glow-brand: 0 0 0 1px rgba(47, 94, 184, 0.3), 0 0 20px rgba(47, 94, 184, 0.15);
     --iv-glow-success: 0 0 0 1px rgba(34, 197, 94, 0.3), 0 0 20px rgba(34, 197, 94, 0.12);
     --iv-glow-amber: 0 0 0 1px rgba(251, 191, 36, 0.3), 0 0 20px rgba(251, 191, 36, 0.12);
 
@@ -259,14 +264,16 @@
     --iv-hover: var(--iv-light-hover);
     --iv-selected: var(--iv-light-selected);
 
-    /* Foreground / ink (semantic) — Navy typography hierarchy (2026-06-30 migration):
-       headings · section titles · key labels · links = brand navy; body/secondary/muted = slate. */
-    --iv-fg-strong: #0f172a; /* crisp ink — slate-900 (input text, key values) */
-    --iv-fg: #334155; /* body — slate-700 */
-    --iv-fg-secondary: #475569; /* secondary — slate-600 */
-    --iv-fg-muted: #5f6f86; /* meta / disabled — slate-500, nudged from #64748b for AA on gray surfaces */
-    --iv-fg-heading: #23438f; /* H1 · key labels · links (default) — brand navy */
-    --iv-fg-heading-strong: #1e3a8a; /* section/footer headings · link hover — deep navy */
+    /* Foreground / ink (semantic) — 2026-07-12: retuned to the mockup (iVendorz Kit
+       landing.css). Headings now use a dedicated dark-navy ink (`--heading`), distinct
+       from the brighter brand blue reserved for links/accents (`--iv-fg-heading-strong`
+       carries that brand-blue role — see .iv-link / hover states). */
+    --iv-fg-strong: #14213d; /* crisp ink — mockup `--ink` (input text, key values) */
+    --iv-fg: #4a5568; /* body — mockup `--text` */
+    --iv-fg-secondary: #4a5568; /* secondary — mockup doesn't split this from body text */
+    --iv-fg-muted: #5f6a7a; /* meta / disabled — mockup `--muted`, darkened to clear WCAG-AA 4.5:1 on white for small text (was #7a8699 = 3.68:1, axe-flagged) */
+    --iv-fg-heading: #1a2b52; /* H1 · section titles — mockup `--heading` (dark navy ink) */
+    --iv-fg-heading-strong: #101f40; /* footer titles · link hover — deeper navy emphasis (brand-900) */
     --iv-fg-inverse: #ffffff; /* ink on brand / dark fills */
 
     /* Elevation (semantic) — maps onto the shadow scale */
@@ -319,7 +326,7 @@
     --card-foreground: var(--iv-fg);
     --popover: var(--iv-overlay);
     --popover-foreground: var(--iv-fg);
-    --primary: var(--iv-navy-700); /* DOMINANT Deep Navy (was indigo brand-600) */
+    --primary: var(--iv-brand-600); /* Mockup brand navy-blue #23438f (was --iv-navy-700) */
     --primary-foreground: var(--iv-fg-inverse);
     --secondary: var(--iv-surface-2);
     --secondary-foreground: var(--iv-fg);
@@ -352,9 +359,9 @@
     --iv-fg: #ffffff;
     --iv-fg-secondary: var(--iv-neutral-text);
     --iv-fg-muted: var(--iv-neutral-bright);
-    --iv-fg-heading: #e2e8f0;
+    --iv-fg-heading: #eaf1fb; /* mockup dark-mode `--heading` */
     --iv-fg-heading-strong: #f1f5f9;
-    --iv-fg-inverse: #0a0e1a;
+    --iv-fg-inverse: #080d15;
 
     /* Dark-tuned shadows (the original heavy set) */
     --iv-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
@@ -364,8 +371,8 @@
     --iv-shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.7), 0 8px 16px rgba(0, 0, 0, 0.5);
     --iv-shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.8);
 
-    /* Primary brand fill on dark — navy reads a touch lighter; ink stays white. */
-    --primary: var(--iv-navy-600);
+    /* Primary brand fill on dark — mockup brand-2 reads a touch lighter; ink stays white. */
+    --primary: var(--iv-brand-500);
     --primary-foreground: #ffffff;
   }
 
@@ -911,4 +918,31 @@
     transition-delay: 0ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ===========================================================================
+   APP-WIDE MOTION DISABLE — owner directive 2026-07-12
+   Every enterprise-kit animation/transition is switched OFF across the WHOLE app,
+   UNCONDITIONALLY (not gated on prefers-reduced-motion): page transitions (the
+   PageTransition group templates were also removed), button/link hover & tap
+   feedback, Radix menu/dialog/popover/tooltip open-close, skeleton shimmer,
+   stagger/entrance utilities, and tailwindcss-animate.
+
+   The ONLY surviving motion is the marketing RFQ ticker slide — it is driven by JS
+   (inline `transform` updated per-frame via requestAnimationFrame), NOT a CSS
+   transition/animation, so these rules do not touch it.
+
+   This supersedes the timing/easing tables in
+   docs/frontend/design-system/motion_standard.md in practice (recorded there).
+   To restore motion, delete this block (and re-add the group `template.tsx`
+   PageTransition wrappers).
+=========================================================================== */
+*,
+*::before,
+*::after {
+  animation: none !important;
+  transition: none !important;
+}
+html {
+  scroll-behavior: auto !important;
 }

@@ -1,0 +1,39 @@
+name: Production Smoke Test
+
+# Fires when Vercel's own git integration finishes a production deployment
+# (deployment_status event) — this workflow does NOT deploy anything itself.
+# Runs the existing Playwright smoke spec (tests/e2e/smoke.spec.ts: home page
+# loads + a11y scan) against the live production URL. Read-only, no secrets.
+# Mitigates "Deployment regression" (Build_Roadmap_v1.0.md mitigation table).
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-smoke-${{ github.event.deployment_status.id }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Smoke test (production)
+    if: >
+      github.event.deployment_status.state == 'success' &&
+      (github.event.deployment_status.environment == 'Production' ||
+       github.event.deployment_status.environment == 'production')
+    runs-on: ubuntu-latest
+    env:
+      SMOKE_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Smoke test against live production URL
+        run: pnpm exec playwright test tests/e2e/smoke.spec.ts
