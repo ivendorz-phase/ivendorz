@@ -14,7 +14,8 @@ Deliberately lightweight — this file points, it never restates.
    0/0/0); findings are raised, then owner-adjudicated (Raise ≠ Accept); records live in
    `governanceReviews/`; documentation map: [`docs/INDEX.md`](docs/INDEX.md).
 
-Practicalities: npm is the canonical package manager (`package-lock.json`). Verification
-gates: `node scripts/check-structure.mjs`, `npm run typecheck && npm run lint`, tests via
-`npm test`. All AI-generated code requires review before merge; architecture-affecting
+Practicalities: pnpm is the canonical package manager (`pnpm-lock.yaml`; pinned via the
+`packageManager` field — supersedes F-06 Option A per owner directive 2026-07-15). Verification
+gates: `node scripts/check-structure.mjs`, `pnpm run typecheck && pnpm run lint`, tests via
+`pnpm test`. All AI-generated code requires review before merge; architecture-affecting
 changes require human approval.

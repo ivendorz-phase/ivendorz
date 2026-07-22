@@ -6,7 +6,7 @@
 // `generated-contracts-registry/` (Doc-6A §11.4; CLAUDE.md §10 — never hand-edited).
 //
 // It writes ONLY `contracts-manifest.json` and never touches `generated-contracts-registry/prisma/`
-// (the Prisma client output, WP-0.5), so `npm run db:generate` and `npm run registry:build`
+// (the Prisma client output, WP-0.5), so `pnpm run db:generate` and `pnpm run registry:build`
 // co-exist in the registry without clobbering each other.
 //
 // Spine-only: it catalogs the contract files; it asserts/coins no contract content. Modules
