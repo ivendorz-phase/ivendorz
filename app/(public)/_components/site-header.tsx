@@ -1,10 +1,22 @@
 "use client";
 
-// Public top-nav chrome (Doc-7C SR2 `(public)` group / Doc-7D PR1, PR7). ANONYMOUS: there is NO
-// org-switcher and NO notification center here (those are authenticated shell slots — Doc-7C §4/§6).
+// Public top-nav chrome (Doc-7C SR2 `(public)` group / Doc-7D PR1, PR7). There is NO org-switcher and
+// NO notification center here (those are authenticated shell slots — Doc-7C §4/§6), in either state.
 // Conversion CTAs (Sign in · Get started · Request for Quotation) route to the auth-entry area
-// (Doc-7E owns the auth action — Doc-7D PR5). That rule is unchanged and still governs those three.
+// (Doc-7E owns the auth action — Doc-7D PR5). That rule is unchanged and still governs those three
+// FOR ANONYMOUS VISITORS.
 // FE-PUB-09: hosts the Industrial Category Explorer (IA §5.3 — MEGA_MENU package instance).
+//
+// 2026-07-22 — SESSION-AWARE (Doc-7D §12, owner-approved; the corpus fold of §12 into
+// `Doc-7D_SERIES_FROZEN_v1.0` v1.2 → v1.3 is a HUMAN record action and is NOT yet done — see
+// `governanceReviews/Doc-7D_SessionAwareHeader_Additive_Patch_PROPOSAL.md`). When the browser reports
+// a session, three slots swap and nothing else does: the row-1 auth cluster becomes an account menu
+// carrying the viewer's OWN identity + the dashboard item set (§12.3-A), and `Sell on iVendorz` +
+// `Request for Quotation` retarget their workspace entries. The session is read CLIENT-SIDE ONLY so no
+// `(public)` route becomes dynamic (PR7/SSG holds); only the viewer's OWN email/name renders — never
+// anything org-scoped (org, participation, private status stay forbidden — Inv #5/#11). Email comes
+// from the same session read, adding no data call (§12.4.1). See `account-affordance.tsx`; the bounds
+// there are binding, not stylistic.
 //
 // 2026-07-16 — STALE PLACEHOLDERS RETIRED (verified against the "iVendorz Public Pages" reference,
 // design project `14497856-6435-433d-b191-2a32431d642b`). This file previously read "Nav items marked
@@ -29,8 +41,10 @@
 // — see `SELL_ON_IVENDORZ_HREF` for the 2026-07-16 revert that restored this. "More" groups
 // Pricing/Resources/How-it-works, all of which are now BUILT (see the placeholder note below).
 // "Support" routes to `/contact`; no help-centre surface exists, so no label promises one.
-// No language switcher / account-menu affordance is rendered: this codebase has no i18n system and
-// no anonymous "account" concept, so a decorative toggle for either would be pure fabrication (GI-03).
+// No language switcher is rendered: this codebase has no i18n system, so a decorative toggle would be
+// pure fabrication (GI-03). The account menu is NOT decorative — it appears only when a real session is
+// present, and it renders only the viewer's own identity it has actually read from that session
+// (§12.3-A), never a fabricated name.
 import * as React from "react";
 import Link from "next/link";
 import { ChevronDown, FilePlus2, Menu } from "lucide-react";
@@ -55,6 +69,7 @@ import {
 import { Separator } from "@/frontend/primitives/separator";
 import { Explorer } from "./explorer/explorer";
 import type { ExplorerMobileProps } from "./explorer/explorer-mobile";
+import { PublicAccountAffordance, authedHref, useSessionIdentity } from "./account-affordance";
 
 type ExplorerMobileComponent = React.ComponentType<ExplorerMobileProps>;
 
@@ -83,6 +98,15 @@ const MORE_LINKS = [
  * assume. ESCALATED; restore only on an owner-attributed ruling recorded here.
  */
 const SELL_ON_IVENDORZ_HREF = "/login";
+/**
+ * Authenticated destinations for the conversion CTAs (Doc-7D §12.2, owner-approved 2026-07-22 —
+ * fold pending). Each is the entry point OWNED BY ITS WORKSPACE SURFACE DOC (Doc-7F Buyer, Doc-7G
+ * Vendor) and bound here by pointer; §12 authors neither. Labels are unchanged in both states — only
+ * the destination varies — so PR5's anonymous copy is untouched and the row cannot shift on
+ * hydration. Every destination re-validates server-side; this gates nothing (§12.4.4).
+ */
+const RFQ_HREF_AUTHED = "/buy/rfqs/new"; // buyer RFQ-creation entry (Doc-7F)
+const SELL_ON_IVENDORZ_HREF_AUTHED = "/sell/dashboard"; // vendor workspace entry (Doc-7G)
 /** Routes to the real `/contact` page ("Contact & support"). Labelled "Support" — see `SUPPORT_LABEL`. */
 const HELP_CENTER_HREF = "/contact";
 /**
@@ -96,6 +120,12 @@ const SUPPORT_LABEL = "Support";
 
 export function SiteHeader() {
   const [open, setOpen] = React.useState(false);
+  // Doc-7D §12.1 — the auth session is read in the browser only, ONCE per header, threaded to every
+  // consumer. `present` is false until the browser resolves, so the server-rendered (indexed,
+  // cacheable) HTML is the anonymous header. `session` also carries the viewer's own email/name for
+  // the account menu (§12.3-A); the CTAs need only the boolean.
+  const session = useSessionIdentity();
+  const present = session.present;
   const [MobileExplorer, setMobileExplorer] = React.useState<ExplorerMobileComponent | null>(null);
   const importingMobile = React.useRef(false);
 
@@ -137,12 +167,10 @@ export function SiteHeader() {
         </div>
 
         <div className="ml-auto hidden shrink-0 items-center gap-2 md:flex">
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/login">Sign in</Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/login">Get started</Link>
-          </Button>
+          {/* Anonymous: Sign in · Get started (PR5, unchanged). Authenticated: an account menu with
+              the viewer's own identity + the dashboard item set (§12.3-A), no standalone Dashboard
+              button (§12.2-A). */}
+          <PublicAccountAffordance session={session} />
         </div>
 
         <div className="ml-auto md:hidden">
@@ -179,7 +207,15 @@ export function SiteHeader() {
                 ))}
                 <SheetClose asChild>
                   <Button asChild variant="ghost" className="justify-start">
-                    <Link href={SELL_ON_IVENDORZ_HREF}>Sell on iVendorz</Link>
+                    <Link
+                      href={authedHref(
+                        present,
+                        SELL_ON_IVENDORZ_HREF,
+                        SELL_ON_IVENDORZ_HREF_AUTHED,
+                      )}
+                    >
+                      Sell on iVendorz
+                    </Link>
                   </Button>
                 </SheetClose>
                 <SheetClose asChild>
@@ -203,25 +239,67 @@ export function SiteHeader() {
                 )}
               </section>
               <Separator className="my-4" />
+              {/* Mobile auth block — the same swap as row 1. The drawer has no room for a dropdown, so
+                  the authenticated menu's identity + entries are listed inline (§12.3-A): the viewer's
+                  own email leads, then the dashboard item set. */}
               <div className="flex flex-col gap-2">
                 <SheetClose asChild>
                   <Button asChild>
-                    <Link href="/login">
+                    <Link href={authedHref(present, "/login", RFQ_HREF_AUTHED)}>
                       <FilePlus2 aria-hidden />
                       Request for Quotation
                     </Link>
                   </Button>
                 </SheetClose>
-                <SheetClose asChild>
-                  <Button asChild variant="outline">
-                    <Link href="/login">Sign in</Link>
-                  </Button>
-                </SheetClose>
-                <SheetClose asChild>
-                  <Button asChild variant="outline">
-                    <Link href="/login">Get started</Link>
-                  </Button>
-                </SheetClose>
+                {present ? (
+                  <>
+                    {/* Own identity only — email (name if the session carries one). No org. */}
+                    {(session.name ?? session.email) ? (
+                      <p className="truncate px-1 text-sm font-medium text-iv-ink-strong">
+                        {session.name ?? session.email}
+                      </p>
+                    ) : null}
+                    <SheetClose asChild>
+                      <Button asChild variant="outline">
+                        <Link href="/dashboard">Dashboard</Link>
+                      </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Button asChild variant="outline">
+                        <Link href="/account">Account</Link>
+                      </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Button asChild variant="outline">
+                        <Link href="/account">Settings</Link>
+                      </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Button asChild variant="outline">
+                        <Link href={HELP_CENTER_HREF}>Help</Link>
+                      </Button>
+                    </SheetClose>
+                    {/* POST, never a link — a GET logout is prefetched on hover. */}
+                    <form action="/logout" method="post">
+                      <Button type="submit" variant="outline" className="w-full">
+                        Log out
+                      </Button>
+                    </form>
+                  </>
+                ) : (
+                  <>
+                    <SheetClose asChild>
+                      <Button asChild variant="outline">
+                        <Link href="/login">Sign in</Link>
+                      </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Button asChild variant="outline">
+                        <Link href="/login">Get started</Link>
+                      </Button>
+                    </SheetClose>
+                  </>
+                )}
               </div>
             </SheetContent>
           </Sheet>
@@ -255,7 +333,9 @@ export function SiteHeader() {
               </DropdownMenuContent>
             </DropdownMenu>
             <Button asChild variant="ghost" size="sm" className="hover:text-iv-ink-heading">
-              <Link href={SELL_ON_IVENDORZ_HREF}>Sell on iVendorz</Link>
+              <Link href={authedHref(present, SELL_ON_IVENDORZ_HREF, SELL_ON_IVENDORZ_HREF_AUTHED)}>
+                Sell on iVendorz
+              </Link>
             </Button>
           </nav>
 
@@ -268,7 +348,7 @@ export function SiteHeader() {
                 as a pill to match the reference layout; current button color kept (not gold —
                 gold stays reserved for premium/verified/featured contexts). */}
             <Button asChild size="sm" className="rounded-full">
-              <Link href="/login">
+              <Link href={authedHref(present, "/login", RFQ_HREF_AUTHED)}>
                 <FilePlus2 aria-hidden />
                 Request for Quotation
               </Link>

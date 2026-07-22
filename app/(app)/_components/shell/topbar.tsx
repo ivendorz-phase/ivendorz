@@ -47,8 +47,13 @@ export function Topbar({ vm, orgSwitcherSlot, notificationSlot, userMenuSlot }: 
         org={identity.activeOrg}
         organizations={identity.organizations}
       />
+      {/* Brand mark = the exit to the public/marketing site (owner directive 2026-07-22) — the
+          reverse direction of the public header's session affordance (`account-affordance.tsx`).
+          Chrome only: gates nothing, reads nothing. Visible at every width, so no separate
+          "Public site" link is needed. */}
       <Link
-        href="/buy/dashboard"
+        href="/"
+        aria-label="iVendorz — public site"
         className="inline-flex items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <BrandMark height={28} />

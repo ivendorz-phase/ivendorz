@@ -1,6 +1,76 @@
 # Doc-7D Additive Patch — Authenticated-Visitor Header Affordance on the Public Surface
 
-**Status:** **PROPOSED (DRAFT) — AWAITS HUMAN / ARCHITECTURE-REVIEW-BOARD APPROVAL.** Doc-7D is part of the
+**Status:** **OWNER-APPROVED 2026-07-22 — option (A) ruled. AWAITS THE HUMAN CORPUS-FOLD ACTION.** The build
+is authorized and implemented (see "Realization" below); the **binding** is not yet in force, because
+appending §12 to `Doc-7D_SERIES_FROZEN_v1.0` and bumping v1.2 → v1.3 is a **human record action** that no AI
+performs (CLAUDE.md §11; this file's own terms, below). Owner chat approval authorizes the **build**, not the
+**fold**.
+
+## Owner ruling — 2026-07-22
+
+| Item | Ruling |
+|---|---|
+| Flag-and-Halt fork (A/B/C) | **(A) Scoping clarification.** PR1's "anonymous" and PR6's "no browser-direct call" govern the **data/content projection and its indexability**; they do **not** reach a presence-only, content-inert, client-side auth affordance. §12 is therefore a clarifying additive section — **no exception is created**, and §12.4's bounds are what keep it inside PR1/PR6. |
+| §12.3 (no identity client-side) | **FIRST ruled UPHELD (neutral glyph), then REVERSED the same day — see §12.3-A.** The account menu now renders the viewer's **own** identity (email + initials avatar), for parity with the dashboard `UserMenu`. **Org-scoped data stays forbidden** (organization, participation, counts, private status — Inv #5/#11 untouched). |
+| §12.2 — standalone `Dashboard` CTA | **AMENDED — see §12.2-A below.** The separate `Dashboard` button is **removed**; the canonical workspace entry lives **inside** the account menu. |
+
+### §12.2-A — amendment to the §12.2 table *(owner, 2026-07-22)*
+
+The §12.2 table's "Primary CTAs → **`Dashboard`** … + a non-personal account menu" is amended to **the account
+menu alone**:
+
+| Element | Anonymous (unchanged) | Authenticated (as ruled) |
+|---|---|---|
+| Primary CTAs | `Sign in` · `Get started` | a non-personal account menu **only** — no standalone `Dashboard` button |
+
+The canonical workspace entry (today `/dashboard`) is **not dropped**; §12.2's closing sentence already
+requires the menu to link to the workspace entry and the sign-out endpoint, so it remains one click away.
+Rationale: a standalone button duplicated a menu item the same cluster already carries, and the anonymous
+header holds only two row-1 actions — the authenticated header should not hold more. Nothing else in §12
+changes; §12.4's bounds are unaffected.
+
+### §12.3-A — amendment to §12.3 *(owner, 2026-07-22 — reverses the same-day UPHELD ruling above)*
+
+**Directive:** "make the account dropdown on all public pages the **same as the dashboard**." The dashboard
+`UserMenu` (`app/(app)/_components/shell/user-menu.tsx`) renders an initials avatar + the user's name/email;
+§12.3's "neutral glyph, no identity" therefore blocked the requested parity. The owner was shown the exact
+tradeoff, chose **full identity parity**, and this record supersedes the UPHELD row.
+
+§12.3's forbidden list is **narrowed**, not deleted. What flips vs what holds:
+
+| Datum | Before (§12.3 as drafted) | After (§12.3-A) |
+|---|---|---|
+| Viewer's **own** email | forbidden | **ALLOWED** — rendered in the account menu |
+| Viewer's **own** initials avatar | forbidden | **ALLOWED** — derived from the identity above |
+| Viewer's **own** name | forbidden | **ALLOWED when present** — see the wiring note |
+| **organization**, participation, counts, private/blacklist status | forbidden | **STILL FORBIDDEN** (Inv #5, #11 — unchanged) |
+
+**Five bounds keep this inside the rest of §12 — none of §12.1/§12.4 is touched:**
+
+1. **Own identity only.** The menu renders the *viewer's own* email/name — never a third party's, never an
+   org-scoped or cross-party datum. Inv #11 (private exclusion undetectable) and Inv #5 (no client-asserted
+   org context) are untouched: neither is about the user's own email.
+2. **No new data call (§12.4.1 intact).** The email is read from the **same browser auth-session read §12.1
+   already authorizes** — the presence probe's `supabase.auth.getSession()`, whose `session.user.email` is the
+   source. No Doc-5 contract call is added; §12.4.1 ("presence-only; no Doc-5 contract call from `(public)`")
+   still holds. This is the identity §12.3 forbade, delivered through the read §12.1 already permits.
+3. **SSG/indexability intact (§12.4.2, PR7).** The server-rendered HTML still ships the **anonymous** header;
+   identity fills in **after hydration**, client-side. Crawlers index the anonymous document; no `(public)`
+   route becomes dynamic.
+4. **No fabricated name (binding FE directive — no read ⇒ no figure; GI-03).** The canonical display **name**
+   is NOT in the auth session — it is DB-resolved (`identity.users`) through the **deferred Doc-7C SR3 layer**,
+   which is why the dashboard `UserMenu` it now mirrors is *itself a neutral fixture today* (workspace layout
+   note: "Identity/participation are a neutral presentation fixture until … SR3 … is wired"). So until SR3
+   lands, the public menu shows the **real email** (+ email-derived initials), and a **name only if the
+   session already carries one** (`user_metadata`). No placeholder name is invented. The name populates on
+   **both** surfaces together when SR3 wires — building it now would be the deferred identity read, out of
+   Wave-3 sequence, and would add the browser data call §12.4.1 forbids.
+5. **Gates nothing (§12.4.4 intact).** Presentation only; every destination still re-validates server-side.
+
+---
+
+**Original status (superseded by the ruling above):** PROPOSED (DRAFT) — AWAITS HUMAN /
+ARCHITECTURE-REVIEW-BOARD APPROVAL. Doc-7D is part of the
 frozen Doc-7 series (`Doc-7D_SERIES_FROZEN_v1.0`). Per CLAUDE.md §11, **a frozen document is never edited in
 place**; this is an **additive** patch proposal that **adds one new section (§12)** and **alters no existing
 clause of §0–§11**. No AI action folds it into the corpus — on approval a human appends the new section and

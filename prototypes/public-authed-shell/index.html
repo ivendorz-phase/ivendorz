@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Public Pages — Signed-in State (Stage-3 prototype, NON-AUTHORITATIVE)</title>
+<style>
+  /* ── Tokens — copied VERBATIM from app/globals.css (light theme). Do not "improve" values. ──── */
+  :root {
+    --iv-brand-50:#eef3fd; --iv-brand-100:#dbe6fa; --iv-brand-200:#b8cef5; --iv-brand-300:#8fb0ea;
+    --iv-brand-400:#5f8ad9; --iv-brand-500:#2f5eb8; --iv-brand-600:#23438f; --iv-brand-700:#1c3672;
+    --iv-brand-800:#162a58; --iv-brand-900:#101f40; --iv-brand-950:#0b1530;
+    --iv-navy-600:#283f6a; --iv-navy-700:#1f3154; --iv-navy-800:#182643; --iv-navy-900:#111c33;
+
+    --iv-light-base:#f6f8fa; --iv-light-raised:#ffffff; --iv-light-muted:#f8fafc;
+    --iv-light-border:#e6e9ee; --iv-light-hover:#f8fafc;
+
+    --iv-bg: var(--iv-light-base);
+    --iv-surface: var(--iv-light-raised);
+    --iv-border: var(--iv-light-border);
+
+    --iv-fg-strong:#14213d; --iv-fg:#4a5568; --iv-fg-secondary:#4a5568; --iv-fg-muted:#5f6a7a;
+    --iv-fg-heading:#1a2b52; --iv-fg-heading-strong:#101f40; --iv-fg-inverse:#ffffff;
+
+    --iv-success-base:#16a34a; --iv-warning-base:#ca8a04; --iv-info-base:#2563eb;
+    --iv-danger-base:#dc2626; --iv-amber:#fbbf24;
+
+    --iv-radius-sm:4px; --iv-radius-md:8px; --iv-radius-lg:12px; --iv-radius-full:9999px;
+    --iv-shadow-xs:0 1px 2px rgba(15,23,42,.06);
+    --iv-shadow-sm:0 1px 3px rgba(15,23,42,.1), 0 1px 2px rgba(15,23,42,.06);
+    --iv-shadow-md:0 4px 8px rgba(15,23,42,.08), 0 2px 4px rgba(15,23,42,.06);
+    --iv-shadow-lg:0 12px 24px rgba(15,23,42,.1), 0 4px 8px rgba(15,23,42,.06);
+    --iv-content-max:1280px; --iv-gutter:24px;
+    --iv-duration-normal:200ms; --iv-ease-out:cubic-bezier(0,0,.2,1);
+    --iv-font-sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+
+    /* prototype-only chrome (review bar) — deliberately OUTSIDE the token system */
+    --rv-bg:#0b1322; --rv-fg:#e2e8f0; --rv-line:#233049; --rv-accent:#8fb0ea;
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
+
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:var(--iv-font-sans); background:var(--iv-bg); color:var(--iv-fg);
+    font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit}
+
+  /* ── Review bar (prototype chrome; hidden in Preview mode) ─────────────────────────────────── */
+  #reviewbar{position:sticky;top:0;z-index:80;background:var(--rv-bg);color:var(--rv-fg);
+    border-bottom:1px solid var(--rv-line);font-size:12.5px}
+  #reviewbar .rb-in{max-width:1600px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;
+    gap:14px;flex-wrap:wrap}
+  #reviewbar .rb-title{font-weight:700;letter-spacing:.2px;color:#fff}
+  #reviewbar .rb-tag{font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+    border:1px solid var(--rv-line);border-radius:var(--iv-radius-full);padding:2px 8px;color:var(--rv-accent)}
+  #reviewbar label{color:#94a3b8;margin-right:6px}
+  #reviewbar select{background:#131f36;color:#e2e8f0;border:1px solid var(--rv-line);
+    border-radius:var(--iv-radius-sm);padding:5px 8px;max-width:320px}
+  .seg{display:inline-flex;border:1px solid var(--rv-line);border-radius:var(--iv-radius-full);
+    overflow:hidden;background:#131f36}
+  .seg button{background:none;border:0;padding:5px 14px;cursor:pointer;color:#94a3b8;font-size:12.5px}
+  .seg button[aria-pressed="true"]{background:var(--iv-brand-500);color:#fff;font-weight:600}
+  .rb-check{display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:#94a3b8}
+  .rb-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+  body.preview #reviewbar{display:none}
+  #previewExit{position:fixed;right:16px;bottom:16px;z-index:90;display:none;background:var(--rv-bg);
+    color:#fff;border:1px solid var(--rv-line);border-radius:var(--iv-radius-full);
+    padding:9px 16px;cursor:pointer;box-shadow:var(--iv-shadow-lg);font-size:12.5px}
+  body.preview #previewExit{display:block}
+
+  /* ── Layout: stage + delta panel ───────────────────────────────────────────────────────────── */
+  #wrap{display:grid;grid-template-columns:minmax(0,1fr) 360px;align-items:start}
+  body.preview #wrap{grid-template-columns:minmax(0,1fr)}
+  body.preview #panel{display:none}
+  @media (max-width:1180px){#wrap{grid-template-columns:minmax(0,1fr)}#panel{display:none}}
+
+  /* ── The real public shell (mirrors app/(public)/layout.tsx) ───────────────────────────────── */
+  .container{max-width:var(--iv-content-max);margin:0 auto;padding:0 var(--iv-gutter)}
+  header.site{position:sticky;top:0;z-index:40;border-bottom:1px solid var(--iv-border);
+    background:var(--iv-surface)}
+  body:not(.preview) header.site{top:0}
+  .row1{display:flex;height:64px;align-items:center;gap:16px}
+  .brand{display:inline-flex;align-items:center;gap:8px;flex-shrink:0}
+  .brand-mark{width:28px;height:28px;border-radius:6px;background:var(--iv-brand-600);
+    display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px}
+  .brand-word{font-size:18px;font-weight:700;color:var(--iv-fg-heading-strong);letter-spacing:-.2px}
+  .searchbar{flex:1;min-width:0;max-width:576px}
+  .searchbar div{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;
+    border:1px solid var(--iv-border);border-radius:var(--iv-radius-md);background:var(--iv-light-muted);
+    color:var(--iv-fg-muted)}
+  .row1-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .row2{border-top:1px solid var(--iv-border)}
+  .row2 .container{display:flex;height:44px;align-items:center;gap:4px}
+  .row2-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0}
+
+  /* buttons — mirror kit variants (default / outline / ghost) */
+  .btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;
+    border-radius:var(--iv-radius-md);font-size:13px;font-weight:500;border:1px solid transparent;
+    cursor:pointer;background:none;transition:background var(--iv-duration-normal) var(--iv-ease-out),
+    color var(--iv-duration-normal) var(--iv-ease-out);white-space:nowrap}
+  .btn-ghost{color:var(--iv-fg)} .btn-ghost:hover{background:var(--iv-light-hover);color:var(--iv-fg-heading)}
+  .btn-outline{border-color:var(--iv-border);background:var(--iv-surface);color:var(--iv-fg-strong)}
+  .btn-outline:hover{background:var(--iv-light-hover)}
+  .btn-primary{background:var(--iv-brand-600);color:#fff}
+  .btn-primary:hover{background:var(--iv-brand-700)}
+  .btn-pill{border-radius:var(--iv-radius-full)}
+  .btn-lg{height:40px;padding:0 18px;font-size:14px}
+  .ic{width:15px;height:15px;flex-shrink:0}
+
+  /* account menu — the authed-only affordance */
+  .account{position:relative}
+  .account-trigger{display:inline-flex;align-items:center;gap:8px;height:36px;padding:3px 9px 3px 3px;
+    border:1px solid var(--iv-border);border-radius:var(--iv-radius-full);background:var(--iv-surface);
+    cursor:pointer}
+  .account-trigger:hover{background:var(--iv-light-hover)}
+  /* §12.3-A — avatar-only trigger (own initials); no name beside it in the compact header. */
+  .account-trigger{width:auto;padding:3px}
+  .avatar{width:28px;height:28px;border-radius:var(--iv-radius-full);background:var(--iv-brand-600);
+    color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700;letter-spacing:.3px}
+  .account-name{font-size:13px;font-weight:600;color:var(--iv-fg-strong);max-width:130px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .account-menu{position:absolute;right:0;top:calc(100% + 6px);width:262px;background:var(--iv-surface);
+    border:1px solid var(--iv-border);border-radius:var(--iv-radius-lg);box-shadow:var(--iv-shadow-lg);
+    padding:6px;display:none;z-index:60}
+  .account-menu[data-open="true"]{display:block}
+  .am-head{padding:9px 10px 10px;border-bottom:1px solid var(--iv-border);margin-bottom:6px}
+  .am-head .n{font-size:13px;font-weight:600;color:var(--iv-fg-strong)}
+  .am-head .o{font-size:12px;color:var(--iv-fg-muted);margin-top:2px}
+  .am-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--iv-radius-sm);
+    font-size:13px;color:var(--iv-fg);cursor:pointer}
+  .am-item:hover{background:var(--iv-light-hover);color:var(--iv-fg-heading)}
+  .am-sep{height:1px;background:var(--iv-border);margin:6px 0}
+  .am-note{padding:6px 10px 2px;font-size:10px;text-transform:uppercase;letter-spacing:.7px;
+    color:var(--iv-fg-muted);font-weight:600}
+
+  /* ── Page body skeleton vocabulary ─────────────────────────────────────────────────────────── */
+  main{min-height:52vh}
+  .sec{padding:32px 0}
+  .sec + .sec{border-top:1px solid var(--iv-border)}
+  h1.p{font-size:30px;line-height:1.2;font-weight:700;color:var(--iv-fg-heading);margin:0 0 10px;
+    letter-spacing:-.4px}
+  h2.p{font-size:19px;font-weight:650;color:var(--iv-fg-heading);margin:0 0 14px}
+  p.lead{font-size:15px;color:var(--iv-fg-secondary);max-width:62ch;margin:0 0 20px}
+  .hero{background:linear-gradient(180deg,#fff 0%,var(--iv-light-muted) 100%);
+    border-bottom:1px solid var(--iv-border);padding:52px 0 44px}
+  .cta-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px}
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  @media(max-width:900px){.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .card{background:var(--iv-surface);border:1px solid var(--iv-border);border-radius:var(--iv-radius-lg);
+    padding:16px;box-shadow:var(--iv-shadow-xs)}
+  .card .thumb{height:104px;border-radius:var(--iv-radius-md);background:var(--iv-light-muted);
+    border:1px dashed var(--iv-border);margin-bottom:12px}
+  .ln{height:9px;border-radius:var(--iv-radius-sm);background:var(--iv-light-muted);margin:7px 0}
+  .ln.w70{width:70%} .ln.w45{width:45%} .ln.w90{width:90%}
+  .prose .ln{height:10px;margin:11px 0}
+  .split{display:grid;grid-template-columns:250px minmax(0,1fr);gap:24px}
+  @media(max-width:900px){.split{grid-template-columns:minmax(0,1fr)}}
+  .rail{border:1px solid var(--iv-border);border-radius:var(--iv-radius-lg);padding:14px;
+    background:var(--iv-surface)}
+  .chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;
+    border-radius:var(--iv-radius-full);border:1px solid var(--iv-border);font-size:12px;
+    color:var(--iv-fg-secondary);background:var(--iv-surface)}
+  .microsite-nav{display:flex;gap:2px;border-bottom:1px solid var(--iv-border);overflow-x:auto;
+    background:var(--iv-surface)}
+  .microsite-nav a{padding:11px 13px;font-size:13px;color:var(--iv-fg-secondary);
+    border-bottom:2px solid transparent;white-space:nowrap;cursor:pointer}
+  .microsite-nav a[aria-current="page"]{color:var(--iv-brand-600);border-bottom-color:var(--iv-brand-600);
+    font-weight:600}
+  .banner{border:1px solid var(--iv-border);border-radius:var(--iv-radius-lg);padding:14px 16px;
+    background:var(--iv-light-muted);font-size:13px;color:var(--iv-fg-secondary);display:flex;
+    gap:10px;align-items:flex-start}
+  .banner b{color:var(--iv-fg-strong);font-weight:600}
+  .center-note{text-align:center;padding:60px 0}
+
+  footer.site{margin-top:auto;border-top:1px solid var(--iv-border);background:var(--iv-surface)}
+  footer.site .cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px;padding:44px 0 0}
+  @media(max-width:900px){footer.site .cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  footer.site h3{font-size:13px;font-weight:650;color:var(--iv-fg-heading-strong);margin:0 0 12px}
+  footer.site li{list-style:none;margin:0 0 8px;font-size:13px;color:var(--iv-fg-secondary)}
+  footer.site ul{padding:0;margin:0}
+  footer.site .blurb{font-size:13px;color:var(--iv-fg-secondary);max-width:30ch;margin:12px 0 0}
+  .fbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;
+    color:var(--iv-fg-muted);border-top:1px solid var(--iv-border);margin-top:32px;padding:18px 0 34px}
+  .fbar nav{display:flex;gap:16px}
+
+  /* ── Delta annotation ──────────────────────────────────────────────────────────────────────── */
+  body.annot .delta{position:relative;outline:2px dashed var(--iv-warning-base);outline-offset:3px;
+    border-radius:var(--iv-radius-md)}
+  /* Label sits BELOW the marked element everywhere — above it would clip off the top of the
+     sticky header, which is exactly where the shell deltas live. */
+  body.annot .delta::after{content:attr(data-delta);position:absolute;left:0;bottom:-9px;
+    transform:translateY(100%);background:var(--iv-warning-base);color:#fff;font-size:10px;
+    font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:2px 6px;
+    border-radius:var(--iv-radius-sm);white-space:nowrap;z-index:30;pointer-events:none}
+  /* Right-aligned in the row-1 cluster so the two header labels don't collide. */
+  body.annot .row1-right .delta::after{left:auto;right:0}
+
+  /* ── Right panel ───────────────────────────────────────────────────────────────────────────── */
+  #panel{position:sticky;top:0;align-self:start;height:100dvh;overflow-y:auto;
+    background:#0e1626;color:#cbd5e1;border-left:1px solid var(--rv-line);font-size:12.5px}
+  #panel .pb{padding:16px 18px;border-bottom:1px solid var(--rv-line)}
+  #panel h4{margin:0 0 4px;font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:#7c8ba5;
+    font-weight:700}
+  #panel .route{color:#fff;font-size:14px;font-weight:650;margin:0 0 2px}
+  #panel .file{font-family:ui-monospace,monospace;font-size:11px;color:#7c8ba5;word-break:break-all}
+  #panel table{width:100%;border-collapse:collapse;margin-top:8px}
+  #panel td{padding:7px 0;vertical-align:top;border-top:1px solid #1a2537}
+  #panel tr:first-child td{border-top:0}
+  #panel .k{color:#8fb0ea;font-weight:600;white-space:nowrap;padding-right:10px;width:1%}
+  #panel .anon{color:#94a3b8;text-decoration:line-through}
+  #panel .auth{color:#7ee2a8}
+  #panel .arrow{color:#5f6a7a;padding:0 5px}
+  #panel .oq{border-left:2px solid var(--iv-warning-base);padding-left:10px;margin:10px 0;color:#e2c179}
+  #panel .none{color:#7c8ba5;font-style:italic}
+  #panel code{font-family:ui-monospace,monospace;font-size:11px;color:#cbd5e1;background:#18233a;
+    padding:1px 4px;border-radius:3px}
+</style>
+</head>
+<body class="annot">
+
+<!-- ══ Review chrome (prototype-only) ══════════════════════════════════════════════════════════ -->
+<div id="reviewbar">
+  <div class="rb-in">
+    <span class="rb-title">Public pages · signed-in state</span>
+    <span class="rb-tag">Stage-3 · non-authoritative</span>
+
+    <span><label for="stateSel">Visitor</label>
+      <span class="seg" role="group" aria-label="Visitor state">
+        <button type="button" data-state="anon" aria-pressed="true">Anonymous</button>
+        <button type="button" data-state="auth" aria-pressed="false">Signed in</button>
+      </span>
+    </span>
+
+    <span><label for="pageSel">Page</label>
+      <select id="pageSel" aria-label="Public page"></select>
+    </span>
+
+    <span class="rb-right">
+      <label class="rb-check"><input type="checkbox" id="annotChk" checked /> Mark deltas</label>
+      <button class="btn btn-ghost" id="previewBtn" style="color:#cbd5e1;border:1px solid var(--rv-line)">Preview mode</button>
+    </span>
+  </div>
+</div>
+<button id="previewExit" type="button">Exit preview</button>
+
+<div id="wrap">
+  <div>
+    <!-- ══ Public shell — mirrors app/(public)/layout.tsx ═══════════════════════════════════════ -->
+    <header class="site">
+      <!-- Row 1 — logo · catalog search · auth entry -->
+      <div class="container row1">
+        <a class="brand" href="#/">
+          <span class="brand-mark">iV</span><span class="brand-word">iVendorz</span>
+        </a>
+        <div class="searchbar"><div>
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <span>Search products, suppliers, equipment…</span>
+        </div></div>
+        <div class="row1-right" id="row1Right"></div>
+      </div>
+
+      <!-- Row 2 — Categories · Marketplace · Suppliers · More · Sell on iVendorz -->
+      <div class="row2"><div class="container">
+        <button class="btn btn-ghost" type="button">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          All Categories
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <nav style="display:flex;gap:4px;align-items:center">
+          <a class="btn btn-ghost" href="#/marketplace">Marketplace</a>
+          <a class="btn btn-ghost" href="#/vendors">Suppliers</a>
+          <button class="btn btn-ghost" type="button">More
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <span id="sellSlot"></span>
+        </nav>
+        <div class="row2-right">
+          <a class="btn btn-ghost" href="#/contact">Support</a>
+          <span id="rfqSlot"></span>
+        </div>
+      </div></div>
+    </header>
+
+    <main id="stage"></main>
+
+    <!-- ══ Footer — identical in both states (no delta) ═════════════════════════════════════════ -->
+    <footer class="site"><div class="container">
+      <div class="cols">
+        <div>
+          <a class="brand" href="#/"><span class="brand-mark">iV</span><span class="brand-word">iVendorz</span></a>
+          <p class="blurb">The industrial procurement operating system for Bangladesh — connecting
+            factories, plants and EPC contractors with verified suppliers, from RFQ to award to delivery.</p>
+        </div>
+        <div><h3>Product</h3><ul>
+          <li><a href="#/marketplace">Marketplace</a></li><li><a href="#/categories">Categories</a></li>
+          <li><a href="#/how-it-works">How it works</a></li><li><a href="#/pricing">Pricing</a></li></ul></div>
+        <div><h3>Company</h3><ul>
+          <li><a href="#/about">About</a></li><li><a href="#/for-buyers">For buyers</a></li>
+          <li><a href="#/for-vendors">For vendors</a></li><li><a href="#/contact">Contact</a></li></ul></div>
+        <div><h3>Resources</h3><ul>
+          <li><a href="#/resources">Guides</a></li><li><a href="#/trust">Trust &amp; safety</a></li>
+          <li><a href="#/compare">Compare</a></li><li><a href="#/legal/terms">Legal</a></li></ul></div>
+      </div>
+      <div class="fbar">
+        <p style="margin:0">© iVendorz — Industrial Procurement OS for Bangladesh.</p>
+        <nav><a href="#/legal/terms">Terms</a><a href="#/legal/privacy">Privacy</a>
+          <a href="#/legal/confidentiality-charter">Charter</a></nav>
+      </div>
+    </div></footer>
+  </div>
+
+  <!-- ══ Delta panel ═════════════════════════════════════════════════════════════════════════ -->
+  <aside id="panel"></aside>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   Public pages — signed-in state. Stage-3 clickable prototype. NON-AUTHORITATIVE.
+
+   SCOPE (owner-selected 2026-07-22): ALL public pages · delta = SHELL + CTA ONLY.
+   Page bodies are deliberately skeletal — the subject of this prototype is the shell and the
+   conversion CTAs, which are the only things that change when the visitor is signed in. Body
+   content is unchanged between states on every page, so rendering it at full fidelity would add
+   noise, not signal.
+
+   NO FABRICATED FIGURES. Public surfaces get zero stats (reference-fidelity directive); the
+   signed-in identity below is illustrative seed data, as prototype convention allows.
+
+   OPEN QUESTIONS are surfaced in the right-hand panel, not silently resolved here. The
+   session-aware public header is a Doc-7D proposal AWAITING AN OWNER RULING — this prototype is
+   the artifact for that ruling, not a decision.
+   ═════════════════════════════════════════════════════════════════════════════════════════════ */
+
+/* Seed identity for the account menu. Doc-7D §12.3-A (owner, 2026-07-22) allows the viewer's OWN
+   email + initials (parity with the dashboard `UserMenu`), sourced from the browser auth session with
+   no new data call. NO org line (org-scoped, forbidden — Inv #5/#11) and NO fabricated name (the
+   canonical name is DB-resolved via the deferred Doc-7C SR3 layer). This seed mirrors what the live
+   header shows a signed-in visitor: the real email + email-derived initials. */
+const SEED = { email: "vendor.demo@ivendorz.com", initials: "VE" };
+
+/* ── Shell slots ─────────────────────────────────────────────────────────────────────────────
+   Row 1 right cluster, row 2 "Sell on iVendorz", row 2 RFQ pill. These three are the ENTIRE
+   shell delta. Everything else in the header/footer is byte-identical between states. */
+const SHELL = {
+  anon: {
+    row1: `<a class="btn btn-ghost" href="#/login">Sign in</a>
+           <a class="btn btn-outline" href="#/login">Get started</a>`,
+    sell: `<a class="btn btn-ghost" href="#/login">Sell on iVendorz</a>`,
+    rfq:  `<a class="btn btn-primary btn-pill" href="#/login">
+             <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M14 3v5h5"/><path d="M19 21H5V3h9l5 5v13Z"/><path d="M9 15h6M12 12v6"/></svg>
+             Request for Quotation</a>`,
+  },
+  auth: {
+    /* §12.3-A (owner, 2026-07-22 — reverses the same-day neutral-glyph ruling): the menu renders the
+       viewer's OWN identity + the dashboard item set. Shown here as the REAL email (+ email-derived
+       initials), which is what the browser reads from the auth session — NO new data call (§12.4.1).
+       No org line (org stays forbidden, Inv #5/#11). No fabricated NAME: the canonical name is
+       DB-resolved via the deferred Doc-7C SR3 layer, so until that wires, the email is the identity
+       line on both this surface and the dashboard (itself a fixture today). */
+    row1: `<div class="account">
+             <button class="account-trigger delta" data-delta="replaces Sign in / Get started"
+                     id="acctBtn" type="button" aria-expanded="false" aria-haspopup="menu"
+                     aria-label="Account menu">
+               <span class="avatar">${SEED.initials}</span>
+             </button>
+             <div class="account-menu" id="acctMenu" role="menu">
+               <div class="am-head">
+                 <div class="n">${SEED.email}</div>
+               </div>
+               <div class="am-item" role="menuitem">Dashboard</div>
+               <div class="am-item" role="menuitem">Account</div>
+               <div class="am-item" role="menuitem">Settings</div>
+               <div class="am-item" role="menuitem">Help</div>
+               <div class="am-sep"></div>
+               <div class="am-item" role="menuitem">Log out</div>
+             </div>
+           </div>`,
+    sell: `<a class="btn btn-ghost delta" data-delta="→ /sell/dashboard" href="#/sell">Sell on iVendorz</a>`,
+    rfq:  `<a class="btn btn-primary btn-pill delta" data-delta="→ RFQ composer" href="#/buy/rfqs/new">
+             <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M14 3v5h5"/><path d="M19 21H5V3h9l5 5v13Z"/><path d="M9 15h6M12 12v6"/></svg>
+             Request for Quotation</a>`,
+  },
+};
+
+/* ── Body fragment vocabulary ────────────────────────────────────────────────────────────────── */
+const F = {
+  hero: (t, s, ctas = "") => `<section class="hero"><div class="container">
+      <h1 class="p">${t}</h1><p class="lead">${s}</p>
+      ${ctas ? `<div class="cta-row">${ctas}</div>` : ""}</div></section>`,
+  sec: (inner) => `<section class="sec"><div class="container">${inner}</div></section>`,
+  cards: (n, cols = 4) => `<div class="grid g${cols}">` + Array.from({ length: n }, () =>
+      `<div class="card"><div class="thumb"></div><div class="ln w70"></div><div class="ln w45"></div></div>`
+    ).join("") + `</div>`,
+  rows: (n) => Array.from({ length: n }, () =>
+      `<div class="card" style="margin-bottom:12px"><div class="ln w45"></div><div class="ln w90"></div><div class="ln w70"></div></div>`
+    ).join(""),
+  prose: (n = 6) => `<div class="prose">` + Array.from({ length: n }, (_, i) =>
+      `<div class="ln ${i % 3 === 2 ? "w70" : "w90"}"></div>`).join("") + `</div>`,
+  chips: (labels) => `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">` +
+      labels.map((l) => `<span class="chip">${l}</span>`).join("") + `</div>`,
+  rail: () => `<aside class="rail"><div class="ln w70"></div><div class="ln"></div><div class="ln w45"></div>
+      <div style="height:14px"></div><div class="ln w70"></div><div class="ln"></div><div class="ln w45"></div></aside>`,
+};
+
+/* CTA helper — renders the right variant for the current state and tags the delta. */
+function cta(state, spec) {
+  const s = spec[state];
+  if (!s) return "";
+  const changed = state === "auth" && spec.auth.label !== undefined &&
+    (spec.anon.label !== spec.auth.label || spec.anon.href !== spec.auth.href);
+  const cls = `btn btn-${s.variant || "primary"} btn-lg${changed ? " delta" : ""}`;
+  const d = changed ? ` data-delta="${(spec.deltaTag || "CTA").replace(/"/g, "&quot;")}"` : "";
+  return `<a class="${cls}"${d} href="#${s.href}">${s.label}</a>`;
+}
+
+/* ── The route table ─────────────────────────────────────────────────────────────────────────
+   Every `app/(public)` route. `ctas` names each conversion CTA on the page and its anon → authed
+   form. `open` lists the questions this page raises for the ruling. */
+const GET_STARTED = {
+  anon: { label: "Get started", href: "/login", variant: "primary" },
+  auth: { label: "Go to dashboard", href: "/dashboard", variant: "primary" },
+  deltaTag: "conversion CTA",
+};
+const POST_RFQ = {
+  anon: { label: "Post an RFQ", href: "/login", variant: "outline" },
+  auth: { label: "Post an RFQ", href: "/buy/rfqs/new", variant: "outline" },
+  deltaTag: "destination only",
+};
+
+const ROUTES = [
+  { group: "Landing & discovery", path: "/", title: "Landing", file: "app/(public)/page.tsx",
+    ctas: [["Hero primary", GET_STARTED], ["Hero secondary", POST_RFQ],
+           ["CTA band", GET_STARTED],
+           ["Supplier card · Save", {
+             anon: { label: "Save", href: "/login", variant: "outline" },
+             auth: { label: "Save", href: "#", variant: "outline" },
+             deltaTag: "becomes a real action" }]],
+    open: ["`VendorSaveButton` currently hard-codes `saved={false}` + `href=\"/login\"`. Signed in it must become an actual favourite toggle — that needs an **M2 favorites read**, which is personalization, i.e. outside the shell+CTA scope the owner picked. Ship as an action that posts, or leave routing to `/login`? Recommend: enable the action, keep the *rendered* state `false` until the read exists."],
+    body: (st) => F.hero(
+        "Source industrial supply, service, fabrication and consulting — one procurement OS",
+        "Post a requirement, reach verified suppliers across Bangladesh, and run the award and delivery paperwork in the same place.",
+        cta(st, GET_STARTED) + cta(st, POST_RFQ)) +
+      F.sec(`<h2 class="p">Browse by category</h2>${F.cards(8, 4)}`) +
+      F.sec(`<h2 class="p">Featured suppliers</h2>
+        <div class="grid g3">${Array.from({length:3},()=>`
+          <div class="card"><div class="thumb"></div><div class="ln w70"></div><div class="ln w45"></div>
+            <div class="cta-row" style="margin-top:12px">
+              ${cta(st,{anon:{label:"Save",href:"/login",variant:"outline"},auth:{label:"Save",href:"#",variant:"outline"},deltaTag:"real action"})}
+              ${cta(st,{anon:{label:"View profile",href:"/vendors/x",variant:"ghost"},auth:{label:"View profile",href:"/vendors/x",variant:"ghost"}})}
+            </div></div>`).join("")}</div>`) +
+      F.sec(`<div class="card" style="text-align:center;padding:36px">
+        <h2 class="p">Ready to source better?</h2>
+        <div class="cta-row" style="justify-content:center">${cta(st, GET_STARTED)}</div></div>`) },
+
+  { group: "Landing & discovery", path: "/marketplace", title: "Marketplace", file: "app/(public)/marketplace/page.tsx",
+    ctas: [], open: [],
+    body: () => F.sec(`<h1 class="p">Marketplace</h1><p class="lead">Products, equipment and
+        services listed by verified suppliers.</p>
+        <div class="split">${F.rail()}<div>${F.chips(["Category","Capability","Location","Verification"])}${F.cards(9,3)}</div></div>`) },
+
+  { group: "Landing & discovery", path: "/marketplace/category/[slug]", title: "Category listing",
+    file: "app/(public)/marketplace/category/[slug]/page.tsx", ctas: [], open: [],
+    body: () => F.sec(`<h1 class="p">Industrial Pumps &amp; Compressors</h1>
+        <p class="lead">Category listing — products and suppliers under this node.</p>
+        <div class="split">${F.rail()}<div>${F.cards(9,3)}</div></div>`) },
+
+  { group: "Landing & discovery", path: "/marketplace/product/[slug]", title: "Product detail",
+    file: "app/(public)/marketplace/product/[slug]/page.tsx",
+    ctas: [["Request quote", {
+      anon: { label: "Request quote", href: "/login", variant: "primary" },
+      auth: { label: "Request quote", href: "/buy/rfqs/new?product=…", variant: "primary" },
+      deltaTag: "→ RFQ composer, prefilled" }]],
+    open: ["Prefilling the composer from a product means carrying a product reference across the boundary. That is a **destination-resume**, which the intent-preserving auth ruling already permits — but the composer must treat it as a *hint*, never a replayed payload."],
+    body: (st) => F.sec(`<div class="split" style="grid-template-columns:minmax(0,1fr) 330px">
+        <div><div class="thumb" style="height:300px"></div>${F.prose(4)}</div>
+        <div class="rail">
+          <div class="ln w70"></div><div class="ln w45"></div>
+          <div class="cta-row" style="margin-top:16px;flex-direction:column;align-items:stretch">
+            ${cta(st,{anon:{label:"Request quote",href:"/login",variant:"primary"},auth:{label:"Request quote",href:"/buy/rfqs/new?product=…",variant:"primary"},deltaTag:"→ RFQ composer"})}
+          </div>
+          <div style="height:14px"></div><div class="ln w70"></div><div class="ln w45"></div>
+        </div></div>`) },
+
+  { group: "Landing & discovery", path: "/vendors", title: "Supplier directory", file: "app/(public)/vendors/page.tsx",
+    ctas: [], open: [],
+    body: () => F.sec(`<h1 class="p">Suppliers</h1><p class="lead">Verified industrial suppliers,
+        by capability, category and location.</p>
+        <div class="split">${F.rail()}<div>${F.chips(["Supply","Service","Fabrication","Consulting"])}${F.rows(5)}</div></div>`) },
+
+  { group: "Landing & discovery", path: "/search", title: "Search results", file: "app/(public)/search/page.tsx",
+    ctas: [], open: [],
+    body: () => F.sec(`<h1 class="p">Search results</h1>
+        <div class="split">${F.rail()}<div>${F.chips(["Products","Suppliers","Categories"])}${F.rows(6)}</div></div>`) },
+
+  { group: "Landing & discovery", path: "/categories", title: "Category index", file: "app/(public)/categories/page.tsx",
+    ctas: [], open: [],
+    body: () => F.sec(`<h1 class="p">All categories</h1><p class="lead">The full industrial
+        taxonomy, browsable from the top level down.</p>${F.cards(12,4)}`) },
+
+  { group: "Landing & discovery", path: "/compare", title: "Compare", file: "app/(public)/compare/page.tsx",
+    ctas: [], open: ["A signed-in visitor plausibly expects a *saved* comparison set. That is personalization — out of scope for this pass; recorded, not built."],
+    body: () => F.sec(`<h1 class="p">Compare</h1><p class="lead">Side-by-side comparison of
+        selected suppliers or products.</p>${F.cards(3,3)}`) },
+
+  /* ── Microsite ────────────────────────────────────────────────────────────────────────────── */
+  { group: "Vendor microsite", path: "/vendors/[slug]", title: "Microsite — Overview",
+    file: "app/(public)/vendors/[slug]/page.tsx",
+    ctas: [["Request quote from vendor", {
+      anon: { label: "Request quote", href: "/login", variant: "primary" },
+      auth: { label: "Request quote", href: "/buy/rfqs/new?vendor=…", variant: "primary" },
+      deltaTag: "→ RFQ composer, vendor-scoped" }]],
+    open: ["The microsite is the surface where an authed visitor most expects *their* relationship to show (“in your vendor directory”, “blacklisted”). **It must not.** Buyer Vendor Status is M4-private and Invariant 11 makes private exclusion undetectable — rendering any of it on a public page would leak it. Deliberately absent."],
+    body: (st) => micrositeShell("overview", st,
+      `<div class="split" style="grid-template-columns:minmax(0,1fr) 300px">
+        <div>${F.prose(5)}<div style="height:20px"></div>${F.cards(4,2)}</div>
+        ${F.rail()}</div>`) },
+
+  ...["about","capabilities","certifications","industries","products","projects","resources"].map((sub) => ({
+    group: "Vendor microsite", path: `/vendors/[slug]/${sub}`,
+    title: `Microsite — ${sub[0].toUpperCase()}${sub.slice(1)}`,
+    file: `app/(public)/vendors/[slug]/${sub}/page.tsx`, ctas: [], open: [],
+    body: (st) => micrositeShell(sub, st,
+      sub === "products" || sub === "projects" ? F.cards(6, 3) : F.prose(8)),
+  })),
+
+  { group: "Vendor microsite", path: "/vendors/[slug]/projects/[projectSlug]", title: "Microsite — Project detail",
+    file: "app/(public)/vendors/[slug]/projects/[projectSlug]/page.tsx", ctas: [], open: [],
+    body: (st) => micrositeShell("projects", st,
+      `<div class="thumb" style="height:280px"></div>${F.prose(6)}`) },
+
+  { group: "Vendor microsite", path: "/vendors/[slug]/contact", title: "Microsite — Contact",
+    file: "app/(public)/vendors/[slug]/contact/page.tsx",
+    ctas: [["Contact reveal", {
+      anon: { label: "Sign in to view", href: "/login", variant: "outline" },
+      auth: { label: "Request contact via iVendorz", href: "#", variant: "primary" },
+      deltaTag: "lead model, NOT a raw reveal" }]],
+    open: ["**The load-bearing one.** Today phone/email/website render “Sign in to view” — deliberately platform-mediated, avoiding fabricated details. Signing in must NOT simply unmask them: the lead model is the product, and no contract exists that returns raw vendor contact details to an authenticated buyer. This prototype therefore shows a *mediated request*, not a reveal. If the owner wants a true reveal, that is a new M2 read + a lead-model change — escalate, do not infer."],
+    body: (st) => micrositeShell("contact", st,
+      `<div class="split" style="grid-template-columns:minmax(0,1fr) 330px">
+        <div>${F.prose(4)}</div>
+        <div class="rail">
+          <div class="ln w45"></div>
+          <div class="banner" style="margin:12px 0">
+            <span>${st === "auth"
+              ? "<b>Contact is platform-mediated.</b> Your request reaches this supplier through iVendorz — details are not disclosed directly."
+              : "<b>Contact details are platform-mediated.</b> Sign in to reach this supplier."}</span>
+          </div>
+          ${cta(st,{anon:{label:"Sign in to view",href:"/login",variant:"outline"},auth:{label:"Request contact via iVendorz",href:"#",variant:"primary"},deltaTag:"mediated, not revealed"})}
+        </div></div>`) },
+
+  /* ── Marketing ───────────────────────────────────────────────────────────────────────────── */
+  { group: "Marketing", path: "/pricing", title: "Pricing", file: "app/(public)/pricing/page.tsx",
+    ctas: [["Page CTA", GET_STARTED], ["Per-plan CTA", {
+      anon: { label: "Get started", href: "/login", variant: "primary" },
+      auth: { label: "Choose plan", href: "/account/billing", variant: "primary" },
+      deltaTag: "plan selection" }]],
+    open: ["Pricing is the page where “Get started” least survives contact with a session. A signed-in visitor already has a plan, so the honest authed CTA is **Choose plan / Manage plan** into billing — but *which* of the two depends on their current entitlement, and entitlement is an M7 read this pass does not do. Prototype shows the neutral **Choose plan**. Needs a ruling."],
+    body: (st) => F.hero("Pricing", "Plans for buyers and suppliers.", cta(st, GET_STARTED)) +
+      F.sec(`<div class="grid g3">${Array.from({length:3},()=>`
+        <div class="card"><div class="ln w45"></div><div class="ln w70"></div><div class="ln"></div>
+          <div class="cta-row" style="margin-top:16px">
+            ${cta(st,{anon:{label:"Get started",href:"/login",variant:"primary"},auth:{label:"Choose plan",href:"/account/billing",variant:"primary"},deltaTag:"→ billing"})}
+          </div></div>`).join("")}</div>`) },
+
+  ...[["/for-buyers","For buyers"],["/for-vendors","For vendors"],["/how-it-works","How it works"],
+      ["/about","About"]].map(([path, title]) => ({
+    group: "Marketing", path, title, file: `app/(public)${path}/page.tsx`,
+    ctas: [["Hero CTA", GET_STARTED], ["Closing CTA", GET_STARTED]],
+    open: [],
+    body: (st) => F.hero(title, "Marketing narrative for this audience.", cta(st, GET_STARTED)) +
+      F.sec(F.prose(7)) + F.sec(`<div class="card" style="text-align:center;padding:36px">
+        <h2 class="p">Get started with iVendorz</h2>
+        <div class="cta-row" style="justify-content:center">${cta(st, GET_STARTED)}</div></div>`),
+  })),
+
+  ...[["/resources","Resources"],["/trust","Trust & safety"],["/contact","Contact & support"]].map(([path,title]) => ({
+    group: "Marketing", path, title, file: `app/(public)${path}/page.tsx`, ctas: [], open: [],
+    body: () => F.hero(title, "Static informational surface.") + F.sec(F.prose(8)),
+  })),
+
+  /* ── Legal & system ──────────────────────────────────────────────────────────────────────── */
+  ...[["/legal/terms","Terms"],["/legal/privacy","Privacy"],
+      ["/legal/confidentiality-charter","Confidentiality Charter"]].map(([path,title]) => ({
+    group: "Legal & system", path, title, file: `app/(public)${path}/page.tsx`, ctas: [], open: [],
+    body: () => F.sec(`<h1 class="p">${title}</h1>${F.prose(14)}`),
+  })),
+
+  { group: "Legal & system", path: "/forbidden", title: "Forbidden (403)", file: "app/(public)/forbidden/page.tsx",
+    ctas: [["Recovery CTA", {
+      anon: { label: "Sign in", href: "/login", variant: "primary" },
+      auth: { label: "Go to dashboard", href: "/dashboard", variant: "primary" },
+      deltaTag: "recovery target" }]],
+    open: ["403 shown to a *signed-in* user means the session is fine and the authorization is not. Offering “Sign in” there sends them to a loop they have already completed. The authed recovery target must be their dashboard — and the copy must not imply signing in again would help."],
+    body: (st) => F.sec(`<div class="center-note">
+        <h1 class="p">You don’t have access to this page</h1>
+        <p class="lead" style="margin:0 auto 20px">${st === "auth"
+          ? "Your account doesn’t have permission for this resource. Signing in again won’t change that."
+          : "This page requires an account with the right permissions."}</p>
+        <div class="cta-row" style="justify-content:center">
+          ${cta(st,{anon:{label:"Sign in",href:"/login",variant:"primary"},auth:{label:"Go to dashboard",href:"/dashboard",variant:"primary"},deltaTag:"recovery target"})}
+        </div></div>`) },
+
+  { group: "Legal & system", path: "/maintenance", title: "Maintenance", file: "app/(public)/maintenance/page.tsx",
+    ctas: [], open: ["No delta. Maintenance renders before any session is meaningful — it must stay identical, and the shell arguably should not render its account menu here at all. Flagged, not decided."],
+    body: () => F.sec(`<div class="center-note"><h1 class="p">Scheduled maintenance</h1>
+        <p class="lead" style="margin:0 auto">iVendorz is briefly unavailable. Please check back shortly.</p></div>`) },
+
+  { group: "Legal & system", path: "/invite/welcome", title: "Invitation welcome",
+    file: "app/(public)/invite/welcome/page.tsx",
+    ctas: [["Accept path", {
+      anon: { label: "Sign in", href: "/login", variant: "primary" },
+      auth: { label: "Continue to accept", href: "/accept-invitation", variant: "primary" },
+      deltaTag: "→ accept flow" }]],
+    open: ["An invitation opened while already signed in is the one public page where the *wrong* identity is likely — the invite may be addressed to a different person. The natural fix is to name who is being continued as (“Continue as …”), but **§12.3 forbids rendering identity on a public page**, and presence-only cannot supply a name anyway. So the CTA is identity-free and the confirmation must happen on `/accept-invitation`, which is authenticated and CAN read identity server-side. “Use a different account” is shown and needs a real destination before it ships."],
+    body: (st) => F.sec(`<div class="center-note" style="max-width:520px;margin:0 auto">
+        <h1 class="p">You’ve been invited to join an organization on iVendorz</h1>
+        <p class="lead" style="margin:0 auto 20px">Accept the invitation to join and start collaborating.</p>
+        <div class="cta-row" style="justify-content:center">
+          ${cta(st,{anon:{label:"Sign in",href:"/login",variant:"primary"},auth:{label:"Continue to accept",href:"/accept-invitation",variant:"primary"},deltaTag:"→ accept flow"})}
+          ${st === "auth" ? `<a class="btn btn-outline btn-lg delta" data-delta="new affordance" href="#/login">Use a different account</a>` : ""}
+        </div></div>`) },
+];
+
+const MICROSITE_TABS = [
+  ["overview","Overview"],["about","About"],["capabilities","Capabilities"],
+  ["certifications","Certifications"],["industries","Industries"],["products","Products"],
+  ["projects","Projects"],["resources","Resources"],["contact","Contact"],
+];
+
+function micrositeShell(active, st, inner) {
+  return `<section style="background:var(--iv-surface);border-bottom:1px solid var(--iv-border)">
+      <div class="container" style="padding-top:28px">
+        <div style="display:flex;gap:16px;align-items:flex-start">
+          <div style="width:64px;height:64px;border-radius:var(--iv-radius-lg);
+            background:var(--iv-light-muted);border:1px dashed var(--iv-border);flex-shrink:0"></div>
+          <div style="flex:1;min-width:0">
+            <h1 class="p" style="font-size:24px;margin-bottom:6px">Supplier microsite</h1>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span class="chip">Supply</span><span class="chip">Fabrication</span>
+              <span class="chip">Verified</span>
+            </div>
+          </div>
+          <div class="cta-row" style="margin:0">
+            ${cta(st,{anon:{label:"Request quote",href:"/login",variant:"primary"},auth:{label:"Request quote",href:"/buy/rfqs/new?vendor=…",variant:"primary"},deltaTag:"→ RFQ composer"})}
+            ${cta(st,{anon:{label:"Save",href:"/login",variant:"outline"},auth:{label:"Save",href:"#",variant:"outline"},deltaTag:"real action"})}
+          </div>
+        </div>
+        <div class="microsite-nav" style="margin-top:20px;border-bottom:0">
+          ${MICROSITE_TABS.map(([k,l]) =>
+            `<a ${k===active?'aria-current="page"':""} href="#/vendors/[slug]${k==="overview"?"":"/"+k}">${l}</a>`).join("")}
+        </div>
+      </div></section>
+    <section class="sec"><div class="container">${inner}</div></section>`;
+}
+
+/* ── Runtime ─────────────────────────────────────────────────────────────────────────────────── */
+let state = "anon";
+let route = ROUTES[0];
+
+const $ = (s) => document.querySelector(s);
+const sel = $("#pageSel");
+
+// Page picker, grouped.
+(function buildPicker() {
+  let group = null, og = null;
+  for (const r of ROUTES) {
+    if (r.group !== group) { group = r.group; og = document.createElement("optgroup"); og.label = group; sel.append(og); }
+    const o = document.createElement("option");
+    o.value = r.path; o.textContent = `${r.title} — ${r.path}`;
+    og.append(o);
+  }
+})();
+
+function renderShell() {
+  $("#row1Right").innerHTML = SHELL[state].row1;
+  $("#sellSlot").innerHTML = SHELL[state].sell;
+  $("#rfqSlot").innerHTML = SHELL[state].rfq;
+  const btn = $("#acctBtn"), menu = $("#acctMenu");
+  if (btn) {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = menu.getAttribute("data-open") === "true";
+      menu.setAttribute("data-open", String(!open));
+      btn.setAttribute("aria-expanded", String(!open));
+    });
+  }
+}
+document.addEventListener("click", () => {
+  const m = $("#acctMenu"); if (m) { m.setAttribute("data-open", "false"); $("#acctBtn")?.setAttribute("aria-expanded","false"); }
+});
+
+/* Minimal inline-markdown for the panel prose: **bold** and `code`. */
+function md(s) {
+  return s
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+}
+
+function renderPanel() {
+  const rows = route.ctas.length
+    ? `<table>${route.ctas.map(([name, spec]) => `
+        <tr><td class="k">${name}</td><td>
+          <span class="anon">${spec.anon.label}</span><span class="arrow">→</span><span class="auth">${spec.auth.label}</span>
+          <div style="margin-top:3px"><code>${spec.anon.href}</code> <span class="arrow">→</span> <code>${spec.auth.href}</code></div>
+        </td></tr>`).join("")}</table>`
+    : `<p class="none">No conversion CTA on this page — body is identical in both states.</p>`;
+
+  $("#panel").innerHTML = `
+    <div class="pb">
+      <h4>Current page</h4>
+      <p class="route">${route.title}</p>
+      <p class="file">${route.file}</p>
+    </div>
+    <div class="pb">
+      <h4>Shell delta (every page)</h4>
+      <table>
+        <tr><td class="k">Row 1</td><td><span class="anon">Sign in · Get started</span><span class="arrow">→</span><span class="auth">account menu (own email + initials, §12.3-A)</span></td></tr>
+        <tr><td class="k">Sell on iVendorz</td><td><code>/login</code><span class="arrow">→</span><code>/sell/dashboard</code></td></tr>
+        <tr><td class="k">RFQ pill</td><td><code>/login</code><span class="arrow">→</span><code>/buy/rfqs/new</code></td></tr>
+        <tr><td class="k">Footer</td><td class="none">identical — no delta</td></tr>
+        <tr><td class="k">Search</td><td class="none">identical — no delta</td></tr>
+        <tr><td class="k">Explorer</td><td class="none">identical — no delta</td></tr>
+      </table>
+    </div>
+    <div class="pb"><h4>Page CTA delta</h4>${rows}</div>
+    <div class="pb">
+      <h4>Open questions</h4>
+      ${route.open.length
+        ? route.open.map((q) => `<div class="oq">${md(q)}</div>`).join("")
+        : `<p class="none">None specific to this page.</p>`}
+    </div>
+    <div class="pb">
+      <h4>Standing constraints</h4>
+      <div class="oq" style="border-left-color:#8fb0ea;color:#a9bfe0">
+        The session-aware public header is a <b>Doc-7D proposal awaiting an owner ruling</b>. Nothing
+        here is built into <code>app/(public)</code>. Public pages render <b>no</b> buyer-private
+        signal (Invariant 11), <b>no</b> org switcher and <b>no</b> notification center (authenticated
+        shell slots, Doc-7C §4/§6), and <b>no</b> statistics.
+      </div>
+    </div>`;
+}
+
+function render() {
+  renderShell();
+  $("#stage").innerHTML = route.body(state);
+  renderPanel();
+  window.scrollTo({ top: 0 });
+}
+
+// Visitor-state toggle
+document.querySelectorAll("#reviewbar .seg button").forEach((b) => {
+  b.addEventListener("click", () => {
+    state = b.dataset.state;
+    document.querySelectorAll("#reviewbar .seg button").forEach((x) =>
+      x.setAttribute("aria-pressed", String(x === b)));
+    render();
+  });
+});
+
+sel.addEventListener("change", () => {
+  route = ROUTES.find((r) => r.path === sel.value) || ROUTES[0];
+  render();
+});
+
+$("#annotChk").addEventListener("change", (e) =>
+  document.body.classList.toggle("annot", e.target.checked));
+$("#previewBtn").addEventListener("click", () => document.body.classList.add("preview"));
+$("#previewExit").addEventListener("click", () => document.body.classList.remove("preview"));
+
+// In-prototype links navigate the picker where a matching route exists.
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("a[href^='#/']");
+  if (!a) return;
+  e.preventDefault();
+  const p = a.getAttribute("href").slice(1).split("?")[0];
+  const hit = ROUTES.find((r) => r.path === p);
+  if (hit) { route = hit; sel.value = hit.path; render(); }
+});
+
+render();
+</script>
+</body>
+</html>
