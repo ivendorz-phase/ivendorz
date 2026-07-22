@@ -41,9 +41,12 @@ CREATE TABLE communication.notifications (
   CONSTRAINT notifications_pkey PRIMARY KEY (id)
 );
 CREATE INDEX notifications_recipient_idx ON communication.notifications (recipient_organization_id, read_at) WHERE deleted_at IS NULL;  -- [§2.5] inbox feed
--- [§2.5 choice] the H.8 event-consumer idempotency probe (`source_event_id` + recipient) — exactly-once
--- effect over at-least-once delivery (Doc-4A §16; Doc-4H §HB-2.1 item 10):
-CREATE INDEX notifications_source_event_idx ON communication.notifications (source_event_id, recipient_organization_id, recipient_user_id);
+-- [§2.5 choice] the H.8 event-consumer idempotency KEY (`source_event_id` + recipient) — exactly-once
+-- effect over at-least-once delivery (Doc-4A §16; Doc-4H §HB-2.1 item 10). UNIQUE so a concurrent
+-- re-delivery cannot double-insert (create catches the violation and re-reads the winner); NULLS NOT
+-- DISTINCT so an org-wide notification (recipient_user_id NULL) still dedupes; partial (source_event_id
+-- IS NOT NULL) — only event-sourced rows participate in the fan-out dedup.
+CREATE UNIQUE INDEX notifications_source_event_key ON communication.notifications (source_event_id, recipient_organization_id, recipient_user_id) NULLS NOT DISTINCT WHERE source_event_id IS NOT NULL;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- (3) RLS (Doc-6H §3.x Pass-2 verbatim) — recipient-tenant + platform-staff backstop. App-layer authz
