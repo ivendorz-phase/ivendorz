@@ -1,12 +1,16 @@
 # CLAUDE.md — iVendorz
 
-**Status:** Governance Constitution — **FROZEN v1.2** (`governance-frozen-v1`; base freeze
-2026-06-27, additive editorial patch v1.1 2026-07-09, additive stack patch v1.2 2026-07-10).
+**Status:** Governance Constitution — **FROZEN v1.3** (`governance-frozen-v1`; base freeze
+2026-06-27, additive editorial patch v1.1 2026-07-09, additive stack patch v1.2 2026-07-10,
+additive clarification patch v1.3 2026-07-15).
 Patch v1.1 is **editorial only** — verbosity and duplication cut; no rule added, removed, or
 reworded; §10's directory tree & module-shape block now defer to `REPOSITORY_STRUCTURE.md` rather
 than restate it. Patch v1.2 is **additive only** — Framer Motion added to the §2 Frontend stack
-row (owner-approved 2026-07-10, WP-MOTION-1 · RV-0154 F7); no rule changed. Governance/ownership
-model is ratified; changes require an additive patch + version bump. **Non-authoritative under the
+row (owner-approved 2026-07-10, WP-MOTION-1 · RV-0154 F7); no rule changed. Patch v1.3 is
+**additive only** — the §2 Backend stack row is clarified: Next.js route handlers are the
+**primary** execution model and server actions **secondary** (used where ergonomically
+appropriate); the application is route-handler-driven (owner-approved 2026-07-15); no rule
+changed. Governance/ownership model is ratified; changes require an additive patch + version bump. **Non-authoritative under the
 frozen corpus** — on any conflict the frozen doc in `generatedDocs/` wins and this file is patched
 to match.
 
@@ -39,7 +43,7 @@ Blend: 40% B2B marketplace · 30% RFQ→quote→award procurement · 20% ERP-lit
 | Concern | Tech |
 |---|---|
 | Frontend | Next.js 15 App Router + React + Tailwind + shadcn/ui + Framer Motion (motion standard: `docs/frontend/design-system/motion_standard.md`) |
-| Backend | Next.js route handlers + server actions (TypeScript) |
+| Backend | Next.js route handlers (primary execution model) + server actions where ergonomically appropriate (secondary) — TypeScript |
 | Database / ORM | Supabase PostgreSQL (one schema per module) · Prisma |
 | Auth / Storage / Realtime | Supabase (auth = authentication only) |
 | Async jobs | Inngest (matching, routing, notifications, doc gen, imports) |
