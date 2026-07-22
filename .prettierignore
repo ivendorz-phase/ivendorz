@@ -16,8 +16,8 @@ coverage/
 playwright-report/
 test-results/
 
-# Lockfile (managed by npm).
-package-lock.json
+# Lockfile (managed by pnpm).
+pnpm-lock.yaml
 
 # Local/editor + tooling files (not Wave-0 managed code).
 .claude/
