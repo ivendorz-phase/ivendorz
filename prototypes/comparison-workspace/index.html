@@ -219,6 +219,44 @@
   .indicative{font-size:11.5px;color:var(--fg-soft);padding:10px 16px;border-top:1px dashed var(--iv-light-border);
     display:flex;align-items:center;gap:7px}
 
+  /* ── UX-1.4 absent-data states — distinct text (never a bare dash for all; color not the only cue) ── */
+  .absent{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-style:italic;color:var(--fg-soft)}
+  .absent svg{opacity:.75}
+  .absent.pending{font-style:normal;font-weight:600;color:var(--iv-warning-base);
+    border-bottom:1px dashed var(--iv-warning-base);padding-bottom:1px}
+  .absent.undisclosed{color:var(--fg-muted)}
+  .absent.na{color:var(--fg-soft)}
+
+  /* ── UX-1.1 readiness strip (fact-only) ── */
+  .readiness{display:flex;align-items:center;flex-wrap:wrap;gap:2px 0;margin-bottom:18px;padding:9px 14px;
+    background:var(--iv-navy-50);border:1px solid var(--iv-navy-100);border-radius:var(--radius);
+    font-size:12.5px;color:var(--iv-navy-700)}
+  .readiness .rd-ic{display:inline-flex;margin-right:9px;color:var(--iv-navy-500)}
+  .readiness b{color:var(--iv-navy-900);font-variant-numeric:tabular-nums;font-weight:700}
+  .readiness .rd-sep{margin:0 9px;color:var(--iv-navy-200)}
+  .readiness .rd-warn b{color:var(--iv-warning-base)}
+
+  /* ── UX-1.3 section navigator (sticky) ── */
+  .sec-nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:7px;
+    background:var(--iv-light-base);padding:9px 0;margin-bottom:4px;border-bottom:1px solid var(--iv-light-border)}
+  .sec-nav .lbl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-soft);flex-shrink:0}
+  .sec-nav .pills{display:flex;gap:6px;overflow-x:auto;flex:1}
+  .sec-nav button{flex-shrink:0;height:30px;padding:0 12px;border-radius:999px;font-size:12.5px;font-weight:600;
+    color:var(--fg-muted);border:1px solid var(--iv-light-border);background:var(--iv-light-raised)}
+  .sec-nav button:hover{background:var(--iv-light-hover)}
+  .sec-nav button[aria-current="true"]{background:var(--iv-navy-800);border-color:var(--iv-navy-800);color:#fff}
+  .sec-nav select{display:none;height:34px;flex:1;border:1px solid var(--iv-light-border);border-radius:8px;
+    background:var(--iv-light-raised);padding:0 10px;font-size:13px;color:var(--fg)}
+  @media (max-width:767px){.sec-nav .pills{display:none}.sec-nav select{display:block}}
+  html{scroll-behavior:smooth}
+  [id^="sec-"]{scroll-margin-top:60px}
+
+  /* ── UX-1.2 differences-only ── */
+  .diffonly{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--fg-muted);cursor:pointer;user-select:none}
+  .diffonly input{width:15px;height:15px;accent-color:var(--iv-brand-500)}
+  .diff-status{font-size:12px;color:var(--fg-soft);padding:8px 16px;border-top:1px dashed var(--iv-light-border)}
+  .diff-status b{color:var(--iv-navy-800);font-weight:600}
+
   /* ── ④ commercial terms cards ── */
   .terms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;padding:16px}
   .vcard{border:1px solid var(--iv-light-border);border-radius:var(--radius-sm);padding:14px 15px;position:relative}
@@ -472,6 +510,13 @@
         <!-- ═ MODE: COMPARE ═ -->
         <div class="mode-panel on" id="panel-compare">
 
+          <!-- UX-1.3 section navigator (sticky; scroll-to only, or switch to Document mode) -->
+          <nav class="sec-nav" aria-label="Comparison sections">
+            <span class="lbl">Sections</span>
+            <div class="pills" id="sec-pills"></div>
+            <select id="sec-select" aria-label="Jump to section"></select>
+          </nav>
+
           <div class="note"><b>Review note — what this workspace is.</b> A ground-up presentation of the
             already-built buyer comparison slice (frozen routes <code>/buy/rfqs/[rfqId]/compare</code> and
             <code>/comparative-statement</code>). It is <b>decision-support, never a decision</b> (Doc-3 §9.1):
@@ -489,15 +534,18 @@
             <div class="tray-rail" id="tray-rail" role="group" aria-label="Disclosed quotations, in System order"></div>
           </fieldset>
 
+          <!-- ① · UX-1.1 comparison readiness strip (fact-only, from disclosed data) -->
+          <div class="readiness" id="sec-overview" aria-label="Comparison readiness"></div>
+
           <div class="ws-grid">
             <div class="ws-main">
               <!-- ③ VENDOR COMPARISON MATRIX -->
-              <section class="card" aria-labelledby="mx-h">
+              <section class="card" id="sec-technical" aria-labelledby="mx-h">
                 <div class="card-h">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--iv-brand-600)" stroke-width="1.8"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="13" y="6" width="3" height="12"/></svg>
                   <h2 id="mx-h">Comparison matrix</h2>
                   <span class="sp"></span>
-                  <span class="hint">Descriptive attributes · System order · not ranked</span>
+                  <label class="diffonly"><input type="checkbox" id="diff-toggle" /> Show differences only</label>
                 </div>
                 <div class="tablewrap">
                   <table class="cmp" id="mx-table">
@@ -506,6 +554,7 @@
                     <tbody id="mx-body"></tbody>
                   </table>
                 </div>
+                <div class="diff-status" id="mx-diff-status" hidden></div>
                 <div class="indicative">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
                   <span>Line-item figures are <b style="font-weight:600">indicative</b> — the structured line-item schema is pending (<span class="mono">ESC-CS-LINEITEMS</span>). Per-vendor line totals reconcile exactly to each quoted total.</span>
@@ -513,7 +562,7 @@
               </section>
 
               <!-- ④ COMMERCIAL TERMS SUMMARY -->
-              <section class="card" aria-labelledby="tm-h">
+              <section class="card" id="sec-commercial" aria-labelledby="tm-h">
                 <div class="card-h">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--iv-brand-600)" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
                   <h2 id="tm-h">Commercial terms</h2>
@@ -525,7 +574,7 @@
             </div>
 
             <!-- ⑤ PRIVATE BUYER EVALUATION (desktop aside) -->
-            <aside class="eval-aside" aria-label="Private buyer evaluation">
+            <aside class="eval-aside" id="sec-evaluation" aria-label="Private buyer evaluation">
               <div class="eval-h">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--iv-brand-600)" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 <h2>Private evaluation</h2>
@@ -657,15 +706,15 @@ const UNIVERSE = {
         terms:{ vat:"Included in quoted price", basis:"At site, Tongi substation",
           pay:"50% on completion · 50% after test report", ld:"0.5%/day beyond window, capped 5%",
           pg:"5% retention until warranty end" } },
-      { qid:"q119-2", ref:"QTN-2026-000612", name:"Eastern Grid Engineering", state:"submitted",
+      { qid:"q119-2", ref:"QTN-2026-000612", name:"Eastern Grid Engineering", state:"submitted", dev:1,
         unitPrices:[455000,99500,100000,45000],
-        vals:["2 weeks from PO","8-day shutdown","12 months","Jul 25, 2026",{txt:"Included"},{files:1}],
+        vals:["2 weeks from PO","8-day shutdown","12 months","Jul 25, 2026",{na:true},{files:1}],
         terms:{ vat:"Excluded — as per rules", basis:"At site, Tongi substation",
           pay:"30% advance · 70% on completion", ld:"0.25%/day, capped 3%", pg:"Bank guarantee 5%" } },
-      { qid:"q119-3", ref:"QTN-2026-000613", name:"Rupsha Electromech", state:"submitted",
+      { qid:"q119-3", ref:"QTN-2026-000613", name:"Rupsha Electromech", state:"submitted", dev:1,
         unitPrices:[405000,86000,90000,45000],
         vals:["1 week from PO","12-day shutdown","6 months","Jul 26, 2026",{txt:"On request"},{files:2}],
-        terms:{ vat:"Included in quoted price", basis:"At site, Tongi substation",
+        terms:{ vat:"Included in quoted price", basis:{none:true},
           pay:"100% after recommissioning", ld:"Not accepted", pg:"None offered" } },
       { qid:"q119-4", ref:"QTN-2026-000614", name:"Ashuganj Power & Maintenance", state:"submitted",
         unitPrices:[430000,96500,100000,45000],
@@ -674,12 +723,12 @@ const UNIVERSE = {
           pay:"40% advance · 60% on completion", ld:"0.5%/day, capped 5%", pg:"5% retention until warranty end" } },
       { qid:"q119-5", ref:"QTN-2026-000615", name:"Titas Switchgear Services", state:"submitted",
         unitPrices:[415000,90500,95000,40000],
-        vals:["2 weeks from PO","10-day shutdown","9 months","Jul 30, 2026",{txt:"Included"},{files:2}],
+        vals:["2 weeks from PO","10-day shutdown","9 months","Jul 30, 2026",{none:true},{files:2}],
         terms:{ vat:"Included in quoted price", basis:"At site, Tongi substation",
           pay:"50% advance · 50% on completion", ld:"0.5%/day, capped 4%", pg:"3% retention, 6 months" } },
       { qid:"q119-6", ref:"QTN-2026-000616", name:"Bengal Power Solutions", state:"submitted",
         unitPrices:[425000,91000,92000,43000],
-        vals:["10 days from PO","10-day shutdown","12 months","Jul 29, 2026",{txt:"Included"},{files:2}],
+        vals:["10 days from PO","10-day shutdown","12 months","Jul 29, 2026",{undisclosed:true},{files:2}],
         terms:{ vat:"Included in quoted price", basis:"At site, Tongi substation",
           pay:"45% advance · 55% on completion", ld:"0.4%/day, capped 4%", pg:"5% retention until warranty end" } },
     ],
@@ -741,12 +790,38 @@ function toneCss(t){ return {
 const sealedMarker = `<span class="sealed"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V8a5 5 0 0 1 10 0v3"/></svg>Sealed</span>`;
 const subtotal = (v)=> v.unitPrices.reduce((s,up,i)=> s+up*RFQ().items[i].qty, 0);
 
+/* UX-1.4 — an absent/disclosure cell is a distinct object; each renders a DISTINCT textual state,
+   never one shared dash, never implying zero, and pending-schema never reads as Vendor omission. */
+const ABSENT = { na:"Not applicable", pending:"Pending schema", undisclosed:"Not disclosed" };
+function isAbsent(cell){ return cell==null || (cell && (cell.sealed||cell.none||cell.na||cell.pending||cell.undisclosed)); }
+function cellText(cell){ // plain text (document + differences key)
+  if(cell==null||(cell&&cell.none)) return "No value supplied";
+  if(cell&&cell.sealed) return "Sealed";
+  if(cell&&cell.na) return "Not applicable";
+  if(cell&&cell.pending) return "Pending schema";
+  if(cell&&cell.undisclosed) return "Not disclosed";
+  if(cell&&cell.files!=null) return `${cell.files} file${cell.files>1?"s":""}`;
+  if(cell&&cell.txt!=null) return cell.txt;
+  return String(cell);
+}
+function renderCell(cell){ // HTML for the matrix / terms cards
+  if(cell&&cell.sealed) return sealedMarker;
+  if(cell==null||(cell&&cell.none)) return `<span class="absent" title="The vendor supplied no value for this field (not zero).">— No value supplied</span>`;
+  if(cell&&cell.na) return `<span class="absent na" title="This field does not apply to this quotation's scope.">Not applicable</span>`;
+  if(cell&&cell.pending) return `<span class="absent pending" title="Awaiting the structured schema (ESC-CS-LINEITEMS) — not a vendor omission.">Pending schema</span>`;
+  if(cell&&cell.undisclosed) return `<span class="absent undisclosed" title="The vendor has not disclosed this yet.">Not disclosed</span>`;
+  if(cell&&cell.files!=null) return `<span class="attach">${cell.files} file${cell.files>1?"s":""}</span>`;
+  if(cell&&cell.txt!=null) return esc(cell.txt);
+  return esc(cell);
+}
+
 /* ── the SINGLE source of truth (the provider) ── */
 const MIN=2, MAX=5;
 const state = {
   rfqId:"rfq-000119",
   selected:[],                 // 2..5 quotationIds, System order (mirrored to ?sel=)
   evaluation:{},               // keyed by rfqId → { purpose, summary, byQid:{}, recommended, reasons, risk, position, remarks, sig:{} }
+  differencesOnly:false,       // UX-1.2 view state (presentation-only; no sort/recompute)
 };
 function RFQ(){ return UNIVERSE[state.rfqId]; }
 function EVAL(){
@@ -807,40 +882,44 @@ function lowestIdx(vendors){ // index of arithmetic-lowest total among vendors; 
   let idx=-1, min=Infinity; vendors.forEach((v,i)=>{ const t=subtotal(v); if(t<min){min=t;idx=i;} }); return idx;
 }
 function renderMatrix(){
-  const vs=selectedVendors(), low=lowestIdx(vs);
+  const vs=selectedVendors(), low=lowestIdx(vs), diff=state.differencesOnly;
   $("#mx-head").innerHTML = `<tr><th scope="col">Attribute</th>${vs.map(v=>
     `<th scope="col"><span class="vn">${esc(v.name)}</span><span class="vr">${v.ref}</span></th>`).join("")}</tr>`;
 
-  const rows=[];
-  rows.push(`<tr><th scope="row">Status</th>${vs.map(v=>`<td>${chip(v.state)}</td>`).join("")}</tr>`);
-  rows.push(`<tr><th scope="row">Quoted total</th>${vs.map((v,i)=>
+  // Build rows; differences-only hides rows where every selected Vendor shows the SAME disclosed value.
+  // No sort, no reorder, no recompute — order and arithmetic are untouched; we only drop identical rows.
+  const out=[]; let hidden=0, shown=0;
+  const push=(html, keys)=>{
+    const identical = vs.length>1 && keys.every(k=>k===keys[0]);
+    if(diff && identical){ hidden++; return; }
+    shown++; out.push(html);
+  };
+  push(`<tr><th scope="row">Status</th>${vs.map(v=>`<td>${chip(v.state)}</td>`).join("")}</tr>`, vs.map(v=>v.state));
+  push(`<tr><th scope="row">Quoted total</th>${vs.map((v,i)=>
     `<td><span class="money">${money(subtotal(v))}</span>${i===low?
-      `<span class="lowtag" title="Arithmetic identification of the lowest disclosed total — not a recommendation (R6).">Lowest</span>`:``}</td>`).join("")}</tr>`);
-  // descriptive attributes
+      `<span class="lowtag" title="Arithmetic identification of the lowest disclosed total — not a recommendation (R6).">Lowest</span>`:``}</td>`).join("")}</tr>`,
+    vs.map(v=>String(subtotal(v))));
   RFQ().attrs.forEach((label,ai)=>{
-    rows.push(`<tr><th scope="row">${label}</th>${vs.map(v=>{
-      const cell=v.vals[ai];
-      if(cell&&cell.sealed) return `<td>${sealedMarker}</td>`;
-      if(cell&&cell.files!=null) return `<td class="attach">${cell.files} file${cell.files>1?"s":""}</td>`;
-      if(cell&&cell.txt!=null) return `<td>${esc(cell.txt)}</td>`;
-      return `<td>${esc(cell)}</td>`;
-    }).join("")}</tr>`);
+    push(`<tr><th scope="row">${label}</th>${vs.map(v=>`<td>${renderCell(v.vals[ai])}</td>`).join("")}</tr>`,
+      vs.map(v=>cellText(v.vals[ai])));
   });
-  // indicative line items
-  rows.push(`<tr class="attr-h"><td colspan="${vs.length+1}">Line items — indicative (ESC-CS-LINEITEMS)</td></tr>`);
-  $("#mx-body").innerHTML = rows.join("");
-
-  // line-item block appended into the same card as a second table would duplicate the primitive;
-  // instead render items as further matrix rows for a single accessible table
-  const li = RFQ().items.map((it,ii)=>
-    `<tr><th scope="row"><span class="li-desc" style="font-weight:600;color:var(--fg)">${esc(it.desc)}</span>
+  // line-items sub-header (structural anchor; the schema itself is Pending, not a Vendor omission)
+  out.push(`<tr class="attr-h" id="sec-lineitems"><td colspan="${vs.length+1}">Line items · <span class="absent pending" style="font-style:normal">Pending schema</span> — indicative (ESC-CS-LINEITEMS)</td></tr>`);
+  RFQ().items.forEach((it,ii)=>{
+    push(`<tr><th scope="row"><span class="li-desc" style="font-weight:600;color:var(--fg)">${esc(it.desc)}</span>
       <span class="li-meta" style="display:block;font-size:11px;color:var(--fg-soft);font-family:var(--mono);margin-top:2px">${it.qty} × ${it.unit}</span></th>${
       vs.map(v=>{ const up=v.unitPrices[ii];
         return `<td><span class="money">${money(up*it.qty)}</span>${it.qty>1?`<span style="display:block;font-size:10.5px;color:var(--fg-soft);font-family:var(--mono);margin-top:2px">@ ${money(up)} / ${it.unit.toLowerCase()}</span>`:``}</td>`;
-      }).join("")}</tr>`).join("");
-  const totals = `<tr><th scope="row" style="color:var(--iv-navy-900);background:var(--iv-light-muted)">Quoted total</th>${
-    vs.map((v,i)=>`<td style="border-top:2px solid var(--iv-navy-200);background:var(--iv-light-muted)"><span class="money">${money(subtotal(v))}</span>${i===low?`<span class="lowtag" title="Lowest disclosed total — arithmetic, not a recommendation.">Lowest</span>`:``}</td>`).join("")}</tr>`;
-  $("#mx-body").insertAdjacentHTML("beforeend", li+totals);
+      }).join("")}</tr>`, vs.map(v=>String(v.unitPrices[ii]*it.qty)));
+  });
+  // line-items footer total (structural — always shown, reconciles to the quoted total)
+  out.push(`<tr><th scope="row" style="color:var(--iv-navy-900);background:var(--iv-light-muted)">Quoted total</th>${
+    vs.map((v,i)=>`<td style="border-top:2px solid var(--iv-navy-200);background:var(--iv-light-muted)"><span class="money">${money(subtotal(v))}</span>${i===low?`<span class="lowtag" title="Lowest disclosed total — arithmetic, not a recommendation.">Lowest</span>`:``}</td>`).join("")}</tr>`);
+  $("#mx-body").innerHTML = out.join("");
+
+  const st=$("#mx-diff-status");
+  st.hidden=!diff;
+  if(diff) st.innerHTML = `Showing <b>${shown}</b> differing row${shown===1?'':'s'} · <b>${hidden}</b> identical row${hidden===1?'':'s'} hidden`;
 }
 
 /* ── ④ commercial terms cards ── */
@@ -855,11 +934,11 @@ function renderTerms(){
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 12 5 5L20 6"/></svg>Lowest total</span>`:``}
       <dl>
         <div><dt>Subtotal</dt><dd class="sub">${money(sub)}</dd></div>
-        <div><dt>VAT &amp; duties</dt><dd>${esc(v.terms.vat)}</dd></div>
-        <div><dt>Price basis</dt><dd>${esc(v.terms.basis)}</dd></div>
-        <div><dt>Payment</dt><dd>${esc(v.terms.pay)}</dd></div>
-        <div><dt>Liquidated damages</dt><dd>${esc(v.terms.ld)}</dd></div>
-        <div><dt>Performance guarantee</dt><dd>${esc(v.terms.pg)}</dd></div>
+        <div><dt>VAT &amp; duties</dt><dd>${renderCell(v.terms.vat)}</dd></div>
+        <div><dt>Price basis</dt><dd>${renderCell(v.terms.basis)}</dd></div>
+        <div><dt>Payment</dt><dd>${renderCell(v.terms.pay)}</dd></div>
+        <div><dt>Liquidated damages</dt><dd>${renderCell(v.terms.ld)}</dd></div>
+        <div><dt>Performance guarantee</dt><dd>${renderCell(v.terms.pg)}</dd></div>
       </dl>
     </div>`;
   }).join("");
@@ -1003,8 +1082,7 @@ function pageSummary(pg){
   const rows=[
     `<tr><th>Status</th>${vs.map(v=>`<td>${STATES[v.state]}</td>`).join("")}</tr>`,
     `<tr><th>Quoted total</th>${vs.map((v,i)=>`<td class="num">${money(subtotal(v))}${i===low?' · lowest':''}</td>`).join("")}</tr>`,
-    ...r.attrs.map((label,ai)=>`<tr><th>${label}</th>${vs.map(v=>{const c=v.vals[ai];
-      return `<td>${c&&c.sealed?'Sealed':c&&c.files!=null?c.files+' file'+(c.files>1?'s':''):c&&c.txt!=null?esc(c.txt):esc(c)}</td>`;}).join("")}</tr>`),
+    ...r.attrs.map((label,ai)=>`<tr><th>${label}</th>${vs.map(v=>`<td>${esc(cellText(v.vals[ai]))}</td>`).join("")}</tr>`),
   ].join("");
   const inner = docTitleBlock() +
     `<div class="cd-sec-h">Summary comparison — descriptive, never recommends (R6)</div>
@@ -1027,7 +1105,7 @@ function pageTerms(pg){
   const vs=selectedVendors();
   const rows=[["VAT & duties","vat"],["Price basis","basis"],["Payment terms","pay"],["Liquidated damages","ld"],["Performance guarantee","pg"]];
   const head=`<tr><th>Commercial term</th>${vs.map(v=>`<th>${esc(v.name)}</th>`).join("")}</tr>`;
-  const body=rows.map(([label,key])=>`<tr><th>${label}</th>${vs.map(v=>`<td>${esc(v.terms[key])}</td>`).join("")}</tr>`).join("");
+  const body=rows.map(([label,key])=>`<tr><th>${label}</th>${vs.map(v=>`<td>${esc(cellText(v.terms[key]))}</td>`).join("")}</tr>`).join("");
   const inner=`<div class="cd-sec-h">Commercial terms — as quoted per vendor</div>
     <table class="cd-tbl"><thead>${head}</thead><tbody>${body}</tbody></table>`;
   return sheetChrome(inner, pg);
@@ -1084,16 +1162,80 @@ function renderHeader(){
 }
 
 /* ── compose the compare view ── */
-function renderCompare(){ renderHeader(); renderTray(); renderMatrix(); renderTerms(); renderEval(); refreshDoc(); }
+function renderCompare(){
+  renderHeader(); renderTray(); renderReadiness(); renderMatrix(); renderTerms(); renderEval();
+  observeSections(); refreshDoc();
+}
+
+/* ── UX-1.1 readiness strip — fact-only; every count derived from disclosed view-model data ── */
+function renderReadiness(){
+  const vs=selectedVendors();
+  const deviations=vs.reduce((s,v)=>s+(v.dev||0),0);
+  const sealedCount=vs.reduce((s,v)=>s+v.vals.filter(c=>c&&c.sealed).length,0);
+  const incomplete=vs.filter(v=>Object.values(v.terms).some(t=>t&&typeof t==="object"&&isAbsent(t))).length;
+  const facts=[
+    `<span><b>${vs.length}</b> Vendors selected</span>`,
+    `<span><b>${RFQ().items.length}</b> RFQ items</span>`,
+    `<span${deviations?' class="rd-warn"':''}><b>${deviations}</b> disclosed deviation${deviations===1?'':'s'}</span>`,
+    incomplete?`<span class="rd-warn"><b>${incomplete}</b> quotation${incomplete===1?'':'s'} with incomplete commercial terms</span>`:null,
+    sealedCount?`<span><b>${sealedCount}</b> sealed value${sealedCount===1?'':'s'}</span>`:null,
+  ].filter(Boolean);
+  $("#sec-overview").innerHTML =
+    `<span class="rd-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>`
+    + facts.join(`<span class="rd-sep">·</span>`);
+}
+
+/* ── UX-1.2 differences-only (presentation-only; renderMatrix hides identical rows, no sort/recompute) ── */
+$("#diff-toggle").addEventListener("change",e=>{ state.differencesOnly=e.target.checked; renderMatrix(); });
+
+/* ── UX-1.3 section navigator — scroll-to (Document switches mode); active via IntersectionObserver ── */
+const SECTIONS=[
+  {key:"overview",   label:"Overview",         target:"sec-overview"},
+  {key:"technical",  label:"Technical",        target:"sec-technical"},
+  {key:"lineitems",  label:"Line Items",       target:"sec-lineitems"},
+  {key:"commercial", label:"Commercial Terms", target:"sec-commercial"},
+  {key:"evaluation", label:"Buyer Evaluation", target:"sec-evaluation"},
+  {key:"document",   label:"Document",         mode:"document"},
+];
+function buildSectionNav(){
+  $("#sec-pills").innerHTML = SECTIONS.map(s=>`<button data-sec="${s.key}" aria-current="false">${s.label}</button>`).join("");
+  $("#sec-select").innerHTML = SECTIONS.map(s=>`<option value="${s.key}">${s.label}</option>`).join("");
+}
+function setActiveSection(key){
+  document.querySelectorAll("#sec-pills button").forEach(b=>b.setAttribute("aria-current", b.dataset.sec===key?"true":"false"));
+  if($("#sec-select").value!==key) $("#sec-select").value=key;
+}
+let navLock=false, navLockT;
+function lockNav(){ navLock=true; clearTimeout(navLockT); navLockT=setTimeout(()=>{navLock=false;},1000); }
+function goSection(key){
+  const s=SECTIONS.find(x=>x.key===key); if(!s) return;
+  if(s.mode==="document"){ switchMode("document"); return; }
+  if(s.key==="evaluation" && window.innerWidth<1280){ openSheet(true); setActiveSection(key); return; }
+  const el=document.getElementById(s.target);
+  if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
+  setActiveSection(key); lockNav(); // the click's intent wins over the observer while the scroll settles
+}
+$("#sec-pills").addEventListener("click",e=>{ const b=e.target.closest("button[data-sec]"); if(b) goSection(b.dataset.sec); });
+$("#sec-select").addEventListener("change",e=>goSection(e.target.value));
+let secObserver;
+function observeSections(){
+  if(secObserver) secObserver.disconnect();
+  secObserver=new IntersectionObserver((entries)=>{
+    if(navLock) return; // don't fight a just-clicked jump
+    const vis=entries.filter(e=>e.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top);
+    if(vis.length){ const s=SECTIONS.find(x=>x.target===vis[0].target.id); if(s) setActiveSection(s.key); }
+  },{rootMargin:"-70px 0px -55% 0px", threshold:0});
+  SECTIONS.filter(s=>s.target).forEach(s=>{ const el=document.getElementById(s.target); if(el) secObserver.observe(el); });
+}
 
 /* ── mode tabs ── */
-document.querySelectorAll(".modetabs button").forEach(b=>b.addEventListener("click",()=>{
-  const mode=b.dataset.mode;
-  document.querySelectorAll(".modetabs button").forEach(x=>x.setAttribute("aria-selected", x===b));
+function switchMode(mode){
+  document.querySelectorAll(".modetabs button").forEach(x=>x.setAttribute("aria-selected", x.dataset.mode===mode));
   $("#panel-compare").classList.toggle("on", mode==="compare");
   $("#panel-document").classList.toggle("on", mode==="document");
   if(mode==="document") renderDocPreview($("#doc-preview"));
-}));
+}
+document.querySelectorAll(".modetabs button").forEach(b=>b.addEventListener("click",()=>switchMode(b.dataset.mode)));
 
 /* ── evaluation Sheet (< xl) ── */
 function openSheet(on){ $("#sheet-scrim").classList.toggle("on",on); $("#eval-sheet").classList.toggle("on",on); }
@@ -1152,6 +1294,7 @@ window.addEventListener("hashchange",route);
 
 /* ── boot ── */
 buildDemoSelect();
+buildSectionNav();
 state.selected = defaultSelection();
 route();
 </script>

@@ -61,6 +61,23 @@ any gated capability exists. It gives the design direction a concrete surface to
 
 No comparison audit-event, domain event, or `can_*_comparison_statement` permission slug is invented.
 
+## UX enhancements (plan §2.11A — presentation-only, built in batches)
+
+**UX-1 (shipped):**
+- **Comparison readiness strip** — fact-only counts derived from disclosed data (selected Vendors · RFQ
+  items · disclosed deviations · quotations with incomplete commercial terms · sealed values). No score/rank.
+- **Show differences only** — hides rows where every selected Vendor shows the same disclosed value and
+  states the hidden count; **no sort, no reorder, no recompute**; all rows return when disabled.
+- **Section navigator** — Overview · Technical · Line Items · Commercial Terms · Buyer Evaluation ·
+  Document (sticky pills on desktop, a dropdown on mobile; active section via `aria-current`, not colour alone).
+- **Explicit absent-data states** — `— No value supplied` · `Sealed` · `Not applicable` · `Pending schema`
+  · `Not disclosed` render as **distinct** text (never one shared dash, never implying zero; pending-schema
+  never reads as a Vendor omission). The demo "Test certificates" column shows the full spectrum.
+
+UX-2 (Vendor focus · collapse groups · richer tray · row tooltips), UX-3 (unsaved indicator · leave
+confirmation · reset actions · Vendor-removal confirmation), and UX-4 (document completeness · safe URL
+state · keyboard shortcuts) follow as subsequent batches.
+
 ## Reviewing it
 
 - **Review notes** toggle (top banner) — dashed annotation cards state each region's governance posture;
