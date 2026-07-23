@@ -303,6 +303,30 @@
   .cmp tr.grp-h button[aria-expanded="false"] .chev{transform:rotate(-90deg)}
   .cmp tr.grp-h .cnt{margin-left:auto;font-weight:600;letter-spacing:0;text-transform:none;color:var(--fg-soft);font-size:11px}
 
+  /* ── UX-3.7 unsaved indicator ── */
+  .dirty-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--iv-warning-base);
+    background:var(--iv-warning-subtle);border:1px solid rgba(202,138,4,.28);border-radius:999px;padding:3px 11px}
+  .dirty-badge[hidden]{display:none} /* class display would otherwise override the [hidden] attribute */
+  .dirty-badge .dot{width:7px;height:7px;border-radius:999px;background:var(--iv-warning-base)}
+  .btn-danger{background:var(--iv-danger-base);color:#fff}
+  .btn-danger:hover{background:#b91c1c}
+  /* ── UX-3.9 reset controls ── */
+  .eval-reset{display:flex;flex-wrap:wrap;gap:8px 14px;padding-top:6px;border-top:1px dashed var(--iv-light-border)}
+  .eval-reset button{font-size:12px;font-weight:600;color:var(--iv-brand-600)}
+  .eval-reset button:hover{text-decoration:underline}
+  .eval-reset button.danger{color:var(--iv-danger-base)}
+  /* ── UX-3.8/9/11 confirm modal ── */
+  .modal-scrim{position:fixed;inset:0;background:rgba(11,19,34,.5);opacity:0;pointer-events:none;
+    transition:opacity .15s ease-out;z-index:70}
+  .modal-scrim.on{opacity:1;pointer-events:auto}
+  .modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-48%) scale(.98);opacity:0;pointer-events:none;
+    width:min(440px,calc(100vw - 32px));background:var(--iv-light-raised);border-radius:var(--radius);
+    box-shadow:0 18px 48px rgba(11,19,34,.32);z-index:71;padding:20px 22px;transition:opacity .15s ease-out,transform .15s ease-out}
+  .modal.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+  .modal h2{font-size:16px;font-weight:700;color:var(--iv-navy-900);margin-bottom:8px}
+  .modal p{font-size:13px;color:var(--fg-muted);line-height:1.55}
+  .modal .modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
+
   /* ── ④ commercial terms cards ── */
   .terms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;padding:16px}
   .vcard{border:1px solid var(--iv-light-border);border-radius:var(--radius-sm);padding:14px 15px;position:relative}
@@ -543,6 +567,7 @@
             <div class="meta-line" id="cw-meta"></div>
           </div>
           <span class="sp"></span>
+          <span class="dirty-badge" id="dirty-badge" hidden title="These edits are not saved and will be lost if you refresh or leave this comparison workspace."><span class="dot"></span>Unsaved session changes</span>
           <div class="modetabs" role="tablist" aria-label="Comparison view mode">
             <button role="tab" aria-selected="true" data-mode="compare">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="13" y="6" width="3" height="12"/></svg>Compare
@@ -582,6 +607,16 @@
 
           <!-- ① · UX-1.1 comparison readiness strip (fact-only, from disclosed data) -->
           <div class="readiness" id="sec-overview" aria-label="Comparison readiness"></div>
+
+          <div class="note"><b>Review note — unsaved-state protection (bounded).</b> Buyer evaluation,
+            procurement purpose, and signatory overrides are <b>session-local and not saved</b> — editing any
+            of them shows the <b>Unsaved session changes</b> badge. Quotation <i>selection</i> is
+            <b>not</b> flagged (it lives in the URL). Leave protection is deliberately bounded:
+            <b>refresh / tab-close</b> use <span class="mono">beforeunload</span>; <b>in-workspace leave
+            controls</b> (breadcrumb, sidebar) route through a guarded confirm; <b>Compare ⇄ Statement</b>
+            navigation bypasses the warning (the shared provider preserves state). Browser Back/Forward and
+            shell controls outside the workspace would need a shell navigation-guard hook in the real slice
+            (verify-or-defer) — not claimed here.</div>
 
           <div class="ws-grid">
             <div class="ws-main">
@@ -709,6 +744,17 @@
 <button class="btn btn-primary eval-open" id="eval-fab" style="position:fixed;right:18px;bottom:18px;z-index:40;box-shadow:0 6px 18px rgba(16,31,64,.22)">
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Private evaluation
 </button>
+
+<!-- UX-3 confirm dialog (leave / reset / Vendor removal) -->
+<div class="modal-scrim" id="modal-scrim"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-body">
+  <h2 id="modal-title"></h2>
+  <p id="modal-body"></p>
+  <div class="modal-actions">
+    <button type="button" class="btn btn-outline btn-sm" id="modal-cancel"></button>
+    <button type="button" class="btn btn-danger btn-sm" id="modal-confirm"></button>
+  </div>
+</div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -882,6 +928,7 @@ const state = {
   differencesOnly:false,       // UX-1.2 view state (presentation-only; no sort/recompute)
   focusVendor:null,            // UX-2.5 focused column (emphasis only; never a rank cue)
   collapsed:new Set(),         // UX-2.6 collapsed matrix group keys (never hides data permanently)
+  dirty:false,                 // UX-3.7 private-field edits pending (NOT selection — that lives in the URL)
 };
 function RFQ(){ return UNIVERSE[state.rfqId]; }
 function EVAL(){
@@ -930,14 +977,41 @@ function renderTray(){
     </div>`;
   }).join("");
 }
+function commitSelection(sel){
+  state.selected = disclosedOrder().filter(id=>sel.has(id));
+  history.replaceState(null,"", `#/compare?sel=${state.selected.join(",")}`); // only `sel` in the URL
+  renderCompare();
+}
+// UX-3.11 — does this Vendor carry buyer-authored session evaluation content?
+function hasVendorEval(qid){
+  const ev=state.evaluation[state.rfqId]; if(!ev) return false;
+  const e=ev.byQid&&ev.byQid[qid];
+  const hasEntry = e && ((e.compliance&&e.compliance!=="unset") || (e.note&&e.note.trim()));
+  return !!hasEntry || ev.recommended===qid;
+}
+function doDeselect(qid){
+  const sel=new Set(state.selected); sel.delete(qid);
+  // reconcile: drop that Vendor's private evaluation entry (the quotation itself is untouched)
+  const ev=state.evaluation[state.rfqId];
+  if(ev){ if(ev.byQid) delete ev.byQid[qid]; if(ev.recommended===qid) ev.recommended=""; }
+  commitSelection(sel);
+}
 function toggle(qid){
   const sel=new Set(state.selected), n=sel.size;
-  if(sel.has(qid)){ if(n<=MIN) return; sel.delete(qid); }
-  else { if(n>=MAX) return; sel.add(qid); }
-  // commit in System order, then user-driven URL mirror (no private state in URL)
-  state.selected = disclosedOrder().filter(id=>sel.has(id));
-  history.replaceState(null,"", `#/compare?sel=${state.selected.join(",")}`);
-  renderCompare();
+  if(sel.has(qid)){
+    if(n<=MIN) return; // keep the minimum comparable set
+    if(hasVendorEval(qid)){ // UX-3.11 confirm before discarding session evaluation
+      const v=RFQ().vendors.find(x=>x.qid===qid);
+      confirmDialog({ title:`Remove ${v.name} from this comparison?`,
+        body:"Its private session evaluation will be removed. <b>The Vendor quotation itself will not be changed.</b>",
+        confirm:"Remove from comparison", cancel:"Keep Vendor", onConfirm:()=>doDeselect(qid) });
+      return;
+    }
+    doDeselect(qid);
+  } else {
+    if(n>=MAX) return; // cap the comparison width
+    sel.add(qid); commitSelection(sel);
+  }
 }
 $("#tray-rail").addEventListener("click",e=>{ const c=e.target.closest(".qcard"); if(c&&!c.classList.contains("blocked")) toggle(c.dataset.qid); });
 $("#tray-rail").addEventListener("keydown",e=>{ if(e.key===" "||e.key==="Enter"){ const c=e.target.closest(".qcard"); if(c&&!c.classList.contains("blocked")){ e.preventDefault(); toggle(c.dataset.qid); } }});
@@ -1107,26 +1181,35 @@ function evalFormHTML(scope){
       <div class="field"><label for="${id('st-'+rk)}">Designation</label>
         <input id="${id('st-'+rk)}" data-sig="${role}" data-sigk="title" value="${esc(s.title||'')}"/></div>
     </div>`; }).join("")}
+  </div>
+
+  <div class="esec eval-reset">
+    <button type="button" class="danger" data-reset="edits">Reset session edits</button>
+    <button type="button" data-reset="all">Reset selection &amp; edits</button>
   </div>`;
 }
 function renderEval(){
   $("#eval-desktop").innerHTML = evalFormHTML("d");
   $("#eval-mobile").innerHTML  = evalFormHTML("m");
 }
+/* UX-3.7 dirty state — a private-field edit is unsaved; quotation SELECTION is not (it lives in the URL) */
+function markDirty(){ if(!state.dirty){ state.dirty=true; updateDirty(); } }
+function updateDirty(){ $("#dirty-badge").hidden = !state.dirty; }
+
 /* live edit → provider → document preview (no reload; caret preserved because we only re-render the doc) */
 document.addEventListener("input",(e)=>{
   const t=e.target, ev=EVAL();
-  if(t.dataset.ev!=null){ ev[t.dataset.ev]=t.value; syncPeer(t); refreshDoc(); }
-  else if(t.dataset.evq){ (ev.byQid[t.dataset.evq]=ev.byQid[t.dataset.evq]||{})[t.dataset.evk]=t.value; syncPeer(t); refreshDoc(); }
-  else if(t.dataset.sig){ ev.sig[t.dataset.sig][t.dataset.sigk]=t.value; syncPeer(t); refreshDoc(); }
+  if(t.dataset.ev!=null){ ev[t.dataset.ev]=t.value; markDirty(); syncPeer(t); refreshDoc(); }
+  else if(t.dataset.evq){ (ev.byQid[t.dataset.evq]=ev.byQid[t.dataset.evq]||{})[t.dataset.evk]=t.value; markDirty(); syncPeer(t); refreshDoc(); }
+  else if(t.dataset.sig){ ev.sig[t.dataset.sig][t.dataset.sigk]=t.value; markDirty(); syncPeer(t); refreshDoc(); }
 });
 document.addEventListener("change",(e)=>{ // selects
   const t=e.target, ev=EVAL();
-  if(t.dataset.ev==="recommended"){ ev.recommended=t.value; syncPeer(t); refreshDoc(); }
-  else if(t.dataset.evq&&t.dataset.evk==="compliance"){ (ev.byQid[t.dataset.evq]=ev.byQid[t.dataset.evq]||{}).compliance=t.value; syncPeer(t); refreshDoc(); }
+  if(t.dataset.ev==="recommended"){ ev.recommended=t.value; markDirty(); syncPeer(t); refreshDoc(); }
+  else if(t.dataset.evq&&t.dataset.evk==="compliance"){ (ev.byQid[t.dataset.evq]=ev.byQid[t.dataset.evq]||{}).compliance=t.value; markDirty(); syncPeer(t); refreshDoc(); }
   else if(t.dataset.sigmember){ // fill a wet-ink signatory from the team roster (a shortcut, not a binding)
     const role=t.dataset.sigmember, rk=role.replace(/\s+/g,"-"), m=TEAM.find(x=>x.id===t.value);
-    if(m){ ev.sig[role].name=m.name; ev.sig[role].title=m.title; }
+    if(m){ ev.sig[role].name=m.name; ev.sig[role].title=m.title; markDirty(); }
     // reflect the fill into BOTH forms and reset the picker back to "Enter manually…"
     ["d","m"].forEach(sc=>{
       const n=document.getElementById(`ev-${sc}-sn-${rk}`); if(n) n.value=ev.sig[role].name;
@@ -1347,17 +1430,67 @@ function openSheet(on){ $("#sheet-scrim").classList.toggle("on",on); $("#eval-sh
 $("#eval-fab").addEventListener("click",()=>openSheet(true));
 $("#sheet-close").addEventListener("click",()=>openSheet(false));
 $("#sheet-scrim").addEventListener("click",()=>openSheet(false));
-document.addEventListener("keydown",e=>{ if(e.key==="Escape") openSheet(false); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ if($("#modal").classList.contains("on")) closeModal(); else openSheet(false); } });
 // grow past xl → the sticky aside takes over; close the mobile Sheet so it can't float over the layout
 window.addEventListener("resize",()=>{ if(window.innerWidth>=1280) openSheet(false); });
 
 /* ── print ── */
 $("#btn-print").addEventListener("click",()=>window.print());
 
-/* ── toast + notes toggle ── */
+/* ── UX-3.8/9/11 confirm dialog (leave / reset / Vendor removal) ── */
+let modalOnConfirm=null, modalLastFocus=null;
+function confirmDialog({title, body, confirm="Confirm", cancel="Cancel", onConfirm}){
+  modalLastFocus=document.activeElement;
+  $("#modal-title").textContent=title;
+  $("#modal-body").innerHTML=body;
+  $("#modal-confirm").textContent=confirm;
+  $("#modal-cancel").textContent=cancel;
+  modalOnConfirm=onConfirm||null;
+  $("#modal-scrim").classList.add("on"); $("#modal").classList.add("on");
+  $("#modal-confirm").focus();
+}
+function closeModal(){ $("#modal-scrim").classList.remove("on"); $("#modal").classList.remove("on"); modalOnConfirm=null; if(modalLastFocus&&modalLastFocus.focus) modalLastFocus.focus(); }
+$("#modal-confirm").addEventListener("click",()=>{ const f=modalOnConfirm; closeModal(); if(f) f(); });
+$("#modal-cancel").addEventListener("click",closeModal);
+$("#modal-scrim").addEventListener("click",closeModal);
+
+/* ── UX-3.8 bounded leave protection ──
+   (1) refresh/close/hard-nav → beforeunload while dirty; (2) known in-workspace leave controls → guarded
+   confirm; (3) Compare ⇄ Statement → BYPASS (shared provider, no loss); (4/5) Back/Forward + shell
+   controls outside the workspace would need a shell navigation-guard hook in the real slice
+   (verify-or-defer) — NOT claimed here. Never monkey-patches the router/History/anchors. */
+window.addEventListener("beforeunload",e=>{ if(state.dirty){ e.preventDefault(); e.returnValue=""; } });
+function guardedLeave(proceed){
+  if(!state.dirty){ proceed(); return; }
+  confirmDialog({ title:"Leave comparison?",
+    body:"Your private evaluation and document edits are <b>not saved</b> and will be lost.",
+    confirm:"Leave without saving", cancel:"Stay",
+    onConfirm:()=>{ state.dirty=false; updateDirty(); proceed(); } });
+}
+
+/* ── UX-3.9 reset actions (two distinct scopes, each confirmed; never combined silently) ── */
+function resetEdits(){ delete state.evaluation[state.rfqId]; state.dirty=false; updateDirty(); renderCompare(); }
+function resetAll(){ delete state.evaluation[state.rfqId]; state.selected=defaultSelection(); state.focusVendor=null; state.dirty=false; updateDirty(); history.replaceState(null,"",`#/compare?sel=${state.selected.join(",")}`); renderCompare(); }
+document.addEventListener("click",e=>{
+  const r=e.target.closest("[data-reset]"); if(!r) return;
+  if(r.dataset.reset==="edits") confirmDialog({ title:"Reset session edits?",
+    body:"This clears your buyer evaluation, procurement purpose, signatory overrides, recommendation, and per-Vendor notes. The compared <b>selection is unchanged</b>.",
+    confirm:"Reset edits", cancel:"Cancel", onConfirm:resetEdits });
+  else confirmDialog({ title:"Reset selection and edits?",
+    body:"This restores the <b>default</b> quotation selection <b>and</b> clears all session-local edits.",
+    confirm:"Reset selection & edits", cancel:"Cancel", onConfirm:resetAll });
+});
+
+/* ── toast + notes toggle (in-workspace leave controls route through the guard while dirty) ── */
 let toastTimer;
 function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("on"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("on"),2600); }
-document.addEventListener("click",e=>{ const el=e.target.closest("[data-toast]"); if(el){ e.preventDefault(); toast(el.dataset.toast);} });
+document.addEventListener("click",e=>{
+  const el=e.target.closest("[data-toast]"); if(!el) return;
+  e.preventDefault();
+  const leave = el.classList.contains("nav-item") || !!el.closest(".crumb"); // sidebar + breadcrumb = leaving the group
+  if(leave) guardedLeave(()=>toast(el.dataset.toast));
+  else toast(el.dataset.toast);
+});
 $("#notes-toggle").addEventListener("change",e=>document.body.classList.toggle("show-notes", e.target.checked));
 
 /* ── demo RFQ switch (a prototype convenience — each workspace is single-RFQ; switching = fresh provider) ── */
@@ -1369,6 +1502,7 @@ function buildDemoSelect(){
 $("#demo-rfq").addEventListener("change",e=>{
   state.rfqId=e.target.value;                 // rfqId change = fresh workspace (evaluation state is per-RFQ)
   state.selected=defaultSelection();
+  state.focusVendor=null; state.collapsed.clear(); state.dirty=false; updateDirty();
   history.replaceState(null,"", `#/compare?sel=${state.selected.join(",")}`);
   renderCompare();
   toast("Switched RFQ context — a workspace is single-RFQ; each RFQ has its own private evaluation.");

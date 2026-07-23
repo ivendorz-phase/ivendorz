@@ -87,8 +87,19 @@ No comparison audit-event, domain event, or `can_*_comparison_statement` permiss
   lowest); the lowest-value tip reads **"Arithmetic identification only. This is not a recommendation."**;
   no undisclosed data.
 
-UX-3 (unsaved indicator · leave confirmation · reset actions · Vendor-removal confirmation) and UX-4
-(document completeness · safe URL state · keyboard shortcuts) follow as subsequent batches.
+**UX-3 (shipped):**
+- **Unsaved-session indicator** — editing any private field (evaluation · purpose · signatory overrides)
+  shows an **Unsaved session changes** badge; quotation *selection* is **not** flagged (it lives in the URL).
+- **Bounded leave protection** — `beforeunload` on refresh/close; in-workspace leave controls (breadcrumb,
+  sidebar) route through a guarded **"Leave comparison?"** confirm (Stay / Leave without saving, no Save
+  button); **Compare ⇄ Statement bypasses** it (shared provider). Back/Forward + external shell controls are
+  honestly out of scope here (would need a shell nav-guard hook in the real slice). No router/History patching.
+- **Reset actions** — **Reset session edits** (clears edits, selection unchanged) and **Reset selection &
+  edits** (restores the frozen default selection *and* clears edits) — two distinct, separately-confirmed scopes.
+- **Vendor-removal confirmation** — deselecting a Vendor that has session-local evaluation confirms first
+  (**"…The Vendor quotation itself will not be changed."**); no confirm when the Vendor has no session content.
+
+UX-4 (document completeness · safe URL state · keyboard shortcuts) follows as the final batch.
 
 ## Reviewing it
 
