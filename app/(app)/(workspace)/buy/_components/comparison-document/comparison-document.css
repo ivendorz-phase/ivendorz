@@ -1,0 +1,290 @@
+/* Comparison Document (CD) — the redesigned Comparative Statement print surface.
+ *
+ * A fresh visual system (NOT the `.cs-` layout): all selectors are `.cd-`-scoped, collision-safe
+ * because Next.js applies route CSS globally. It reuses the PRINT DISCIPLINE only — a fixed A4
+ * landscape sheet, small physical margins, content-driven page breaks — and REPLACES the old
+ * `body * { visibility: hidden }` isolation (which leaves hidden chrome in layout → phantom pages)
+ * with `display: none` on the known app-shell chrome (`[data-print-hide]`, an additive, layout-
+ * neutral hook) plus the document's own screen chrome (`.cd-print-hidden`). Print-white in both
+ * themes — a printed document has one deliberate look.
+ */
+
+.cd-scope {
+  --cd-ink: #16202e;
+  --cd-muted: #5a6577;
+  --cd-line: #cfd6e0;
+  --cd-line-strong: #1f3357;
+  --cd-brand: #1f3357;
+  --cd-band: #f3f6fa;
+  --cd-low-bg: #e7f4ed;
+  --cd-low-ink: #0c6b3d;
+  --cd-draft-bg: #fbf3d9;
+  --cd-draft-ink: #8a6d1f;
+}
+
+/* ---- on-screen sheet (A4 landscape preview) ---- */
+.cd-sheet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+.cd-sheet-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.cd-sheet {
+  width: 297mm;
+  min-height: 210mm;
+  background: #ffffff;
+  color: var(--cd-ink);
+  padding: 12mm 12mm 9mm;
+  box-sizing: border-box;
+  box-shadow: 0 2px 16px rgba(15, 30, 55, 0.18);
+  font-family: Arial, "Helvetica Neue", "Segoe UI", sans-serif;
+  font-size: 8.6pt;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+}
+.cd-sheet * {
+  box-sizing: border-box;
+}
+.cd-body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* ---- letterhead + title ---- */
+.cd-letterhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10mm;
+  border-bottom: 2pt solid var(--cd-line-strong);
+  padding-bottom: 4mm;
+}
+.cd-org-name {
+  font-size: 15pt;
+  font-weight: 800;
+  color: var(--cd-brand);
+  letter-spacing: 0.01em;
+}
+.cd-org-line {
+  font-size: 8pt;
+  color: var(--cd-muted);
+  margin-top: 1.5pt;
+  line-height: 1.5;
+}
+.cd-title-block {
+  text-align: right;
+}
+.cd-doc-title {
+  font-size: 13pt;
+  font-weight: 700;
+  color: var(--cd-brand);
+  letter-spacing: 0.05em;
+}
+.cd-draft-chip {
+  display: inline-block;
+  margin-top: 2pt;
+  font-size: 7pt;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--cd-draft-ink);
+  background: var(--cd-draft-bg);
+  border: 1px solid #e3d5a6;
+  border-radius: 3pt;
+  padding: 1.5pt 6pt;
+}
+
+/* ---- section heading ---- */
+.cd-h {
+  font-size: 9pt;
+  font-weight: 700;
+  color: var(--cd-brand);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-bottom: 1pt solid var(--cd-line);
+  padding-bottom: 2pt;
+  margin: 5mm 0 2.5mm;
+}
+.cd-prov {
+  font-size: 7pt;
+  color: var(--cd-muted);
+  margin-top: 2pt;
+}
+.cd-num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ---- key/value + data tables ---- */
+.cd-kv,
+.cd-data,
+.cd-items {
+  border-collapse: collapse;
+  width: 100%;
+}
+.cd-kv th,
+.cd-kv td,
+.cd-data th,
+.cd-data td,
+.cd-items th,
+.cd-items td {
+  border: 0.5pt solid var(--cd-line);
+  padding: 2.6pt 5pt;
+  font-size: 8pt;
+  text-align: left;
+  vertical-align: top;
+}
+.cd-kv th[scope="row"] {
+  background: var(--cd-band);
+  color: var(--cd-brand);
+  font-weight: 700;
+  width: 34%;
+  white-space: nowrap;
+}
+.cd-data thead th,
+.cd-items thead th {
+  background: var(--cd-brand);
+  color: #ffffff;
+  font-weight: 700;
+  text-align: center;
+}
+.cd-items {
+  table-layout: fixed;
+}
+.cd-items td.cd-low {
+  background: var(--cd-low-bg);
+  color: var(--cd-low-ink);
+  font-weight: 700;
+}
+.cd-items tbody tr:nth-child(even) td:not(.cd-low) {
+  background: #fafbfd;
+}
+.cd-items tr.cd-total td {
+  font-weight: 700;
+  background: var(--cd-band);
+  border-top: 1pt solid var(--cd-line-strong);
+}
+.cd-items tr.cd-grand td {
+  font-weight: 800;
+  background: #e9eef6;
+  color: var(--cd-brand);
+}
+.cd-swatch {
+  display: inline-block;
+  width: 8pt;
+  height: 5pt;
+  background: var(--cd-low-bg);
+  border: 0.5pt solid #bfe0cd;
+  vertical-align: middle;
+}
+
+/* ---- signatures (printed wet-ink blocks) ---- */
+.cd-sign-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4mm;
+  margin-top: 3mm;
+}
+.cd-sign {
+  border: 0.5pt solid var(--cd-line);
+  border-radius: 2pt;
+  padding: 2.5pt 4pt 3pt;
+}
+.cd-sign-role {
+  font-size: 7.4pt;
+  font-weight: 700;
+  color: #ffffff;
+  background: var(--cd-brand);
+  margin: -2.5pt -4pt 3pt;
+  padding: 2.5pt 4pt;
+  border-radius: 2pt 2pt 0 0;
+  text-align: center;
+}
+.cd-sign-space {
+  height: 11mm;
+}
+.cd-sign-line {
+  border-top: 0.6pt solid var(--cd-ink);
+  padding-top: 2pt;
+  text-align: center;
+}
+.cd-sign-name {
+  font-size: 7.8pt;
+  font-weight: 700;
+  min-height: 9pt;
+}
+.cd-sign-title {
+  font-size: 7pt;
+  color: var(--cd-muted);
+}
+
+/* ---- footer ---- */
+.cd-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6mm;
+  border-top: 0.5pt solid var(--cd-line);
+  padding-top: 1.6mm;
+  margin-top: 3mm;
+  font-size: 7pt;
+  color: var(--cd-muted);
+}
+.cd-foot-pg {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- meta grid ---- */
+.cd-two-col {
+  display: flex;
+  gap: 6mm;
+  margin-top: 3mm;
+}
+.cd-col {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---- print: A4 landscape, small margins, display:none isolation (NOT visibility) ---- */
+@page {
+  size: A4 landscape;
+  margin: 8mm;
+}
+@media print {
+  /* Remove the app-shell chrome from LAYOUT entirely (display:none, so no phantom overflow pages),
+     plus the document's own screen-only chrome. `[data-print-hide]` is an additive, layout-neutral
+     hook on the shell topbar/sidebar/breadcrumb/footer/quick-bar. */
+  [data-print-hide],
+  .cd-print-hidden {
+    display: none !important;
+  }
+  .cd-scope {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+  .cd-sheet-list {
+    display: block !important;
+    gap: 0 !important;
+  }
+  .cd-sheet-scroll {
+    overflow: visible !important;
+  }
+  .cd-sheet {
+    width: auto;
+    min-height: 0;
+    padding: 0;
+    box-shadow: none;
+    page-break-after: always;
+  }
+  .cd-sheet-list > .cd-sheet-scroll:last-child .cd-sheet,
+  .cd-sheet-list > .cd-sheet:last-child {
+    page-break-after: auto;
+  }
+}

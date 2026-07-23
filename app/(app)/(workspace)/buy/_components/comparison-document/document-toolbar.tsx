@@ -1,23 +1,19 @@
 "use client";
 
-// Comparative Statement (CS) — screen-only toolbar (WP-2; freeze §3.3). The ONLY client component
-// on this surface, and only because Print needs `window.print()` — a user-agent capability, not a
-// platform export. GOVERNANCE (load-bearing):
-//  • Excel export is an HONEST GATED STUB — platform PDF/Excel generation is not a frozen
-//    capability (`rfq-workflow.md` §7) and is Board-gated on ESC-CS-EXPORT; the button is disabled
-//    and says so. Nothing is fabricated.
-//  • "Print / Save as PDF" = the browser's own print-to-PDF over the fixed A4 sheets (freeze
-//    Visual-Approval print rules: A4 landscape, small margins).
+// Comparison Document — screen-only toolbar (the canonical print surface's actions). Print is the
+// browser's own `window.print()` over the fixed A4 sheets (print CSS isolates the document). Excel export
+// is an HONEST DISABLED STUB — platform PDF/Excel generation is not a frozen capability (ESC-CS-EXPORT);
+// nothing is fabricated. Hidden in print via `.cd-print-hidden` on the wrapper.
 
 import Link from "next/link";
 import { ArrowLeft, FileSpreadsheet, Printer } from "lucide-react";
 import { Button } from "@/frontend/primitives/button";
 
-export function CsToolbar({ rfqId }: { rfqId: string }) {
+export function DocumentToolbar({ backHref }: { backHref: string }) {
   return (
     <>
       <Button asChild variant="ghost" size="sm">
-        <Link href={`/buy/rfqs/${rfqId}/compare`}>
+        <Link href={backHref}>
           <ArrowLeft aria-hidden /> Back to comparison
         </Link>
       </Button>
