@@ -53,9 +53,20 @@ export interface DataListTableProps<T> {
   /**
    * Render the first column's cells as `<th scope="row">` (row headers) instead of `<td>` — for matrix/
    * comparison tables where each row is a named attribute, so AT associates each cell with its row + column
-   * header. Off by default. Not combined with `getRowHref` (a row header is a label, not a link).
+   * header. Off by default. Not combined with `getRowHref` (a row header is a link).
    */
   rowHeaderFirstColumn?: boolean;
+  /**
+   * Optional per-COLUMN class hook (keyed by `column.key`), applied to that column's header AND every body
+   * cell — e.g. a comparison matrix emphasising/subduing a focused vendor column. Purely presentational and
+   * opt-in (returns `undefined` → no change); it never re-orders or re-ranks (R6 / GI-04). Off by default.
+   */
+  columnClassName?: (colKey: string) => string | undefined;
+  /**
+   * Optional per-ROW class hook, applied to the `<tr>` — e.g. a collapsible matrix styling a group-header
+   * row distinctly from data rows. Purely presentational and opt-in; it changes no data. Off by default.
+   */
+  getRowClassName?: (row: T) => string | undefined;
   className?: string;
 }
 
@@ -68,6 +79,8 @@ export function DataListTable<T>({
   getRowHref,
   stickyFirstColumn,
   rowHeaderFirstColumn,
+  columnClassName,
+  getRowClassName,
   className,
 }: DataListTableProps<T>) {
   if (rows.length === 0) {
@@ -101,6 +114,7 @@ export function DataListTable<T>({
                   stickyFirstColumn &&
                     colIndex === 0 &&
                     "sticky left-0 z-10 border-r border-border bg-card",
+                  columnClassName?.(col.key),
                 )}
               >
                 {col.header}
@@ -116,7 +130,10 @@ export function DataListTable<T>({
             return (
               <tr
                 key={getRowKey(row)}
-                className="group border-b border-border last:border-0 hover:bg-accent/60"
+                className={cn(
+                  "group border-b border-border last:border-0 hover:bg-accent/60",
+                  getRowClassName?.(row),
+                )}
               >
                 {columns.map((col, colIndex) => {
                   const content = col.render(row);
@@ -136,6 +153,7 @@ export function DataListTable<T>({
                           // stays opaque during horizontal scroll).
                           sticky &&
                             "sticky left-0 z-10 border-r border-border bg-card group-hover:bg-accent",
+                          columnClassName?.(col.key),
                         )}
                       >
                         {content}
@@ -152,6 +170,7 @@ export function DataListTable<T>({
                         col.truncate && "w-full max-w-0",
                         sticky &&
                           "sticky left-0 z-10 border-r border-border bg-card group-hover:bg-accent",
+                        columnClassName?.(col.key),
                       )}
                     >
                       {/* First column links the row to its detail (opaque-id route) when provided.

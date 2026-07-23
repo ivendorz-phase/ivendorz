@@ -77,6 +77,14 @@ export interface ComparisonWorkspaceState {
   evaluation: WorkspaceEvaluation;
   procurementPurpose: string;
   signatoryNames: Record<string, SignatoryOverride>;
+  /**
+   * True once the buyer has edited any PRIVATE session field (evaluation / purpose / signatory). A
+   * quotation SELECTION change never sets this — the selection lives in `?sel=` and survives refresh
+   * (§2.11A.7). Cleared by the two reset actions; drives the Unsaved indicator + the leave guard.
+   */
+  dirty: boolean;
+  /** The frozen default selection (System order), captured at init — used by the reset-all action. */
+  defaultSelection: string[];
   initializeWorkspace: (input: InitializeInput) => void;
   setSelection: (ids: string[]) => void;
   setEvaluation: (next: Partial<WorkspaceEvaluation>) => void;
@@ -84,6 +92,11 @@ export interface ComparisonWorkspaceState {
   setRecommended: (quotationId: string | undefined) => void;
   setProcurementPurpose: (value: string) => void;
   setSignatory: (role: string, next: SignatoryOverride) => void;
+  /**
+   * Reset ONLY the private session edits (evaluation, procurement purpose, signatory overrides) to
+   * their initial values; the quotation selection is left unchanged (§2.11A.9). Clears `dirty`.
+   */
+  resetEdits: () => void;
   /**
    * Build the index-based `CsBuyerEvaluation` for the given selected vendors — the presentation
    * view-model the document renders. Vendors without an entry are omitted; a recommendation whose
@@ -120,6 +133,10 @@ export function ComparisonWorkspaceStateProvider({
   const [evaluation, setEvaluationState] = useState<WorkspaceEvaluation>(EMPTY_EVALUATION);
   const [procurementPurpose, setProcurementPurposeState] = useState("");
   const [signatoryNames, setSignatoryNames] = useState<Record<string, SignatoryOverride>>({});
+  const [dirty, setDirty] = useState(false);
+  // Frozen initial values captured on first init — the reset actions restore exactly these.
+  const [defaultSelection, setDefaultSelection] = useState<string[]>([]);
+  const [defaultPurpose, setDefaultPurpose] = useState("");
   const initRef = useRef(false);
 
   const initializeWorkspace = useCallback((input: InitializeInput) => {
@@ -128,13 +145,14 @@ export function ComparisonWorkspaceStateProvider({
     // buyer-authored evaluation/purpose/signatory edits.
     if (initRef.current) return;
     initRef.current = true;
-    setSelectedQuotationIds(
-      normalizeSelection(
-        input.requestedIds,
-        input.disclosedIdsInSystemOrder,
-        input.defaultSelection,
-      ),
+    const initialSelection = normalizeSelection(
+      input.requestedIds,
+      input.disclosedIdsInSystemOrder,
+      input.defaultSelection,
     );
+    setSelectedQuotationIds(initialSelection);
+    setDefaultSelection(input.defaultSelection);
+    setDefaultPurpose(input.defaultPurpose);
     setProcurementPurposeState((prev) => (prev ? prev : input.defaultPurpose));
     setDidInitialize(true);
   }, []);
@@ -156,8 +174,11 @@ export function ComparisonWorkspaceStateProvider({
     });
   }, []);
 
+  // Every PRIVATE-field setter marks the session dirty (the Unsaved indicator + leave guard depend on
+  // it). Selection changes deliberately do NOT — the selection is URL-backed and survives refresh.
   const setEvaluation = useCallback((next: Partial<WorkspaceEvaluation>) => {
     setEvaluationState((prev) => ({ ...prev, ...next }));
+    setDirty(true);
   }, []);
 
   const setVendorEval = useCallback((quotationId: string, next: Partial<VendorEvalEntry>) => {
@@ -168,19 +189,31 @@ export function ComparisonWorkspaceStateProvider({
         byQuotation: { ...prev.byQuotation, [quotationId]: { ...current, ...next } },
       };
     });
+    setDirty(true);
   }, []);
 
   const setRecommended = useCallback((quotationId: string | undefined) => {
     setEvaluationState((prev) => ({ ...prev, recommendedQuotationId: quotationId }));
+    setDirty(true);
   }, []);
 
   const setProcurementPurpose = useCallback((value: string) => {
     setProcurementPurposeState(value);
+    setDirty(true);
   }, []);
 
   const setSignatory = useCallback((role: string, next: SignatoryOverride) => {
     setSignatoryNames((prev) => ({ ...prev, [role]: { ...prev[role], ...next } }));
+    setDirty(true);
   }, []);
+
+  const resetEdits = useCallback(() => {
+    // Edits only — the selection is untouched (§2.11A.9). Restores the initial session-local values.
+    setEvaluationState(EMPTY_EVALUATION);
+    setProcurementPurposeState(defaultPurpose);
+    setSignatoryNames({});
+    setDirty(false);
+  }, [defaultPurpose]);
 
   const toBuyerEvaluation = useCallback(
     (vendors: CsVendor[]): CsBuyerEvaluation | undefined => {
@@ -252,6 +285,8 @@ export function ComparisonWorkspaceStateProvider({
       evaluation,
       procurementPurpose,
       signatoryNames,
+      dirty,
+      defaultSelection,
       initializeWorkspace,
       setSelection,
       setEvaluation,
@@ -259,6 +294,7 @@ export function ComparisonWorkspaceStateProvider({
       setRecommended,
       setProcurementPurpose,
       setSignatory,
+      resetEdits,
       toBuyerEvaluation,
     }),
     [
@@ -267,6 +303,8 @@ export function ComparisonWorkspaceStateProvider({
       evaluation,
       procurementPurpose,
       signatoryNames,
+      dirty,
+      defaultSelection,
       initializeWorkspace,
       setSelection,
       setEvaluation,
@@ -274,6 +312,7 @@ export function ComparisonWorkspaceStateProvider({
       setRecommended,
       setProcurementPurpose,
       setSignatory,
+      resetEdits,
       toBuyerEvaluation,
     ],
   );
