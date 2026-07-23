@@ -13,6 +13,63 @@ CRM as **"My Vendor Directory"** per `docs/product/requirements/BUYER_VENDOR_DIR
 FE-change item (owner-ruled — the shipped FE-BUY-09 milestone is superseded by ruling, not silently
 respecified). Presentation-only (fixtures; zero API); Phase-B backend slice (BC-OPS-1) wires it later.
 
+## Implementation status — recorded 2026-07-23
+
+```text
+FE-BUY-11 Saved Vendors
+
+Presentation Status:
+COMPLETE
+
+Backend Wiring Status:
+DEFERRED TO WAVE 5
+
+Reason:
+The required M4 contracts are frozen, but their runtime implementation,
+persistence schema, repositories, application services, route handlers,
+audit behavior, and mutation infrastructure do not yet exist.
+```
+
+**Delivered route (owner directive 2026-07-23 — supersedes the "Re-home" item below).** The surface
+ships **in place at `/buy/saved-vendors`**. `/buy/vendors` was **not** created and **no redirect was
+added**; `/buy/crm` + `/buy/crm/[recordId]` remain live and untouched. Nav already pointed
+"Saved Vendors" at this route, so no nav change was required. Delivered code:
+`app/(app)/(workspace)/buy/saved-vendors/` (server page + client workspace) over the Tier-2
+components in `app/(app)/(workspace)/buy/_components/vendor-directory/`; tests in
+`tests/integration/saved-vendors-directory.test.ts` (14 passing). The approved clickable prototype
+that this surface reproduces is held **outside version control** (excluded artifact — no repo path
+cited here by design).
+
+**No production persistence exists today.** Reads are composed server-side by
+`buildDirectorySnapshot()` in
+`app/(app)/(workspace)/buy/_components/vendor-directory/working-model.ts` — the single frozen-read
+seam, fixture-backed. All mutations (⭐ Preferred set/clear, archive/restore, private-vendor create,
+paste-create) update **local client working state only** and reset on reload. Nothing is written, and
+the browser calls no Doc-5 contract and sets no `Iv-Active-Organization`.
+
+**Dependency — M4 runtime (Wave 5).** A wiring audit on 2026-07-23 established that the M4
+`operations` module has **frozen contracts but zero runtime**: 8/8 of the operations this surface
+needs (`list_private_vendors`, `get_private_vendor`, `get_buyer_supplier_relationship`,
+`set_vendor_favorite`, `clear_vendor_favorite`, `create_private_vendor`, `archive_private_vendor`,
+`set_buyer_vendor_status`) have a frozen Doc-5F contract row, and **0/8 have a persistence table, an
+implementation, or an HTTP/action entry point**. `src/modules/operations/contracts/services.ts` is an
+`export {}` placeholder; `api/application/domain/infrastructure` are empty; no migration creates any
+`operations.*` table (the schema namespace exists, spine-only). This is true on **`origin/main` as
+well as this branch** — rebasing unlocks nothing. M4 is **Wave 5**; the programme is entering Wave 3.
+Wiring therefore cannot proceed without building M4 early (out of sequence) or inventing the missing
+layer — both refused.
+
+**Marketplace search stays parked too.** The Add-Vendor free-text search maps to
+`marketplace.search_catalog`, which is **unbuilt on every branch** (recorded as deferred at the Wave-3
+exit gate). The adjacent `list_vendor_directory` is built on `origin/main` only and accepts no
+free-text query, so it cannot serve this UX regardless.
+
+**Governance dependency (separate, blocking Wave-5 wiring):** see `GOVERNANCE-DEPENDENCY.md` in this
+folder — the frozen permission model cannot express the approved ordinary/authorized member asymmetry.
+
+**When M4 lands**, only the body of `buildDirectorySnapshot()` and the mutation handlers change; no
+view or component changes shape. All items in "Out of scope" below remain parked and unchanged.
+
 ## In scope
 
 - **Re-home:** P-BUY-26/27 move `/buy/crm` → `/buy/vendors` (+ `/buy/vendors/[recordId]`); thin
@@ -52,9 +109,18 @@ respecified). Presentation-only (fixtures; zero API); Phase-B backend slice (BC-
 
 ## Dependencies
 
-- H: — none (presentation-only).
+- H: — none for the presentation milestone (fixtures; zero API).
 - S: Stream-2 packet fold (R8) + extraction phase gate **only** for the future real import wiring
   (WP-8, Phase B) — the simulation here does not depend on it.
+
+**Blocking Phase-B / Wave-5 production wiring (recorded 2026-07-23):**
+
+1. **M4 runtime implementation — Wave 5.** Contracts frozen, runtime absent (persistence schema,
+   repositories, application services, route handlers, audit behaviour, mutation infrastructure).
+   See "Implementation status" above.
+2. **Authorization asymmetry — Doc-2 governance.** The frozen permission model cannot express the
+   approved ordinary/authorized member distinction. Separate record: `GOVERNANCE-DEPENDENCY.md`
+   (this folder). Must be resolved before Wave-5 wiring; **not** resolvable in a frontend task.
 
 ## Lifecycle ownership
 
