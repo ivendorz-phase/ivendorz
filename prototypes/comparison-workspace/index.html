@@ -1,0 +1,1133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Comparison Workspace — Prototype · iVendorz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ── iVendorz design tokens (mirror app/globals.css — light mode; usage, not new color) ── */
+  :root{
+    --iv-brand-50:#eef3fd; --iv-brand-100:#dbe6fa; --iv-brand-200:#b8cef5; --iv-brand-300:#8fb0ea;
+    --iv-brand-400:#5f8ad9; --iv-brand-500:#2f5eb8; --iv-brand-600:#23438f; --iv-brand-700:#1c3672;
+    --iv-brand-800:#162a58; --iv-brand-900:#101f40; --iv-brand-950:#0b1530;
+    --iv-navy-50:#eef2f8; --iv-navy-100:#d9e1ef; --iv-navy-200:#b7c6e0; --iv-navy-300:#8ba0c6;
+    --iv-navy-400:#5a74a3; --iv-navy-500:#375081; --iv-navy-600:#283f6a; --iv-navy-700:#1f3154;
+    --iv-navy-800:#182643; --iv-navy-900:#111c33; --iv-navy-950:#0b1322;
+    --iv-amber-400:#cda434; --iv-amber-500:#b8860b;
+    --iv-light-base:#f6f8fa; --iv-light-raised:#ffffff; --iv-light-muted:#f8fafc;
+    --iv-light-border:#e6e9ee; --iv-light-hover:#f8fafc;
+    --iv-success-base:#16a34a; --iv-success-subtle:rgba(22,163,74,.08);
+    --iv-warning-base:#ca8a04; --iv-warning-subtle:rgba(202,138,4,.08);
+    --iv-danger-base:#dc2626;
+    --iv-info-base:#2563eb; --iv-info-subtle:rgba(37,99,235,.08);
+    --iv-neutral-base:#6b7280; --iv-neutral-subtle:rgba(107,114,128,.08);
+    --fg:#1a2333; --fg-muted:#5b6472; --fg-soft:#8b93a1;
+    --radius:10px; --radius-sm:7px;
+    --sans:'Inter',-apple-system,'Segoe UI',sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--sans);font-size:14px;color:var(--fg);background:var(--iv-light-base);
+    -webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+  input,select,textarea{font:inherit}
+  .mono{font-family:var(--mono)}
+
+  /* ── review chrome ── */
+  .proto-banner{display:flex;align-items:center;gap:10px;padding:7px 16px;background:var(--iv-navy-950);
+    color:#cbd5e1;font-size:12px;border-bottom:1px solid #1e2a3b;flex-wrap:wrap}
+  .proto-banner .tag{background:var(--iv-amber-500);color:#fff;font-weight:700;font-size:10.5px;
+    letter-spacing:.06em;padding:2px 7px;border-radius:4px;text-transform:uppercase}
+  .proto-banner .sp{flex:1}
+  .proto-banner label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+  .note{display:none;border:1.5px dashed var(--iv-amber-400);background:#fffdf4;border-radius:var(--radius);
+    padding:12px 16px;font-size:12.5px;color:#6b5a1e;line-height:1.55;margin:0 0 18px}
+  .note b{color:#4a3504}
+  .note code,.note .mono{font-family:var(--mono);font-size:11.5px}
+  .note a{color:var(--iv-brand-700);text-decoration:underline}
+  body.show-notes .note{display:block}
+
+  /* ── top bar (matches built shell) ── */
+  .topbar{display:flex;align-items:center;gap:18px;height:56px;padding:0 16px;
+    background:var(--iv-navy-950);color:#e2e8f0}
+  .brand{display:inline-flex;align-items:center;gap:8px;flex-shrink:0}
+  .brand-mark{width:30px;height:30px;border-radius:7px;background:var(--iv-brand-600);color:#fff;
+    display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+  .topsearch{flex:0 1 380px;display:flex;align-items:center;gap:9px;height:36px;padding:0 14px;
+    background:#141f33;border:1px solid #223048;border-radius:999px;color:#7d8aa0;font-size:13.5px}
+  .topbar .sp{flex:1}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:34px;padding:0 14px;
+    border-radius:8px;font-weight:600;font-size:13.5px;transition:background .15s ease-out;white-space:nowrap}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-primary{background:var(--iv-brand-500);color:#fff}
+  .btn-primary:hover{background:var(--iv-brand-600)}
+  .btn-ghost-dark{color:#9fb0c8;width:36px;padding:0;border-radius:8px}
+  .btn-ghost-dark:hover{background:#141f33}
+  .btn-outline{border:1px solid var(--iv-light-border);background:var(--iv-light-raised);color:var(--fg)}
+  .btn-outline:hover{background:var(--iv-light-hover)}
+  .btn-sm{height:30px;padding:0 11px;font-size:12.5px}
+  .account{display:flex;align-items:center;gap:9px;cursor:pointer;padding:4px 8px;border-radius:8px}
+  .account:hover{background:#141f33}
+  .avatar{width:30px;height:30px;border-radius:999px;background:var(--iv-brand-500);color:#fff;
+    display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+  .account .who{line-height:1.25;font-size:12.5px}
+  .account .who b{display:block;font-size:13px;color:#f1f5f9;font-weight:600}
+  .account .who span{color:#7d8aa0}
+
+  /* ── layout ── */
+  .frame{display:flex;min-height:calc(100vh - 56px)}
+  .sidebar{width:248px;flex-shrink:0;background:var(--iv-light-raised);
+    border-right:1px solid var(--iv-light-border);display:flex;flex-direction:column}
+  .ws-head{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--iv-navy-50);
+    border-bottom:1px solid var(--iv-light-border)}
+  .ws-head .ic-box{width:30px;height:30px;border-radius:7px;background:var(--iv-brand-100);
+    color:var(--iv-brand-700);display:inline-flex;align-items:center;justify-content:center}
+  .ws-head .t b{display:block;font-size:13.5px;font-weight:700;color:var(--iv-navy-800)}
+  .ws-head .t span{font-size:11.5px;color:var(--fg-muted)}
+  nav.side{flex:1;overflow-y:auto;padding:10px 10px 16px}
+  .grp{margin-top:14px}
+  .grp:first-child{margin-top:4px}
+  .grp>p{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--fg-soft);padding:0 10px;margin-bottom:4px}
+  .nav-item{display:flex;align-items:center;gap:10px;height:34px;padding:0 10px;border-radius:8px;
+    font-size:13.5px;font-weight:500;color:#3c4657;width:100%;text-align:left}
+  .nav-item:hover{background:var(--iv-light-hover)}
+  .nav-item.active{background:var(--iv-brand-100);color:var(--iv-brand-800);font-weight:600}
+  .nav-item.active svg{color:var(--iv-brand-700)}
+  .nav-item svg{flex-shrink:0;color:var(--fg-soft)}
+  .nav-item .chev{margin-left:auto;transition:transform .15s ease-out}
+  .side-foot{border-top:1px solid var(--iv-light-border);padding:10px 14px;font-size:13px;color:var(--fg-muted);
+    display:flex;align-items:center;gap:8px}
+
+  main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .page{flex:1;width:100%;max-width:1360px;margin:0 auto;padding:22px 30px 48px}
+  .crumb{font-size:13px;color:var(--fg-muted);margin-bottom:12px}
+  .crumb a{color:var(--fg-muted)} .crumb a:hover{color:var(--iv-brand-600)}
+  .crumb .sep{margin:0 7px;color:var(--fg-soft)}
+  .crumb .cur{color:var(--fg);font-weight:500}
+  footer.app{border-top:1px solid var(--iv-light-border);padding:14px 30px;display:flex;
+    font-size:12.5px;color:var(--fg-muted)}
+  footer.app .sp{flex:1}
+
+  /* ── ① RFQ context header (PageHeader) ── */
+  .page-head{display:flex;align-items:flex-start;gap:16px;padding-bottom:16px;
+    border-bottom:1px solid var(--iv-light-border);margin-bottom:20px;flex-wrap:wrap}
+  .page-head h1{font-size:24px;font-weight:800;letter-spacing:-.02em;color:var(--iv-navy-900)}
+  .page-head .sub{margin-top:5px;color:var(--fg-muted);font-size:14px;max-width:680px;line-height:1.5}
+  .page-head .sp{flex:1;min-width:12px}
+  .meta-line{margin-top:9px;font-size:12.5px;color:var(--fg-soft);display:flex;gap:0;flex-wrap:wrap;align-items:center}
+  .meta-line .ref{font-family:var(--mono);color:var(--iv-navy-700);font-weight:600;font-size:12px}
+  .meta-line .dot{margin:0 8px;color:var(--iv-light-border)}
+  .meta-line .badge-desc{font-weight:600;color:var(--iv-navy-600);background:var(--iv-navy-50);
+    padding:2px 9px;border-radius:999px;border:1px solid var(--iv-navy-100)}
+
+  /* mode tabs (BuyerWorkspaceTabs) */
+  .modetabs{display:inline-flex;background:var(--iv-light-muted);border:1px solid var(--iv-light-border);
+    border-radius:9px;padding:3px}
+  .modetabs button{height:32px;padding:0 15px;border-radius:7px;font-size:13px;font-weight:600;
+    color:var(--fg-muted);display:inline-flex;align-items:center;gap:7px}
+  .modetabs button[aria-selected="true"]{background:var(--iv-light-raised);color:var(--iv-navy-900);
+    box-shadow:0 1px 2px rgba(16,31,64,.08)}
+  .modetabs button svg{color:currentColor}
+
+  /* ── ② quotation tray ── */
+  /* min-inline-size:0 overrides the fieldset default (min-content) so the inner rail can scroll,
+     instead of the fieldset expanding to fit every card and pushing the page sideways */
+  .tray{border:1px solid var(--iv-light-border);background:var(--iv-light-raised);
+    border-radius:var(--radius);padding:15px 16px;margin-bottom:18px;min-inline-size:0;min-width:0}
+  .tray legend,.tray>.legend{font-size:13.5px;font-weight:700;color:var(--iv-navy-900);padding:0}
+  .tray .count{margin:3px 0 12px;font-size:12.5px;color:var(--fg-muted)}
+  .tray .count b{color:var(--iv-navy-800);font-variant-numeric:tabular-nums}
+  .tray .count .cap{color:var(--iv-warning-base);font-weight:600}
+  .tray-rail{display:flex;gap:11px;overflow-x:auto;padding-bottom:4px}
+  .qcard{position:relative;min-width:15rem;flex-shrink:0;border:1.5px solid var(--iv-light-border);
+    background:var(--iv-light-raised);border-radius:var(--radius-sm);padding:12px 13px;cursor:pointer;
+    transition:border-color .15s ease-out,box-shadow .15s ease-out}
+  .qcard:hover{border-color:var(--iv-brand-300)}
+  .qcard.sel{border-color:var(--iv-brand-500);box-shadow:0 0 0 1px var(--iv-brand-500);
+    background:linear-gradient(0deg,var(--iv-brand-50),var(--iv-light-raised))}
+  .qcard.blocked{opacity:.62;cursor:not-allowed}
+  .qcard.blocked:hover{border-color:var(--iv-light-border)}
+  .qcard .qc-top{display:flex;align-items:flex-start;gap:9px}
+  .qcard .box{width:18px;height:18px;border-radius:5px;border:1.6px solid var(--iv-navy-300);flex-shrink:0;
+    margin-top:1px;display:inline-flex;align-items:center;justify-content:center;color:#fff;background:var(--iv-light-raised)}
+  .qcard.sel .box{background:var(--iv-brand-500);border-color:var(--iv-brand-500)}
+  .qcard.sel .box svg{display:block}
+  .qcard .box svg{display:none}
+  .qcard .vn{font-weight:600;color:var(--iv-navy-900);font-size:13.5px;line-height:1.3}
+  .qcard .qref{font-family:var(--mono);font-size:11px;color:var(--fg-soft);margin-top:2px}
+  .qcard .amt{font-family:var(--mono);font-weight:600;color:var(--iv-brand-700);font-size:13px;margin-top:7px}
+  .qcard .st{margin-top:8px}
+  .qcard .why{margin-top:8px;font-size:11px;color:var(--fg-soft);line-height:1.4}
+
+  /* ── work grid (matrix+terms | evaluation) ── */
+  .ws-grid{display:grid;grid-template-columns:1fr;gap:18px}
+  @media (min-width:1280px){.ws-grid{grid-template-columns:minmax(0,1fr) 372px}}
+  .ws-main{display:flex;flex-direction:column;gap:18px;min-width:0}
+
+  .card{background:var(--iv-light-raised);border:1px solid var(--iv-light-border);border-radius:var(--radius)}
+  .card-h{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--iv-light-border)}
+  .card-h h2{font-size:14.5px;font-weight:700;color:var(--iv-navy-900)}
+  .card-h .sp{flex:1}
+  .card-h .hint{font-size:11.5px;color:var(--fg-soft)}
+  .tag-esc{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;
+    color:var(--iv-warning-base);background:var(--iv-warning-subtle);border:1px solid rgba(202,138,4,.25);
+    padding:2px 8px;border-radius:999px}
+  body:not(.show-notes) .tag-esc{display:none}
+
+  /* ── ③ comparison matrix ── */
+  .tablewrap{overflow-x:auto}
+  table.cmp{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+  .cmp caption{text-align:left;position:absolute;left:-9999px}
+  .cmp thead th{font-size:11.5px;font-weight:700;color:var(--iv-navy-900);text-align:left;
+    padding:12px 14px;border-bottom:1px solid var(--iv-light-border);vertical-align:bottom;min-width:150px}
+  .cmp thead th .vn{display:block;font-size:13px}
+  .cmp thead th .vr{display:block;font-family:var(--mono);font-size:10.5px;color:var(--fg-soft);font-weight:500;margin-top:2px}
+  .cmp tbody th{font-weight:600;color:var(--fg-muted);text-align:left;padding:11px 14px;font-size:12.5px;
+    border-bottom:1px solid var(--iv-light-border);background:var(--iv-light-muted);width:172px}
+  .cmp tbody td{padding:11px 14px;border-bottom:1px solid var(--iv-light-border);vertical-align:top;color:var(--fg)}
+  .cmp tbody tr:last-child th,.cmp tbody tr:last-child td{border-bottom:0}
+  .cmp .attr-h td{background:var(--iv-navy-50);font-size:10.5px;font-weight:700;letter-spacing:.07em;
+    text-transform:uppercase;color:var(--iv-navy-600);padding:8px 14px}
+  .money{font-family:var(--mono);font-weight:600;color:var(--iv-brand-700);white-space:nowrap}
+  .lowtag{display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:10px;font-weight:700;
+    letter-spacing:.04em;text-transform:uppercase;color:var(--iv-navy-600);border:1px solid var(--iv-navy-200);
+    background:var(--iv-navy-50);border-radius:4px;padding:1px 6px;cursor:help;vertical-align:middle}
+  /* sticky attribute rail (tested to 6 vendor columns) */
+  .cmp thead th:first-child,.cmp tbody th{position:sticky;left:0;z-index:1;
+    box-shadow:1px 0 0 var(--iv-light-border)}
+  .cmp thead th:first-child{background:var(--iv-light-raised);min-width:172px}
+  .sealed{display:inline-flex;align-items:center;gap:5px;color:var(--fg-soft);font-size:12px;font-style:italic}
+  .sealed svg{color:var(--fg-soft)}
+  .attach{color:var(--fg-muted);font-size:12.5px}
+
+  /* line-item sub-table */
+  .li thead th{min-width:150px}
+  .li tbody th{width:auto;min-width:200px}
+  .li .li-desc{display:block;font-weight:600;color:var(--fg);font-size:12.5px}
+  .li .li-meta{display:block;font-size:11px;color:var(--fg-soft);margin-top:2px;font-family:var(--mono)}
+  .li td.num{text-align:right}
+  .li td .up{display:block;font-size:10.5px;color:var(--fg-soft);font-family:var(--mono);margin-top:2px}
+  .li tfoot th,.li tfoot td{padding:12px 14px;border-top:2px solid var(--iv-navy-200);font-weight:700;
+    color:var(--iv-navy-900);background:var(--iv-light-muted)}
+  .li tfoot th{position:sticky;left:0}
+  .li tfoot td{text-align:right}
+  .indicative{font-size:11.5px;color:var(--fg-soft);padding:10px 16px;border-top:1px dashed var(--iv-light-border);
+    display:flex;align-items:center;gap:7px}
+
+  /* ── ④ commercial terms cards ── */
+  .terms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;padding:16px}
+  .vcard{border:1px solid var(--iv-light-border);border-radius:var(--radius-sm);padding:14px 15px;position:relative}
+  .vcard.low{border-color:var(--iv-navy-200)}
+  .vcard .vh{font-weight:700;color:var(--iv-navy-900);font-size:13.5px;line-height:1.3}
+  .vcard .vref{font-family:var(--mono);font-size:10.5px;color:var(--fg-soft);margin-top:2px}
+  .vcard .grand{font-family:var(--mono);font-size:19px;font-weight:800;color:var(--iv-navy-900);
+    margin:10px 0 2px;font-variant-numeric:tabular-nums}
+  .vcard .low-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;
+    letter-spacing:.04em;text-transform:uppercase;color:var(--iv-navy-700);background:var(--iv-navy-50);
+    border:1px solid var(--iv-navy-200);border-radius:4px;padding:2px 7px;margin-bottom:8px;cursor:help}
+  .vcard dl{margin-top:10px;display:grid;grid-template-columns:1fr;gap:7px}
+  .vcard dl div{display:flex;justify-content:space-between;gap:12px;font-size:12px}
+  .vcard dt{color:var(--fg-soft)} .vcard dd{color:var(--fg);text-align:right;font-weight:500}
+  .vcard .sub{font-family:var(--mono)}
+
+  /* ── ⑤ evaluation panel ── */
+  .eval-aside{position:sticky;top:16px;align-self:start;border:1px solid var(--iv-light-border);
+    background:var(--iv-light-raised);border-radius:var(--radius);max-height:calc(100vh - 90px);
+    overflow-y:auto}
+  @media (max-width:1279px){.eval-aside{display:none}}
+  .eval-open{display:none}
+  @media (max-width:1279px){.eval-open{display:inline-flex}}
+  .eval-h{padding:14px 16px;border-bottom:1px solid var(--iv-light-border);display:flex;align-items:center;gap:8px}
+  .eval-h h2{font-size:14.5px;font-weight:700;color:var(--iv-navy-900)}
+  .eval-body{padding:15px 16px;display:flex;flex-direction:column;gap:16px}
+  .privacy-note{border:1px solid var(--iv-brand-100);background:var(--iv-brand-50);border-radius:var(--radius-sm);
+    padding:10px 12px;font-size:11.5px;color:var(--iv-brand-800);line-height:1.5}
+  .privacy-note b{color:var(--iv-brand-900)}
+  .esec>h3{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--fg-soft);
+    margin-bottom:9px}
+  .field{margin-bottom:10px}
+  .field:last-child{margin-bottom:0}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--fg);margin-bottom:4px}
+  .field .desc{font-size:11px;color:var(--fg-soft);margin-bottom:5px}
+  .field input,.field select,.field textarea{width:100%;border:1px solid var(--iv-light-border);
+    border-radius:7px;padding:8px 10px;font-size:12.5px;color:var(--fg);background:var(--iv-light-raised);outline:none}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--iv-brand-400);
+    box-shadow:0 0 0 3px var(--iv-brand-100)}
+  .field textarea{resize:vertical;min-height:60px;line-height:1.5}
+  .vblock{border:1px solid var(--iv-light-border);border-radius:var(--radius-sm);padding:11px 12px;margin-bottom:9px}
+  .vblock .vbn{font-size:12.5px;font-weight:600;color:var(--iv-navy-900);margin-bottom:8px}
+
+  /* ── ⑥ document (Comparative Statement — canonical print surface) ── */
+  .doc-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .doc-toolbar .sp{flex:1}
+  .draftchip{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--iv-navy-700);
+    background:var(--iv-navy-50);border:1px solid var(--iv-navy-100);border-radius:999px;padding:4px 11px}
+  .doc-scroll{overflow-x:auto;padding-bottom:8px}
+  .cd-scope{display:flex;flex-direction:column;gap:18px;align-items:center}
+  .cd-sheet{background:#fff;border:1px solid #d7dce4;border-radius:6px;box-shadow:0 3px 14px rgba(16,31,64,.07);
+    width:1040px;max-width:100%;min-height:735px;padding:30px 34px;position:relative;display:flex;flex-direction:column}
+  .cd-lh{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid var(--iv-navy-900);
+    padding-bottom:12px;margin-bottom:6px}
+  .cd-lh .org b{display:block;font-size:16px;font-weight:800;color:var(--iv-navy-900)}
+  .cd-lh .org span{font-size:11.5px;color:var(--fg-muted)}
+  .cd-lh .brandph{font-size:10px;color:var(--fg-soft);border:1px dashed #cbd2dd;border-radius:5px;padding:5px 9px;text-align:center;line-height:1.4}
+  .cd-title{text-align:center;margin:14px 0 4px}
+  .cd-title h2{font-size:18px;font-weight:800;color:var(--iv-navy-900);letter-spacing:.01em}
+  .cd-title .draft{display:inline-block;margin-top:5px;font-size:11px;font-weight:700;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--iv-warning-base)}
+  .cd-meta{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 26px;margin:12px 0 4px;font-size:12px}
+  .cd-meta div{display:flex;gap:8px}
+  .cd-meta dt{color:var(--fg-soft);min-width:120px}
+  .cd-meta dd{color:var(--fg);font-weight:600}
+  .cd-meta .mono{font-family:var(--mono);font-size:11.5px}
+  .cd-sec-h{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--iv-navy-700);
+    margin:18px 0 9px;padding-bottom:5px;border-bottom:1px solid var(--iv-light-border)}
+  table.cd-tbl{width:100%;border-collapse:collapse;font-size:11.5px}
+  .cd-tbl th,.cd-tbl td{border:1px solid #dfe4ea;padding:7px 9px;text-align:left;vertical-align:top}
+  .cd-tbl thead th{background:var(--iv-navy-50);color:var(--iv-navy-900);font-weight:700;font-size:11px}
+  .cd-tbl tbody th{background:var(--iv-light-muted);color:var(--fg-muted);font-weight:600;width:150px}
+  .cd-tbl td.num{text-align:right;font-family:var(--mono)}
+  .cd-tbl tfoot td,.cd-tbl tfoot th{font-weight:700;background:var(--iv-light-muted);color:var(--iv-navy-900)}
+  .cd-eval dt{font-size:11px;font-weight:700;color:var(--fg-muted);margin-top:9px}
+  .cd-eval dd{font-size:12px;color:var(--fg);line-height:1.5;white-space:pre-wrap}
+  .cd-eval .empty{color:var(--fg-soft);font-style:italic}
+  .prov{color:var(--iv-brand-600);font-weight:700}
+  .cd-sign{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:34px}
+  .cd-sign .slot{border-top:1px solid var(--iv-navy-900);padding-top:6px}
+  .cd-sign .role{font-size:11px;font-weight:700;color:var(--iv-navy-800);text-transform:uppercase;letter-spacing:.05em}
+  .cd-sign .nm{font-size:12px;color:var(--fg);margin-top:3px;min-height:16px;font-weight:600}
+  .cd-sign .ti{font-size:11px;color:var(--fg-muted)}
+  .cd-sign .wet{font-size:10px;color:var(--fg-soft);margin-top:6px;font-style:italic}
+  .cd-foot{margin-top:auto;padding-top:16px;display:flex;justify-content:space-between;align-items:center;
+    font-size:10.5px;color:var(--fg-soft);border-top:1px solid var(--iv-light-border)}
+  .cd-foot .pg{font-weight:600;color:var(--fg-muted)}
+
+  /* views + toast */
+  .view{display:none} .view.on{display:block}
+  .mode-panel{display:none} .mode-panel.on{display:block}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(8px);opacity:0;
+    background:var(--iv-navy-900);color:#e2e8f0;font-size:13px;padding:10px 18px;border-radius:9px;
+    pointer-events:none;transition:opacity .2s ease-out,transform .2s ease-out;max-width:560px;text-align:center;z-index:60}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* evaluation Sheet (< xl) */
+  .sheet-scrim{position:fixed;inset:0;background:rgba(11,19,34,.42);opacity:0;pointer-events:none;
+    transition:opacity .2s ease-out;z-index:50}
+  .sheet-scrim.on{opacity:1;pointer-events:auto}
+  /* closed sheet is display:none — fully out of layout/hit-testing/scroll-width (no off-screen overflow) */
+  .sheet{position:fixed;top:0;right:0;height:100%;width:min(440px,100%);background:var(--iv-light-raised);
+    box-shadow:-8px 0 24px rgba(16,31,64,.14);z-index:51;display:none;flex-direction:column}
+  .sheet.on{display:flex;animation:sheetIn .2s ease-out}
+  @keyframes sheetIn{from{transform:translateX(14px);opacity:.4}to{transform:translateX(0);opacity:1}}
+  .sheet-h{display:flex;align-items:center;gap:10px;padding:15px 16px;border-bottom:1px solid var(--iv-light-border)}
+  .sheet-h h2{font-size:15px;font-weight:700;color:var(--iv-navy-900);flex:1}
+  .sheet-h button{width:32px;height:32px;border-radius:8px;color:var(--fg-muted);display:inline-flex;align-items:center;justify-content:center}
+  .sheet-h button:hover{background:var(--iv-light-hover)}
+  .sheet-body{flex:1;overflow-y:auto}
+
+  @media (max-width:1279px){
+    .page{padding:20px 20px 44px}
+  }
+  /* < md: shell sidebar hidden (plan §2.5); content goes full-width, matrix scrolls in its own rail */
+  @media (max-width:767px){
+    .sidebar{display:none}
+    .topsearch{display:none}
+    .page{padding:16px 14px 40px}
+    .page-head h1{font-size:21px}
+    .modetabs{width:100%}
+    .modetabs button{flex:1}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  /* ── print: canonical CS surface only (display:none isolation, no visibility:hidden) ── */
+  @page{size:A4 landscape;margin:8mm}
+  @media print{
+    body{background:#fff}
+    .proto-banner,.topbar,.sidebar,.crumb,.page-head,.tray,.ws-grid,.note,.doc-toolbar,
+    footer.app,.toast,.sheet,.sheet-scrim,#view-compare{display:none!important}
+    .frame{display:block;min-height:0}
+    .page{max-width:none;padding:0}
+    .doc-scroll{overflow:visible}
+    .cd-scope{gap:0;display:block}
+    .cd-sheet{width:auto;max-width:none;min-height:auto;border:0;border-radius:0;box-shadow:none;
+      padding:0 2mm;page-break-after:always}
+    .cd-sheet:last-child{page-break-after:auto}
+    .cd-tbl th,.cd-tbl td{border-color:#b9c0cc}
+  }
+</style>
+</head>
+<body class="show-notes">
+
+<!-- ═══ review chrome ═══ -->
+<div class="proto-banner">
+  <span class="tag">Prototype</span>
+  <span><b>comparison-workspace</b> · non-authoritative · fresh presentation of the un-gated Buyer Comparison slice — coins nothing, demo data only</span>
+  <span class="sp"></span>
+  <span class="mono" style="opacity:.7">RFQ:</span>
+  <select id="demo-rfq" class="mono" style="height:26px;border-radius:6px;background:#141f33;color:#cbd5e1;border:1px solid #223048;padding:0 6px;font-size:11.5px"></select>
+  <label><input type="checkbox" id="notes-toggle" checked /> Review notes</label>
+</div>
+
+<!-- ═══ top bar ═══ -->
+<header class="topbar">
+  <a class="brand" href="#/compare"><span class="brand-mark">iV</span></a>
+  <div class="topsearch">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    Search RFQs, vendors, products…
+  </div>
+  <span class="sp"></span>
+  <button class="btn btn-primary" data-toast="Global Create menu — not part of this prototype.">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Create
+  </button>
+  <button class="btn btn-ghost-dark" data-toast="Notifications — not part of this prototype.">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+  </button>
+  <div class="account" data-toast="Workspace &amp; account menu — not part of this prototype.">
+    <span class="avatar">CT</span>
+    <div class="who"><b>Crescent Textile Mills</b><span>Buyer workspace</span></div>
+  </div>
+</header>
+
+<div class="frame">
+  <!-- ═══ sidebar — buyer IA (RFQs group active) ═══ -->
+  <aside class="sidebar">
+    <div class="ws-head">
+      <span class="ic-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+      <div class="t"><b>Buyer Workspace</b><span>Crescent Textile Mills</span></div>
+    </div>
+    <nav class="side">
+      <div class="grp">
+        <button class="nav-item" data-toast="Dashboard is built in the app — not part of this prototype.">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </button>
+      </div>
+      <div class="grp">
+        <p>Procurement</p>
+        <button class="nav-item active" data-toast="This RFQ's lifecycle pages are built in the app. The Comparison workspace is what this prototype shows.">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+          RFQs
+        </button>
+        <button class="nav-item" data-toast="Quotations pages — see the buyer-quotations prototype.">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+          Quotations
+        </button>
+        <button class="nav-item" data-toast="Purchase Orders — not part of this prototype.">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg>
+          Purchase Orders
+        </button>
+        <button class="nav-item" data-toast="Documents hub is built in the app — not part of this prototype.">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h16"/><path d="M6 16V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8"/></svg>
+          Documents
+        </button>
+      </div>
+      <div class="grp">
+        <p>Marketplace</p>
+        <button class="nav-item" data-toast="Not part of this prototype."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Vendor Directory</button>
+        <button class="nav-item" data-toast="Not part of this prototype."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11.5 3.6 13.7 8l4.9.7-3.5 3.5.8 4.9-4.4-2.3-4.4 2.3.8-4.9L4.4 8.7 9.3 8Z"/></svg>Saved Vendors</button>
+      </div>
+      <div class="grp">
+        <p>Organization</p>
+        <button class="nav-item" data-toast="Not part of this prototype."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Team</button>
+        <button class="nav-item" data-toast="Not part of this prototype."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/></svg>Organization</button>
+      </div>
+    </nav>
+    <div class="side-foot">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>
+      Collapse
+    </div>
+  </aside>
+
+  <!-- ═══ main ═══ -->
+  <main>
+
+    <!-- ─────────────────────── COMPARE WORKSPACE (/compare) ─────────────────────── -->
+    <section class="view" id="view-compare" aria-labelledby="cw-h1">
+      <div class="page">
+        <div class="crumb"><a href="#" data-toast="RFQ list — built in the app.">RFQs</a><span class="sep">›</span><a href="#" data-toast="RFQ detail — built in the app." id="crumb-ref">RFQ</a><span class="sep">›</span><span class="cur">Comparison</span></div>
+
+        <!-- ① RFQ CONTEXT HEADER -->
+        <div class="page-head">
+          <div>
+            <h1 id="cw-h1">Supplier comparison</h1>
+            <p class="sub" id="cw-title">—</p>
+            <div class="meta-line" id="cw-meta"></div>
+          </div>
+          <span class="sp"></span>
+          <div class="modetabs" role="tablist" aria-label="Comparison view mode">
+            <button role="tab" aria-selected="true" data-mode="compare">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="13" y="6" width="3" height="12"/></svg>Compare
+            </button>
+            <button role="tab" aria-selected="false" data-mode="document">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>Document preview
+            </button>
+          </div>
+        </div>
+
+        <!-- ═ MODE: COMPARE ═ -->
+        <div class="mode-panel on" id="panel-compare">
+
+          <div class="note"><b>Review note — what this workspace is.</b> A ground-up presentation of the
+            already-built buyer comparison slice (frozen routes <code>/buy/rfqs/[rfqId]/compare</code> and
+            <code>/comparative-statement</code>). It is <b>decision-support, never a decision</b> (Doc-3 §9.1):
+            the platform computes <b>arithmetic facts only</b> and <b>recommends no winner</b> (R6). Every
+            gated capability — approval lifecycle, digital approval, official <span class="mono">CS</span>
+            reference series, platform PDF/Excel export, org letterhead/signatory defaults — is
+            <b>parked</b> and never implied to exist (§2.9). Try the initializer:
+            <a href="#/compare?sel=bogus">a bad <code>?sel=</code> falls back to the default</a> ·
+            <a href="#/compare?sel=DUP,DUP,X,A,B,C,D,E,F">dupes/unknowns are dropped, System order restored, capped at 5</a>.</div>
+
+          <!-- ② QUOTATION TRAY -->
+          <fieldset class="tray">
+            <legend>Select 2–5 quotations to compare</legend>
+            <p class="count" aria-live="polite" id="tray-count"></p>
+            <div class="tray-rail" id="tray-rail" role="group" aria-label="Disclosed quotations, in System order"></div>
+          </fieldset>
+
+          <div class="ws-grid">
+            <div class="ws-main">
+              <!-- ③ VENDOR COMPARISON MATRIX -->
+              <section class="card" aria-labelledby="mx-h">
+                <div class="card-h">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--iv-brand-600)" stroke-width="1.8"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="13" y="6" width="3" height="12"/></svg>
+                  <h2 id="mx-h">Comparison matrix</h2>
+                  <span class="sp"></span>
+                  <span class="hint">Descriptive attributes · System order · not ranked</span>
+                </div>
+                <div class="tablewrap">
+                  <table class="cmp" id="mx-table">
+                    <caption>Supplier comparison — descriptive, not ranked</caption>
+                    <thead id="mx-head"></thead>
+                    <tbody id="mx-body"></tbody>
+                  </table>
+                </div>
+                <div class="indicative">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  <span>Line-item figures are <b style="font-weight:600">indicative</b> — the structured line-item schema is pending (<span class="mono">ESC-CS-LINEITEMS</span>). Per-vendor line totals reconcile exactly to each quoted total.</span>
+                </div>
+              </section>
+
+              <!-- ④ COMMERCIAL TERMS SUMMARY -->
+              <section class="card" aria-labelledby="tm-h">
+                <div class="card-h">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--iv-brand-600)" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                  <h2 id="tm-h">Commercial terms</h2>
+                  <span class="sp"></span>
+                  <span class="hint">Lowest total = arithmetic fact, not a recommendation</span>
+                </div>
+                <div class="terms-grid" id="tm-grid"></div>
+              </section>
+            </div>
+
+            <!-- ⑤ PRIVATE BUYER EVALUATION (desktop aside) -->
+            <aside class="eval-aside" aria-label="Private buyer evaluation">
+              <div class="eval-h">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--iv-brand-600)" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <h2>Private evaluation</h2>
+              </div>
+              <div class="eval-body" id="eval-desktop"></div>
+            </aside>
+          </div>
+        </div>
+
+        <!-- ═ MODE: DOCUMENT PREVIEW ═ -->
+        <div class="mode-panel" id="panel-document">
+          <div class="doc-toolbar">
+            <p class="hint" style="font-size:13px;color:var(--fg-muted)">On-screen preview of the Comparative Statement (Draft). Open the printable document to print or save as PDF.</p>
+            <span class="sp"></span>
+            <a class="btn btn-outline btn-sm" href="#/document">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+              Open printable document →
+            </a>
+          </div>
+          <div class="doc-scroll"><div class="cd-scope" id="doc-preview"></div></div>
+        </div>
+      </div>
+      <footer class="app">© iVendorz — Industrial Procurement OS.<span class="sp"></span>Presentation-only prototype · BDT</footer>
+    </section>
+
+    <!-- ─────────────────── COMPARATIVE STATEMENT (/comparative-statement) ─────────────────── -->
+    <section class="view" id="view-document" aria-labelledby="doc-h1">
+      <div class="page">
+        <div class="crumb"><a href="#" data-toast="RFQ list — built in the app.">RFQs</a><span class="sep">›</span><a href="#" data-toast="RFQ detail — built in the app." id="crumb-ref2">RFQ</a><span class="sep">›</span><a href="#/compare">Comparison</a><span class="sep">›</span><span class="cur">Comparative Statement</span></div>
+
+        <div class="doc-toolbar">
+          <a class="btn btn-outline btn-sm" href="#/compare">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>Back to compare
+          </a>
+          <span class="draftchip">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            Draft reference · official series pending
+          </span>
+          <span class="sp"></span>
+          <h1 id="doc-h1" style="position:absolute;left:-9999px">Comparative Statement</h1>
+          <button class="btn btn-outline btn-sm" id="btn-excel" disabled title="Platform Excel export is gated (ESC-CS-EXPORT).">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="m9 13 6 5M15 13l-6 5"/></svg>
+            Excel
+          </button>
+          <button class="btn btn-primary btn-sm" id="btn-print">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+            Print / Save as PDF
+          </button>
+        </div>
+
+        <div class="note"><b>Review note — the printable document.</b> This is the canonical print surface.
+          Printing is the browser's own <b>Save-as-PDF</b> (needs no contract, matching the built CS page);
+          a platform-generated file export stays gated as <span class="mono">ESC-CS-EXPORT</span> (the Excel
+          button is a disabled stub). Pages are composed <b>app-side with a real "Page N of M"</b> — no
+          browser page-guessing. The reference reads <b>"Draft"</b> only — no
+          <span class="mono">CS-####</span> series exists yet (<span class="mono">ESC-CS-REF</span>).
+          Signatures are <b>wet-ink</b> placeholders — no digital-approval capture
+          (<span class="mono">ESC-CS-DOCKIND</span>). Letterhead is a plain placeholder
+          (<span class="mono">ESC-CS-LETTERHEAD</span>). Buyer evaluation text carries a
+          <span class="prov">†</span> "buyer-authored" mark; the platform authors none of it.</div>
+
+        <div class="doc-scroll"><div class="cd-scope" id="doc-full"></div></div>
+      </div>
+      <footer class="app">© iVendorz — Industrial Procurement OS.<span class="sp"></span>Presentation-only prototype · BDT</footer>
+    </section>
+
+  </main>
+</div>
+
+<!-- evaluation Sheet (< xl) -->
+<div class="sheet-scrim" id="sheet-scrim"></div>
+<aside class="sheet" id="eval-sheet" aria-label="Private buyer evaluation" role="dialog" aria-modal="true">
+  <div class="sheet-h">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--iv-brand-600)" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    <h2>Private evaluation</h2>
+    <button id="sheet-close" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="sheet-body"><div class="eval-body" id="eval-mobile"></div></div>
+</aside>
+
+<!-- floating evaluation button (< xl) -->
+<button class="btn btn-primary eval-open" id="eval-fab" style="position:fixed;right:18px;bottom:18px;z-index:40;box-shadow:0 6px 18px rgba(16,31,64,.22)">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Private evaluation
+</button>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════════
+   Comparison Workspace — clickable prototype (NON-AUTHORITATIVE, coins nothing).
+   Demo data reuses the app's mock rfq-universe (same RFQs / vendors / amounts) so
+   this reads as the same demo world. Demo clock ≈ Jul 5, 2026. Quotation states are
+   the FROZEN Doc-4M §5.3 set, verbatim (buyer-visible subset only).
+
+   Governance encoded here:
+   • Decision-support, never a decision (Doc-3 §9.1) — arithmetic only, no winner (R6).
+   • Selection (2–5, System order) is the frozen W-1 CS vendor set; only `sel` touches the URL.
+   • Buyer evaluation / purpose / signatory names are buyer-private (Inv #11) — memory only,
+     NEVER serialized to the URL, NEVER shown to vendors, NOT saved (Wave-4 backend).
+   • Lowest total = arithmetic identification, never a recommendation. Recommended starts blank.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const DEMO_TODAY = new Date("2026-07-05T09:00:00+06:00");
+const BUYER_ORG = "Crescent Textile Mills Ltd.";
+const STATES = { submitted:"Submitted", shortlisted:"Shortlisted", selected:"Selected",
+  not_selected:"Not selected", withdrawn:"Withdrawn", expired:"Expired" };
+const ST_TONE = { submitted:"info", shortlisted:"brand", selected:"success",
+  not_selected:"neutral", withdrawn:"neutral", expired:"warning" };
+
+/* Each RFQ is a self-contained comparison universe. Vendors are in SYSTEM order (never re-ranked).
+   Line-item unit prices × qty sum EXACTLY to each vendor's quoted total (reconciled). */
+const UNIVERSE = {
+  "rfq-000119": {
+    ref:"RFQ-2026-000119",
+    title:"Substation transformer servicing — 2 × 1000 kVA overhaul",
+    project:"Tongi substation · Maintenance", currency:"BDT",
+    closing:"2026-07-06", generated:"Jul 5, 2026, 10:05 AM",
+    items:[
+      { desc:"Transformer overhaul & oil filtration — 2 × 1000 kVA", unit:"LOT", qty:1 },
+      { desc:"Bushings, gaskets & consumables",                      unit:"SET", qty:2 },
+      { desc:"Testing, calibration & recommissioning report",        unit:"LOT", qty:1 },
+      { desc:"Site HSE, scaffolding & crane support",                unit:"LOT", qty:1 },
+    ],
+    attrs:["Mobilization","Completion window","Warranty on works","Valid until","Test certificates","Attachments"],
+    vendors:[
+      { qid:"q119-1", ref:"QTN-2026-000611", name:"Dhaka Power Services Ltd.", state:"submitted",
+        unitPrices:[420000,92500,95000,45000],
+        vals:["1 week from PO","10-day shutdown","12 months","Jul 28, 2026",{txt:"Included"},{files:2}],
+        terms:{ vat:"Included in quoted price", basis:"At site, Tongi substation",
+          pay:"50% on completion · 50% after test report", ld:"0.5%/day beyond window, capped 5%",
+          pg:"5% retention until warranty end" } },
+      { qid:"q119-2", ref:"QTN-2026-000612", name:"Eastern Grid Engineering", state:"submitted",
+        unitPrices:[455000,99500,100000,45000],
+        vals:["2 weeks from PO","8-day shutdown","12 months","Jul 25, 2026",{txt:"Included"},{files:1}],
+        terms:{ vat:"Excluded — as per rules", basis:"At site, Tongi substation",
+          pay:"30% advance · 70% on completion", ld:"0.25%/day, capped 3%", pg:"Bank guarantee 5%" } },
+      { qid:"q119-3", ref:"QTN-2026-000613", name:"Rupsha Electromech", state:"submitted",
+        unitPrices:[405000,86000,90000,45000],
+        vals:["1 week from PO","12-day shutdown","6 months","Jul 26, 2026",{txt:"On request"},{files:2}],
+        terms:{ vat:"Included in quoted price", basis:"At site, Tongi substation",
+          pay:"100% after recommissioning", ld:"Not accepted", pg:"None offered" } },
+      { qid:"q119-4", ref:"QTN-2026-000614", name:"Ashuganj Power & Maintenance", state:"submitted",
+        unitPrices:[430000,96500,100000,45000],
+        vals:["1 week from PO","9-day shutdown","12 months","Jul 27, 2026",{sealed:true},{files:3}],
+        terms:{ vat:"Included in quoted price", basis:"At site, Tongi substation",
+          pay:"40% advance · 60% on completion", ld:"0.5%/day, capped 5%", pg:"5% retention until warranty end" } },
+      { qid:"q119-5", ref:"QTN-2026-000615", name:"Titas Switchgear Services", state:"submitted",
+        unitPrices:[415000,90500,95000,40000],
+        vals:["2 weeks from PO","10-day shutdown","9 months","Jul 30, 2026",{txt:"Included"},{files:2}],
+        terms:{ vat:"Included in quoted price", basis:"At site, Tongi substation",
+          pay:"50% advance · 50% on completion", ld:"0.5%/day, capped 4%", pg:"3% retention, 6 months" } },
+      { qid:"q119-6", ref:"QTN-2026-000616", name:"Bengal Power Solutions", state:"submitted",
+        unitPrices:[425000,91000,92000,43000],
+        vals:["10 days from PO","10-day shutdown","12 months","Jul 29, 2026",{txt:"Included"},{files:2}],
+        terms:{ vat:"Included in quoted price", basis:"At site, Tongi substation",
+          pay:"45% advance · 55% on completion", ld:"0.4%/day, capped 4%", pg:"5% retention until warranty end" } },
+    ],
+  },
+  "rfq-000123": {
+    ref:"RFQ-2026-000123",
+    title:"Boiler feed-water pumps — supply & install",
+    project:"Gazipur plant · Utilities", currency:"BDT",
+    closing:"2026-07-08", generated:"Jul 2, 2026, 9:10 AM",
+    items:[
+      { desc:"Centrifugal feed-water pump, 45 m³/h @ 62 m", unit:"SET", qty:2 },
+      { desc:"Electric motor 75 kW, 2-pole, IE3",           unit:"PCS", qty:2 },
+      { desc:"Valves, strainers & instrument set",          unit:"LOT", qty:1 },
+      { desc:"Piping spools, supports & grouting",          unit:"LOT", qty:1 },
+      { desc:"Mechanical seal, wear-ring & gasket spares",  unit:"SET", qty:1 },
+      { desc:"Delivery to Gazipur site",                    unit:"LOT", qty:1 },
+      { desc:"Installation, commissioning & training",      unit:"LOT", qty:1 },
+    ],
+    attrs:["Delivery","Warranty","Valid until","Compliance","Attachments"],
+    vendors:[
+      { qid:"q123-1", ref:"QTN-2026-000587", name:"Meghna Industrial Supplies Ltd.", state:"shortlisted",
+        unitPrices:[590000,260000,129000,318000,118000,52000,378000],
+        vals:["6 weeks from PO","18 months from commissioning","Jul 15, 2026",{txt:"ISO 5199 compliant"},{files:3}],
+        terms:{ vat:"Included in quoted price", basis:"Delivered Gazipur, installation included",
+          pay:"30% advance · 60% on delivery · 10% on commissioning", ld:"0.5%/week of delay, capped 5%",
+          pg:"10% bank guarantee until warranty end" } },
+      { qid:"q123-2", ref:"QTN-2026-000588", name:"Padma Engineering Works", state:"shortlisted",
+        unitPrices:[620000,254000,123500,344000,126000,46500,422000],
+        vals:["4 weeks from PO","12 months from commissioning","Jul 10, 2026",{txt:"ISO 5199 compliant"},{files:2}],
+        terms:{ vat:"Excluded — as per rules", basis:"Delivered Gazipur, installation included",
+          pay:"40% advance · 60% on delivery", ld:"Not accepted", pg:"5% retention until commissioning" } },
+    ],
+  },
+};
+
+const SIG_ROLES = ["Prepared by","Reviewed by","Approved by"];
+
+/* ── helpers ── */
+const $ = (s)=>document.querySelector(s);
+const money = (n)=> n==null ? "—" : "BDT " + Number(n).toLocaleString("en-US"); // platform rule: no trailing .00
+const esc = (s)=> String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const chip = (s)=>`<span class="st st-${s}" style="display:inline-block;padding:3px 9px;border-radius:5px;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;${toneCss(ST_TONE[s])}">${STATES[s]}</span>`;
+function toneCss(t){ return {
+  info:"background:var(--iv-info-subtle);color:var(--iv-info-base)",
+  brand:"background:var(--iv-brand-100);color:var(--iv-brand-700)",
+  success:"background:var(--iv-success-subtle);color:var(--iv-success-base)",
+  neutral:"background:var(--iv-neutral-subtle);color:var(--iv-neutral-base)",
+  warning:"background:var(--iv-warning-subtle);color:var(--iv-warning-base)" }[t]||""; }
+const sealedMarker = `<span class="sealed"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V8a5 5 0 0 1 10 0v3"/></svg>Sealed</span>`;
+const subtotal = (v)=> v.unitPrices.reduce((s,up,i)=> s+up*RFQ().items[i].qty, 0);
+
+/* ── the SINGLE source of truth (the provider) ── */
+const MIN=2, MAX=5;
+const state = {
+  rfqId:"rfq-000119",
+  selected:[],                 // 2..5 quotationIds, System order (mirrored to ?sel=)
+  evaluation:{},               // keyed by rfqId → { purpose, summary, byQid:{}, recommended, reasons, risk, position, remarks, sig:{} }
+};
+function RFQ(){ return UNIVERSE[state.rfqId]; }
+function EVAL(){
+  if(!state.evaluation[state.rfqId]) state.evaluation[state.rfqId] =
+    { purpose:RFQ().title, summary:"", byQid:{}, recommended:"", reasons:"", risk:"", position:"", remarks:"",
+      sig:Object.fromEntries(SIG_ROLES.map(r=>[r,{name:"",title:""}])) };
+  return state.evaluation[state.rfqId];
+}
+function selectedVendors(){ const set=new Set(state.selected); return RFQ().vendors.filter(v=>set.has(v.qid)); }
+function disclosedOrder(){ return RFQ().vendors.map(v=>v.qid); }
+function defaultSelection(){ const d=disclosedOrder(); return d.slice(0, Math.min(3, d.length)); }
+
+/* idempotent, edit-safe initializer: drop unknown/dupes, restore System order, cap 5, fallback if <2 */
+function normalizeSel(ids){
+  const order = disclosedOrder(), seen=new Set(), keep=new Set();
+  ids.forEach(id=>{ if(order.includes(id) && !seen.has(id)){ seen.add(id); keep.add(id); } });
+  let out = order.filter(id=>keep.has(id)).slice(0, MAX);
+  if(out.length < MIN) out = defaultSelection();
+  return out;
+}
+
+/* ── ② tray ── */
+function renderTray(){
+  const sel=new Set(state.selected), n=sel.size;
+  $("#tray-count").innerHTML =
+    `<b>${n}</b> of ${MAX} selected · minimum ${MIN}` +
+    (n>=MAX ? ` · <span class="cap">maximum reached</span>` : ``) +
+    (n<=MIN ? ` · <span class="cap">at the minimum</span>` : ``);
+  $("#tray-rail").innerHTML = RFQ().vendors.map(v=>{
+    const on=sel.has(v.qid), blocked = on ? n<=MIN : n>=MAX;
+    const why = blocked ? (on?`Keep at least ${MIN} to compare`:`Up to ${MAX} at a time`) : "";
+    return `<div class="qcard ${on?'sel':''} ${blocked?'blocked':''}" data-qid="${v.qid}"
+        role="checkbox" aria-checked="${on}" tabindex="0" ${blocked?'aria-disabled="true"':''}>
+      <div class="qc-top">
+        <span class="box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 6"/></svg></span>
+        <div><div class="vn">${esc(v.name)}</div><div class="qref">${v.ref}</div></div>
+      </div>
+      <div class="amt">${money(subtotal(v))}</div>
+      <div class="st">${chip(v.state)}</div>
+      ${why?`<div class="why">${why}</div>`:``}
+    </div>`;
+  }).join("");
+}
+function toggle(qid){
+  const sel=new Set(state.selected), n=sel.size;
+  if(sel.has(qid)){ if(n<=MIN) return; sel.delete(qid); }
+  else { if(n>=MAX) return; sel.add(qid); }
+  // commit in System order, then user-driven URL mirror (no private state in URL)
+  state.selected = disclosedOrder().filter(id=>sel.has(id));
+  history.replaceState(null,"", `#/compare?sel=${state.selected.join(",")}`);
+  renderCompare();
+}
+$("#tray-rail").addEventListener("click",e=>{ const c=e.target.closest(".qcard"); if(c&&!c.classList.contains("blocked")) toggle(c.dataset.qid); });
+$("#tray-rail").addEventListener("keydown",e=>{ if(e.key===" "||e.key==="Enter"){ const c=e.target.closest(".qcard"); if(c&&!c.classList.contains("blocked")){ e.preventDefault(); toggle(c.dataset.qid); } }});
+
+/* ── ③ matrix ── */
+function lowestIdx(vendors){ // index of arithmetic-lowest total among vendors; -1 if none
+  let idx=-1, min=Infinity; vendors.forEach((v,i)=>{ const t=subtotal(v); if(t<min){min=t;idx=i;} }); return idx;
+}
+function renderMatrix(){
+  const vs=selectedVendors(), low=lowestIdx(vs);
+  $("#mx-head").innerHTML = `<tr><th scope="col">Attribute</th>${vs.map(v=>
+    `<th scope="col"><span class="vn">${esc(v.name)}</span><span class="vr">${v.ref}</span></th>`).join("")}</tr>`;
+
+  const rows=[];
+  rows.push(`<tr><th scope="row">Status</th>${vs.map(v=>`<td>${chip(v.state)}</td>`).join("")}</tr>`);
+  rows.push(`<tr><th scope="row">Quoted total</th>${vs.map((v,i)=>
+    `<td><span class="money">${money(subtotal(v))}</span>${i===low?
+      `<span class="lowtag" title="Arithmetic identification of the lowest disclosed total — not a recommendation (R6).">Lowest</span>`:``}</td>`).join("")}</tr>`);
+  // descriptive attributes
+  RFQ().attrs.forEach((label,ai)=>{
+    rows.push(`<tr><th scope="row">${label}</th>${vs.map(v=>{
+      const cell=v.vals[ai];
+      if(cell&&cell.sealed) return `<td>${sealedMarker}</td>`;
+      if(cell&&cell.files!=null) return `<td class="attach">${cell.files} file${cell.files>1?"s":""}</td>`;
+      if(cell&&cell.txt!=null) return `<td>${esc(cell.txt)}</td>`;
+      return `<td>${esc(cell)}</td>`;
+    }).join("")}</tr>`);
+  });
+  // indicative line items
+  rows.push(`<tr class="attr-h"><td colspan="${vs.length+1}">Line items — indicative (ESC-CS-LINEITEMS)</td></tr>`);
+  $("#mx-body").innerHTML = rows.join("");
+
+  // line-item block appended into the same card as a second table would duplicate the primitive;
+  // instead render items as further matrix rows for a single accessible table
+  const li = RFQ().items.map((it,ii)=>
+    `<tr><th scope="row"><span class="li-desc" style="font-weight:600;color:var(--fg)">${esc(it.desc)}</span>
+      <span class="li-meta" style="display:block;font-size:11px;color:var(--fg-soft);font-family:var(--mono);margin-top:2px">${it.qty} × ${it.unit}</span></th>${
+      vs.map(v=>{ const up=v.unitPrices[ii];
+        return `<td><span class="money">${money(up*it.qty)}</span>${it.qty>1?`<span style="display:block;font-size:10.5px;color:var(--fg-soft);font-family:var(--mono);margin-top:2px">@ ${money(up)} / ${it.unit.toLowerCase()}</span>`:``}</td>`;
+      }).join("")}</tr>`).join("");
+  const totals = `<tr><th scope="row" style="color:var(--iv-navy-900);background:var(--iv-light-muted)">Quoted total</th>${
+    vs.map((v,i)=>`<td style="border-top:2px solid var(--iv-navy-200);background:var(--iv-light-muted)"><span class="money">${money(subtotal(v))}</span>${i===low?`<span class="lowtag" title="Lowest disclosed total — arithmetic, not a recommendation.">Lowest</span>`:``}</td>`).join("")}</tr>`;
+  $("#mx-body").insertAdjacentHTML("beforeend", li+totals);
+}
+
+/* ── ④ commercial terms cards ── */
+function renderTerms(){
+  const vs=selectedVendors(), low=lowestIdx(vs);
+  $("#tm-grid").innerHTML = vs.map((v,i)=>{
+    const sub=subtotal(v);
+    return `<div class="vcard ${i===low?'low':''}">
+      <div class="vh">${esc(v.name)}</div><div class="vref">${v.ref}</div>
+      <div class="grand">${money(sub)}</div>
+      ${i===low?`<span class="low-badge" title="Arithmetic identification of the lowest disclosed total — not a recommendation (R6).">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 12 5 5L20 6"/></svg>Lowest total</span>`:``}
+      <dl>
+        <div><dt>Subtotal</dt><dd class="sub">${money(sub)}</dd></div>
+        <div><dt>VAT &amp; duties</dt><dd>${esc(v.terms.vat)}</dd></div>
+        <div><dt>Price basis</dt><dd>${esc(v.terms.basis)}</dd></div>
+        <div><dt>Payment</dt><dd>${esc(v.terms.pay)}</dd></div>
+        <div><dt>Liquidated damages</dt><dd>${esc(v.terms.ld)}</dd></div>
+        <div><dt>Performance guarantee</dt><dd>${esc(v.terms.pg)}</dd></div>
+      </dl>
+    </div>`;
+  }).join("");
+}
+
+/* ── ⑤ evaluation form (rendered into desktop aside AND mobile sheet, same provider) ── */
+const COMPLIANCE=[["unset","Not assessed"],["fully","Fully compliant"],["partial","Partially compliant"],["non","Non-compliant"]];
+function evalFormHTML(scope){
+  const ev=EVAL(), vs=selectedVendors(), id=(n)=>`ev-${scope}-${n}`;
+  return `
+  <div class="privacy-note"><b>Private to your organization</b> — never shown to vendors (Inv #11).
+    Your notes are <b>not saved</b> (integration pending). The platform records arithmetic only and recommends no winner.</div>
+
+  <div class="esec"><h3>Summary &amp; purpose</h3>
+    <div class="field"><label for="${id('purpose')}">Procurement purpose</label>
+      <input id="${id('purpose')}" data-ev="purpose" value="${esc(ev.purpose)}" placeholder="e.g. Overhaul of two 1000 kVA transformers"/></div>
+    <div class="field"><label for="${id('summary')}">Executive summary</label>
+      <textarea id="${id('summary')}" data-ev="summary" placeholder="Your team's summary of the evaluation.">${esc(ev.summary)}</textarea></div>
+  </div>
+
+  <div class="esec"><h3>Per-vendor assessment</h3>
+    ${vs.map(v=>{ const e=ev.byQid[v.qid]||{}; return `<div class="vblock">
+      <div class="vbn">${esc(v.name)}</div>
+      <div class="field"><label for="${id('cmp-'+v.qid)}">Technical compliance</label>
+        <select id="${id('cmp-'+v.qid)}" data-evq="${v.qid}" data-evk="compliance">
+          ${COMPLIANCE.map(([val,l])=>`<option value="${val}" ${(e.compliance||'unset')===val?'selected':''}>${l}</option>`).join("")}
+        </select></div>
+      <div class="field"><label for="${id('note-'+v.qid)}">Technical note</label>
+        <input id="${id('note-'+v.qid)}" data-evq="${v.qid}" data-evk="note" value="${esc(e.note||'')}" placeholder="Optional note for this vendor."/></div>
+    </div>`; }).join("")}
+  </div>
+
+  <div class="esec"><h3>Recommendation</h3>
+    <div class="field"><label for="${id('rec')}">Recommended vendor</label>
+      <div class="desc">Your own choice — the platform never pre-selects one.</div>
+      <select id="${id('rec')}" data-ev="recommended">
+        <option value="">No recommendation</option>
+        ${vs.map(v=>`<option value="${v.qid}" ${ev.recommended===v.qid?'selected':''}>${esc(v.name)}</option>`).join("")}
+      </select></div>
+    <div class="field"><label for="${id('reasons')}">Reasons (one per line)</label>
+      <textarea id="${id('reasons')}" data-ev="reasons" placeholder="Why your team recommends this vendor.">${esc(ev.reasons)}</textarea></div>
+    <div class="field"><label for="${id('risk')}">Risk assessment</label>
+      <textarea id="${id('risk')}" data-ev="risk">${esc(ev.risk)}</textarea></div>
+    <div class="field"><label for="${id('pos')}">Commercial position</label>
+      <input id="${id('pos')}" data-ev="position" value="${esc(ev.position)}"/></div>
+    <div class="field"><label for="${id('rem')}">Remarks</label>
+      <textarea id="${id('rem')}" data-ev="remarks">${esc(ev.remarks)}</textarea></div>
+  </div>
+
+  <div class="esec"><h3>Signatories (wet-ink)</h3>
+    <div class="desc" style="font-size:11px;color:var(--fg-soft);margin-bottom:9px">Names print on the document; signatures are executed on paper. No digital signature is captured.</div>
+    ${SIG_ROLES.map(role=>{ const s=ev.sig[role]||{}; return `<div class="vblock">
+      <div class="vbn">${role}</div>
+      <div class="field"><label for="${id('sn-'+role)}">Name</label>
+        <input id="${id('sn-'+role)}" data-sig="${role}" data-sigk="name" value="${esc(s.name||'')}"/></div>
+      <div class="field"><label for="${id('st-'+role)}">Designation</label>
+        <input id="${id('st-'+role)}" data-sig="${role}" data-sigk="title" value="${esc(s.title||'')}"/></div>
+    </div>`; }).join("")}
+  </div>`;
+}
+function renderEval(){
+  $("#eval-desktop").innerHTML = evalFormHTML("d");
+  $("#eval-mobile").innerHTML  = evalFormHTML("m");
+}
+/* live edit → provider → document preview (no reload; caret preserved because we only re-render the doc) */
+document.addEventListener("input",(e)=>{
+  const t=e.target, ev=EVAL();
+  if(t.dataset.ev!=null){ ev[t.dataset.ev]=t.value; syncPeer(t); refreshDoc(); }
+  else if(t.dataset.evq){ (ev.byQid[t.dataset.evq]=ev.byQid[t.dataset.evq]||{})[t.dataset.evk]=t.value; syncPeer(t); refreshDoc(); }
+  else if(t.dataset.sig){ ev.sig[t.dataset.sig][t.dataset.sigk]=t.value; syncPeer(t); refreshDoc(); }
+});
+document.addEventListener("change",(e)=>{ // selects
+  const t=e.target, ev=EVAL();
+  if(t.dataset.ev==="recommended"){ ev.recommended=t.value; syncPeer(t); refreshDoc(); }
+  else if(t.dataset.evq&&t.dataset.evk==="compliance"){ (ev.byQid[t.dataset.evq]=ev.byQid[t.dataset.evq]||{}).compliance=t.value; syncPeer(t); refreshDoc(); }
+});
+/* mirror an edit to the twin form (desktop ⇄ mobile share one provider) without stealing focus */
+function syncPeer(src){
+  const twinId = src.id.replace(/^ev-d-/,"__D").replace(/^ev-m-/,"ev-d-").replace(/^__D/,"ev-m-");
+  const twin=document.getElementById(twinId); if(twin && twin!==src && twin.value!==src.value) twin.value=src.value;
+}
+function refreshDoc(){ if($("#panel-document").classList.contains("on")) renderDocPreview($("#doc-preview")); if($("#view-document").classList.contains("on")) renderDocPreview($("#doc-full")); }
+
+/* ── ⑥ document — deterministic app-side page composition (real Page N of M) ── */
+const COMPLIANCE_LABEL = Object.fromEntries(COMPLIANCE);
+function composePages(){
+  const vs=selectedVendors(), items=RFQ().items;
+  const pages=[];
+  pages.push({kind:"summary"});                    // cover + summary attributes
+  // chunk indicative line items (deterministic rows-per-page)
+  const PER=8; for(let i=0;i<items.length;i+=PER) pages.push({kind:"items", from:i, to:Math.min(i+PER,items.length)});
+  pages.push({kind:"terms"});                       // commercial terms
+  pages.push({kind:"evaluation"});                  // buyer evaluation summary + signatures
+  return pages.map((p,i)=>({...p, pageNumber:i+1, pageCount:pages.length}));
+}
+function sheetChrome(inner, pg){
+  const r=RFQ();
+  return `<div class="cd-sheet">
+    <div class="cd-lh">
+      <div class="org"><b>${BUYER_ORG}</b><span>Procurement — Comparative Statement (Draft)</span></div>
+      <div class="brandph">Letterhead / logo<br/>pending (ESC-CS-LETTERHEAD)</div>
+    </div>
+    ${inner}
+    <div class="cd-foot">
+      <span>${BUYER_ORG} · ${r.ref} · Draft — not an official series</span>
+      <span class="pg">Page ${pg.pageNumber} of ${pg.pageCount}</span>
+    </div>
+  </div>`;
+}
+function docTitleBlock(){
+  const r=RFQ(), ev=EVAL();
+  return `<div class="cd-title"><h2>Quotation Comparative Statement</h2><div class="draft">Draft · official reference pending governance</div></div>
+    <div class="cd-meta">
+      <div><dt>RFQ</dt><dd class="mono">${r.ref}</dd></div>
+      <div><dt>Currency</dt><dd>${r.currency}</dd></div>
+      <div><dt>Requirement</dt><dd>${esc(r.title)}</dd></div>
+      <div><dt>Project</dt><dd>${esc(r.project)}</dd></div>
+      <div><dt>Procurement purpose</dt><dd>${esc(ev.purpose||"—")} <span class="prov" title="Buyer-authored">†</span></dd></div>
+      <div><dt>Generated</dt><dd>${r.generated}</dd></div>
+    </div>`;
+}
+function pageSummary(pg){
+  const vs=selectedVendors(), low=lowestIdx(vs), r=RFQ();
+  const head=`<tr><th>Attribute</th>${vs.map(v=>`<th>${esc(v.name)}<br/><span class="mono" style="font-weight:400;color:var(--fg-soft);font-size:10px">${v.ref}</span></th>`).join("")}</tr>`;
+  const rows=[
+    `<tr><th>Status</th>${vs.map(v=>`<td>${STATES[v.state]}</td>`).join("")}</tr>`,
+    `<tr><th>Quoted total</th>${vs.map((v,i)=>`<td class="num">${money(subtotal(v))}${i===low?' · lowest':''}</td>`).join("")}</tr>`,
+    ...r.attrs.map((label,ai)=>`<tr><th>${label}</th>${vs.map(v=>{const c=v.vals[ai];
+      return `<td>${c&&c.sealed?'Sealed':c&&c.files!=null?c.files+' file'+(c.files>1?'s':''):c&&c.txt!=null?esc(c.txt):esc(c)}</td>`;}).join("")}</tr>`),
+  ].join("");
+  const inner = docTitleBlock() +
+    `<div class="cd-sec-h">Summary comparison — descriptive, never recommends (R6)</div>
+     <table class="cd-tbl"><thead>${head}</thead><tbody>${rows}</tbody></table>`;
+  return sheetChrome(inner, pg);
+}
+function pageItems(pg){
+  const vs=selectedVendors(), items=RFQ().items.slice(pg.from,pg.to);
+  const head=`<tr><th>Line item</th>${vs.map(v=>`<th>${esc(v.name)}</th>`).join("")}</tr>`;
+  const body=items.map((it,k)=>{ const ii=pg.from+k;
+    return `<tr><th>${esc(it.desc)}<br/><span class="mono" style="font-weight:400;color:var(--fg-soft);font-size:10px">${it.qty} × ${it.unit}</span></th>${
+      vs.map(v=>`<td class="num">${money(v.unitPrices[ii]*it.qty)}</td>`).join("")}</tr>`; }).join("");
+  const showTotal = pg.to===RFQ().items.length;
+  const foot = showTotal ? `<tfoot><tr><th>Quoted total</th>${vs.map(v=>`<td class="num">${money(subtotal(v))}</td>`).join("")}</tr></tfoot>` : "";
+  const inner = `<div class="cd-sec-h">Line items — indicative (line-item schema pending · ESC-CS-LINEITEMS)</div>
+    <table class="cd-tbl"><thead>${head}</thead><tbody>${body}</tbody>${foot}</table>`;
+  return sheetChrome(inner, pg);
+}
+function pageTerms(pg){
+  const vs=selectedVendors();
+  const rows=[["VAT & duties","vat"],["Price basis","basis"],["Payment terms","pay"],["Liquidated damages","ld"],["Performance guarantee","pg"]];
+  const head=`<tr><th>Commercial term</th>${vs.map(v=>`<th>${esc(v.name)}</th>`).join("")}</tr>`;
+  const body=rows.map(([label,key])=>`<tr><th>${label}</th>${vs.map(v=>`<td>${esc(v.terms[key])}</td>`).join("")}</tr>`).join("");
+  const inner=`<div class="cd-sec-h">Commercial terms — as quoted per vendor</div>
+    <table class="cd-tbl"><thead>${head}</thead><tbody>${body}</tbody></table>`;
+  return sheetChrome(inner, pg);
+}
+function pageEvaluation(pg){
+  const ev=EVAL(), vs=selectedVendors();
+  const recV = vs.find(v=>v.qid===ev.recommended);
+  const val=(s)=> s&&s.trim() ? `<dd>${esc(s)} <span class="prov" title="Buyer-authored">†</span></dd>` : `<dd class="empty">Not recorded</dd>`;
+  const perV = vs.map(v=>{ const e=ev.byQid[v.qid]||{};
+    const bits=[]; if(e.compliance&&e.compliance!=="unset") bits.push(COMPLIANCE_LABEL[e.compliance]); if(e.note&&e.note.trim()) bits.push(esc(e.note));
+    return `<tr><th>${esc(v.name)}</th><td>${bits.length?bits.join(" — ")+' <span class="prov" title="Buyer-authored">†</span>':'<span class="empty" style="color:var(--fg-soft);font-style:italic">Not assessed</span>'}</td></tr>`;
+  }).join("");
+  const inner = `<div class="cd-sec-h">Buyer Evaluation Summary <span style="font-weight:500;text-transform:none;letter-spacing:0;color:var(--fg-soft)">— buyer-authored (<span class="prov">†</span>), private</span></div>
+    <div class="cd-eval">
+      <dt>Executive summary</dt>${val(ev.summary)}
+      <dt>Recommended vendor</dt>${ recV ? `<dd>${esc(recV.name)} <span class="prov" title="Buyer-authored">†</span></dd>` : `<dd class="empty">No recommendation recorded — the platform pre-selects none (R6)</dd>` }
+      <dt>Reasons</dt>${val(ev.reasons)}
+      <dt>Risk assessment</dt>${val(ev.risk)}
+      <dt>Commercial position</dt>${val(ev.position)}
+      <dt>Remarks</dt>${val(ev.remarks)}
+    </div>
+    <div class="cd-sec-h" style="margin-top:16px">Per-vendor assessment</div>
+    <table class="cd-tbl"><tbody>${perV}</tbody></table>
+    <div class="cd-sign">
+      ${SIG_ROLES.map(role=>{ const s=ev.sig[role]||{}; return `<div class="slot">
+        <div class="role">${role}</div>
+        <div class="nm">${esc(s.name||"")||"&nbsp;"}</div>
+        <div class="ti">${esc(s.title||"")||"&nbsp;"}</div>
+        <div class="wet">Signature &amp; date (wet-ink)</div></div>`; }).join("")}
+    </div>`;
+  return sheetChrome(inner, pg);
+}
+function renderDocPreview(target){
+  const html = composePages().map(pg=>{
+    if(pg.kind==="summary")   return pageSummary(pg);
+    if(pg.kind==="items")     return pageItems(pg);
+    if(pg.kind==="terms")     return pageTerms(pg);
+    if(pg.kind==="evaluation")return pageEvaluation(pg);
+  }).join("");
+  target.innerHTML = html;
+}
+
+/* ── ① header ── */
+function renderHeader(){
+  const r=RFQ(), n=RFQ().vendors.length;
+  $("#cw-title").textContent = r.title;
+  $("#crumb-ref").textContent = r.ref; $("#crumb-ref2").textContent = r.ref;
+  $("#cw-meta").innerHTML =
+    `<span class="ref">${r.ref}</span><span class="dot">•</span>` +
+    `<span>${esc(r.project)}</span><span class="dot">•</span>` +
+    `<span>Currency ${r.currency}</span><span class="dot">•</span>` +
+    `<span>${n} quotations disclosed</span><span class="dot">•</span>` +
+    `<span class="badge-desc">Descriptive · not ranked</span>`;
+}
+
+/* ── compose the compare view ── */
+function renderCompare(){ renderHeader(); renderTray(); renderMatrix(); renderTerms(); renderEval(); refreshDoc(); }
+
+/* ── mode tabs ── */
+document.querySelectorAll(".modetabs button").forEach(b=>b.addEventListener("click",()=>{
+  const mode=b.dataset.mode;
+  document.querySelectorAll(".modetabs button").forEach(x=>x.setAttribute("aria-selected", x===b));
+  $("#panel-compare").classList.toggle("on", mode==="compare");
+  $("#panel-document").classList.toggle("on", mode==="document");
+  if(mode==="document") renderDocPreview($("#doc-preview"));
+}));
+
+/* ── evaluation Sheet (< xl) ── */
+function openSheet(on){ $("#sheet-scrim").classList.toggle("on",on); $("#eval-sheet").classList.toggle("on",on); }
+$("#eval-fab").addEventListener("click",()=>openSheet(true));
+$("#sheet-close").addEventListener("click",()=>openSheet(false));
+$("#sheet-scrim").addEventListener("click",()=>openSheet(false));
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") openSheet(false); });
+// grow past xl → the sticky aside takes over; close the mobile Sheet so it can't float over the layout
+window.addEventListener("resize",()=>{ if(window.innerWidth>=1280) openSheet(false); });
+
+/* ── print ── */
+$("#btn-print").addEventListener("click",()=>window.print());
+
+/* ── toast + notes toggle ── */
+let toastTimer;
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("on"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("on"),2600); }
+document.addEventListener("click",e=>{ const el=e.target.closest("[data-toast]"); if(el){ e.preventDefault(); toast(el.dataset.toast);} });
+$("#notes-toggle").addEventListener("change",e=>document.body.classList.toggle("show-notes", e.target.checked));
+
+/* ── demo RFQ switch (a prototype convenience — each workspace is single-RFQ; switching = fresh provider) ── */
+function buildDemoSelect(){
+  $("#demo-rfq").innerHTML = Object.entries(UNIVERSE).map(([id,r])=>
+    `<option value="${id}">${r.ref} · ${r.vendors.length} quotes</option>`).join("");
+  $("#demo-rfq").value = state.rfqId;
+}
+$("#demo-rfq").addEventListener("change",e=>{
+  state.rfqId=e.target.value;                 // rfqId change = fresh workspace (evaluation state is per-RFQ)
+  state.selected=defaultSelection();
+  history.replaceState(null,"", `#/compare?sel=${state.selected.join(",")}`);
+  renderCompare();
+  toast("Switched RFQ context — a workspace is single-RFQ; each RFQ has its own private evaluation.");
+});
+
+/* ── hash router: two frozen surfaces, shared in-memory provider (state survives compare ⇄ document) ── */
+function parseHash(){
+  const h=location.hash||"#/compare";
+  const [path,query]=h.replace(/^#\//,"").split("?");
+  const sel = query ? new URLSearchParams(query).getAll("sel").flatMap(s=>s.split(",")).filter(Boolean) : [];
+  return { view: path==="document" ? "document" : "compare", sel };
+}
+function route(){
+  const {view,sel}=parseHash();
+  // initialize / reconcile selection from ?sel= (idempotent, edit-safe — never resets private state)
+  const desired = sel.length ? normalizeSel(sel) : (state.selected.length? state.selected : defaultSelection());
+  state.selected = desired;
+  // keep the URL canonical on the compare route (private state never added)
+  if(view==="compare") history.replaceState(null,"", `#/compare?sel=${state.selected.join(",")}`);
+
+  $("#view-compare").classList.toggle("on", view==="compare");
+  $("#view-document").classList.toggle("on", view==="document");
+  renderCompare();
+  if(view==="document") renderDocPreview($("#doc-full"));
+  window.scrollTo(0,0);
+}
+window.addEventListener("hashchange",route);
+
+/* ── boot ── */
+buildDemoSelect();
+state.selected = defaultSelection();
+route();
+</script>
+</body>
+</html>
