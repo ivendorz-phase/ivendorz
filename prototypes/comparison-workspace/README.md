@@ -29,7 +29,7 @@ any gated capability exists. It gives the design direction a concrete surface to
 | ② | **Quotation tray** | Every **disclosed** quotation in **System order** (never re-ranked); the buyer selects **2–5**. `aria-live` count; below 2 the uncheck is blocked, beyond 5 the check is blocked, each with a reason. |
 | ③ | **Comparison matrix** | Sticky attribute rail + selected columns; descriptive attributes + **indicative** line items; lowest quoted total carries a neutral **"Lowest"** tag (arithmetic, with a "not a recommendation" tooltip). |
 | ④ | **Commercial terms** | Per-vendor cards (subtotal · VAT · price basis · payment · LD · performance guarantee); the arithmetic-lowest card carries a neutral **"Lowest total"** badge. |
-| ⑤ | **Private buyer evaluation** | Buyer **authors** every evaluative field (compliance / notes / recommendation / reasons / risk / remarks / wet-ink signatories). Desktop sticky aside (≥ `xl`); below `xl` a right **Sheet**. **Recommended starts blank and is never set from the lowest.** |
+| ⑤ | **Private buyer evaluation** | Buyer **authors** every evaluative field (compliance / notes / recommendation / reasons / risk / remarks / wet-ink signatories). Signatory blocks offer a **"fill from your team" shortcut** (illustrative M1 roster) as an alternative to typing a name — either way it prints for a wet-ink signature. Desktop sticky aside (≥ `xl`); below `xl` a right **Sheet**. **Recommended starts blank and is never set from the lowest.** |
 | ⑥ | **Document / Comparative Statement** | The `Document preview` tab and the dedicated **canonical print route** render the assembled A4-landscape statement, paginated **app-side** with a real **"Page N of M"**. Print / Save-as-PDF is the browser's own; Excel is a disabled stub. |
 | ⑦ | **Responsive + print** | Two-column at `xl`; single column with the evaluation Sheet below; matrix/tray scroll in their own rails so **the page body never scrolls sideways**; print removes all app chrome via `display:none`. |
 
@@ -56,7 +56,7 @@ any gated capability exists. It gives the design direction a concrete surface to
 | Official `CS-YYYY-NNNNNN` series & revision numbering — **"Draft" only, zero `CS-####`** | `ESC-CS-REF` |
 | Platform PDF / **Excel** export generation — **disabled stub**; printing is the browser's own | `ESC-CS-EXPORT` |
 | Structured line-item schema — line items labeled **indicative** | `ESC-CS-LINEITEMS` |
-| Buyer letterhead / branding + org signatory defaults — **placeholder block**, wet-ink signatures | `ESC-CS-LETTERHEAD` (+ M1) |
+| Buyer letterhead / branding + org signatory **defaults** — **placeholder block**, wet-ink signatures; the team-member picker fills a name per-document only, never persists an org default | `ESC-CS-LETTERHEAD` (+ M1) |
 | Cross-RFQ **Received Quotes** list | `ESC-BUY-QUOTES-LIST` (see the `buyer-quotations` prototype) |
 
 No comparison audit-event, domain event, or `can_*_comparison_statement` permission slug is invented.

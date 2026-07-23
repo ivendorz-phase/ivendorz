@@ -716,6 +716,16 @@ const UNIVERSE = {
 };
 
 const SIG_ROLES = ["Prepared by","Reviewed by","Approved by"];
+// Illustrative team roster for the buyer org (in production an M1 org-membership read; demo seed here).
+// Used only to FILL a wet-ink signatory name/designation — never an org default (ESC-CS-LETTERHEAD),
+// never an approval route (ESC-CS-DOCKIND). Manual entry stays the primary path.
+const TEAM = [
+  { id:"tm-tanvir",  name:"Tanvir Ahmed",   title:"Procurement Officer" },
+  { id:"tm-farhana", name:"Farhana Rahman", title:"Procurement Manager" },
+  { id:"tm-nasrin",  name:"Nasrin Akter",   title:"Finance Controller" },
+  { id:"tm-sadia",   name:"Sadia Islam",    title:"Head of Supply Chain" },
+  { id:"tm-kamrul",  name:"Kamrul Hasan",   title:"Director, Operations" },
+];
 
 /* ── helpers ── */
 const $ = (s)=>document.querySelector(s);
@@ -900,13 +910,18 @@ function evalFormHTML(scope){
   </div>
 
   <div class="esec"><h3>Signatories (wet-ink)</h3>
-    <div class="desc" style="font-size:11px;color:var(--fg-soft);margin-bottom:9px">Names print on the document; signatures are executed on paper. No digital signature is captured.</div>
-    ${SIG_ROLES.map(role=>{ const s=ev.sig[role]||{}; return `<div class="vblock">
+    <div class="desc" style="font-size:11px;color:var(--fg-soft);margin-bottom:9px">Names print on the document; signatures are executed on paper. No digital signature is captured. Pick a team member to fill a name, or type one in — either way it prints for a wet-ink signature.</div>
+    ${SIG_ROLES.map(role=>{ const s=ev.sig[role]||{}, rk=role.replace(/\s+/g,"-"); return `<div class="vblock">
       <div class="vbn">${role}</div>
-      <div class="field"><label for="${id('sn-'+role)}">Name</label>
-        <input id="${id('sn-'+role)}" data-sig="${role}" data-sigk="name" value="${esc(s.name||'')}"/></div>
-      <div class="field"><label for="${id('st-'+role)}">Designation</label>
-        <input id="${id('st-'+role)}" data-sig="${role}" data-sigk="title" value="${esc(s.title||'')}"/></div>
+      <div class="field"><label for="${id('sigm-'+rk)}">Team member <span style="font-weight:400;color:var(--fg-soft)">— optional shortcut</span></label>
+        <select id="${id('sigm-'+rk)}" data-sigmember="${role}">
+          <option value="">Enter manually…</option>
+          ${TEAM.map(m=>`<option value="${m.id}">${esc(m.name)} — ${esc(m.title)}</option>`).join("")}
+        </select></div>
+      <div class="field"><label for="${id('sn-'+rk)}">Name</label>
+        <input id="${id('sn-'+rk)}" data-sig="${role}" data-sigk="name" value="${esc(s.name||'')}"/></div>
+      <div class="field"><label for="${id('st-'+rk)}">Designation</label>
+        <input id="${id('st-'+rk)}" data-sig="${role}" data-sigk="title" value="${esc(s.title||'')}"/></div>
     </div>`; }).join("")}
   </div>`;
 }
@@ -925,6 +940,17 @@ document.addEventListener("change",(e)=>{ // selects
   const t=e.target, ev=EVAL();
   if(t.dataset.ev==="recommended"){ ev.recommended=t.value; syncPeer(t); refreshDoc(); }
   else if(t.dataset.evq&&t.dataset.evk==="compliance"){ (ev.byQid[t.dataset.evq]=ev.byQid[t.dataset.evq]||{}).compliance=t.value; syncPeer(t); refreshDoc(); }
+  else if(t.dataset.sigmember){ // fill a wet-ink signatory from the team roster (a shortcut, not a binding)
+    const role=t.dataset.sigmember, rk=role.replace(/\s+/g,"-"), m=TEAM.find(x=>x.id===t.value);
+    if(m){ ev.sig[role].name=m.name; ev.sig[role].title=m.title; }
+    // reflect the fill into BOTH forms and reset the picker back to "Enter manually…"
+    ["d","m"].forEach(sc=>{
+      const n=document.getElementById(`ev-${sc}-sn-${rk}`); if(n) n.value=ev.sig[role].name;
+      const ti=document.getElementById(`ev-${sc}-st-${rk}`); if(ti) ti.value=ev.sig[role].title;
+      const s=document.getElementById(`ev-${sc}-sigm-${rk}`); if(s) s.value="";
+    });
+    refreshDoc();
+  }
 });
 /* mirror an edit to the twin form (desktop ⇄ mobile share one provider) without stealing focus */
 function syncPeer(src){
