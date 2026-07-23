@@ -99,7 +99,19 @@ No comparison audit-event, domain event, or `can_*_comparison_statement` permiss
 - **Vendor-removal confirmation** — deselecting a Vendor that has session-local evaluation confirms first
   (**"…The Vendor quotation itself will not be changed."**); no confirm when the Vendor has no session content.
 
-UX-4 (document completeness · safe URL state · keyboard shortcuts) follows as the final batch.
+**UX-4 (shipped):**
+- **Document completeness panel** — before opening the printable document, a **local** readiness panel
+  (≥2 Vendors · RFQ title · commercial summary · signatory blocks · procurement purpose · prepared-by ·
+  Buyer Evaluation Summary) with **neutral** statuses only (`Ready to preview` / `Optional information
+  missing` / `Required comparison input missing`); explicitly **not** approval/submission/finalisation.
+- **Safe presentation state in the URL** — `sel` · `differences=1` · `focus=<quotationId>` ·
+  `mode=compare|document` · `section=…` are encoded and restored via browser back/forward; **no** private
+  buyer-authored content is ever serialised.
+- **Keyboard shortcuts** — `Alt+1/2` mode · `Alt+E` evaluation · `Alt+D` differences · `Alt+P` printable ·
+  `Esc` close overlay; documented in a **Keyboard shortcuts** dialog; every action also has a visible
+  control; disabled while typing; never overrides Ctrl/Cmd/OS shortcuts.
+
+All four §2.11A batches (UX-1 … UX-4) are now implemented in this prototype.
 
 ## Reviewing it
 

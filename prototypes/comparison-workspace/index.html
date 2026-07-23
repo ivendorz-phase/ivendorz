@@ -35,6 +35,7 @@
   a{color:inherit;text-decoration:none}
   button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
   input,select,textarea{font:inherit}
+  [hidden]{display:none!important} /* a class `display` must never override the hidden attribute */
   .mono{font-family:var(--mono)}
 
   /* ── review chrome ── */
@@ -326,6 +327,27 @@
   .modal h2{font-size:16px;font-weight:700;color:var(--iv-navy-900);margin-bottom:8px}
   .modal p{font-size:13px;color:var(--fg-muted);line-height:1.55}
   .modal .modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
+  .modal kbd{font-family:var(--mono);font-size:11px;background:var(--iv-light-muted);border:1px solid var(--iv-light-border);
+    border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--iv-navy-800);font-weight:600}
+  .kbd-list{font-size:13px;line-height:1;display:flex;flex-direction:column;gap:10px;margin-top:4px}
+  .kbd-list div{display:flex;align-items:center;gap:9px}
+  .kbd-list span{color:var(--fg-muted)}
+
+  /* ── UX-4.12 document completeness panel (local readiness only; neutral) ── */
+  .dc-panel{border:1px solid var(--iv-light-border);background:var(--iv-light-raised);border-radius:var(--radius);margin-bottom:16px}
+  .dc-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--iv-light-border)}
+  .dc-head h3{font-size:13.5px;font-weight:700;color:var(--iv-navy-900)}
+  .dc-overall{margin-left:auto;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px}
+  .dc-overall.ready{color:var(--iv-success-base);background:var(--iv-success-subtle);border:1px solid rgba(22,163,74,.25)}
+  .dc-overall.optional{color:var(--iv-warning-base);background:var(--iv-warning-subtle);border:1px solid rgba(202,138,4,.25)}
+  .dc-overall.required{color:var(--iv-danger-base);background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.25)}
+  .dc-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px 18px;padding:14px 16px}
+  .dc-list li{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--fg);list-style:none}
+  .dc-list .ic{width:16px;height:16px;flex-shrink:0;display:inline-flex}
+  .dc-list .ok .ic{color:var(--iv-success-base)}
+  .dc-list .opt .ic{color:var(--iv-warning-base)}
+  .dc-list .req .ic{color:var(--iv-danger-base)}
+  .dc-list .opt{color:var(--fg-muted)}
 
   /* ── ④ commercial terms cards ── */
   .terms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;padding:16px}
@@ -671,6 +693,10 @@
 
         <!-- ═ MODE: DOCUMENT PREVIEW ═ -->
         <div class="mode-panel" id="panel-document">
+
+          <!-- UX-4.12 document completeness panel (local content readiness only — never approval/finalization) -->
+          <section class="dc-panel" id="dc-panel" aria-label="Document completeness"></section>
+
           <div class="doc-toolbar">
             <p class="hint" style="font-size:13px;color:var(--fg-muted)">On-screen preview of the Comparative Statement (Draft). Open the printable document to print or save as PDF.</p>
             <span class="sp"></span>
@@ -682,7 +708,9 @@
           <div class="doc-scroll"><div class="cd-scope" id="doc-preview"></div></div>
         </div>
       </div>
-      <footer class="app">© iVendorz — Industrial Procurement OS.<span class="sp"></span>Presentation-only prototype · BDT</footer>
+      <footer class="app">© iVendorz — Industrial Procurement OS.<span class="sp"></span>
+        <button type="button" id="kbd-help" style="font-size:12.5px;color:var(--iv-brand-600);font-weight:600">⌨ Keyboard shortcuts</button>
+        <span style="margin:0 10px;color:var(--iv-light-border)">·</span>Presentation-only prototype · BDT</footer>
     </section>
 
     <!-- ─────────────────── COMPARATIVE STATEMENT (/comparative-statement) ─────────────────── -->
@@ -929,6 +957,8 @@ const state = {
   focusVendor:null,            // UX-2.5 focused column (emphasis only; never a rank cue)
   collapsed:new Set(),         // UX-2.6 collapsed matrix group keys (never hides data permanently)
   dirty:false,                 // UX-3.7 private-field edits pending (NOT selection — that lives in the URL)
+  mode:"compare",              // UX-4.13 in-compare view (compare | document); safe URL state
+  section:null,                // UX-4.13 last-navigated section (safe URL state)
 };
 function RFQ(){ return UNIVERSE[state.rfqId]; }
 function EVAL(){
@@ -979,7 +1009,7 @@ function renderTray(){
 }
 function commitSelection(sel){
   state.selected = disclosedOrder().filter(id=>sel.has(id));
-  history.replaceState(null,"", `#/compare?sel=${state.selected.join(",")}`); // only `sel` in the URL
+  syncURL(); // UX-4.13 safe presentation state (sel + view state; never private)
   renderCompare();
 }
 // UX-3.11 — does this Vendor carry buyer-authored session evaluation content?
@@ -1113,13 +1143,13 @@ function updateFocusBanner(){
   $("#focus-banner").classList.toggle("on", !!fv);
   if(fv){ const v=RFQ().vendors.find(x=>x.qid===fv); $("#focus-name").textContent = v?v.name:""; }
 }
-function toggleFocus(qid){ state.focusVendor = state.focusVendor===qid?null:qid; renderMatrix(); renderTerms(); }
+function toggleFocus(qid){ state.focusVendor = state.focusVendor===qid?null:qid; syncURL(); renderMatrix(); renderTerms(); }
 function toggleGroup(key){ state.collapsed.has(key)?state.collapsed.delete(key):state.collapsed.add(key); renderMatrix(); }
 $("#mx-table").addEventListener("click",e=>{
   const f=e.target.closest("[data-focus]"); if(f){ toggleFocus(f.dataset.focus); return; }
   const g=e.target.closest("[data-grp-toggle]"); if(g){ toggleGroup(g.dataset.grpToggle); return; }
 });
-$("#clear-focus").addEventListener("click",()=>{ state.focusVendor=null; renderMatrix(); renderTerms(); });
+$("#clear-focus").addEventListener("click",()=>{ state.focusVendor=null; syncURL(); renderMatrix(); renderTerms(); });
 $("#mx-expand-all").addEventListener("click",()=>{ state.collapsed.clear(); renderMatrix(); });
 $("#mx-collapse-all").addEventListener("click",()=>{ MX_GROUPS.forEach(g=>state.collapsed.add(g.key)); renderMatrix(); });
 
@@ -1224,7 +1254,7 @@ function syncPeer(src){
   const twinId = src.id.replace(/^ev-d-/,"__D").replace(/^ev-m-/,"ev-d-").replace(/^__D/,"ev-m-");
   const twin=document.getElementById(twinId); if(twin && twin!==src && twin.value!==src.value) twin.value=src.value;
 }
-function refreshDoc(){ if($("#panel-document").classList.contains("on")) renderDocPreview($("#doc-preview")); if($("#view-document").classList.contains("on")) renderDocPreview($("#doc-full")); }
+function refreshDoc(){ if($("#panel-document").classList.contains("on")){ renderDocPreview($("#doc-preview")); renderCompleteness(); } if($("#view-document").classList.contains("on")) renderDocPreview($("#doc-full")); }
 
 /* ── ⑥ document — deterministic app-side page composition (real Page N of M) ── */
 const COMPLIANCE_LABEL = Object.fromEntries(COMPLIANCE);
@@ -1374,7 +1404,7 @@ function renderReadiness(){
 }
 
 /* ── UX-1.2 differences-only (presentation-only; renderMatrix hides identical rows, no sort/recompute) ── */
-$("#diff-toggle").addEventListener("change",e=>{ state.differencesOnly=e.target.checked; renderMatrix(); });
+$("#diff-toggle").addEventListener("change",e=>{ state.differencesOnly=e.target.checked; syncURL(); renderMatrix(); });
 
 /* ── UX-1.3 section navigator — scroll-to (Document switches mode); active via IntersectionObserver ── */
 const SECTIONS=[
@@ -1402,6 +1432,7 @@ function goSection(key){
   const el=document.getElementById(s.target);
   if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
   setActiveSection(key); lockNav(); // the click's intent wins over the observer while the scroll settles
+  state.section=key; syncURL(); // UX-4.13 (section is safe presentation state)
 }
 $("#sec-pills").addEventListener("click",e=>{ const b=e.target.closest("button[data-sec]"); if(b) goSection(b.dataset.sec); });
 $("#sec-select").addEventListener("change",e=>goSection(e.target.value));
@@ -1416,14 +1447,79 @@ function observeSections(){
   SECTIONS.filter(s=>s.target).forEach(s=>{ const el=document.getElementById(s.target); if(el) secObserver.observe(el); });
 }
 
-/* ── mode tabs ── */
+/* ── mode tabs (UX-4.13 mode is safe URL state) ── */
 function switchMode(mode){
+  state.mode=mode; syncURL();
   document.querySelectorAll(".modetabs button").forEach(x=>x.setAttribute("aria-selected", x.dataset.mode===mode));
   $("#panel-compare").classList.toggle("on", mode==="compare");
   $("#panel-document").classList.toggle("on", mode==="document");
-  if(mode==="document") renderDocPreview($("#doc-preview"));
+  if(mode==="document"){ renderDocPreview($("#doc-preview")); renderCompleteness(); }
 }
 document.querySelectorAll(".modetabs button").forEach(b=>b.addEventListener("click",()=>switchMode(b.dataset.mode)));
+
+/* ── UX-4.13 safe presentation state in the URL (sel + view state only; NEVER private fields) ── */
+function syncURL(){
+  if((location.hash||"").startsWith("#/document")) return; // the printable route carries only `sel`
+  const parts=[`sel=${state.selected.join(",")}`];
+  if(state.differencesOnly) parts.push("differences=1");
+  if(state.focusVendor) parts.push(`focus=${state.focusVendor}`);
+  if(state.mode==="document") parts.push("mode=document");
+  if(state.section && state.section!=="overview") parts.push(`section=${state.section}`);
+  history.replaceState(null,"", `#/compare?${parts.join("&")}`);
+}
+
+/* ── UX-4.12 document completeness — LOCAL content readiness only (never approval/finalisation/submission) ── */
+function renderCompleteness(){
+  const ev=state.evaluation[state.rfqId]||{}, vs=selectedVendors(), r=RFQ();
+  const purpose = ev.purpose!=null ? ev.purpose : r.title;
+  const prep = ev.sig && ev.sig["Prepared by"] && (ev.sig["Prepared by"].name||"").trim();
+  const checks=[
+    {label:"At least 2 quotations selected", ok: vs.length>=2, req:true},
+    {label:"RFQ title", ok: !!r.title, req:true},
+    {label:"Commercial summary", ok: vs.length>0, req:true},
+    {label:"Signatory blocks", ok: true, req:true},
+    {label:"Procurement purpose", ok: !!(purpose&&purpose.trim()), req:false},
+    {label:"Prepared-by name", ok: !!prep, req:false},
+    {label:"Buyer Evaluation Summary", ok: !!((ev.summary||"").trim()), req:false},
+  ];
+  const missReq=checks.some(c=>c.req&&!c.ok), missOpt=checks.some(c=>!c.req&&!c.ok);
+  const overall = missReq?{cls:"required",txt:"Required comparison input missing"}
+    : missOpt?{cls:"optional",txt:"Optional information missing"} : {cls:"ready",txt:"Ready to preview"};
+  const okIc=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="16" height="16"><path d="M20 6 9 17l-5-5"/></svg>`;
+  const dotIc=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>`;
+  $("#dc-panel").innerHTML =
+    `<div class="dc-head"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--iv-brand-600)" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+      <h3>Document readiness</h3><span class="dc-overall ${overall.cls}">${overall.txt}</span></div>
+     <ul class="dc-list">${checks.map(c=>{ const cls=c.ok?"ok":(c.req?"req":"opt"), ic=c.ok?okIc:dotIc, sfx=c.ok?"":(c.req?" — required":" — optional");
+       return `<li class="${cls}"><span class="ic">${ic}</span>${c.label}${sfx}</li>`; }).join("")}</ul>
+     <p style="font-size:11px;color:var(--fg-soft);padding:0 16px 12px">Presentation completeness only — not approval, submission, or finalisation.</p>`;
+}
+
+/* ── UX-4.15 keyboard shortcuts (disabled in editables; never overrides Ctrl/Cmd; visible-control parity) ── */
+function inEditable(t){ const g=t.tagName; return g==="INPUT"||g==="TEXTAREA"||g==="SELECT"||t.isContentEditable; }
+function openShortcuts(){
+  confirmDialog({ title:"Keyboard shortcuts", danger:false, cancel:null, confirm:"Got it",
+    body:`<div class="kbd-list">
+      <div><span><kbd>Alt</kbd> + <kbd>1</kbd></span> Compare mode</div>
+      <div><span><kbd>Alt</kbd> + <kbd>2</kbd></span> Document preview</div>
+      <div><span><kbd>Alt</kbd> + <kbd>E</kbd></span> Private evaluation</div>
+      <div><span><kbd>Alt</kbd> + <kbd>D</kbd></span> Toggle differences only</div>
+      <div><span><kbd>Alt</kbd> + <kbd>P</kbd></span> Open printable document</div>
+      <div><span><kbd>Esc</kbd></span> Close dialog / sheet / overlay</div>
+    </div><p style="margin-top:12px;font-size:11.5px;color:var(--fg-soft)">Every action is also available from a visible control. Shortcuts are disabled while typing in a field.</p>` });
+}
+$("#kbd-help").addEventListener("click",openShortcuts);
+document.addEventListener("keydown",e=>{
+  if(inEditable(e.target)) return;
+  if(e.key==="?" && !e.altKey && !e.ctrlKey && !e.metaKey){ e.preventDefault(); openShortcuts(); return; }
+  if(!e.altKey || e.ctrlKey || e.metaKey) return; // Alt only — never override Ctrl/Cmd/OS shortcuts
+  const map={ "1":()=>switchMode("compare"), "2":()=>switchMode("document"),
+    "e":()=>{ if(window.innerWidth<1280) openSheet(true); else goSection("evaluation"); },
+    "d":()=>{ const c=$("#diff-toggle"); c.checked=!c.checked; c.dispatchEvent(new Event("change")); },
+    "p":()=>{ location.hash="#/document?sel="+state.selected.join(","); } };
+  const fn=map[e.key.toLowerCase()];
+  if(fn){ e.preventDefault(); fn(); }
+});
 
 /* ── evaluation Sheet (< xl) ── */
 function openSheet(on){ $("#sheet-scrim").classList.toggle("on",on); $("#eval-sheet").classList.toggle("on",on); }
@@ -1439,12 +1535,14 @@ $("#btn-print").addEventListener("click",()=>window.print());
 
 /* ── UX-3.8/9/11 confirm dialog (leave / reset / Vendor removal) ── */
 let modalOnConfirm=null, modalLastFocus=null;
-function confirmDialog({title, body, confirm="Confirm", cancel="Cancel", onConfirm}){
+function confirmDialog({title, body, confirm="Confirm", cancel="Cancel", danger=true, onConfirm}){
   modalLastFocus=document.activeElement;
   $("#modal-title").textContent=title;
   $("#modal-body").innerHTML=body;
   $("#modal-confirm").textContent=confirm;
-  $("#modal-cancel").textContent=cancel;
+  $("#modal-confirm").className = "btn btn-sm " + (danger?"btn-danger":"btn-primary");
+  $("#modal-cancel").textContent=cancel||"";
+  $("#modal-cancel").hidden = !cancel;          // single-button (info) dialog when cancel is falsy
   modalOnConfirm=onConfirm||null;
   $("#modal-scrim").classList.add("on"); $("#modal").classList.add("on");
   $("#modal-confirm").focus();
@@ -1470,7 +1568,7 @@ function guardedLeave(proceed){
 
 /* ── UX-3.9 reset actions (two distinct scopes, each confirmed; never combined silently) ── */
 function resetEdits(){ delete state.evaluation[state.rfqId]; state.dirty=false; updateDirty(); renderCompare(); }
-function resetAll(){ delete state.evaluation[state.rfqId]; state.selected=defaultSelection(); state.focusVendor=null; state.dirty=false; updateDirty(); history.replaceState(null,"",`#/compare?sel=${state.selected.join(",")}`); renderCompare(); }
+function resetAll(){ delete state.evaluation[state.rfqId]; state.selected=defaultSelection(); state.focusVendor=null; state.dirty=false; updateDirty(); syncURL(); renderCompare(); }
 document.addEventListener("click",e=>{
   const r=e.target.closest("[data-reset]"); if(!r) return;
   if(r.dataset.reset==="edits") confirmDialog({ title:"Reset session edits?",
@@ -1502,8 +1600,8 @@ function buildDemoSelect(){
 $("#demo-rfq").addEventListener("change",e=>{
   state.rfqId=e.target.value;                 // rfqId change = fresh workspace (evaluation state is per-RFQ)
   state.selected=defaultSelection();
-  state.focusVendor=null; state.collapsed.clear(); state.dirty=false; updateDirty();
-  history.replaceState(null,"", `#/compare?sel=${state.selected.join(",")}`);
+  state.focusVendor=null; state.collapsed.clear(); state.dirty=false; state.section=null; updateDirty();
+  syncURL();
   renderCompare();
   toast("Switched RFQ context — a workspace is single-RFQ; each RFQ has its own private evaluation.");
 });
@@ -1512,22 +1610,32 @@ $("#demo-rfq").addEventListener("change",e=>{
 function parseHash(){
   const h=location.hash||"#/compare";
   const [path,query]=h.replace(/^#\//,"").split("?");
-  const sel = query ? new URLSearchParams(query).getAll("sel").flatMap(s=>s.split(",")).filter(Boolean) : [];
-  return { view: path==="document" ? "document" : "compare", sel };
+  const q=new URLSearchParams(query||"");
+  const sel = q.getAll("sel").flatMap(s=>s.split(",")).filter(Boolean);
+  return { view: path==="document"?"document":"compare", sel,
+    differences: q.get("differences")==="1", focus: q.get("focus"), mode: q.get("mode"), section: q.get("section") };
 }
 function route(){
-  const {view,sel}=parseHash();
+  const h=parseHash();
   // initialize / reconcile selection from ?sel= (idempotent, edit-safe — never resets private state)
-  const desired = sel.length ? normalizeSel(sel) : (state.selected.length? state.selected : defaultSelection());
-  state.selected = desired;
-  // keep the URL canonical on the compare route (private state never added)
-  if(view==="compare") history.replaceState(null,"", `#/compare?sel=${state.selected.join(",")}`);
-
-  $("#view-compare").classList.toggle("on", view==="compare");
-  $("#view-document").classList.toggle("on", view==="document");
+  state.selected = h.sel.length ? normalizeSel(h.sel) : (state.selected.length? state.selected : defaultSelection());
+  // apply SAFE presentation state from the URL (compare route); private fields are never in the URL
+  if(h.view==="compare"){
+    state.differencesOnly = !!h.differences;
+    state.focusVendor = (h.focus && state.selected.includes(h.focus)) ? h.focus : null;
+    state.mode = h.mode==="document" ? "document" : "compare";
+    state.section = h.section || null;
+  }
+  $("#view-compare").classList.toggle("on", h.view==="compare");
+  $("#view-document").classList.toggle("on", h.view==="document");
   renderCompare();
-  if(view==="document") renderDocPreview($("#doc-full"));
-  window.scrollTo(0,0);
+  $("#diff-toggle").checked = state.differencesOnly; // sync the control to URL state
+  if(h.view==="compare"){
+    switchMode(state.mode); // reflect the mode tab (also canonicalises the URL)
+    if(state.section){ const s=SECTIONS.find(x=>x.key===state.section);
+      if(s&&s.target){ const el=document.getElementById(s.target); if(el) el.scrollIntoView({block:"start"}); setActiveSection(state.section); }
+    } else window.scrollTo(0,0);
+  } else { renderDocPreview($("#doc-full")); window.scrollTo(0,0); }
 }
 window.addEventListener("hashchange",route);
 
