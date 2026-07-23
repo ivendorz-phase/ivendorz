@@ -74,9 +74,21 @@ No comparison audit-event, domain event, or `can_*_comparison_statement` permiss
   · `Not disclosed` render as **distinct** text (never one shared dash, never implying zero; pending-schema
   never reads as a Vendor omission). The demo "Test certificates" column shows the full spectrum.
 
-UX-2 (Vendor focus · collapse groups · richer tray · row tooltips), UX-3 (unsaved indicator · leave
-confirmation · reset actions · Vendor-removal confirmation), and UX-4 (document completeness · safe URL
-state · keyboard shortcuts) follow as subsequent batches.
+**UX-2 (shipped):**
+- **Per-Vendor column focus** — a "Focus" control per column emphasises one Vendor and subdues the
+  others (matrix + terms card); **emphasis only** — no sort, no reorder, no persistence; keyboard-accessible
+  with a Clear-focus action; never labelled Preferred/Best/Top/Recommended.
+- **Expand all / collapse all** — the matrix is grouped into collapsible sections (Status & totals ·
+  Delivery & schedule · Warranty · Compliance & certificates · Validity · Documents · Indicative line
+  items); collapsing **folds** a group, never removes disclosed data (expand restores it).
+- **Rich Vendor-tray cards** — name · quoted total · delivery period · validity · state · sealed indicator;
+  compact, **no "lowest"/quality cue** in the tray; System order preserved.
+- **Row-level tooltips** — keyboard-accessible ⓘ explanations (grand total · VAT · delivery · validity ·
+  lowest); the lowest-value tip reads **"Arithmetic identification only. This is not a recommendation."**;
+  no undisclosed data.
+
+UX-3 (unsaved indicator · leave confirmation · reset actions · Vendor-removal confirmation) and UX-4
+(document completeness · safe URL state · keyboard shortcuts) follow as subsequent batches.
 
 ## Reviewing it
 

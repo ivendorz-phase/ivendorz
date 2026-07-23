@@ -170,7 +170,7 @@
   .ws-main{display:flex;flex-direction:column;gap:18px;min-width:0}
 
   .card{background:var(--iv-light-raised);border:1px solid var(--iv-light-border);border-radius:var(--radius)}
-  .card-h{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--iv-light-border)}
+  .card-h{display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap;padding:13px 16px;border-bottom:1px solid var(--iv-light-border)}
   .card-h h2{font-size:14.5px;font-weight:700;color:var(--iv-navy-900)}
   .card-h .sp{flex:1}
   .card-h .hint{font-size:11.5px;color:var(--fg-soft)}
@@ -256,6 +256,52 @@
   .diffonly input{width:15px;height:15px;accent-color:var(--iv-brand-500)}
   .diff-status{font-size:12px;color:var(--fg-soft);padding:8px 16px;border-top:1px dashed var(--iv-light-border)}
   .diff-status b{color:var(--iv-navy-800);font-weight:600}
+
+  /* ── UX-2.14 keyboard-accessible tooltip ── */
+  .tip{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:5px;
+    border-radius:999px;color:var(--fg-soft);vertical-align:middle;position:relative;cursor:help;flex-shrink:0}
+  .tip:hover,.tip:focus-visible{color:var(--iv-brand-600);outline:none}
+  .tip svg{pointer-events:none}
+  .tip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);
+    width:max-content;max-width:230px;background:var(--iv-navy-900);color:#f1f5f9;font-size:11.5px;font-weight:500;
+    font-style:normal;line-height:1.45;letter-spacing:0;text-transform:none;padding:7px 10px;border-radius:7px;
+    text-align:left;white-space:normal;opacity:0;pointer-events:none;transition:opacity .12s ease-out;z-index:40;
+    box-shadow:0 4px 14px rgba(11,19,34,.28)}
+  .tip.down::after{bottom:auto;top:calc(100% + 7px)}
+  .tip:hover::after,.tip:focus-visible::after{opacity:1}
+
+  /* ── UX-2.10 richer tray card meta ── */
+  .qcard .qmeta{margin-top:7px;font-size:11.5px;color:var(--fg-muted);line-height:1.4}
+  .qcard .qmeta .sealed{color:var(--fg-soft);font-style:italic}
+  .qcard .strow{display:flex;align-items:center;gap:7px;margin-top:8px;flex-wrap:wrap}
+
+  /* ── UX-2.5 per-Vendor column focus (emphasis only — never a rank cue) ── */
+  .focusbtn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-top:4px;
+    border-radius:6px;color:var(--fg-soft);border:1px solid transparent}
+  .focusbtn:hover{background:var(--iv-light-hover);color:var(--iv-brand-600)}
+  .focusbtn[aria-pressed="true"]{background:var(--iv-brand-100);color:var(--iv-brand-700);border-color:var(--iv-brand-200)}
+  .cmp .vcol-focus{background:var(--iv-brand-50)}
+  .cmp thead th.vcol-focus{background:var(--iv-brand-100)}
+  .cmp .vcol-dim{opacity:.5}
+  .vcard.vcol-focus{border-color:var(--iv-brand-400);box-shadow:0 0 0 1px var(--iv-brand-300)}
+  .vcard.vcol-dim{opacity:.5}
+  .focus-banner{display:none;align-items:center;gap:8px;font-size:12px;color:var(--iv-brand-800);
+    background:var(--iv-brand-50);border:1px solid var(--iv-brand-100);border-radius:7px;padding:5px 10px}
+  .focus-banner.on{display:inline-flex}
+  .focus-banner button{font-size:11.5px;font-weight:700;color:var(--iv-brand-700);text-decoration:underline}
+
+  /* ── UX-2.6 collapsible matrix groups ── */
+  .mx-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .mx-controls .ec{display:inline-flex;gap:8px}
+  .mx-controls .ec button{font-size:12px;font-weight:600;color:var(--iv-brand-600)}
+  .mx-controls .ec button:hover{text-decoration:underline}
+  .cmp tr.grp-h td{background:var(--iv-navy-50);padding:0}
+  .cmp tr.grp-h button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:9px 14px;
+    font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--iv-navy-700)}
+  .cmp tr.grp-h button:hover{background:var(--iv-navy-100)}
+  .cmp tr.grp-h .chev{transition:transform .15s ease-out}
+  .cmp tr.grp-h button[aria-expanded="false"] .chev{transform:rotate(-90deg)}
+  .cmp tr.grp-h .cnt{margin-left:auto;font-weight:600;letter-spacing:0;text-transform:none;color:var(--fg-soft);font-size:11px}
 
   /* ── ④ commercial terms cards ── */
   .terms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;padding:16px}
@@ -544,8 +590,12 @@
                 <div class="card-h">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--iv-brand-600)" stroke-width="1.8"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="13" y="6" width="3" height="12"/></svg>
                   <h2 id="mx-h">Comparison matrix</h2>
+                  <span class="focus-banner" id="focus-banner">Focusing <b id="focus-name"></b><button type="button" id="clear-focus">Clear focus</button></span>
                   <span class="sp"></span>
-                  <label class="diffonly"><input type="checkbox" id="diff-toggle" /> Show differences only</label>
+                  <div class="mx-controls">
+                    <span class="ec"><button type="button" id="mx-expand-all">Expand all</button><span aria-hidden="true" style="color:var(--iv-light-border)">·</span><button type="button" id="mx-collapse-all">Collapse all</button></span>
+                    <label class="diffonly"><input type="checkbox" id="diff-toggle" /> Show differences only</label>
+                  </div>
                 </div>
                 <div class="tablewrap">
                   <table class="cmp" id="mx-table">
@@ -787,7 +837,8 @@ function toneCss(t){ return {
   success:"background:var(--iv-success-subtle);color:var(--iv-success-base)",
   neutral:"background:var(--iv-neutral-subtle);color:var(--iv-neutral-base)",
   warning:"background:var(--iv-warning-subtle);color:var(--iv-warning-base)" }[t]||""; }
-const sealedMarker = `<span class="sealed"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V8a5 5 0 0 1 10 0v3"/></svg>Sealed</span>`;
+const sealedIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V8a5 5 0 0 1 10 0v3"/></svg>`;
+const sealedMarker = `<span class="sealed">${sealedIcon}Sealed</span>`;
 const subtotal = (v)=> v.unitPrices.reduce((s,up,i)=> s+up*RFQ().items[i].qty, 0);
 
 /* UX-1.4 — an absent/disclosure cell is a distinct object; each renders a DISTINCT textual state,
@@ -815,6 +866,13 @@ function renderCell(cell){ // HTML for the matrix / terms cards
   return esc(cell);
 }
 
+/* UX-2.14 — keyboard-accessible explanation. aria-label carries the text to AT on focus; the visual
+   tooltip is CSS-only. Contains no undisclosed data. `down` opens below (for rows inside the table). */
+function tip(text, down){
+  return `<button type="button" class="tip${down?' down':''}" aria-label="${esc(text)}" data-tip="${esc(text)}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M11.6 7.6h.01"/></svg></button>`;
+}
+const TIP_LOWEST = "Arithmetic identification only. This is not a recommendation.";
+
 /* ── the SINGLE source of truth (the provider) ── */
 const MIN=2, MAX=5;
 const state = {
@@ -822,6 +880,8 @@ const state = {
   selected:[],                 // 2..5 quotationIds, System order (mirrored to ?sel=)
   evaluation:{},               // keyed by rfqId → { purpose, summary, byQid:{}, recommended, reasons, risk, position, remarks, sig:{} }
   differencesOnly:false,       // UX-1.2 view state (presentation-only; no sort/recompute)
+  focusVendor:null,            // UX-2.5 focused column (emphasis only; never a rank cue)
+  collapsed:new Set(),         // UX-2.6 collapsed matrix group keys (never hides data permanently)
 };
 function RFQ(){ return UNIVERSE[state.rfqId]; }
 function EVAL(){
@@ -843,9 +903,12 @@ function normalizeSel(ids){
   return out;
 }
 
-/* ── ② tray ── */
+/* ── ② tray (UX-2.10 richer cards — name · total · delivery · validity · state · sealed; no lowest/quality cue) ── */
+function attrIdx(re){ return RFQ().attrs.findIndex(a=>re.test(a)); }
+function hasSealed(v){ return v.vals.some(c=>c&&c.sealed); }
 function renderTray(){
   const sel=new Set(state.selected), n=sel.size;
+  const di=attrIdx(/deliver|mobil/i), vi=attrIdx(/valid/i);
   $("#tray-count").innerHTML =
     `<b>${n}</b> of ${MAX} selected · minimum ${MIN}` +
     (n>=MAX ? ` · <span class="cap">maximum reached</span>` : ``) +
@@ -853,6 +916,7 @@ function renderTray(){
   $("#tray-rail").innerHTML = RFQ().vendors.map(v=>{
     const on=sel.has(v.qid), blocked = on ? n<=MIN : n>=MAX;
     const why = blocked ? (on?`Keep at least ${MIN} to compare`:`Up to ${MAX} at a time`) : "";
+    const meta=[ di>=0?`${esc(cellText(v.vals[di]))} delivery`:null, vi>=0?`valid ${esc(cellText(v.vals[vi]))}`:null ].filter(Boolean).join(" · ");
     return `<div class="qcard ${on?'sel':''} ${blocked?'blocked':''}" data-qid="${v.qid}"
         role="checkbox" aria-checked="${on}" tabindex="0" ${blocked?'aria-disabled="true"':''}>
       <div class="qc-top">
@@ -860,7 +924,8 @@ function renderTray(){
         <div><div class="vn">${esc(v.name)}</div><div class="qref">${v.ref}</div></div>
       </div>
       <div class="amt">${money(subtotal(v))}</div>
-      <div class="st">${chip(v.state)}</div>
+      ${meta?`<div class="qmeta">${meta}</div>`:``}
+      <div class="strow">${chip(v.state)}${hasSealed(v)?`<span class="sealed" style="font-size:11px">${sealedIcon} sealed value</span>`:``}</div>
       ${why?`<div class="why">${why}</div>`:``}
     </div>`;
   }).join("");
@@ -881,60 +946,84 @@ $("#tray-rail").addEventListener("keydown",e=>{ if(e.key===" "||e.key==="Enter")
 function lowestIdx(vendors){ // index of arithmetic-lowest total among vendors; -1 if none
   let idx=-1, min=Infinity; vendors.forEach((v,i)=>{ const t=subtotal(v); if(t<min){min=t;idx=i;} }); return idx;
 }
+// UX-2.6 matrix groups (collapse folds a group; it never removes disclosed data — expand restores it).
+const MX_GROUPS = [
+  {key:"summary",   label:"Status & totals",           kind:"summary"},
+  {key:"delivery",  label:"Delivery & schedule",        re:/deliver|mobil|completion|schedul/i},
+  {key:"warranty",  label:"Warranty",                   re:/warrant/i},
+  {key:"quality",   label:"Compliance & certificates",  re:/complian|certif|test|inspect/i},
+  {key:"validity",  label:"Validity",                   re:/valid/i},
+  {key:"documents", label:"Documents",                  re:/attach|document|file/i},
+  {key:"other",     label:"Other attributes",           re:null},
+  {key:"lineitems", label:"Indicative line items",      kind:"lineitems",
+    note:`<span class="absent pending" style="font-style:normal;text-transform:none;letter-spacing:0;margin-left:8px">Pending schema (ESC-CS-LINEITEMS)</span>`},
+];
+function groupForAttr(ai){ const label=RFQ().attrs[ai]; for(const g of MX_GROUPS){ if(g.re && g.re.test(label)) return g.key; } return "other"; }
 function renderMatrix(){
   const vs=selectedVendors(), low=lowestIdx(vs), diff=state.differencesOnly;
-  $("#mx-head").innerHTML = `<tr><th scope="col">Attribute</th>${vs.map(v=>
-    `<th scope="col"><span class="vn">${esc(v.name)}</span><span class="vr">${v.ref}</span></th>`).join("")}</tr>`;
+  if(state.focusVendor && !vs.some(v=>v.qid===state.focusVendor)) state.focusVendor=null; // drop focus if deselected
+  const fv=state.focusVendor;
+  const fc=(v)=> fv ? (v.qid===fv?"vcol-focus":"vcol-dim") : "";
+  const td=(v,inner,extra="")=>`<td class="${fc(v)}"${extra}>${inner}</td>`;
 
-  // Build rows; differences-only hides rows where every selected Vendor shows the SAME disclosed value.
-  // No sort, no reorder, no recompute — order and arithmetic are untouched; we only drop identical rows.
-  const out=[]; let hidden=0, shown=0;
-  const push=(html, keys)=>{
-    const identical = vs.length>1 && keys.every(k=>k===keys[0]);
-    if(diff && identical){ hidden++; return; }
-    shown++; out.push(html);
-  };
-  push(`<tr><th scope="row">Status</th>${vs.map(v=>`<td>${chip(v.state)}</td>`).join("")}</tr>`, vs.map(v=>v.state));
-  push(`<tr><th scope="row">Quoted total</th>${vs.map((v,i)=>
-    `<td><span class="money">${money(subtotal(v))}</span>${i===low?
-      `<span class="lowtag" title="Arithmetic identification of the lowest disclosed total — not a recommendation (R6).">Lowest</span>`:``}</td>`).join("")}</tr>`,
-    vs.map(v=>String(subtotal(v))));
+  $("#mx-head").innerHTML = `<tr><th scope="col">Attribute</th>${vs.map(v=>
+    `<th scope="col" class="${fc(v)}"><span class="vn">${esc(v.name)}</span><span class="vr">${v.ref}</span>
+      <button type="button" class="focusbtn" data-focus="${v.qid}" aria-pressed="${v.qid===fv}" aria-label="${v.qid===fv?'Clear focus on':'Focus'} ${esc(v.name)} column"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3.2"/><path d="M12 4V2M12 22v-2M4 12H2M22 12h-2"/></svg></button></th>`).join("")}</tr>`;
+
+  // assemble rows into groups
+  const gr={}; const add=(k,html,keys)=>(gr[k]=gr[k]||[]).push({html,keys});
+  add("summary", `<tr><th scope="row">Status</th>${vs.map(v=>td(v,chip(v.state))).join("")}</tr>`, vs.map(v=>v.state));
+  add("summary", `<tr><th scope="row">Quoted total ${tip("Grand total as quoted — the arithmetic sum of the disclosed line items.", true)}</th>${
+    vs.map((v,i)=>td(v,`<span class="money">${money(subtotal(v))}</span>${i===low?`<span class="lowtag">Lowest ${tip(TIP_LOWEST, true)}</span>`:``}`)).join("")}</tr>`, vs.map(v=>String(subtotal(v))));
   RFQ().attrs.forEach((label,ai)=>{
-    push(`<tr><th scope="row">${label}</th>${vs.map(v=>`<td>${renderCell(v.vals[ai])}</td>`).join("")}</tr>`,
-      vs.map(v=>cellText(v.vals[ai])));
+    const t = /deliver|mobil/i.test(label)? " "+tip("Stated lead time / mobilization from PO — as disclosed.", true)
+            : /valid/i.test(label)? " "+tip("Date the quotation remains valid until — as disclosed.", true) : "";
+    add(groupForAttr(ai), `<tr><th scope="row">${label}${t}</th>${vs.map(v=>td(v,renderCell(v.vals[ai]))).join("")}</tr>`, vs.map(v=>cellText(v.vals[ai])));
   });
-  // line-items sub-header (structural anchor; the schema itself is Pending, not a Vendor omission)
-  out.push(`<tr class="attr-h" id="sec-lineitems"><td colspan="${vs.length+1}">Line items · <span class="absent pending" style="font-style:normal">Pending schema</span> — indicative (ESC-CS-LINEITEMS)</td></tr>`);
   RFQ().items.forEach((it,ii)=>{
-    push(`<tr><th scope="row"><span class="li-desc" style="font-weight:600;color:var(--fg)">${esc(it.desc)}</span>
+    add("lineitems", `<tr><th scope="row"><span class="li-desc" style="font-weight:600;color:var(--fg)">${esc(it.desc)}</span>
       <span class="li-meta" style="display:block;font-size:11px;color:var(--fg-soft);font-family:var(--mono);margin-top:2px">${it.qty} × ${it.unit}</span></th>${
       vs.map(v=>{ const up=v.unitPrices[ii];
-        return `<td><span class="money">${money(up*it.qty)}</span>${it.qty>1?`<span style="display:block;font-size:10.5px;color:var(--fg-soft);font-family:var(--mono);margin-top:2px">@ ${money(up)} / ${it.unit.toLowerCase()}</span>`:``}</td>`;
+        return td(v,`<span class="money">${money(up*it.qty)}</span>${it.qty>1?`<span style="display:block;font-size:10.5px;color:var(--fg-soft);font-family:var(--mono);margin-top:2px">@ ${money(up)} / ${it.unit.toLowerCase()}</span>`:``}`);
       }).join("")}</tr>`, vs.map(v=>String(v.unitPrices[ii]*it.qty)));
   });
-  // line-items footer total (structural — always shown, reconciles to the quoted total)
-  out.push(`<tr><th scope="row" style="color:var(--iv-navy-900);background:var(--iv-light-muted)">Quoted total</th>${
-    vs.map((v,i)=>`<td style="border-top:2px solid var(--iv-navy-200);background:var(--iv-light-muted)"><span class="money">${money(subtotal(v))}</span>${i===low?`<span class="lowtag" title="Lowest disclosed total — arithmetic, not a recommendation.">Lowest</span>`:``}</td>`).join("")}</tr>`);
+  add("lineitems", `<tr><th scope="row" style="color:var(--iv-navy-900);background:var(--iv-light-muted)">Quoted total</th>${
+    vs.map((v,i)=>td(v,`<span class="money">${money(subtotal(v))}</span>${i===low?`<span class="lowtag">Lowest ${tip(TIP_LOWEST, true)}</span>`:``}`,' style="border-top:2px solid var(--iv-navy-200);background:var(--iv-light-muted)"')).join("")}</tr>`, null); // null keys = structural, never diff-hidden
+
+  const out=[]; let shown=0, hidden=0;
+  MX_GROUPS.forEach(g=>{
+    const rows=gr[g.key]; if(!rows||!rows.length) return;
+    const collapsed=state.collapsed.has(g.key), dataCount=rows.filter(r=>r.keys!==null).length;
+    const anchor = g.key==="lineitems" ? ' id="sec-lineitems"' : '';
+    out.push(`<tr class="grp-h"${anchor}><td colspan="${vs.length+1}"><button type="button" data-grp-toggle="${g.key}" aria-expanded="${!collapsed}"><svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg>${g.label}${g.note||''}<span class="cnt">${dataCount} row${dataCount===1?'':'s'}</span></button></td></tr>`);
+    if(collapsed) return;
+    rows.forEach(r=>{
+      if(r.keys===null){ out.push(r.html); return; }
+      const identical = vs.length>1 && r.keys.every(k=>k===r.keys[0]);
+      if(diff && identical){ hidden++; return; }
+      shown++; out.push(r.html);
+    });
+  });
   $("#mx-body").innerHTML = out.join("");
 
-  const st=$("#mx-diff-status");
-  st.hidden=!diff;
+  const st=$("#mx-diff-status"); st.hidden=!diff;
   if(diff) st.innerHTML = `Showing <b>${shown}</b> differing row${shown===1?'':'s'} · <b>${hidden}</b> identical row${hidden===1?'':'s'} hidden`;
+  updateFocusBanner();
 }
 
-/* ── ④ commercial terms cards ── */
+/* ── ④ commercial terms cards (UX-2.5 focus emphasis · UX-2.14 tips) ── */
 function renderTerms(){
-  const vs=selectedVendors(), low=lowestIdx(vs);
+  const vs=selectedVendors(), low=lowestIdx(vs), fv=state.focusVendor;
+  const fc=(v)=> fv ? (v.qid===fv?" vcol-focus":" vcol-dim") : "";
   $("#tm-grid").innerHTML = vs.map((v,i)=>{
     const sub=subtotal(v);
-    return `<div class="vcard ${i===low?'low':''}">
+    return `<div class="vcard ${i===low?'low':''}${fc(v)}">
       <div class="vh">${esc(v.name)}</div><div class="vref">${v.ref}</div>
-      <div class="grand">${money(sub)}</div>
-      ${i===low?`<span class="low-badge" title="Arithmetic identification of the lowest disclosed total — not a recommendation (R6).">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 12 5 5L20 6"/></svg>Lowest total</span>`:``}
+      <div class="grand">${money(sub)} ${tip("Grand total as quoted — arithmetic sum of the disclosed line items.")}</div>
+      ${i===low?`<span class="low-badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 12 5 5L20 6"/></svg>Lowest total ${tip(TIP_LOWEST)}</span>`:``}
       <dl>
         <div><dt>Subtotal</dt><dd class="sub">${money(sub)}</dd></div>
-        <div><dt>VAT &amp; duties</dt><dd>${renderCell(v.terms.vat)}</dd></div>
+        <div><dt>VAT &amp; duties ${tip("VAT & duties treatment as stated by the vendor (included or excluded).")}</dt><dd>${renderCell(v.terms.vat)}</dd></div>
         <div><dt>Price basis</dt><dd>${renderCell(v.terms.basis)}</dd></div>
         <div><dt>Payment</dt><dd>${renderCell(v.terms.pay)}</dd></div>
         <div><dt>Liquidated damages</dt><dd>${renderCell(v.terms.ld)}</dd></div>
@@ -943,6 +1032,22 @@ function renderTerms(){
     </div>`;
   }).join("");
 }
+
+/* ── UX-2.5 focus + UX-2.6 collapse controls (view-state only; order/arithmetic untouched) ── */
+function updateFocusBanner(){
+  const fv=state.focusVendor;
+  $("#focus-banner").classList.toggle("on", !!fv);
+  if(fv){ const v=RFQ().vendors.find(x=>x.qid===fv); $("#focus-name").textContent = v?v.name:""; }
+}
+function toggleFocus(qid){ state.focusVendor = state.focusVendor===qid?null:qid; renderMatrix(); renderTerms(); }
+function toggleGroup(key){ state.collapsed.has(key)?state.collapsed.delete(key):state.collapsed.add(key); renderMatrix(); }
+$("#mx-table").addEventListener("click",e=>{
+  const f=e.target.closest("[data-focus]"); if(f){ toggleFocus(f.dataset.focus); return; }
+  const g=e.target.closest("[data-grp-toggle]"); if(g){ toggleGroup(g.dataset.grpToggle); return; }
+});
+$("#clear-focus").addEventListener("click",()=>{ state.focusVendor=null; renderMatrix(); renderTerms(); });
+$("#mx-expand-all").addEventListener("click",()=>{ state.collapsed.clear(); renderMatrix(); });
+$("#mx-collapse-all").addEventListener("click",()=>{ MX_GROUPS.forEach(g=>state.collapsed.add(g.key)); renderMatrix(); });
 
 /* ── ⑤ evaluation form (rendered into desktop aside AND mobile sheet, same provider) ── */
 const COMPLIANCE=[["unset","Not assessed"],["fully","Fully compliant"],["partial","Partially compliant"],["non","Non-compliant"]];
