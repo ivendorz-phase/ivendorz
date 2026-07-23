@@ -93,6 +93,14 @@ Every animation in FE code follows **`docs/frontend/design-system/motion_standar
 - Reviewers (Review-A/B): a one-off duration/easing/keyframe in a surface = duplication
   finding; check the doc's §6 checklist.
 
+**Emil Kowalski motion skills — advisory only (installed personal-scope 2026-07-23).** The
+`emil-design-eng`, `apple-design`, `improve-animations`, `find-animation-opportunities`,
+`animation-vocabulary`, `review-animations`, and `pick-ui-library` skills provide taste and
+review input — they are **NOT authoritative** over iVendorz FE motion. On any divergence,
+`docs/frontend/design-system/motion_standard.md` (owner-ratified, frozen-corpus-aligned) wins:
+keep 150–250ms / no bounce/spring / GPU-only / `@/frontend/motion` vocabulary regardless of
+what an external skill suggests. Use them to sharpen judgment, never to override the standard.
+
 ---
 
 ## Automation
