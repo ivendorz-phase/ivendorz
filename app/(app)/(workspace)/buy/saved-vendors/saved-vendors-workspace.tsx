@@ -38,6 +38,7 @@ import type { PasteRow } from "../_components/vendor-directory/paste-import";
 import {
   buildMarketplaceWorkingVendor,
   buildPrivateWorkingVendor,
+  canBePreferred,
   selectDirectoryRows,
   viewCounts,
   type CreatePrivateVendorInput,
@@ -108,6 +109,10 @@ export function SavedVendorsWorkspace({
   const nextId = () => `new_${idSeq.current++}`;
 
   function setPreferred(vendor: DirectoryWorkingVendor) {
+    // D1(a) enforced at the mutation, not only the UI gate: ⭐ Preferred is a flag on the frozen
+    // favorite/status contracts, which key on a marketplace `vendor_profile_id`. An unlinked vendor
+    // can never be preferred — defense-in-depth so no caller path can set it (server re-validates at wiring).
+    if (!canBePreferred(vendor)) return;
     setVendors((current) =>
       current.map((entry) => (entry.id === vendor.id ? { ...entry, isFavorite: true } : entry)),
     );
