@@ -339,4 +339,109 @@ export const CS_UNIVERSE: Record<string, CsFixture> = {
       { label: "Longest Shutdown", quotationId: "q-119-3", value: "4 days" },
     ],
   },
+
+  // ──────────────────────────────────────────────────────────────────────────────────────────────
+  // COMPARISON DATA-STATE FIXTURES — the CS projections for the two verification RFQs added to
+  // `rfq-universe.ts`. Same CONSISTENCY INVARIANT as above: every vendor's line totals sum EXACTLY
+  // to that vendor's quoted amount. The SEALED vendor (`q-901-6`) is deliberately absent from every
+  // `unitPrices` map — its price is withheld, so there is nothing to price it with.
+  //
+  // Cooling tower overhaul — 6 disclosed vendors (q-901-1 Σ 402,000 · q-901-2 Σ 418,500 ·
+  // q-901-3 Σ 396,000 · q-901-4 Σ 431,000 · q-901-5 Σ 409,500 · q-901-6 SEALED).
+  "rfq-000901": {
+    letterhead: MOCK_LETTERHEAD,
+    project: "Utilities block — cooling tower overhaul",
+    issueDate: "2026-07-06",
+    currency: "BDT",
+    vatRatePct: 15,
+    preparedByLabel: "Procurement Department",
+    items: [
+      {
+        description: "Cooling tower fill media replacement",
+        specification: "PVC film fill, CTI-certified",
+        unit: "LOT",
+        quantity: 1,
+        unitPrices: {
+          "q-901-1": 150000,
+          "q-901-2": 158000,
+          "q-901-3": 146000,
+          "q-901-4": 162000,
+          "q-901-5": 152000,
+        },
+      },
+      {
+        description: "Drift eliminator replacement",
+        specification: "Cellular PVC",
+        unit: "LOT",
+        quantity: 1,
+        unitPrices: {
+          "q-901-1": 92000,
+          "q-901-2": 95000,
+          "q-901-3": 90000,
+          "q-901-4": 98000,
+          "q-901-5": 94000,
+        },
+      },
+      {
+        description: "Gearbox overhaul & alignment",
+        specification: "OEM bearing set",
+        unit: "SET",
+        quantity: 1,
+        unitPrices: {
+          "q-901-1": 105000,
+          "q-901-2": 108000,
+          "q-901-3": 104000,
+          "q-901-4": 112000,
+          "q-901-5": 107000,
+        },
+      },
+      {
+        description: "Site labour, testing & commissioning",
+        unit: "LOT",
+        quantity: 1,
+        unitPrices: {
+          "q-901-1": 55000,
+          "q-901-2": 57500,
+          "q-901-3": 56000,
+          "q-901-4": 59000,
+          "q-901-5": 56500,
+        },
+      },
+    ],
+    approvals: MOCK_APPROVALS,
+    deliveryComparison: [
+      { label: "Fastest Delivery", quotationId: "q-901-1", value: "10 days from PO" },
+      { label: "Longest Delivery", quotationId: "q-901-5", value: "16 days from PO" },
+    ],
+  },
+
+  // Boiler safety valve recertification — a SINGLE disclosed vendor (q-902-1 Σ 182,500).
+  "rfq-000902": {
+    letterhead: MOCK_LETTERHEAD,
+    project: "Steam plant — safety valve recertification",
+    issueDate: "2026-07-06",
+    currency: "BDT",
+    vatRatePct: 15,
+    preparedByLabel: "Procurement Department",
+    items: [
+      {
+        description: "Safety valve recertification",
+        specification: "ASME PTC 25, bench-tested",
+        unit: "PCS",
+        quantity: 3,
+        unitPrices: { "q-902-1": 45000 },
+      },
+      {
+        description: "Test bench hire & documentation",
+        specification: "Calibration certificates",
+        unit: "LOT",
+        quantity: 1,
+        unitPrices: { "q-902-1": 47500 },
+      },
+    ],
+    approvals: MOCK_APPROVALS,
+    deliveryComparison: [
+      { label: "Quoted Delivery", quotationId: "q-902-1", value: "7 days from PO" },
+    ],
+  },
 };

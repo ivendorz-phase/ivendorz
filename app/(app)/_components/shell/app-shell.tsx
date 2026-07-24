@@ -48,15 +48,20 @@ export function AppShell({
           Skip to content
         </a>
 
-        <Topbar
-          vm={vm}
-          orgSwitcherSlot={orgSwitcherSlot}
-          notificationSlot={notificationSlot}
-          userMenuSlot={userMenuSlot}
-        />
+        {/* `data-print-hide` (layout-neutral `contents` wrapper) removes this chrome from print layout
+            via a `display:none` rule in route-scoped print stylesheets (e.g. comparison-document.css) —
+            an additive hook, no screen effect. */}
+        <div data-print-hide className="contents">
+          <Topbar
+            vm={vm}
+            orgSwitcherSlot={orgSwitcherSlot}
+            notificationSlot={notificationSlot}
+            userMenuSlot={userMenuSlot}
+          />
+        </div>
 
         {vm.breadcrumb && vm.breadcrumb.length > 0 ? (
-          <div className="border-b border-border bg-background">
+          <div data-print-hide className="border-b border-border bg-background">
             <Container className="py-2">
               <Breadcrumbs items={vm.breadcrumb} />
             </Container>
@@ -64,14 +69,19 @@ export function AppShell({
         ) : null}
 
         <div className="flex flex-1">
-          <Sidebar nav={vm.nav} />
+          <div data-print-hide className="contents">
+            <Sidebar nav={vm.nav} />
+          </div>
           <div className={cn("flex min-w-0 flex-1 flex-col", hasQuickBar && "pb-16 md:pb-0")}>
             {/* The shell owns the content container (the single <Container> primitive + padding); pages
                 render content only. Pages must NOT re-wrap in their own max-w container (double-wrap). */}
             <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 focus:outline-none">
               <Container className="py-6">{children}</Container>
             </main>
-            <footer className="border-t border-border py-4 text-xs text-muted-foreground">
+            <footer
+              data-print-hide
+              className="border-t border-border py-4 text-xs text-muted-foreground"
+            >
               <Container className="flex flex-col items-center justify-between gap-2 sm:flex-row">
                 <p>© iVendorz — Industrial Procurement OS.</p>
                 <p>BDT</p>
@@ -80,7 +90,11 @@ export function AppShell({
           </div>
         </div>
 
-        {hasQuickBar ? <BottomBar items={quickBar} /> : null}
+        {hasQuickBar ? (
+          <div data-print-hide className="contents">
+            <BottomBar items={quickBar} />
+          </div>
+        ) : null}
       </div>
     </TooltipProvider>
   );
