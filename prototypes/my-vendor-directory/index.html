@@ -1,0 +1,1822 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>My Vendor Directory — Prototype · iVendorz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ── iVendorz design tokens (copied from app/globals.css — light mode) ───── */
+  :root{
+    --iv-brand-50:#eef3fd; --iv-brand-100:#dbe6fa; --iv-brand-200:#b8cef5; --iv-brand-300:#8fb0ea;
+    --iv-brand-400:#5f8ad9; --iv-brand-500:#2f5eb8; --iv-brand-600:#23438f; --iv-brand-700:#1c3672;
+    --iv-brand-800:#162a58; --iv-brand-900:#101f40; --iv-brand-950:#0b1530;
+    --iv-navy-50:#eef2f8; --iv-navy-100:#d9e1ef; --iv-navy-200:#b7c6e0; --iv-navy-300:#8ba0c6;
+    --iv-navy-400:#5a74a3; --iv-navy-500:#375081; --iv-navy-600:#283f6a; --iv-navy-700:#1f3154;
+    --iv-navy-800:#182643; --iv-navy-900:#111c33; --iv-navy-950:#0b1322;
+    --iv-amber-400:#cda434; --iv-amber-500:#b8860b;
+    --iv-light-base:#f6f8fa; --iv-light-raised:#ffffff; --iv-light-muted:#f8fafc;
+    --iv-light-border:#e6e9ee; --iv-light-hover:#f8fafc;
+    --iv-success-base:#16a34a; --iv-success-subtle:rgba(22,163,74,.08);
+    --iv-warning-base:#ca8a04; --iv-warning-subtle:rgba(202,138,4,.08);
+    --iv-danger-base:#dc2626; --iv-danger-subtle:rgba(220,38,38,.08);
+    --iv-info-base:#2563eb; --iv-info-subtle:rgba(37,99,235,.08);
+    --iv-neutral-base:#6b7280; --iv-neutral-subtle:rgba(107,114,128,.08);
+    --fg:#1a2333; --fg-muted:#5b6472; --fg-soft:#8b93a1;
+    --radius:10px; --radius-sm:7px;
+    --sans:'Inter',-apple-system,'Segoe UI',sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--sans);font-size:14px;color:var(--fg);background:var(--iv-light-base);
+    -webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+  .mono{font-family:var(--mono)}
+
+  /* ── review chrome ───────────────────────────────────────────────────────── */
+  .proto-banner{display:flex;align-items:center;gap:10px;padding:7px 16px;background:var(--iv-navy-950);
+    color:#cbd5e1;font-size:12px;border-bottom:1px solid #1e2a3b}
+  .proto-banner .tag{background:var(--iv-amber-500);color:#fff;font-weight:700;font-size:10.5px;
+    letter-spacing:.06em;padding:2px 7px;border-radius:4px;text-transform:uppercase}
+  .proto-banner .sp{flex:1}
+  .proto-banner label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+  .note{display:none;border:1.5px dashed var(--iv-amber-400);background:#fffdf4;border-radius:var(--radius);
+    padding:12px 16px;font-size:12.5px;color:#6b5a1e;line-height:1.55;margin:0 0 18px}
+  .note b{color:#4a3504}
+  body.show-notes .note{display:block}
+  /* MINOR-1: gated surfaces that must NOT appear in a production-like read — only under Review notes */
+  .review-only{display:none}
+  body.show-notes li.review-only{display:list-item}
+  body.show-notes .review-only{display:revert}
+
+  /* ── top bar (matches built shell) ───────────────────────────────────────── */
+  .topbar{display:flex;align-items:center;gap:18px;height:56px;padding:0 16px;
+    background:var(--iv-navy-950);color:#e2e8f0}
+  .brand{display:inline-flex;align-items:center;gap:8px;flex-shrink:0}
+  .brand-mark{width:30px;height:30px;border-radius:7px;background:var(--iv-brand-600);color:#fff;
+    display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+  .topsearch{flex:0 1 400px;display:flex;align-items:center;gap:9px;height:36px;padding:0 14px;
+    background:#141f33;border:1px solid #223048;border-radius:999px;color:#7d8aa0;font-size:13.5px}
+  .topbar .sp{flex:1}
+  .btn{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 14px;border-radius:8px;
+    font-weight:600;font-size:13.5px;transition:background .15s ease-out}
+  .btn-primary{background:var(--iv-brand-500);color:#fff}
+  .btn-primary:hover{background:var(--iv-brand-600)}
+  .btn-ghost-dark{color:#9fb0c8;width:36px;justify-content:center;padding:0;border-radius:8px}
+  .btn-ghost-dark:hover{background:#141f33}
+  .btn-outline{border:1px solid var(--iv-light-border);background:var(--iv-light-raised);color:var(--fg)}
+  .btn-outline:hover{background:var(--iv-light-hover)}
+  .btn-outline[disabled]{opacity:.5;cursor:not-allowed}
+  .account{display:flex;align-items:center;gap:9px;cursor:pointer;padding:4px 8px;border-radius:8px}
+  .account:hover{background:#141f33}
+  .avatar{width:30px;height:30px;border-radius:999px;background:var(--iv-brand-500);color:#fff;
+    display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+  .account .who{line-height:1.25;font-size:12.5px}
+  .account .who b{display:block;font-size:13px;color:#f1f5f9;font-weight:600}
+  .account .who span{color:#7d8aa0}
+
+  /* ── layout ──────────────────────────────────────────────────────────────── */
+  .frame{display:flex;min-height:calc(100vh - 56px)}
+  .sidebar{width:248px;flex-shrink:0;background:var(--iv-light-raised);
+    border-right:1px solid var(--iv-light-border);display:flex;flex-direction:column}
+  .ws-head{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--iv-navy-50);
+    border-bottom:1px solid var(--iv-light-border)}
+  .ws-head .ic-box{width:30px;height:30px;border-radius:7px;background:var(--iv-brand-100);
+    color:var(--iv-brand-700);display:inline-flex;align-items:center;justify-content:center}
+  .ws-head .t b{display:block;font-size:13.5px;font-weight:700;color:var(--iv-navy-800)}
+  .ws-head .t span{font-size:11.5px;color:var(--fg-muted)}
+  nav.side{flex:1;overflow-y:auto;padding:10px 10px 16px}
+  .grp{margin-top:14px}
+  .grp:first-child{margin-top:4px}
+  .grp>p{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--fg-soft);padding:0 10px;margin-bottom:4px}
+  .nav-item{display:flex;align-items:center;gap:10px;height:34px;padding:0 10px;border-radius:8px;
+    font-size:13.5px;font-weight:500;color:#3c4657;width:100%;text-align:left}
+  .nav-item:hover{background:var(--iv-light-hover)}
+  .nav-item svg{flex-shrink:0;color:var(--fg-soft)}
+  .nav-item .chev{margin-left:auto;transition:transform .15s ease-out}
+  .nav-item[aria-expanded="true"] .chev{transform:rotate(180deg)}
+  .nav-sub{list-style:none;padding-left:30px;margin:1px 0 3px}
+  .nav-sub a{display:flex;height:31px;align-items:center;gap:7px;padding:0 10px;border-radius:8px;
+    font-size:13px;color:#4c5666}
+  .nav-sub a:hover{background:var(--iv-light-hover)}
+  .nav-sub a[aria-current="page"]{background:var(--iv-brand-100);color:var(--iv-brand-800);font-weight:600}
+  .nav-sub a .st-star{color:var(--iv-amber-500)}
+  .side-foot{border-top:1px solid var(--iv-light-border);padding:10px 14px;font-size:13px;color:var(--fg-muted);
+    display:flex;align-items:center;gap:8px}
+
+  main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .page{flex:1;max-width:1180px;width:100%;margin:0 auto;padding:26px 34px 48px}
+  .crumb{font-size:13px;color:var(--fg-muted);margin-bottom:12px}
+  .crumb a{color:var(--fg-muted)} .crumb a:hover{color:var(--iv-brand-600)}
+  .crumb .sep{margin:0 7px;color:var(--fg-soft)}
+  .crumb .cur{color:var(--fg);font-weight:500}
+  .page-head{display:flex;align-items:flex-start;gap:16px;padding-bottom:18px;
+    border-bottom:1px solid var(--iv-light-border);margin-bottom:22px}
+  .page-head h1{font-size:26px;font-weight:800;letter-spacing:-.02em;color:var(--iv-navy-900)}
+  .page-head .sub{margin-top:5px;color:var(--fg-muted);font-size:14px;max-width:660px;line-height:1.5}
+  .page-head .sp{flex:1}
+  .meta-line{margin-top:7px;font-size:12px;color:var(--fg-soft)}
+  footer.app{border-top:1px solid var(--iv-light-border);padding:14px 34px;display:flex;
+    font-size:12.5px;color:var(--fg-muted)}
+  footer.app .sp{flex:1}
+
+  .card{background:var(--iv-light-raised);border:1px solid var(--iv-light-border);border-radius:var(--radius)}
+
+  /* ── view tabs (?view=) ──────────────────────────────────────────────────── */
+  .vtabs{display:flex;gap:4px;border-bottom:1px solid var(--iv-light-border);margin-bottom:16px;flex-wrap:wrap}
+  .vtab{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;font-size:13.5px;
+    font-weight:600;color:var(--fg-muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+  .vtab:hover{color:var(--iv-navy-900)}
+  .vtab[aria-selected="true"]{color:var(--iv-brand-700);border-bottom-color:var(--iv-brand-500)}
+  .vtab .n{font-size:11.5px;font-weight:700;color:var(--fg-soft);background:var(--iv-navy-50);
+    padding:1px 7px;border-radius:999px;font-variant-numeric:tabular-nums}
+  .vtab[aria-selected="true"] .n{background:var(--iv-brand-100);color:var(--iv-brand-700)}
+  .vtab .st-star{color:var(--iv-amber-500)}
+  .vtab.gated{color:var(--fg-soft);cursor:default} .vtab.gated:hover{color:var(--fg-soft)}
+  .gate-r{font-size:9.5px;font-weight:700;color:var(--iv-warning-base);background:var(--iv-warning-subtle);
+    padding:1px 5px;border-radius:4px;margin-left:5px;letter-spacing:.03em;vertical-align:middle}
+  .nav-sub a.gated{color:var(--fg-soft)} .nav-sub a.gated:hover{background:transparent;cursor:default}
+
+  /* ── toolbar / chips ─────────────────────────────────────────────────────── */
+  .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .chips .lbl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-soft);margin-right:2px}
+  .chips button{height:30px;padding:0 12px;border-radius:999px;font-size:12.5px;font-weight:600;
+    border:1px solid var(--iv-light-border);background:var(--iv-light-raised);color:var(--fg-muted);
+    display:inline-flex;align-items:center;gap:5px}
+  .chips button:hover{background:var(--iv-light-hover)}
+  .chips button[aria-pressed="true"]{background:var(--iv-navy-800);border-color:var(--iv-navy-800);color:#fff}
+  .chips button i{font-style:normal;opacity:.65;margin-left:3px;font-variant-numeric:tabular-nums}
+  .chips button.bl[aria-pressed="true"]{background:var(--iv-danger-base);border-color:var(--iv-danger-base)}
+  .toolbar .sp{flex:1}
+
+  /* ── table ───────────────────────────────────────────────────────────────── */
+  .tablewrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--iv-light-raised)}
+  caption{text-align:left;position:absolute;left:-9999px}
+  thead th{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--fg-soft);
+    text-align:left;padding:11px 14px;border-bottom:1px solid var(--iv-light-border);white-space:nowrap}
+  tbody td{padding:12px 14px;border-bottom:1px solid var(--iv-light-border);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr{transition:background .15s ease-out}
+  tbody tr:hover{background:var(--iv-light-hover)}
+  th.star-col,td.star-col{width:44px;text-align:center;padding-left:10px;padding-right:6px}
+  .cell-main{font-weight:600;color:var(--iv-navy-900)}
+  .cell-main a:hover{color:var(--iv-brand-600)}
+  .cell-sub{font-size:12px;color:var(--fg-soft);margin-top:2px}
+  .rowact{white-space:nowrap;text-align:right}
+  .rowact a{font-size:12.5px;font-weight:600;color:var(--iv-brand-600);margin-left:12px}
+  .rowact a:hover{text-decoration:underline}
+  .empty{padding:48px 20px;text-align:center;color:var(--fg-muted)}
+  .empty b{display:block;font-size:15px;color:var(--fg);margin:10px 0 4px}
+  .empty svg{color:var(--fg-soft)}
+
+  /* ── star (⭐ Preferred = the "save vendor" affordance) ───────────────────── */
+  .star{width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;
+    color:var(--fg-soft);transition:background .15s ease-out,color .15s ease-out,transform .15s ease-out}
+  .star:hover{background:var(--iv-amber-500);background:rgba(184,134,11,.1);color:var(--iv-amber-500)}
+  .star[aria-pressed="true"]{color:var(--iv-amber-500)}
+  .star[aria-pressed="true"] svg{fill:var(--iv-amber-500)}
+  .star:active{transform:scale(.92)}
+
+  /* ── badges ──────────────────────────────────────────────────────────────── */
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:2.5px 8px;border-radius:5px;
+    font-size:11px;font-weight:600;white-space:nowrap;line-height:1.4}
+  .b-mp{background:var(--iv-brand-100);color:var(--iv-brand-800)}
+  .b-pv{background:var(--iv-neutral-subtle);color:var(--fg-muted)}
+  .b-verified{background:var(--iv-success-subtle);color:var(--iv-success-base)}
+  .b-claimed{background:var(--iv-info-subtle);color:var(--iv-info-base)}
+  .status{display:inline-block;padding:2.5px 8px;border-radius:5px;font-size:10.5px;font-weight:700;
+    letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+  .status.approved{background:var(--iv-success-subtle);color:var(--iv-success-base)}
+  .status.conditional{background:var(--iv-warning-subtle);color:var(--iv-warning-base)}
+  .status.blacklisted{background:var(--iv-danger-subtle);color:var(--iv-danger-base)}
+  .status.none{background:var(--iv-neutral-subtle);color:var(--fg-soft)}
+  .lifechip{font-size:11px;color:var(--fg-soft);border:1px solid var(--iv-light-border);
+    border-radius:5px;padding:2px 7px;font-weight:600}
+
+  /* ── detail ──────────────────────────────────────────────────────────────── */
+  .d-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:6px}
+  .d-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .d-title h1{font-size:24px;font-weight:800;color:var(--iv-navy-900);letter-spacing:-.02em}
+  .d-badges{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:9px}
+  .dtabs{display:flex;gap:2px;border-bottom:1px solid var(--iv-light-border);margin:20px 0 20px;flex-wrap:wrap}
+  .dtab{height:38px;padding:0 14px;font-size:13.5px;font-weight:600;color:var(--fg-muted);
+    border-bottom:2px solid transparent;margin-bottom:-1px}
+  .dtab:hover{color:var(--iv-navy-900)}
+  .dtab[aria-selected="true"]{color:var(--iv-brand-700);border-bottom-color:var(--iv-brand-500)}
+  .dtab .gate{font-size:9.5px;font-weight:700;color:var(--iv-warning-base);background:var(--iv-warning-subtle);
+    padding:1px 5px;border-radius:4px;margin-left:5px;vertical-align:middle}
+  .dpane{display:none} .dpane.on{display:block}
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--iv-light-border);
+    border:1px solid var(--iv-light-border);border-radius:var(--radius);overflow:hidden}
+  .fields .f{background:var(--iv-light-raised);padding:13px 16px}
+  .fields .f .k{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--fg-soft);
+    display:flex;align-items:center;gap:6px}
+  .fields .f .v{font-size:14px;color:var(--fg);margin-top:4px;font-weight:500}
+  .fields .f .v.empty-v{color:var(--fg-soft);font-weight:400}
+  .gtag{font-size:9px;font-weight:700;color:var(--iv-warning-base);background:var(--iv-warning-subtle);
+    padding:1px 5px;border-radius:4px;letter-spacing:.03em}
+  .note-list{display:flex;flex-direction:column;gap:10px}
+  .note-item{padding:13px 16px;border:1px solid var(--iv-light-border);border-radius:var(--radius);background:var(--iv-light-raised)}
+  .note-item .m{font-size:11.5px;color:var(--fg-soft);margin-bottom:5px}
+  .note-item .txt{font-size:13.5px;color:var(--fg);line-height:1.5}
+  .hist{display:flex;flex-direction:column}
+  .hist .h{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--iv-light-border)}
+  .hist .h:last-child{border-bottom:0}
+  .hist .dot{width:9px;height:9px;border-radius:999px;background:var(--iv-brand-400);flex-shrink:0}
+  .hist .h .d{font-size:12px;color:var(--fg-soft);width:120px;flex-shrink:0}
+  .rating-input{display:inline-flex;gap:3px}
+  .rating-input button{color:var(--iv-amber-500);width:28px;height:28px}
+  .rating-input button svg{fill:none}
+  .rating-input button.on svg{fill:var(--iv-amber-500)}
+  .stars-static{display:inline-flex;gap:2px;color:var(--iv-amber-500)}
+  .stars-static svg{fill:var(--iv-amber-500)} .stars-static svg.off{fill:none;color:var(--iv-light-border)}
+  .linkpanel{display:flex;align-items:center;gap:14px;padding:14px 18px;border:1px solid var(--iv-brand-200);
+    background:var(--iv-brand-50);border-radius:var(--radius);margin-bottom:20px}
+  .linkpanel svg{color:var(--iv-brand-600);flex-shrink:0}
+  .linkpanel .sp{flex:1}
+  .linkpanel b{color:var(--iv-navy-900)} .linkpanel p{font-size:12.5px;color:var(--fg-muted);margin-top:2px}
+  .btn-sm{height:32px;padding:0 12px;font-size:12.5px;font-weight:600;border-radius:7px}
+  .gated-empty{padding:40px 20px;text-align:center;color:var(--fg-muted);border:1px dashed var(--iv-light-border);border-radius:var(--radius)}
+  .gated-empty svg{color:var(--fg-soft)} .gated-empty b{display:block;color:var(--fg);margin:10px 0 4px;font-size:14.5px}
+
+  /* ── add vendor ──────────────────────────────────────────────────────────── */
+  .searchbig{display:flex;align-items:center;gap:10px;height:46px;padding:0 16px;
+    background:var(--iv-light-raised);border:1px solid var(--iv-light-border);border-radius:var(--radius);margin-bottom:6px}
+  .searchbig input{border:0;outline:0;flex:1;font:inherit;font-size:15px;color:var(--fg);background:transparent}
+  .searchbig svg{color:var(--fg-soft)}
+  .res{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+  .res-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid var(--iv-light-border);
+    border-radius:var(--radius);background:var(--iv-light-raised)}
+  .res-item .nm{font-weight:600;color:var(--iv-navy-900)}
+  .res-item .mt{font-size:12px;color:var(--fg-soft);margin-top:2px}
+  .res-item .sp{flex:1}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;margin-top:6px}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--fg);margin-bottom:5px}
+  .field label .req{color:var(--iv-danger-base);margin-left:2px}
+  .field input,.field select{width:100%;height:38px;padding:0 12px;border:1px solid var(--iv-light-border);
+    border-radius:8px;font:inherit;font-size:13.5px;color:var(--fg);background:var(--iv-light-raised);outline:none}
+  .field input:focus{border-color:var(--iv-brand-400);box-shadow:0 0 0 3px var(--iv-brand-100)}
+  .field.wide{grid-column:1 / -1}
+  .form-foot{display:flex;align-items:center;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid var(--iv-light-border)}
+  .form-foot .sp{flex:1}
+  .sec-h{font-size:12.5px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;
+    letter-spacing:.06em;margin:22px 0 12px}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(8px);opacity:0;
+    background:var(--iv-navy-900);color:#e2e8f0;font-size:13px;padding:10px 18px;border-radius:9px;
+    pointer-events:none;transition:opacity .2s ease-out,transform .2s ease-out;max-width:600px;text-align:center;z-index:50}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast .mono{color:#a9c6ff}
+
+  .b-linked{background:#e7f0fb;color:var(--iv-navy-700)}
+
+  /* ── persona toggle (D4 authority model demo) ────────────────────────────── */
+  .persona{display:inline-flex;align-items:center;gap:0;background:#141f33;border:1px solid #223048;
+    border-radius:999px;padding:2px}
+  .persona button{font-size:11px;font-weight:600;color:#9fb0c8;padding:4px 11px;border-radius:999px}
+  .persona button[aria-pressed="true"]{background:var(--iv-brand-500);color:#fff}
+  .persona-lbl{font-size:11px;color:#7d8aa0;margin-right:2px}
+
+  /* ── provenance / offerings (D5) ─────────────────────────────────────────── */
+  .prov{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;letter-spacing:.02em;
+    padding:1.5px 6px;border-radius:4px;white-space:nowrap}
+  .prov-profile{background:var(--iv-brand-100);color:var(--iv-brand-800)}
+  .prov-buyer{background:var(--iv-navy-100);color:var(--iv-navy-700)}
+  .prov-text{background:var(--iv-neutral-subtle);color:var(--fg-muted)}
+  .offer-head{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+  .offer-head .h{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--fg-muted)}
+  .offer-head .src{font-size:11.5px;color:var(--fg-soft);font-weight:500;text-transform:none;letter-spacing:0}
+  .offer-head .sp{flex:1}
+  .meter{font-size:11.5px;font-weight:700;color:var(--fg-muted);font-variant-numeric:tabular-nums;
+    background:var(--iv-navy-50);border-radius:999px;padding:2px 9px}
+  .meter.over{background:var(--iv-danger-subtle);color:var(--iv-danger-base)}
+  .offer-list{display:flex;flex-direction:column;gap:7px}
+  .offer{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--iv-light-border);
+    border-radius:8px;background:var(--iv-light-raised)}
+  .offer.excess{border-color:var(--iv-danger-base);background:var(--iv-danger-subtle)}
+  .offer .txt{font-weight:500;color:var(--fg)}
+  .offer .cat{font-size:12px;color:var(--fg-soft);margin-top:1px}
+  .offer .cat b{color:var(--iv-brand-700);font-weight:600}
+  .offer .sp{flex:1}
+  .offer .orig{font-size:11.5px;color:var(--fg-soft)}
+  .portfolio-link{font-size:12.5px;font-weight:600;color:var(--iv-brand-600);margin-top:10px;display:inline-flex;gap:5px;align-items:center}
+
+  /* ── category matcher (D5) ───────────────────────────────────────────────── */
+  .conf{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:1.5px 7px;border-radius:999px;white-space:nowrap}
+  .conf-high{background:var(--iv-success-subtle);color:var(--iv-success-base)}
+  .conf-poss{background:var(--iv-warning-subtle);color:var(--iv-warning-base)}
+  .conf-no{background:var(--iv-neutral-subtle);color:var(--fg-soft)}
+  .conf-ok{background:var(--iv-brand-100);color:var(--iv-brand-800)}
+  .matchrow{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--iv-light-border)}
+  .matchrow:last-child{border-bottom:0}
+  .matchrow .info{flex:1;min-width:0}
+  .matchrow .entered{font-weight:600;color:var(--fg)}
+  .matchrow .sugg{font-size:12.5px;color:var(--fg-muted);margin-top:3px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .matchrow .sugg .orig-txt{color:var(--fg-soft)}
+  .matchrow .acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .mini{height:28px;padding:0 10px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid var(--iv-light-border);
+    background:var(--iv-light-raised);color:var(--fg-muted);display:inline-flex;align-items:center;gap:5px}
+  .mini:hover{background:var(--iv-light-hover)}
+  .mini.primary{background:var(--iv-brand-500);border-color:var(--iv-brand-500);color:#fff}
+  .mini.primary:hover{background:var(--iv-brand-600)}
+  .mini.warn{color:var(--iv-warning-base)}
+  .mini[disabled]{opacity:.45;cursor:not-allowed}
+  .catsearch{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;border:1px solid var(--iv-light-border);
+    border-radius:8px;background:var(--iv-light-raised);margin-bottom:8px}
+  .catsearch input{border:0;outline:0;flex:1;font:inherit;font-size:13px;background:transparent}
+  .cat-tree{border:1px solid var(--iv-light-border);border-radius:8px;max-height:240px;overflow-y:auto;background:var(--iv-light-raised)}
+  .cat-node{display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:13px;border-bottom:1px solid var(--iv-light-border);cursor:pointer}
+  .cat-node:last-child{border-bottom:0}
+  .cat-node:hover{background:var(--iv-light-hover)}
+  .cat-node.child{padding-left:30px;color:var(--fg-muted);font-size:12.5px}
+  .cat-node .pick{margin-left:auto;font-size:11.5px;color:var(--iv-brand-600);font-weight:600}
+  .cat-recent{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .cat-recent .lbl{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--fg-soft);width:100%;margin-bottom:1px}
+  .cat-recent button{height:27px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--iv-brand-200);
+    background:var(--iv-brand-50);color:var(--iv-brand-700)}
+  .cat-recent button.freq::before{content:"★ ";color:var(--iv-amber-500)}
+
+  /* ── add-vendor method cards (3 methods) ─────────────────────────────────── */
+  .methods{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:4px 0 8px}
+  .method{display:flex;flex-direction:column;gap:8px;padding:18px;border:1px solid var(--iv-light-border);
+    border-radius:var(--radius);background:var(--iv-light-raised);text-align:left;transition:border-color .15s,box-shadow .15s}
+  .method:hover{border-color:var(--iv-brand-300);box-shadow:0 2px 10px rgba(35,67,143,.06)}
+  .method .mi{width:38px;height:38px;border-radius:9px;background:var(--iv-brand-100);color:var(--iv-brand-700);
+    display:inline-flex;align-items:center;justify-content:center}
+  .method b{font-size:14.5px;color:var(--iv-navy-900)}
+  .method p{font-size:12.5px;color:var(--fg-muted);line-height:1.5}
+  .method .j{font-size:11px;font-weight:700;letter-spacing:.03em;color:var(--iv-brand-600);margin-top:auto}
+
+  /* ── paste wizard (D3) ───────────────────────────────────────────────────── */
+  .steps{display:flex;align-items:center;gap:0;margin:0 0 22px;flex-wrap:wrap}
+  .step{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--fg-soft)}
+  .step .num{width:24px;height:24px;border-radius:999px;background:var(--iv-navy-50);color:var(--fg-soft);
+    display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  .step.on{color:var(--iv-brand-700)} .step.on .num{background:var(--iv-brand-500);color:#fff}
+  .step.done .num{background:var(--iv-success-base);color:#fff}
+  .step-sep{width:26px;height:1px;background:var(--iv-light-border);margin:0 10px}
+  .wstep{display:none} .wstep.on{display:block}
+  textarea.paste{width:100%;min-height:180px;padding:12px 14px;border:1px solid var(--iv-light-border);border-radius:var(--radius);
+    font-family:var(--mono);font-size:12.5px;line-height:1.6;color:var(--fg);background:var(--iv-light-raised);resize:vertical;outline:none}
+  textarea.paste:focus{border-color:var(--iv-brand-400);box-shadow:0 0 0 3px var(--iv-brand-100)}
+  .mapgrid{display:grid;grid-template-columns:1fr auto 1fr auto;gap:10px 14px;align-items:center;margin-top:6px}
+  .mapgrid .col-src{font-weight:600;color:var(--fg);font-size:13px}
+  .mapgrid .col-sample{font-size:11.5px;color:var(--fg-soft);font-family:var(--mono)}
+  .mapgrid select{height:34px;padding:0 10px;border:1px solid var(--iv-light-border);border-radius:7px;font:inherit;font-size:12.5px;background:var(--iv-light-raised)}
+  .fieldtag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;letter-spacing:.02em;white-space:nowrap}
+  .ft-frozen{background:var(--iv-success-subtle);color:var(--iv-success-base)}
+  .ft-gated{background:var(--iv-warning-subtle);color:var(--iv-warning-base)}
+  .ft-cat{background:var(--iv-brand-100);color:var(--iv-brand-800)}
+  .ft-no{background:var(--iv-danger-subtle);color:var(--iv-danger-base)}
+  .rowstate{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;white-space:nowrap}
+  .rs-ready{background:var(--iv-success-subtle);color:var(--iv-success-base)}
+  .rs-cat{background:var(--iv-warning-subtle);color:var(--iv-warning-base)}
+  .rs-dup{background:var(--iv-info-subtle);color:var(--iv-info-base)}
+  .rs-missing{background:var(--iv-danger-subtle);color:var(--iv-danger-base)}
+  .rs-blocked{background:var(--iv-danger-subtle);color:var(--iv-danger-base)}
+  .rs-skip{background:var(--iv-neutral-subtle);color:var(--fg-soft)}
+  .prevrow{cursor:pointer}
+  .prevrow.sel{background:var(--iv-brand-50)}
+  .prevrow.skip td{opacity:.5}
+  .sidepanel{border:1px solid var(--iv-light-border);border-radius:var(--radius);background:var(--iv-light-raised);padding:16px 18px}
+  .sidepanel h4{font-size:14px;color:var(--iv-navy-900);margin-bottom:3px}
+  .sidepanel .sub{font-size:12px;color:var(--fg-soft);margin-bottom:14px}
+  .countpills{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}
+  .countpill{border:1px solid var(--iv-light-border);border-radius:var(--radius);padding:12px 16px;min-width:96px}
+  .countpill .n{font-size:22px;font-weight:800;color:var(--iv-navy-900);font-variant-numeric:tabular-nums}
+  .countpill .l{font-size:11.5px;color:var(--fg-muted);margin-top:2px}
+  .countpill.ready .n{color:var(--iv-success-base)}
+  .countpill.warn .n{color:var(--iv-warning-base)}
+  .countpill.bad .n{color:var(--iv-danger-base)}
+  .reasons{list-style:none;padding:0;margin:8px 0 0;font-size:12.5px;color:var(--iv-danger-base)}
+  .reasons li{display:flex;gap:7px;align-items:flex-start;margin-top:4px}
+  .reasons li::before{content:"•";color:var(--iv-danger-base)}
+
+  /* ── modal dialog (clear-⭐ confirm, archive, category picker) ─────────────── */
+  .overlay{position:fixed;inset:0;background:rgba(11,19,48,.42);display:none;align-items:center;justify-content:center;z-index:60;padding:20px}
+  .overlay.on{display:flex}
+  .dialog{background:var(--iv-light-raised);border-radius:14px;max-width:460px;width:100%;box-shadow:0 24px 60px rgba(11,19,48,.28);overflow:hidden}
+  .dialog.wide{max-width:600px}
+  .dialog .dh{padding:20px 22px 6px}
+  .dialog .dh h3{font-size:17px;color:var(--iv-navy-900);font-weight:700}
+  .dialog .db{padding:6px 22px 4px;font-size:13.5px;color:var(--fg-muted);line-height:1.55;max-height:60vh;overflow-y:auto}
+  .dialog .df{display:flex;align-items:center;gap:10px;padding:16px 22px 20px}
+  .dialog .df .sp{flex:1}
+  .btn-danger{background:var(--iv-danger-base);color:#fff}
+  .btn-danger:hover{filter:brightness(.94)}
+
+  .view{display:none} .view.on{display:block}
+  @media (max-width:1000px){.fields,.form-grid,.methods{grid-template-columns:1fr}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body class="show-notes">
+
+<!-- ═══ review chrome ═══ -->
+<div class="proto-banner">
+  <span class="tag">Prototype</span>
+  <span><b>my-vendor-directory</b> · non-authoritative · Saved-Vendors fold → ⭐ Preferred (<span class="mono">ESC-BUY-SAVED-VENDORS</span>) — coins nothing, demo data only</span>
+  <span class="sp"></span>
+  <span class="persona-lbl" title="D4 authority model — the role threshold is pending a Doc-2 §7 additive ruling; these labels are neutral, never mapped to specific org roles.">Persona</span>
+  <div class="persona" id="persona" role="group" aria-label="Demo persona">
+    <button data-persona="member" aria-pressed="false">Ordinary member</button>
+    <button data-persona="authorized" aria-pressed="true">Authorized member</button>
+  </div>
+  <label><input type="checkbox" id="notes-toggle" checked /> Review notes</label>
+</div>
+
+<!-- ═══ top bar ═══ -->
+<header class="topbar">
+  <a class="brand" href="#/vendors"><span class="brand-mark">iV</span></a>
+  <div class="topsearch">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    Search RFQs, vendors, products…
+  </div>
+  <span class="sp"></span>
+  <button class="btn btn-primary" data-toast="Opens the global Create menu — not part of this prototype.">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Create
+  </button>
+  <button class="btn btn-ghost-dark" data-toast="Notifications — not part of this prototype.">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+  </button>
+  <div class="account" data-toast="Workspace &amp; account menu — not part of this prototype.">
+    <span class="avatar">AO</span>
+    <div class="who"><b>Active organization</b><span>Buyer</span></div>
+  </div>
+</header>
+
+<div class="frame">
+  <!-- ═══ sidebar — buyer IA AFTER the fold (Saved Vendors + Vendor CRM → My Vendor Directory) ═══ -->
+  <aside class="sidebar">
+    <div class="ws-head">
+      <span class="ic-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+      <div class="t"><b>Buyer Workspace</b><span>Buyer</span></div>
+    </div>
+    <nav class="side">
+      <div class="grp">
+        <button class="nav-item" data-toast="Dashboard is built in the app — not part of this prototype.">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </button>
+      </div>
+      <div class="grp">
+        <p>Procurement</p>
+        <button class="nav-item" data-toast="The RFQ lifecycle pages are built in the app — not part of this prototype.">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+          RFQs
+        </button>
+        <button class="nav-item" data-toast="Quotations — see the buyer-quotations prototype.">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+          Quotations
+        </button>
+        <button class="nav-item" data-toast="Documents hub is built in the app — not part of this prototype.">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h16"/><path d="M6 16V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8"/></svg>
+          Documents
+        </button>
+      </div>
+      <div class="grp">
+        <p>Marketplace</p>
+        <button class="nav-item" data-toast="Discover Vendors (public directory / discovery) — built in the app. Renamed from 'Vendor Directory' to fix the label collision with My Vendor Directory.">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          Discover Vendors
+        </button>
+        <button class="nav-item" id="nav-mvd" aria-expanded="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          My Vendor Directory
+          <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <ul class="nav-sub">
+          <li><a href="#/vendors?view=all" data-view="all">All Vendors</a></li>
+          <li><a href="#/vendors?view=marketplace" data-view="marketplace">Marketplace</a></li>
+          <li><a href="#/vendors?view=private" data-view="private">Private</a></li>
+          <li><a href="#/vendors?view=preferred" data-view="preferred"><span class="st-star">★</span> Preferred</a></li>
+          <li class="review-only"><a class="gated" href="#/vendors" data-toast="&lt;b&gt;Pending Invitation&lt;/b&gt; is gated on &lt;span class=&quot;mono&quot;&gt;ESC-VENDIR-INVITE&lt;/span&gt; (R4) — buyer invite-to-platform is unmodeled (no submit contract exists). Hidden from the production IA (MINOR-1); shown here only under Review notes.">Pending Invitation <span class="gate-r">R4</span></a></li>
+          <li><a href="#/vendors?view=archived" data-view="archived">Archived</a></li>
+        </ul>
+        <button class="nav-item" data-toast="Specification Library — reserved (ESC-BUY-SPEC-LIB).">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+          Specification Library
+        </button>
+      </div>
+      <div class="grp">
+        <p>Communication</p>
+        <button class="nav-item" data-toast="Not part of this prototype."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>Messages</button>
+        <button class="nav-item" data-toast="Not part of this prototype."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>Notifications</button>
+      </div>
+      <div class="grp">
+        <p>Organization</p>
+        <button class="nav-item" data-toast="Not part of this prototype."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Team</button>
+        <button class="nav-item" data-toast="Not part of this prototype."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/></svg>Organization</button>
+      </div>
+    </nav>
+    <div class="side-foot">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>
+      Collapse
+    </div>
+  </aside>
+
+  <!-- ═══ main ═══ -->
+  <main>
+
+    <!-- ─────────────────────────── LIST ─────────────────────────── -->
+    <section class="view" id="view-vendors" aria-labelledby="v-h1">
+      <div class="page">
+        <div class="crumb"><span class="cur">My Vendor Directory</span></div>
+        <div class="page-head">
+          <div>
+            <h1 id="v-h1">My Vendor Directory</h1>
+            <p class="sub">Your organization's private vendor list — marketplace-linked and off-platform
+              vendors together. Star a vendor to keep it in <b>⭐ Preferred</b> for quick access.</p>
+            <p class="meta-line">Buyer-private (Invariant #11) · never visible to vendors · not a platform ranking</p>
+          </div>
+          <span class="sp"></span>
+          <a class="btn btn-primary" href="#/vendors/new">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Add Vendor
+          </a>
+        </div>
+
+        <div class="note" id="note-fold"><b>What this page is.</b> The reserved <span class="mono">/buy/saved-vendors</span>
+          route had no contract behind it. The <b>2026-07-16 owner ruling folded "Saved Vendors" into
+          ⭐ Preferred</b> — the already-frozen <span class="mono">operations.vendor_favorites</span>
+          (M4 / BC-OPS-1), a flag on the buyer↔vendor relationship. So there is <b>no new module, no new
+          contract, no new escalation</b>: the ⭐ toggle here is exactly
+          <span class="mono">ops.set_vendor_favorite.v1</span> / <span class="mono">ops.clear_vendor_favorite.v1</span>.
+          Visiting <a href="#/saved-vendors">#/saved-vendors</a> redirects here to the ⭐ Preferred view.
+          This directory also absorbs the shipped Vendor CRM (P-BUY-26/27) — the record, notes, rating,
+          status and history all live on the same relationship.</div>
+
+        <div class="vtabs" id="v-tabs" role="tablist" aria-label="Directory views"></div>
+
+        <div class="toolbar">
+          <div class="chips" id="v-chips" role="group" aria-label="Refine by attribute">
+            <span class="lbl">Filter</span>
+          </div>
+          <span class="sp"></span>
+        </div>
+
+        <div id="v-blnote"></div>
+
+        <div class="note" id="note-nosearch"><b>No free-text search on this list — on purpose.</b> The frozen
+          list read <span class="mono">ops.list_private_vendors.v1</span> takes no query filter. Finding a
+          specific vendor to add is the <b>Add Vendor</b> flow (unified search over marketplace + your private
+          list). The filter chips refine the current view; the <b>Blacklisted</b> chip renders
+          <b>buyer-side only</b> and is undetectable to the vendor (Inv #11).</div>
+
+        <div class="card tablewrap">
+          <table>
+            <caption>Vendor directory</caption>
+            <thead><tr>
+              <th class="star-col" title="Preferred">★</th>
+              <th>Vendor</th><th>Source</th><th>Verification</th><th>My status</th>
+              <th>Last used</th><th></th>
+            </tr></thead>
+            <tbody id="v-body"></tbody>
+          </table>
+          <div class="empty" id="v-empty" hidden>
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11.5 3.6 13.7 8l4.9.7-3.5 3.5.8 4.9-4.4-2.3-4.4 2.3.8-4.9L4.4 8.7 9.3 8Z"/></svg>
+            <b id="v-empty-h">No vendors in this view</b>
+            <span id="v-empty-b">Star a vendor from any view to add it here.</span>
+          </div>
+        </div>
+      </div>
+      <footer class="app">© iVendorz — Industrial Procurement OS.<span class="sp"></span>Buyer-private directory</footer>
+    </section>
+
+    <!-- ─────────────────────────── DETAIL ─────────────────────────── -->
+    <section class="view" id="view-detail" aria-labelledby="d-h1">
+      <div class="page">
+        <div class="crumb"><a href="#/vendors">My Vendor Directory</a><span class="sep">›</span><span class="cur" id="d-crumb">Vendor</span></div>
+
+        <div id="d-linkpanel"></div>
+
+        <div class="d-head">
+          <div>
+            <div class="d-title" id="d-title"></div>
+            <div class="d-badges" id="d-badges"></div>
+          </div>
+          <span class="sp"></span>
+          <div id="d-actions" style="display:flex;gap:8px;align-items:center"></div>
+        </div>
+
+        <div class="note"><b>Two aggregates, one screen.</b> BC-OPS-1 owns <b>two</b> frozen aggregate roots
+          (Doc-4F §F4) and this record composes both. The <b>Private Vendor Record</b>
+          (<span class="mono">private_vendor_records</span> + <span class="mono">private_vendor_notes</span> +
+          <span class="mono">private_vendor_ratings</span>) carries the profile and the derived
+          <span class="mono">link_status</span>. For a marketplace-linked vendor the <b>Buyer–Supplier Relationship</b>
+          (<span class="mono">buyer_supplier_relationships</span>, keyed on your org + the vendor profile) carries the
+          <span class="mono">buyer_vendor_statuses</span> history and the ⭐ <span class="mono">vendor_favorites</span> flag.
+          All buyer-private, read via <span class="mono">ops.get_private_vendor.v1</span> /
+          <span class="mono">ops.get_buyer_supplier_relationship.v1</span>.</div>
+
+        <div class="dtabs" id="d-tabs" role="tablist" aria-label="Vendor detail"></div>
+
+        <div class="dpane" id="pane-profile"></div>
+        <div class="dpane" id="pane-notes"></div>
+        <div class="dpane" id="pane-rating"></div>
+        <div class="dpane" id="pane-history"></div>
+        <div class="dpane" id="pane-documents"></div>
+      </div>
+      <footer class="app">© iVendorz — Industrial Procurement OS.<span class="sp"></span>Buyer-private record</footer>
+    </section>
+
+    <!-- ─────────────────────────── ADD VENDOR (3 methods) ─────────────────────────── -->
+    <section class="view" id="view-new" aria-labelledby="n-h1">
+      <div class="page">
+        <div class="crumb"><a href="#/vendors">My Vendor Directory</a><span class="sep">›</span><span class="cur">Add Vendor</span></div>
+        <div class="page-head">
+          <div>
+            <h1 id="n-h1">Add Vendor</h1>
+            <p class="sub">Two separate journeys: <b>save a marketplace vendor</b> to your directory, or
+              <b>create a private vendor</b> the buyer maintains — one at a time, or many by pasting a list.</p>
+          </div>
+        </div>
+
+        <div class="note"><b>Two journeys, never conflated (D4 / MINOR-1).</b> <b>Search Marketplace</b> →
+          “Save vendor” is the friendly label for the single <span class="mono">ops.set_vendor_favorite.v1</span>
+          action, which <b>creates or reuses the</b> <span class="mono">buyer_supplier_relationships</span>
+          container. <b>Add Private / Paste</b> → <span class="mono">ops.create_private_vendor.v1</span> creates a
+          directory record. There is no “Save then Prefer” sequence.</div>
+
+        <div class="methods" id="n-methods">
+          <button class="method" data-method="search">
+            <span class="mi"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
+            <b>Search Marketplace Vendor</b>
+            <p>Find a vendor already on iVendorz and save it to your directory.</p>
+            <span class="j">Journey B · Save vendor = ⭐ Preferred</span>
+          </button>
+          <button class="method" data-method="manual">
+            <span class="mi"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
+            <b>Add Private Vendor Manually</b>
+            <p>Capture an off-platform company you work with — private to your organization.</p>
+            <span class="j">Journey A · create_private_vendor</span>
+          </button>
+          <button class="method" data-method="paste">
+            <span class="mi"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h4"/></svg></span>
+            <b>Paste Vendor List</b>
+            <p>Paste rows from Excel, Google Sheets or a Word table — review, then create many at once.</p>
+            <span class="j">Journey A · batch · client-side parse</span>
+          </button>
+        </div>
+
+        <!-- panel: marketplace search (journey B) -->
+        <div id="panel-search" class="method-panel">
+          <div class="sec-h">Search the marketplace</div>
+          <div class="note"><b>Unified search (spec §5).</b> One query composes the M2 public vendor search with
+            <span class="mono">ops.list_private_vendors.v1</span>. <b>Marketplace hit</b> → “Save vendor” =
+            <span class="mono">ops.set_vendor_favorite.v1</span> (container auto-created, Doc-4F §F4.5).
+            <b>Own private hit</b> → open the record (no duplicate).</div>
+          <div class="searchbig">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="n-search" type="search" placeholder="Search by company name, e.g. “Titas”, “Meghna”, “Savar”…" aria-label="Search vendors" autocomplete="off" />
+          </div>
+          <div class="res" id="n-res"></div>
+        </div>
+
+        <!-- panel: manual private create (journey A) -->
+        <div id="panel-manual" class="method-panel" hidden>
+          <div class="sec-h">Create private vendor</div>
+          <div class="note"><b>Field governance (spec §6 / D2 / D5).</b> <span class="gtag">FROZEN</span> fields map to
+            real <span class="mono">private_vendor_records</span> columns; <span class="gtag">GATED-R5.1</span> extras
+            persist in an interim <span class="mono">details_jsonb</span> shape. <b>Products &amp; services + category
+            matching are prototype-only (D5):</b> no M2 category ID is persisted in M4 until the R5 ruling. Progressive
+            disclosure — the essentials first, the rest under “Add more company information”. Nothing posts here.</div>
+
+          <div class="form-grid">
+            <div class="field"><label>Company Name<span class="req">*</span> <span class="gtag">FROZEN · name</span></label><input id="mf-name" type="text" placeholder="e.g. Savar Steel Traders" /></div>
+            <div class="field"><label>Mobile Number <span class="gtag">FROZEN · phone</span></label><input id="mf-phone" type="text" placeholder="+880 …" /></div>
+            <div class="field wide"><label>Email Address <span class="gtag">FROZEN · email</span></label><input id="mf-email" type="email" placeholder="sales@company.example" /></div>
+          </div>
+
+          <div class="sec-h" style="margin-top:20px">Core Products &amp; Services <span style="font-weight:500;text-transform:none;letter-spacing:0;color:var(--fg-soft)">— up to 10, at least one confirmed category to save</span></div>
+          <div id="mf-offerings"></div>
+
+          <details style="margin-top:18px">
+            <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--iv-brand-600)">Add more company information</summary>
+            <div class="form-grid" style="margin-top:12px">
+              <div class="field"><label>Contact Person <span class="gtag">GATED-R5.1</span></label><input type="text" /></div>
+              <div class="field"><label>Designation <span class="gtag">GATED-R5.1</span></label><input type="text" /></div>
+              <div class="field"><label>WhatsApp <span class="gtag">GATED-R5.1</span></label><input type="text" /></div>
+              <div class="field"><label>Website <span class="gtag">GATED-R5.1</span></label><input type="text" /></div>
+              <div class="field"><label>City / District <span class="gtag">GATED-R5.1</span></label><input type="text" /></div>
+              <div class="field"><label>Internal Notes <span class="gtag">GATED-R5.1</span></label><input type="text" /></div>
+            </div>
+          </details>
+
+          <div class="form-foot">
+            <span id="mf-eligibility" style="font-size:12.5px;color:var(--fg-muted)"></span>
+            <span class="sp"></span>
+            <a class="btn btn-outline btn-sm" href="#/vendors">Cancel</a>
+            <button class="btn btn-primary btn-sm" id="mf-save" disabled style="opacity:.5;cursor:not-allowed">Save vendor</button>
+          </div>
+        </div>
+      </div>
+      <footer class="app">© iVendorz — Industrial Procurement OS.<span class="sp"></span>Buyer-private directory</footer>
+    </section>
+
+    <!-- ─────────────────────────── PASTE VENDOR LIST (D3 wizard) ─────────────────────────── -->
+    <section class="view" id="view-paste" aria-labelledby="p-h1">
+      <div class="page">
+        <div class="crumb"><a href="#/vendors">My Vendor Directory</a><span class="sep">›</span><a href="#/vendors/new">Add Vendor</a><span class="sep">›</span><span class="cur">Paste Vendor List</span></div>
+        <div class="page-head">
+          <div>
+            <h1 id="p-h1">Paste multiple vendors</h1>
+            <p class="sub">Copy rows from Excel, Google Sheets or a Word table and paste them below. Review and
+              confirm — nothing is created until you do.</p>
+          </div>
+        </div>
+
+        <div class="note"><b>Clipboard paste is NOT bulk import (D3 · MAJOR-2).</b> Parsing, mapping, validation and
+          preview are <b>client-side presentation</b>. On confirm, each eligible row would create a record through the
+          frozen single-create <span class="mono">ops.create_private_vendor.v1</span> (<span class="mono">source =
+          excel</span>) — <b>no batch/atomicity/import-job semantics are claimed</b>. Dedicated batch create, file
+          upload, Word/PDF extraction, import history and bulk export stay gated under
+          <span class="mono">ESC-VENDIR-FIELDS</span> (R5). Row cap shown is illustrative.</div>
+
+        <div class="steps" id="p-steps">
+          <span class="step" data-step="1"><span class="num">1</span> Paste</span><span class="step-sep"></span>
+          <span class="step" data-step="2"><span class="num">2</span> Map columns</span><span class="step-sep"></span>
+          <span class="step" data-step="3"><span class="num">3</span> Validate &amp; resolve</span><span class="step-sep"></span>
+          <span class="step" data-step="4"><span class="num">4</span> Preview &amp; confirm</span>
+        </div>
+
+        <!-- step 1: paste -->
+        <div class="wstep" id="wstep-1">
+          <textarea class="paste" id="p-textarea" placeholder="Paste rows here — tab-separated (Excel / Sheets / Word) or comma-separated. Include a header row if you have one, e.g.&#10;&#10;Company Name	Contact	Phone	Email	Category	Location	Notes"></textarea>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:12px">
+            <button class="btn btn-outline btn-sm" id="p-sample">Paste sample data</button>
+            <label style="font-size:12.5px;color:var(--fg-muted);display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="p-hasheader" checked /> First row is a header</label>
+            <span class="sp"></span>
+            <button class="btn btn-primary btn-sm" id="p-parse">Detect columns →</button>
+          </div>
+          <div class="note" style="margin-top:14px">Accepts tab-separated (the default when you copy from a spreadsheet or
+            Word table) and comma-separated text. Parsing happens entirely in your browser — no file is uploaded.</div>
+        </div>
+
+        <!-- step 2: map columns -->
+        <div class="wstep" id="wstep-2">
+          <div class="sidepanel">
+            <h4>Map pasted columns to fields</h4>
+            <div class="sub">The parser suggests a mapping; you decide. Fields are tagged by governance:
+              <span class="fieldtag ft-frozen">FROZEN</span> <span class="fieldtag ft-gated">GATED-R5</span>
+              <span class="fieldtag ft-cat">CATEGORY</span> <span class="fieldtag ft-no">NOT IMPORTABLE</span>.</div>
+            <div class="mapgrid" id="p-mapgrid">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--fg-soft)">Pasted column</div>
+              <div></div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--fg-soft)">iVendorz field</div>
+              <div></div>
+            </div>
+          </div>
+          <div class="note" style="margin-top:14px"><b>Never-importable</b> columns (verification status, trust /
+            performance scores, profile ownership, public content) can’t be mapped to authoritative fields — the buyer
+            can’t assert them. Category maps to the <b>category matcher</b> (step 3), never a silent binding.</div>
+          <div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-outline btn-sm" id="p-back-1">← Back</button><span class="sp" style="flex:1"></span><button class="btn btn-primary btn-sm" id="p-validate">Validate rows →</button></div>
+        </div>
+
+        <!-- step 3: validate & resolve -->
+        <div class="wstep" id="wstep-3">
+          <div class="toolbar">
+            <div class="chips" id="p-batchcat"></div>
+            <span class="sp"></span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start">
+            <div class="card tablewrap">
+              <table><caption>Pasted rows</caption>
+                <thead><tr><th>Company</th><th>Contact</th><th>Category</th><th>State</th><th></th></tr></thead>
+                <tbody id="p-rows"></tbody>
+              </table>
+            </div>
+            <div class="sidepanel" id="p-side"><h4>Select a row</h4><div class="sub">Click any row to resolve its category, duplicate or missing fields here.</div></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-outline btn-sm" id="p-back-2">← Back</button><span class="sp" style="flex:1"></span><button class="btn btn-primary btn-sm" id="p-preview">Preview →</button></div>
+        </div>
+
+        <!-- step 4: preview & confirm -->
+        <div class="wstep" id="wstep-4">
+          <div class="countpills" id="p-counts"></div>
+          <div class="card tablewrap">
+            <table><caption>Rows to create</caption>
+              <thead><tr><th>Company</th><th>Category</th><th>Source</th><th>State</th></tr></thead>
+              <tbody id="p-final"></tbody>
+            </table>
+          </div>
+          <div class="note" style="margin-top:14px">Only <b>eligible</b> rows are created (valid company name + ≥1
+            confirmed category). Unresolved rows stay in the review grid for correction. Rows over the 10-offering limit
+            highlight the excess — nothing is silently truncated.</div>
+          <div class="form-foot">
+            <button class="btn btn-outline btn-sm" id="p-back-3">← Back to review</button>
+            <span class="sp"></span>
+            <button class="btn btn-primary btn-sm" id="p-confirm">Create eligible vendors</button>
+          </div>
+        </div>
+      </div>
+      <footer class="app">© iVendorz — Industrial Procurement OS.<span class="sp"></span>Buyer-private directory · Paste multiple vendors</footer>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="overlay" id="overlay" role="dialog" aria-modal="true"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════════
+   Demo data — illustrative seed per prototype convention. Vendor identities reuse
+   the app's mock rfq-universe (Meghna / Padma / Dhaka Power / Rupsha / Eastern Grid
+   / Savar …) so this reads as the same demo world. Demo clock ≈ Jul 5, 2026.
+
+   Governance anchors (bound by pointer, coined here = nothing):
+   • ⭐ Preferred      = operations.vendor_favorites (M4/BC-OPS-1) — a FLAG on the
+                         buyer↔vendor relationship. set/clear = ops.set/clear_vendor_favorite.v1
+                         (idempotent; one live flag per relationship; Doc-4F §F4.6).
+   • Origin (derived)  = link_status: linked → Marketplace; {none,suggested} → Private (spec §3).
+   • Verification      = the LINKED profile's claim state (verified/claimed) — M2 read, never computed here.
+   • My status         = buyer_vendor_statuses {approved|conditional|blacklisted} — buyer-private,
+                         history is append-only (never overwritten). Blacklisted is buyer-side only (Inv #11).
+   • Lifecycle         = private_vendor_records {active|archived}. "Inactive" == archived.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const TODAY = new Date("2026-07-05T09:00:00+06:00");
+
+/* link === "linked" is the ONLY state that carries ⭐ Preferred + buyer status (D1(a) interim):
+   the frozen favorite/status contracts key on a marketplace vendor_profile_id, so an unlinked
+   private record (link none|suggested) can hold notes + ratings but NOT ⭐/status until it is
+   linked (Doc-4F_PassB_Part1 :39, :477). Seed data honors this — no unlinked vendor is preferred
+   or statused. */
+let VENDORS = [
+  { id:"meghna",            name:"Meghna Industrial Supplies Ltd.", origin:"marketplace", link:"linked",    claim:"verified", preferred:true,  status:"approved",    life:"active",   cat:"Pumps & Fluid Handling",        loc:"Narayanganj", used:"2026-07-02", rating:5 },
+  { id:"dhaka-power",       name:"Dhaka Power Services Ltd.",       origin:"marketplace", link:"linked",    claim:"verified", preferred:true,  status:"none",        life:"active",   cat:"Electrical & Substation Svc.",  loc:"Tongi",       used:"2026-07-04", rating:4 },
+  { id:"savar-steel",       name:"Savar Steel Traders",            origin:"private",     link:"none",      claim:null,       preferred:false, status:"none",        life:"active",   cat:"Steel & Plate Supply",          loc:"Savar",       used:"2026-07-01", rating:4 },
+  { id:"padma",             name:"Padma Engineering Works",        origin:"marketplace", link:"linked",    claim:"verified", preferred:false, status:"conditional", life:"active",   cat:"Fabrication & Erection",        loc:"Gazipur",     used:"2026-06-28", rating:3 },
+  { id:"rupsha",            name:"Rupsha Electromech",             origin:"marketplace", link:"linked",    claim:"claimed",  preferred:false, status:"none",        life:"active",   cat:"Electromechanical",             loc:"Khulna",      used:"2026-06-20", rating:0 },
+  { id:"narayanganj-valve", name:"Narayanganj Valve House",        origin:"private",     link:"suggested", claim:null,       preferred:false, status:"none",        life:"active",   cat:"Valves & Fittings",             loc:"Narayanganj", used:"2026-06-18", rating:3 },
+  { id:"tongi-fab",         name:"Tongi Fabrication & Works",      origin:"private",     link:"none",      claim:null,       preferred:false, status:"none",        life:"active",   cat:"MS Fabrication",                loc:"Tongi",       used:"2026-06-15", rating:0 },
+  { id:"khulna-fluid-priv", name:"Khulna Fluid Systems (linked)",  origin:"private",     link:"linked",    claim:"claimed",  preferred:true,  status:"approved",    life:"active",   cat:"Fluid Systems",                 loc:"Khulna",      used:"2026-06-25", rating:4 },
+  { id:"eastern-grid",      name:"Eastern Grid Engineering",       origin:"marketplace", link:"linked",    claim:"verified", preferred:false, status:"blacklisted", life:"active",   cat:"Grid & Transmission",           loc:"Ashuganj",    used:"2026-05-30", rating:1 },
+  { id:"bengal-fire",       name:"Bengal Fire Protection Ltd.",    origin:"private",     link:"none",      claim:null,       preferred:false, status:"none",        life:"archived", cat:"Fire & Safety",                 loc:"Dhaka",       used:"2026-04-22", rating:2 },
+];
+
+/* Can this vendor hold ⭐ Preferred / buyer status? Only a linked relationship (D1(a) interim). */
+const canClassify = (v)=> v.link==="linked";
+
+/* Kind badge (D5 / UX-7): Platform vendor · Private vendor · Linked private vendor. */
+function kindBadge(v){
+  if(v.origin==="marketplace") return `<span class="badge b-mp">Platform vendor</span>`;
+  if(v.link==="linked")        return `<span class="badge b-linked">Linked private vendor</span>`;
+  return `<span class="badge b-pv">Private vendor${v.link==="suggested"?" · link suggested":""}</span>`;
+}
+
+/* ── M2 taxonomy seed (subset of the 794-node Content≠Presentation tree; all "active"). M4 reads
+   this via marketplace.list_categories.v1 — it never owns or duplicates categories. ≤4 levels. ── */
+const TAXONOMY = [
+  { id:"c-fluid",         name:"Pumps & Fluid Handling",      parent:null },
+  { id:"c-centrifugal",   name:"Centrifugal Pumps",           parent:"c-fluid" },
+  { id:"c-pd-pumps",      name:"Positive-Displacement Pumps", parent:"c-fluid" },
+  { id:"c-valves",        name:"Valves & Fittings",           parent:null },
+  { id:"c-gate-valve",    name:"Gate & Globe Valves",         parent:"c-valves" },
+  { id:"c-control-valve", name:"Control Valves",              parent:"c-valves" },
+  { id:"c-electrical",    name:"Electrical & Substation",     parent:null },
+  { id:"c-switchgear",    name:"Switchgear & Protection",     parent:"c-electrical" },
+  { id:"c-transformer",   name:"Transformers",                parent:"c-electrical" },
+  { id:"c-steel",         name:"Steel & Plate Supply",        parent:null },
+  { id:"c-ms-plate",      name:"MS Plate & Sections",         parent:"c-steel" },
+  { id:"c-ss",            name:"Stainless Steel Supply",      parent:"c-steel" },
+  { id:"c-fabrication",   name:"Fabrication & Erection",      parent:null },
+  { id:"c-tank-fab",      name:"Storage Tank Fabrication",    parent:"c-fabrication" },
+  { id:"c-structural",    name:"Structural Fabrication",      parent:"c-fabrication" },
+  { id:"c-fire",          name:"Fire & Safety",               parent:null },
+  { id:"c-automation",    name:"Automation & Controls",       parent:null },
+  { id:"c-plc",           name:"PLC & SCADA",                 parent:"c-automation" },
+  { id:"c-instrument",    name:"Instrumentation",             parent:"c-automation" },
+];
+const catById = (id)=>TAXONOMY.find(c=>c.id===id);
+const catName = (id)=>{ const c=catById(id); return c?c.name:null; };
+/* "Frequently used by this organization" — an ORG-PRIVATE convenience signal only. Never a ranking
+   input (Inv firewall §4B); production source is ungoverned → prototype-local, wiring deferred. */
+const ORG_FREQUENT = ["c-centrifugal","c-ms-plate","c-switchgear","c-tank-fab"];
+
+/* ── Offerings (≤10 products/services). Platform-linked: composed from the M2 public profile at
+   read time (provenance "profile", read-only, deterministic order). Private: buyer-maintained —
+   each item is category-matched (buyer-confirmed) OR text-only. NO M2 category ID is persisted in
+   M4 (D5 boundary); confirmed matching is prototype-only. ── */
+const OFFERINGS = {
+  meghna:{ source:"profile", items:[
+    {text:"Centrifugal Process Pumps", cat:"c-centrifugal"},
+    {text:"API 610 Pump Spares",       cat:"c-centrifugal"},
+    {text:"Vertical Turbine Pumps",    cat:"c-pd-pumps"},
+    {text:"Pump Overhaul Service",     cat:"c-fluid"} ]},
+  "dhaka-power":{ source:"profile", items:[
+    {text:"Substation Erection",       cat:"c-switchgear"},
+    {text:"Transformer Testing",       cat:"c-transformer"},
+    {text:"Protection Relay Config",   cat:"c-switchgear"} ]},
+  padma:{ source:"profile", items:[
+    {text:"Structural Steel Fabrication", cat:"c-structural"},
+    {text:"On-site Erection",             cat:"c-fabrication"} ]},
+  rupsha:{ source:"profile", items:[
+    {text:"Motor Rewinding", cat:"c-electrical"} ]},
+  "eastern-grid":{ source:"profile", items:[
+    {text:"Transmission Towers",  cat:"c-structural"},
+    {text:"Grid Substation EPC",  cat:"c-switchgear"} ]},
+  "khulna-fluid-priv":{ source:"buyer", items:[
+    {text:"Fluid Handling Skids", cat:"c-fluid",  confirmed:true},
+    {text:"Booster Pump Sets",    cat:"c-centrifugal", confirmed:true} ]},
+  "savar-steel":{ source:"buyer", items:[
+    {text:"MS Plate (SS400)",         cat:"c-ms-plate", confirmed:true},
+    {text:"SS Sheet 304 / 316",       cat:"c-ss",       confirmed:true},
+    {text:"Custom cut-to-size (any spec)", cat:null,    textOnly:true} ]},
+  "narayanganj-valve":{ source:"buyer", items:[
+    {text:"Gate & Globe Valves", cat:"c-gate-valve", confirmed:true},
+    {text:"Cast-iron fittings",  cat:null,           textOnly:true} ]},
+  "tongi-fab":{ source:"buyer", items:[
+    {text:"MS Fabrication",      cat:"c-structural", confirmed:true} ]},
+  "bengal-fire":{ source:"buyer", items:[
+    {text:"Fire Hydrant Systems", cat:"c-fire", confirmed:true} ]},
+};
+function offeringsOf(id){ return OFFERINGS[id] || { source: (byId(id)&&byId(id).origin==="marketplace")?"profile":"buyer", items:[] }; }
+
+/* Marketplace vendors NOT yet in the buyer's directory (for the Add-Vendor search). */
+const MARKETPLACE_ONLY = [
+  { id:"mp-titas",   name:"Titas Switchgear Services",  claim:"verified", cat:"Switchgear & Protection", loc:"Tongi" },
+  { id:"mp-chatt",   name:"Chattogram Marine Hardware", claim:"verified", cat:"Marine & Hardware",       loc:"Chattogram" },
+  { id:"mp-khulna",  name:"Khulna Fluid Systems",       claim:"claimed",  cat:"Fluid Systems",           loc:"Khulna" },
+];
+
+/* Per-record detail (notes / status history). Contact fields marked GATED render as “not captured”. */
+const DETAIL = {
+  meghna:{ contact:"Rezaul Karim", desig:"Head of Sales", phone:"+880 1711-000000", email:"sales@meghna-industrial.example",
+    notes:[{d:"2026-07-01",t:"Met the 6-week window on RFQ-2026-000123. Reliable on pump deliveries."},{d:"2026-06-10",t:"Provided ISO 5199 certificates on request."}] },
+  "dhaka-power":{ contact:"Farhana Akter", desig:"Service Manager", phone:"+880 1712-000000", email:"service@dhakapower.example",
+    notes:[{d:"2026-07-04",t:"Fast mobilisation on the Tongi substation shutdown."}] },
+  "savar-steel":{ contact:"Md. Anwar Hossain", desig:"Proprietor", phone:"+880 1713-000000", email:"anwar@savarsteel.example",
+    notes:[{d:"2026-07-01",t:"Good MS plate pricing; delivered to Savar EPZ on time."},{d:"2026-06-02",t:"Off-platform vendor — no marketplace profile."}] },
+  "narayanganj-valve":{ contact:"Shahidul Islam", desig:"Sales Lead", phone:"+880 1714-000000", email:"sales@nvhvalve.example",
+    notes:[{d:"2026-06-18",t:"Possible marketplace match surfaced — review the link panel."}] },
+  "eastern-grid":{ contact:"—", desig:"—", phone:"+880 1715-000000", email:"info@easterngrid.example",
+    notes:[{d:"2026-05-30",t:"Quality dispute on the last transmission job — moved to blacklisted."}] },
+};
+
+const VIEWS = [
+  { id:"all",         label:"All Vendors" },
+  { id:"marketplace", label:"Marketplace" },
+  { id:"private",     label:"Private" },
+  { id:"preferred",   label:"★ Preferred", star:true },
+  { id:"archived",    label:"Archived" },
+];
+
+/* ── helpers ── */
+const $  = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const byId = (id)=>VENDORS.find(v=>v.id===id);
+const fmtDate=(iso)=>iso?new Date(iso+"T00:00:00+06:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"—";
+const ts=(iso)=>new Date(iso+"T00:00:00+06:00").getTime();
+const starSvg=(w=16)=>`<svg width="${w}" height="${w}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11.5 3.6 13.7 8l4.9.7-3.5 3.5.8 4.9-4.4-2.3-4.4 2.3.8-4.9L4.4 8.7 9.3 8Z"/></svg>`;
+
+function verifyBadge(v){
+  if(v.origin!=="marketplace") return `<span style="color:var(--fg-soft);font-size:12px">—</span>`;
+  if(v.claim==="verified") return `<span class="badge b-verified">✓ Verified</span>`;
+  if(v.claim==="claimed")  return `<span class="badge b-claimed">Claimed</span>`;
+  return `<span style="color:var(--fg-soft);font-size:12px">Unclaimed</span>`;
+}
+function statusChip(v){
+  const L={approved:"Approved",conditional:"Conditional",blacklisted:"Blacklisted",none:"No status"};
+  return `<span class="status ${v.status}">${L[v.status]}</span>`;
+}
+function staticStars(n){
+  return `<span class="stars-static" aria-label="${n} of 5">`+
+    [1,2,3,4,5].map(i=>`<svg class="${i<=n?"":"off"}" width="15" height="15" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M11.5 3.6 13.7 8l4.9.7-3.5 3.5.8 4.9-4.4-2.3-4.4 2.3.8-4.9L4.4 8.7 9.3 8Z"/></svg>`).join("")+`</span>`;
+}
+
+/* ── Offerings (D5): ONE shared presentation for platform-linked (composed from M2 at read time,
+   read-only, no "Core") and private (buyer-maintained, "Core", confirmed-category vs text-only).
+   Provenance is always visible. NO M2 category ID is persisted in M4 (prototype-only). ── */
+function renderOfferings(v){
+  const off = offeringsOf(v.id), items = off.items||[], fromProfile = off.source==="profile";
+  const count = items.length, over = count>10;
+  const head = fromProfile ? `Products &amp; Services <span class="src">· Source: Vendor profile</span>` : `Core Products &amp; Services`;
+  const rows = items.map((it,i)=>{
+    let prov, cat;
+    if(fromProfile){ prov=`<span class="prov prov-profile">Vendor profile</span>`; cat = it.cat?`<b>${catName(it.cat)}</b>`:`<span style="color:var(--fg-soft)">—</span>`; }
+    else if(it.textOnly){ prov=`<span class="prov prov-text">Text only</span>`; cat=`<span style="color:var(--fg-soft)">descriptive · no system category</span>`; }
+    else { prov=`<span class="prov prov-buyer">Buyer maintained</span>`; cat=`<b>${catName(it.cat)}</b> <span class="conf conf-ok" style="margin-left:4px">✓ confirmed</span>`; }
+    return `<div class="offer ${over&&i>=10?"excess":""}">
+      <div><div class="txt">${it.text}</div><div class="cat">${cat}</div></div>
+      <span class="sp"></span><span class="orig">${prov}</span></div>`;
+  }).join("");
+  const portfolio = fromProfile
+    ? `<a class="portfolio-link" data-toast="Opens the vendor's full public portfolio on the marketplace (M2) — composed at read, never copied into M4.">View full public portfolio →</a>` : "";
+  const provNote = fromProfile
+    ? `<div class="note" style="margin-top:12px">Offerings are <b>composed from the current M2 public profile at read time</b> (deterministic order, max 10) — the buyer never edits them and nothing is copied into the private record. <span class="mono">Content ≠ Presentation</span>.</div>`
+    : `<div class="note" style="margin-top:12px">Buyer-maintained offerings. Each is either a <b>confirmed active M2 system category</b> or <b>text-only</b>. <b>Prototype-only:</b> production persists <b>no M2 category ID in M4</b> — confirmed matching + the ≥1-category save rule are gated under <span class="mono">ESC-VENDIR-FIELDS</span> (R5) until the Board rules the persistence shape.</div>`;
+  return `<div style="margin-top:24px">
+    <div class="offer-head"><span class="h">${head}</span><span class="sp"></span><span class="meter ${over?"over":""}">${count} of 10</span></div>
+    <div class="offer-list">${rows||`<div style="color:var(--fg-soft);font-size:13px;padding:6px 2px">No products or services recorded.</div>`}</div>
+    ${portfolio}${provNote}</div>`;
+}
+
+let toastTimer;
+function toast(msg){
+  const t=$("#toast"); t.innerHTML=msg; t.classList.add("on");
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("on"),3200);
+}
+document.addEventListener("click",(e)=>{
+  const el=e.target.closest("[data-toast]");
+  if(el && !e.target.closest("[data-star]")) toast(el.dataset.toast);  // enabled ⭐ has data-star, not data-toast
+});
+$("#notes-toggle").addEventListener("change",(e)=>{
+  document.body.classList.toggle("show-notes",e.target.checked);
+  if($("#view-vendors").classList.contains("on")) renderList();   // show/hide the R4 gated tab (MINOR-1)
+});
+$("#nav-mvd").addEventListener("click",()=>{ location.hash="#/vendors?view=all"; });
+
+/* ── D4 persona (demo only). "authorized" may perform removal-like actions (clear ⭐ / archive /
+   unlink); "member" cannot. Labels are neutral — the real role threshold is a pending Doc-2 §7
+   additive ruling and is never mapped to specific org roles here. The FE mints no permission names. ── */
+let PERSONA = "authorized";
+const canRemove = ()=> PERSONA==="authorized";
+$("#persona").addEventListener("click",(e)=>{
+  const b=e.target.closest("[data-persona]"); if(!b) return;
+  PERSONA=b.dataset.persona;
+  $$("#persona [data-persona]").forEach(x=>x.setAttribute("aria-pressed", x.dataset.persona===PERSONA));
+  toast(PERSONA==="authorized"
+    ? `Persona: <b>Authorized member</b> — may remove from Preferred, archive, and unlink (enforcement pending a Doc-2 §7 ruling).`
+    : `Persona: <b>Ordinary member</b> — can add vendors, but removal-like actions (clear ⭐ / archive / unlink) are not offered (D4).`);
+  if($("#view-detail").classList.contains("on") && detailId) renderDetail(detailId);
+});
+
+/* ── modal dialog (clear-⭐ confirm, archive, category picker) ── */
+function openDialog(html){ const o=$("#overlay"); o.innerHTML=html; o.classList.add("on"); }
+function closeDialog(){ $("#overlay").classList.remove("on"); $("#overlay").innerHTML=""; }
+$("#overlay").addEventListener("click",(e)=>{ if(e.target.id==="overlay"||e.target.closest("[data-close]")) closeDialog(); });
+
+/* ── ⭐ toggle = the frozen favorite flag (idempotent) ──
+   D1(a): only a LINKED relationship can be preferred. D4: SET is open to any member; CLEAR is a
+   removal-like action — authorized-only, and always behind a confirmation dialog. */
+function refreshStar(v){
+  if($("#view-vendors").classList.contains("on")) renderList();
+  if($("#view-detail").classList.contains("on") && detailId===v.id) renderDetail(v.id);
+}
+function togglePreferred(id){
+  const v=byId(id); if(!v) return;
+  if(!canClassify(v)){
+    toast(`<b>${v.name}</b> is an unlinked private vendor — link it to a marketplace profile to prefer / set status (D1(a) interim).`);
+    return;
+  }
+  if(!v.preferred){                       // SET — open to any member
+    v.preferred=true;
+    const auto = (v.status==="none") ? ` <span class="mono">buyer_supplier_relationships</span> container reused/created (§F4.5).` : "";
+    toast(`Added <b>${v.name}</b> to ⭐ Preferred · <span class="mono">ops.set_vendor_favorite.v1</span>.${auto}`);
+    refreshStar(v); return;
+  }
+  // CLEAR — removal-like
+  if(!canRemove()){
+    toast(`Removing from ⭐ Preferred is a removal-like action — not available to an Ordinary member (D4). Switch persona to Authorized member.`);
+    return;
+  }
+  openDialog(`<div class="dialog">
+    <div class="dh"><h3>Remove from Preferred?</h3></div>
+    <div class="db"><b>${v.name}</b> will be removed from your ⭐ Preferred view. The vendor <b>stays in your directory</b> (All / ${v.origin==="marketplace"?"Marketplace":"Private"}) — this only clears the favorite flag, it is <b>not</b> a deletion.
+      <div class="note" style="display:block;margin-top:12px"><b>Contract.</b> <span class="mono">ops.clear_vendor_favorite.v1</span> — idempotent flag clear; the record and relationship remain (Doc-4F §F4.6). Removal-like actions are authorized-only (D4, pending a Doc-2 §7 ruling).</div>
+    </div>
+    <div class="df"><span class="sp"></span>
+      <button class="btn btn-outline btn-sm" data-close>Cancel</button>
+      <button class="btn btn-danger btn-sm" id="confirm-unstar">Remove from Preferred</button>
+    </div></div>`);
+  $("#confirm-unstar").addEventListener("click",()=>{
+    v.preferred=false;
+    toast(`Removed <b>${v.name}</b> from ⭐ Preferred · <span class="mono">ops.clear_vendor_favorite.v1</span> — the vendor remains in your directory.`);
+    closeDialog(); refreshStar(v);
+  });
+}
+/* Archive (removal-like, authorized-only) — soft-delete lifecycle, never a hard delete. */
+function archiveVendor(id){
+  const v=byId(id); if(!v) return;
+  if(!canRemove()){ toast(`Archiving is a removal-like action — not available to an Ordinary member (D4).`); return; }
+  openDialog(`<div class="dialog">
+    <div class="dh"><h3>Archive this vendor?</h3></div>
+    <div class="db"><b>${v.name}</b> will move to <b>Archived</b>. This is a soft-delete lifecycle change — <b>not a hard delete</b>; the record, notes, rating and history are preserved and it can be restored. iVendorz never hard-deletes a vendor through My Vendor Directory (Inv #8).
+      <div class="note" style="display:block;margin-top:12px"><b>Contract.</b> <span class="mono">ops.archive_private_vendor.v1</span> — lifecycle <span class="mono">active → archived</span>. Authorized-only (D4).</div>
+    </div>
+    <div class="df"><span class="sp"></span>
+      <button class="btn btn-outline btn-sm" data-close>Cancel</button>
+      <button class="btn btn-danger btn-sm" id="confirm-archive">Archive vendor</button>
+    </div></div>`);
+  $("#confirm-archive").addEventListener("click",()=>{
+    v.life="archived"; v.preferred=false;
+    toast(`<b>${v.name}</b> archived · <span class="mono">ops.archive_private_vendor.v1</span> — soft-delete, recoverable.`);
+    closeDialog();
+    if($("#view-detail").classList.contains("on")) location.hash="#/vendors?view=archived"; else refreshStar(v);
+  });
+}
+function restoreVendor(id){
+  const v=byId(id); if(!v) return;
+  v.life="active";
+  toast(`<b>${v.name}</b> restored to active.`);
+  refreshStar(v);
+}
+
+/* ════════════════════════════════ LIST ════════════════════════════════ */
+const listState={ view:"all", chip:"" };
+
+function inView(v,view){
+  if(view==="archived") return v.life==="archived";
+  if(v.life==="archived") return false;                 // active-only for all non-archived views
+  if(view==="marketplace") return v.origin==="marketplace";
+  if(view==="private")     return v.origin==="private";
+  if(view==="preferred")   return v.preferred;
+  return true;                                          // all
+}
+function passChip(v,chip){
+  if(!chip) return true;
+  if(chip==="verified")    return v.origin==="marketplace" && v.claim==="verified";
+  if(chip==="claimed")     return v.origin==="marketplace" && v.claim==="claimed";
+  if(chip==="blacklisted") return v.status==="blacklisted";
+  if(chip==="archived")    return v.life==="archived";
+  return true;
+}
+/* Default sort (spec §4): ⭐ Preferred → Recently Used → Marketplace → Private → name */
+function sortVendors(a,b){
+  if(a.preferred!==b.preferred) return a.preferred?-1:1;
+  if(a.used!==b.used) return ts(b.used)-ts(a.used);
+  if(a.origin!==b.origin) return a.origin==="marketplace"?-1:1;
+  return a.name.localeCompare(b.name);
+}
+
+function renderTabs(){
+  const views = VIEWS.map(vw=>{
+    const n = VENDORS.filter(v=>inView(v,vw.id)).length;
+    const lab = vw.star ? `<span class="st-star">★</span> Preferred` : vw.label;
+    return `<button class="vtab" role="tab" aria-selected="${listState.view===vw.id}" data-view="${vw.id}">
+      ${lab}<span class="n">${n}</span></button>`;
+  }).join("");
+  // MINOR-1: Pending Invitation (R4-gated, ESC-VENDIR-INVITE) is HIDDEN from the production IA.
+  // It renders only under Review notes for IA completeness — never as an operational-looking tab.
+  const gated = document.body.classList.contains("show-notes")
+    ? `<button class="vtab gated review-only" role="tab" aria-disabled="true"
+        data-toast="<b>Pending Invitation</b> is gated on <span class='mono'>ESC-VENDIR-INVITE</span> (R4) — no submit contract exists. Hidden from the production IA (MINOR-1); shown here only under Review notes.">Pending Invitation<span class="gate-r">R4</span></button>`
+    : "";
+  $("#v-tabs").innerHTML = views + gated;
+}
+function renderChips(){
+  const base = VENDORS.filter(v=>inView(v,listState.view));
+  const defs = [
+    {k:"verified",   label:"✓ Verified"},
+    {k:"claimed",    label:"Claimed"},
+    {k:"blacklisted",label:"Blacklisted", bl:true},
+  ];
+  if(listState.view!=="archived") defs.push({k:"archived", label:"Archived"});
+  $("#v-chips").innerHTML = `<span class="lbl">Filter</span>` + defs.map(d=>{
+    const n = VENDORS.filter(v=>inView(v,listState.view)||(d.k==="archived")).filter(v=>passChip(v,d.k)).length;
+    const on = listState.chip===d.k;
+    return `<button class="${d.bl?"bl":""}" aria-pressed="${on}" data-chip="${d.k}">${d.label}<i>${n}</i></button>`;
+  }).join("");
+}
+function renderList(){
+  renderTabs(); renderChips();
+  let rows = VENDORS.filter(v=>inView(v,listState.view));
+  if(listState.chip==="archived") rows = VENDORS.filter(v=>v.life==="archived");   // chip can surface archived into any view
+  rows = rows.filter(v=>passChip(v,listState.chip)).sort(sortVendors);
+
+  $("#v-blnote").innerHTML = listState.chip==="blacklisted"
+    ? `<div style="font-size:12px;color:var(--iv-danger-base);margin:0 0 14px;display:flex;gap:7px;align-items:center">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Blacklisted status is buyer-private — the vendor can never tell they are excluded (Invariant #11).</div>` : "";
+
+  $("#v-empty").hidden = rows.length>0;
+  if(rows.length===0){
+    const vw = VIEWS.find(x=>x.id===listState.view);
+    $("#v-empty-h").textContent = listState.view==="preferred" ? "No preferred vendors yet" : `No vendors in ${vw?vw.label.replace("★ ","⭐ "):"this view"}`;
+    $("#v-empty-b").textContent = listState.view==="preferred"
+      ? "Star a vendor from any view to keep it here for quick access."
+      : "Adjust the filter, or use Add Vendor to build your list.";
+  }
+  $("#v-body").innerHTML = rows.map(v=>{
+    const classifiable = canClassify(v);
+    const star = classifiable
+      ? `<button class="star" aria-pressed="${v.preferred}" data-star="${v.id}"
+          aria-label="${v.preferred?`Preferred — ${v.name}`:`Add ${v.name} to Preferred`}"
+          title="${v.preferred?"Remove from ⭐ Preferred":"Add to ⭐ Preferred"}">${starSvg(18)}</button>`
+      : `<button class="star" disabled aria-disabled="true" style="opacity:.32;cursor:not-allowed"
+          data-toast="⭐ Preferred needs a marketplace link. <b>${v.name}</b> is an unlinked private vendor — link it to a marketplace profile to prefer or set status (D1(a) interim)."
+          title="Link to a marketplace profile to prefer / set status">${starSvg(18)}</button>`;
+    const statusCell = classifiable ? statusChip(v)
+      : `<span style="font-size:12px;color:var(--fg-soft)" title="Buyer status needs a marketplace link (D1(a) interim)">— <span class="mono" style="font-size:10.5px">link to set</span></span>`;
+    return `
+    <tr>
+      <td class="star-col">${star}</td>
+      <td>
+        <div class="cell-main"><a href="#/vendors/${v.id}">${v.name}</a></div>
+        <div class="cell-sub">${v.cat} · ${v.loc}${v.life==="archived"?` · <span class="lifechip">Archived</span>`:""}</div>
+      </td>
+      <td>${kindBadge(v)}</td>
+      <td>${verifyBadge(v)}</td>
+      <td>${statusCell}</td>
+      <td style="color:var(--fg-muted);font-size:13px">${fmtDate(v.used)}</td>
+      <td class="rowact"><a href="#/vendors/${v.id}">Open</a></td>
+    </tr>`;}).join("");
+}
+$("#v-tabs").addEventListener("click",(e)=>{
+  const b=e.target.closest("[data-view]"); if(!b) return;
+  location.hash = `#/vendors?view=${b.dataset.view}`;
+});
+$("#v-chips").addEventListener("click",(e)=>{
+  const b=e.target.closest("[data-chip]"); if(!b) return;
+  listState.chip = listState.chip===b.dataset.chip ? "" : b.dataset.chip;
+  renderList();
+});
+document.addEventListener("click",(e)=>{
+  const b=e.target.closest("[data-star]"); if(!b) return;
+  e.preventDefault(); togglePreferred(b.dataset.star);
+});
+
+/* ════════════════════════════════ DETAIL ════════════════════════════════ */
+const DTABS=[
+  {id:"profile", label:"Profile"},
+  {id:"notes",   label:"Notes"},
+  {id:"rating",  label:"My Rating"},
+  {id:"history", label:"Status history"},
+  {id:"documents",label:"Documents", gate:"R3"},
+];
+let detailId=null, detailTab="profile";
+
+function statusHistory(v){
+  // append-only history, derived for the demo (never overwritten in the real contract)
+  if(v.status==="none") return [];
+  if(v.id==="eastern-grid") return [
+    {d:"2025-11-04", to:"approved"}, {d:"2026-03-12", to:"conditional"}, {d:"2026-05-30", to:"blacklisted"},
+  ];
+  return [{d:v.used, to:v.status}];
+}
+function renderDetail(id){
+  const v=byId(id); if(!v){ location.hash="#/vendors"; return; }
+  detailId=id;
+  $("#d-crumb").textContent=v.name;
+  const classifiable = canClassify(v);
+
+  // title: ⭐ (linked-only, D1(a)) + name
+  const starBtn = classifiable
+    ? `<button class="star" id="d-star" aria-pressed="${v.preferred}" aria-label="${v.preferred?`Preferred — ${v.name}`:`Add ${v.name} to Preferred`}" title="${v.preferred?"Remove from ⭐ Preferred":"Add to ⭐ Preferred"}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11.5 3.6 13.7 8l4.9.7-3.5 3.5.8 4.9-4.4-2.3-4.4 2.3.8-4.9L4.4 8.7 9.3 8Z"/></svg></button>`
+    : `<button class="star" disabled aria-disabled="true" style="opacity:.32;cursor:not-allowed" title="Link to a marketplace profile to prefer / set status" data-toast="⭐ Preferred needs a marketplace link (D1(a) interim). Link this private vendor to a marketplace profile to prefer or set status."><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11.5 3.6 13.7 8l4.9.7-3.5 3.5.8 4.9-4.4-2.3-4.4 2.3.8-4.9L4.4 8.7 9.3 8Z"/></svg></button>`;
+  $("#d-title").innerHTML = `${starBtn}<h1 id="d-h1">${v.name}</h1>`;
+
+  // actions: Edit always; Archive/Restore only for Authorized member (D4). Never a delete control.
+  const archiveAct = v.life==="archived"
+    ? (canRemove()?`<button class="btn btn-outline btn-sm" id="d-restore">Restore</button>`:``)
+    : (canRemove()?`<button class="btn btn-outline btn-sm" id="d-archive"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"/><path d="M10 12h4"/></svg>Archive</button>`
+        :`<button class="btn btn-outline btn-sm" disabled style="opacity:.5;cursor:not-allowed" data-toast="Archiving is a removal-like action — Authorized member only (D4).">Archive</button>`);
+  $("#d-actions").innerHTML = `
+    <button class="btn btn-outline btn-sm" data-toast="Edit Vendor → ops.update_private_vendor.v1 — presentation-only here.">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Edit
+    </button>${archiveAct}`;
+
+  const statusBadge = classifiable ? statusChip(v)
+    : `<span class="status none" title="Buyer status needs a marketplace link (D1(a) interim)">Status: link to set</span>`;
+  $("#d-badges").innerHTML = [
+    kindBadge(v), verifyBadge(v), statusBadge,
+    `<span class="lifechip">${v.life==="archived"?"Archived":"Active"}</span>`
+  ].join("");
+
+  // link panel (only when a marketplace match is suggested)
+  $("#d-linkpanel").innerHTML = v.link==="suggested" ? `
+    <div class="linkpanel">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+      <div class="sp"><b>This vendor may have joined iVendorz</b>
+        <p>A marketplace profile looks like a match. Review &amp; link — nothing links automatically, and the
+          suggestion is never shown to the vendor.</p></div>
+      <button class="btn btn-outline btn-sm" data-toast="ops.confirm_vendor_link.v1 — disabled in the prototype.">Review &amp; link</button>
+      <button class="btn btn-outline btn-sm" data-toast="ops.dismiss_vendor_link.v1 — disabled in the prototype.">Dismiss</button>
+    </div>` : "";
+
+  $("#d-tabs").innerHTML = DTABS.map(t=>
+    `<button class="dtab" role="tab" aria-selected="${detailTab===t.id}" data-dtab="${t.id}">${t.label}${t.gate?`<span class="gate">GATED · ${t.gate}</span>`:""}</button>`).join("");
+
+  const dt = DETAIL[id]||{};
+  const gz=(x)=>x&&x!=="—"?x:`<span class="empty-v">Not captured</span>`;
+  $("#pane-profile").innerHTML = `<div class="fields">
+    <div class="f"><div class="k">Company name <span class="gtag">FROZEN</span></div><div class="v">${v.name}</div></div>
+    <div class="f"><div class="k">Core business area <span class="gtag">GATED-R5.2</span></div><div class="v">${v.cat}</div></div>
+    <div class="f"><div class="k">Contact person <span class="gtag">GATED-R5.1</span></div><div class="v">${gz(dt.contact)}</div></div>
+    <div class="f"><div class="k">Designation <span class="gtag">GATED-R5.1</span></div><div class="v">${gz(dt.desig)}</div></div>
+    <div class="f"><div class="k">Mobile <span class="gtag">FROZEN</span></div><div class="v">${gz(dt.phone)}</div></div>
+    <div class="f"><div class="k">Email <span class="gtag">FROZEN</span></div><div class="v">${gz(dt.email)}</div></div>
+    <div class="f"><div class="k">Location</div><div class="v">${v.loc}</div></div>
+    <div class="f"><div class="k">Last used</div><div class="v">${fmtDate(v.used)}</div></div>
+  </div>${renderOfferings(v)}`;
+
+  const notes = dt.notes||[];
+  $("#pane-notes").innerHTML = notes.length
+    ? `<div class="note-list">`+notes.map(n=>`<div class="note-item"><div class="m">${fmtDate(n.d)} · You</div><div class="txt">${n.t}</div></div>`).join("")+`</div>`
+    : `<div class="gated-empty"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20h16"/><path d="M6 16V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8"/></svg><b>No notes yet</b>Private notes on this vendor (private_vendor_notes) — buyer-only.</div>`;
+
+  $("#pane-rating").innerHTML = `
+    <div class="card" style="padding:20px 22px;max-width:520px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--fg-soft)">My rating <span class="gtag">private_vendor_ratings</span></div>
+      <div style="display:flex;align-items:center;gap:14px;margin-top:12px">
+        <div class="rating-input" id="rating-input" aria-label="Set your rating">
+          ${[1,2,3,4,5].map(i=>`<button class="${i<=v.rating?"on":""}" data-rate="${i}" aria-label="${i} star">${starSvg(22)}</button>`).join("")}
+        </div>
+        <span style="font-size:13px;color:var(--fg-muted)" id="rating-val">${v.rating?`${v.rating} / 5`:"Not rated"}</span>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
+        <button class="btn btn-primary btn-sm" disabled style="opacity:.5;cursor:not-allowed" data-toast="ops.set_private_vendor_rating.v1 — Save is disabled in the prototype (no write).">Save rating</button>
+        <span style="font-size:12px;color:var(--fg-soft)">Buyer-private · one rating per record · never shown to the vendor.</span>
+      </div>
+    </div>`;
+
+  const hist=statusHistory(v);
+  const HL={approved:"Approved",conditional:"Conditional",blacklisted:"Blacklisted"};
+  $("#pane-history").innerHTML = !classifiable
+    ? `<div class="gated-empty"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg><b>Buyer status needs a marketplace link</b>Approved / Conditional / Blacklisted key on a marketplace <span class="mono">vendor_profile_id</span> — an unlinked private vendor can't hold a status yet (D1(a) interim). <b>Link to a marketplace profile</b> to prefer or set status. Notes &amp; rating stay available.</div>`
+    : hist.length
+    ? `<div class="card" style="padding:6px 18px"><div class="hist">`+hist.slice().reverse().map(h=>
+        `<div class="h"><span class="dot"></span><span class="d">${fmtDate(h.d)}</span><span>Status set to <span class="status ${h.to}">${HL[h.to]}</span></span></div>`).join("")+
+      `</div></div><div style="font-size:12px;color:var(--fg-soft);margin-top:10px">Append-only — history is never overwritten (Inv #8). Statuses are buyer-private (Inv #11).</div>`
+    : `<div class="gated-empty"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg><b>No status set</b>Set Approved / Conditional / Blacklisted from this record — each change appends a history row.</div>`;
+
+  $("#pane-documents").innerHTML = `<div class="gated-empty">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+    <b>Documents — gated (R3)</b>
+    Off-platform procurement records &amp; attachments are gated on the R3 ruling + <span class="mono">ESC-7-API/upload</span>. This tab is a reserved placeholder — no upload, no fabricated rows.</div>`;
+
+  showDTab(detailTab);
+}
+function showDTab(id){
+  detailTab=id;
+  $$("#d-tabs .dtab").forEach(t=>t.setAttribute("aria-selected", t.dataset.dtab===id));
+  $$(".dpane").forEach(p=>p.classList.toggle("on", p.id==="pane-"+id));
+}
+$("#d-tabs").addEventListener("click",(e)=>{ const b=e.target.closest("[data-dtab]"); if(b) showDTab(b.dataset.dtab); });
+$("#view-detail").addEventListener("click",(e)=>{
+  if(e.target.closest("#d-star")){ if(detailId) togglePreferred(detailId); return; }
+  if(e.target.closest("#d-archive")){ if(detailId) archiveVendor(detailId); return; }
+  if(e.target.closest("#d-restore")){ if(detailId) restoreVendor(detailId); return; }
+  const r=e.target.closest("[data-rate]"); if(!r) return;
+  const n=+r.dataset.rate;
+  $$("#rating-input button").forEach((b,i)=>b.classList.toggle("on", i<n));
+  $("#rating-val").textContent = `${n} / 5`;
+  toast(`Rating set to <b>${n}/5</b> locally — <span class="mono">ops.set_private_vendor_rating.v1</span> Save is disabled in the prototype.`);
+});
+
+/* ════════════════════════ CATEGORY MATCHER (D5, shared) ════════════════════════
+   The system SUGGESTS; the buyer CONFIRMS. Never a silent fuzzy bind. "Keep as text only"
+   preserves the buyer's wording without claiming a system category. NO M2 category ID is
+   persisted in M4 in production (prototype-only) — gated ESC-VENDIR-FIELDS R5. */
+function suggestCategory(text){
+  const toks=(text||"").toLowerCase().split(/[^a-z0-9]+/).filter(w=>w.length>2);
+  let best=null,bestScore=0;
+  TAXONOMY.forEach(c=>{
+    const cw=c.name.toLowerCase().split(/[^a-z0-9]+/).filter(w=>w.length>2);
+    let s=0;
+    toks.forEach(t=>cw.forEach(w=>{
+      if(t===w) s+=3; else if(t.startsWith(w)||w.startsWith(t)) s+=2; else if(t.includes(w)||w.includes(t)) s+=1;
+    }));
+    if(s>bestScore){ bestScore=s; best=c; }
+  });
+  const conf = bestScore>=3?"high":bestScore>=2?"poss":"no";
+  return { cat: conf==="no"?null:(best&&best.id), conf };
+}
+function confChip(conf){
+  return conf==="high"?`<span class="conf conf-high">High-confidence match</span>`
+    : conf==="poss"?`<span class="conf conf-poss">Possible match</span>`
+    : `<span class="conf conf-no">No match</span>`;
+}
+/* onPick(catId) to confirm a system category; onText() to keep as text-only. */
+function openCategoryMatcher(enteredText, onPick, onText){
+  const sg = suggestCategory(enteredText);
+  let query = "";
+  function tree(){
+    const q=query.trim().toLowerCase();
+    const roots = TAXONOMY.filter(c=>!c.parent);
+    let html="";
+    roots.forEach(r=>{
+      const kids = TAXONOMY.filter(c=>c.parent===r.id);
+      const rMatch = !q || r.name.toLowerCase().includes(q) || kids.some(k=>k.name.toLowerCase().includes(q));
+      if(!rMatch) return;
+      html+=`<div class="cat-node" data-pick="${r.id}"><span>${r.name}</span><span class="pick">Use</span></div>`;
+      kids.forEach(k=>{ if(!q||k.name.toLowerCase().includes(q)||r.name.toLowerCase().includes(q))
+        html+=`<div class="cat-node child" data-pick="${k.id}"><span>${k.name}</span><span class="pick">Use</span></div>`; });
+    });
+    return html || `<div style="padding:14px;color:var(--fg-soft);font-size:12.5px">No active category matches “${query}”. You can keep this as text only.</div>`;
+  }
+  const recent = ORG_FREQUENT.map(id=>`<button class="freq" data-pick="${id}">${catName(id)}</button>`).join("");
+  const suggBlock = sg.cat
+    ? `<div style="display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--iv-brand-200);background:var(--iv-brand-50);border-radius:8px;margin-bottom:14px">
+        ${confChip(sg.conf)}<b style="color:var(--iv-navy-900)">${catName(sg.cat)}</b><span class="sp" style="flex:1"></span>
+        <button class="mini primary" data-pick="${sg.cat}">Confirm this category</button></div>`
+    : `<div style="display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px dashed var(--iv-light-border);border-radius:8px;margin-bottom:14px">${confChip("no")}<span style="color:var(--fg-muted);font-size:12.5px">No confident match — search below or keep as text only.</span></div>`;
+  openDialog(`<div class="dialog wide">
+    <div class="dh"><h3>Match to a system category</h3></div>
+    <div class="db">
+      <div style="font-size:12.5px;color:var(--fg-soft);margin-bottom:4px">Entered text (preserved either way)</div>
+      <div style="font-weight:600;color:var(--fg);margin-bottom:14px">“${enteredText}”</div>
+      ${suggBlock}
+      <div class="cat-recent"><span class="lbl">Frequently used by your organization <span style="font-weight:500;text-transform:none;letter-spacing:0;color:var(--fg-soft)">· org-private convenience, never a ranking</span></span>${recent}</div>
+      <div class="catsearch"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="cat-q" placeholder="Search active M2 categories, or browse parent → child…" autocomplete="off" /></div>
+      <div class="cat-tree" id="cat-tree">${tree()}</div>
+      <div class="note" style="display:block;margin-top:12px">The system suggests; you confirm. Matching binds no cross-module FK and persists <b>no M2 category ID in M4</b> (prototype-only, gated R5). M2 owns the taxonomy — read via <span class="mono">marketplace.list_categories.v1</span>.</div>
+    </div>
+    <div class="df">
+      <button class="mini warn" data-keeptext>Keep as text only</button>
+      <span class="sp"></span>
+      <button class="btn btn-outline btn-sm" data-close>Cancel</button>
+    </div></div>`);
+  const treeEl=$("#cat-tree");
+  $("#cat-q").addEventListener("input",(e)=>{ query=e.target.value; treeEl.innerHTML=tree(); });
+  $("#overlay").addEventListener("click",function h(e){
+    const pk=e.target.closest("[data-pick]");
+    if(pk){ onPick(pk.dataset.pick); closeDialog(); $("#overlay").removeEventListener("click",h); return; }
+    if(e.target.closest("[data-keeptext]")){ onText&&onText(); closeDialog(); $("#overlay").removeEventListener("click",h); return; }
+    if(e.target.id==="overlay"||e.target.closest("[data-close]")) $("#overlay").removeEventListener("click",h);
+  });
+}
+
+/* ════════════════════════════════ ADD VENDOR (3 methods) ════════════════════════════════ */
+let addMethod="search";
+function setMethod(m){
+  addMethod=m;
+  if(m==="paste"){ location.hash="#/vendors/new/paste"; return; }
+  $$("#n-methods .method").forEach(b=>b.style.borderColor = b.dataset.method===m ? "var(--iv-brand-400)" : "");
+  $("#panel-search").hidden = m!=="search";
+  $("#panel-manual").hidden = m!=="manual";
+  if(m==="search"){ renderSearch($("#n-search").value); }
+  if(m==="manual"){ renderManualOfferings(); }
+}
+$("#n-methods").addEventListener("click",(e)=>{ const b=e.target.closest("[data-method]"); if(b) setMethod(b.dataset.method); });
+
+/* ── marketplace search (journey B — "Save vendor" = set_vendor_favorite) ── */
+function renderSearch(q){
+  const res=$("#n-res");
+  q=(q||"").trim();
+  if(!q){ res.innerHTML=`<div style="color:var(--fg-soft);font-size:13px;padding:6px 2px">Start typing to search the marketplace and your private list together.</div>`; return; }
+  const ql=q.toLowerCase();
+  const mine = VENDORS.filter(v=>v.name.toLowerCase().includes(ql));
+  const mp   = MARKETPLACE_ONLY.filter(v=>v.name.toLowerCase().includes(ql) && !byId(v.id));
+  let html="";
+  mine.forEach(v=>{
+    html+=`<div class="res-item">
+      ${kindBadge(v)}
+      <div><div class="nm">${v.name}</div><div class="mt">${v.cat} · ${v.loc} · already in your directory</div></div>
+      <span class="sp"></span>
+      <a class="btn btn-outline btn-sm" href="#/vendors/${v.id}">Open record</a></div>`;
+  });
+  mp.forEach(v=>{
+    html+=`<div class="res-item">
+      <span class="badge b-mp">Platform vendor</span>${v.claim==="verified"?`<span class="badge b-verified">✓ Verified</span>`:`<span class="badge b-claimed">Claimed</span>`}
+      <div><div class="nm">${v.name}</div><div class="mt">${v.cat} · ${v.loc} · not in your directory yet</div></div>
+      <span class="sp"></span>
+      <button class="btn btn-primary btn-sm" data-save="${v.id}" title="ops.set_vendor_favorite.v1">☆ Save vendor</button></div>`;
+  });
+  if(!html){
+    html=`<div class="res-item"><span class="badge b-pv">No match</span>
+      <div><div class="nm">No marketplace vendor found for “${q}”.</div><div class="mt">Add it as a private vendor instead.</div></div>
+      <span class="sp"></span><button class="btn btn-primary btn-sm" id="n-to-manual">Add private vendor →</button></div>`;
+  }
+  res.innerHTML=html;
+}
+$("#panel-search").addEventListener("input",(e)=>{ if(e.target.id==="n-search") renderSearch(e.target.value); });
+$("#panel-search").addEventListener("click",(e)=>{
+  const save=e.target.closest("[data-save]");
+  if(save){
+    const src=MARKETPLACE_ONLY.find(v=>v.id===save.dataset.save); if(!src) return;
+    // "Save vendor" = the single favorite action: relationship container created/reused + favorite set.
+    if(!byId(src.id)){
+      VENDORS.push({ id:src.id, name:src.name, origin:"marketplace", link:"linked", claim:src.claim,
+        preferred:true, status:"none", life:"active", cat:src.cat, loc:src.loc, used:"2026-07-05", rating:0 });
+    } else { byId(src.id).preferred=true; }
+    toast(`Saved <b>${src.name}</b> · <span class="mono">ops.set_vendor_favorite.v1</span> — relationship container created/reused; now in ⭐ Preferred.`);
+    location.hash = `#/vendors/${src.id}`;
+    return;
+  }
+  if(e.target.closest("#n-to-manual")) setMethod("manual");
+});
+
+/* ── manual private create: offerings + category matcher + save-eligibility (D5) ── */
+let manualOfferings=[];   // {text, cat, textOnly}
+function offeringState(o){ return o.textOnly ? "text" : (o.cat ? "confirmed" : "unmatched"); }
+function renderManualOfferings(){
+  const wrap=$("#mf-offerings"); if(!wrap) return;
+  const count=manualOfferings.length, over=count>10;
+  const rows = manualOfferings.map((o,i)=>{
+    let right;
+    if(o.textOnly) right=`<span class="prov prov-text">Text only</span>`;
+    else if(o.cat) right=`<span class="conf conf-ok">✓ ${catName(o.cat)}</span>`;
+    else right=`<span class="conf conf-poss">Needs category</span>`;
+    return `<div class="offer ${over&&i>=10?"excess":""}">
+      <div><div class="txt">${o.text}</div><div class="cat">${o.textOnly?`<span style="color:var(--fg-soft)">descriptive · no system category</span>`:(o.cat?`<b>${catName(o.cat)}</b> · confirmed`:`<span style="color:var(--iv-warning-base)">no category confirmed yet</span>`)}</div></div>
+      <span class="sp"></span>${right}
+      <button class="mini" data-omatch="${i}">${o.cat?"Change":"Match"}</button>
+      <button class="mini" data-oremove="${i}" aria-label="Remove">✕</button></div>`;
+  }).join("");
+  wrap.innerHTML = `
+    <div class="offer-head"><span class="sp"></span><span class="meter ${over?"over":""}">${count} of 10</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input id="mf-offer-input" placeholder="Add a product or service, e.g. “SS Tank Fabrication”" style="flex:1;height:36px;padding:0 12px;border:1px solid var(--iv-light-border);border-radius:8px;font:inherit;font-size:13px" ${count>=10?"disabled":""} />
+      <button class="btn btn-outline btn-sm" id="mf-offer-add" ${count>=10?"disabled style=opacity:.5":""}>Add</button>
+    </div>
+    <div class="offer-list">${rows||`<div style="color:var(--fg-soft);font-size:13px;padding:4px 2px">No offerings yet. Add at least one and confirm a system category to save.</div>`}</div>
+    ${over?`<div class="note" style="display:block;margin-top:10px;border-color:var(--iv-danger-base);background:var(--iv-danger-subtle);color:var(--iv-danger-base)"><b>Over the 10-item limit.</b> Remove or replace ${count-10} — nothing is truncated automatically.</div>`:""}`;
+  updateEligibility();
+}
+function updateEligibility(){
+  const name=($("#mf-name")&&$("#mf-name").value||"").trim();
+  const hasCat = manualOfferings.some(o=>!o.textOnly && o.cat);
+  const over = manualOfferings.length>10;
+  const reasons=[];
+  if(!name) reasons.push("Company name is required.");
+  if(!hasCat) reasons.push("Confirm at least one iVendorz system category.");
+  if(over) reasons.push(`${manualOfferings.length} offerings entered; the maximum is 10.`);
+  const ok = reasons.length===0;
+  const btn=$("#mf-save"); if(btn){ btn.disabled=!ok; btn.style.opacity=ok?"1":".5"; btn.style.cursor=ok?"pointer":"not-allowed"; }
+  const el=$("#mf-eligibility");
+  if(el){
+    if(ok){ el.innerHTML=`<span style="color:var(--iv-success-base);font-weight:600">Ready to save.</span> Contact details are optional — you can add them later.`; }
+    else { el.innerHTML=`<b style="color:var(--iv-danger-base)">Can’t save yet:</b><ul class="reasons">${reasons.map(r=>`<li>${r}</li>`).join("")}</ul>`; }
+  }
+}
+$("#panel-manual").addEventListener("input",(e)=>{ if(e.target.id==="mf-name") updateEligibility(); });
+$("#panel-manual").addEventListener("click",(e)=>{
+  if(e.target.id==="mf-offer-add"){
+    const inp=$("#mf-offer-input"), t=(inp.value||"").trim(); if(!t) return;
+    if(manualOfferings.length>=10){ toast("Maximum 10 products/services."); return; }
+    manualOfferings.push({text:t, cat:null, textOnly:false}); inp.value=""; renderManualOfferings();
+    // immediately offer to match
+    const idx=manualOfferings.length-1;
+    openCategoryMatcher(t,(catId)=>{ manualOfferings[idx].cat=catId; manualOfferings[idx].textOnly=false; renderManualOfferings(); },
+      ()=>{ manualOfferings[idx].textOnly=true; manualOfferings[idx].cat=null; renderManualOfferings(); });
+    return;
+  }
+  const m=e.target.closest("[data-omatch]");
+  if(m){ const i=+m.dataset.omatch; openCategoryMatcher(manualOfferings[i].text,
+    (catId)=>{ manualOfferings[i].cat=catId; manualOfferings[i].textOnly=false; renderManualOfferings(); },
+    ()=>{ manualOfferings[i].textOnly=true; manualOfferings[i].cat=null; renderManualOfferings(); }); return; }
+  const r=e.target.closest("[data-oremove]");
+  if(r){ manualOfferings.splice(+r.dataset.oremove,1); renderManualOfferings(); return; }
+  if(e.target.id==="mf-save"){
+    if($("#mf-save").disabled) return;
+    toast(`<b>${$("#mf-name").value.trim()}</b> would be created · <span class="mono">ops.create_private_vendor.v1</span> — presentation-only (no write). Confirmed categories are prototype-only; no M2 category ID persists in M4 (R5).`);
+  }
+});
+function resetManual(){ manualOfferings=[]; ["mf-name","mf-phone","mf-email"].forEach(id=>{ const el=$("#"+id); if(el) el.value=""; }); renderManualOfferings(); }
+
+/* ════════════════════════ PASTE VENDOR LIST (D3 wizard) ════════════════════════ */
+const PASTE_FIELDS=[
+  {key:"",        label:"— Ignore —"},
+  {key:"company", label:"Company name", tag:"frozen"},
+  {key:"contact", label:"Contact person", tag:"gated"},
+  {key:"phone",   label:"Phone", tag:"frozen"},
+  {key:"email",   label:"Email", tag:"frozen"},
+  {key:"category",label:"Core business / category", tag:"cat"},
+  {key:"location",label:"City / district", tag:"gated"},
+  {key:"notes",   label:"Internal notes", tag:"gated"},
+];
+const FIELD_TAG={frozen:`<span class="fieldtag ft-frozen">FROZEN</span>`,gated:`<span class="fieldtag ft-gated">GATED-R5</span>`,cat:`<span class="fieldtag ft-cat">CATEGORY</span>`};
+const SAMPLE=[
+  "Company Name\tContact Person\tPhone\tEmail\tCategory\tLocation\tNotes",
+  "ABC Engineering Ltd\tRahim Ahmed\t01711000000\tsales@abc.example\tSS Tank Fabrication\tDhaka\tSS tank supplier",
+  "XYZ Automation\tKarim Hasan\t01822000000\tinfo@xyz.example\tPLC and sensors\tGazipur\tPLC & sensors",
+  "Zenith Pumps Co\tSohel Rana\t01733000000\tsohel@zenith.example\tCentrifugal Pumps\tDhaka\tpump supplier",
+  "Delta Pumps Ltd\tNadia Islam\t01744000000\tnadia@delta.example\tCentrifugal Pumps\tBogura\tanother pump supplier",
+  "Meghna Industrial\tRezaul\t01711000000\tsales@meghna.example\tCentrifugal Pumps\tNarayanganj\tlikely already in directory",
+  "Titas Switchgear Services\tJamil Uddin\t01900000000\ttitas@switch.example\tSwitchgear\tTongi\ton the marketplace",
+  "Custom Works\tabdul\t\tbad-email-here\tGeneric machining\tSavar\tinvalid email + no clear category",
+  "\tNo-Name Traders\t01555000000\tnn@x.example\tValves\tKhulna\tno company name",
+].join("\n");
+let pasteRaw=[], pasteCols=[], pasteMap=[], pasteRows=[], pasteStep=1, pasteSel=null;
+const validEmail=(e)=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
+
+function gotoStep(n){
+  pasteStep=n;
+  $$("#p-steps .step").forEach(s=>{ const k=+s.dataset.step; s.classList.toggle("on",k===n); s.classList.toggle("done",k<n); });
+  $$(".wstep").forEach(w=>w.classList.toggle("on", w.id==="wstep-"+n));
+  window.scrollTo(0,0);
+}
+function resetPaste(){ pasteRaw=[];pasteCols=[];pasteMap=[];pasteRows=[];pasteSel=null; $("#p-textarea").value=""; gotoStep(1); }
+
+function parsePaste(){
+  const raw=($("#p-textarea").value||"").trim();
+  if(!raw){ toast("Paste some rows first."); return; }
+  const lines=raw.split(/\r?\n/).filter(l=>l.trim());
+  const delim = lines[0].includes("\t") ? "\t" : ",";
+  let matrix=lines.map(l=>l.split(delim).map(c=>c.trim()));
+  if($("#p-hasheader").checked){ pasteCols=matrix[0]; pasteRaw=matrix.slice(1); }
+  else { pasteCols=matrix[0].map((_,i)=>`Column ${i+1}`); pasteRaw=matrix; }
+  autoMap(); renderMap(); gotoStep(2);
+}
+function autoMap(){
+  pasteMap = pasteCols.map(h=>{ const t=(h||"").toLowerCase();
+    if(/compan|vendor|firm|name/.test(t)&&!/contact/.test(t)) return "company";
+    if(/contact|person|attn/.test(t)) return "contact";
+    if(/phone|mobile|cell|tel/.test(t)) return "phone";
+    if(/mail/.test(t)) return "email";
+    if(/categ|business|trade|product|service/.test(t)) return "category";
+    if(/city|district|location|address|area|zone/.test(t)) return "location";
+    if(/note|remark|comment/.test(t)) return "notes";
+    return ""; });
+}
+function renderMap(){
+  const g=$("#p-mapgrid");
+  const head=g.children.length>=4 ? [...g.children].slice(0,4).map(x=>x.outerHTML).join("") : "";
+  g.innerHTML = head + pasteCols.map((c,i)=>{
+    const sample=(pasteRaw[0]&&pasteRaw[0][i])||"";
+    const opts=PASTE_FIELDS.map(f=>`<option value="${f.key}" ${pasteMap[i]===f.key?"selected":""}>${f.label}</option>`).join("");
+    const tag = PASTE_FIELDS.find(f=>f.key===pasteMap[i]);
+    return `<div class="col-src">${c}<div class="col-sample">${sample?`e.g. ${sample}`:"—"}</div></div>
+      <div style="color:var(--fg-soft)">→</div>
+      <div><select data-mapcol="${i}">${opts}</select></div>
+      <div>${tag&&tag.tag?FIELD_TAG[tag.tag]:""}</div>`;
+  }).join("");
+}
+function validatePaste(){
+  pasteRows = pasteRaw.map(cells=>{
+    const r={cells,company:"",contact:"",phone:"",email:"",categoryText:"",location:"",notes:"",catId:null,catConfirmed:false,resolvedDup:false,linked:false,preferred:false,skip:false};
+    pasteMap.forEach((f,i)=>{ if(!f) return; r[f==="category"?"categoryText":f]=cells[i]||""; });
+    if(r.categoryText){ const sg=suggestCategory(r.categoryText); r.catSuggest=sg.cat; r.catConf=sg.conf; }
+    return r;
+  });
+  pasteRows.forEach(r=>{
+    r.dup=null; const nm=r.company.trim().toLowerCase(); if(!nm) return;
+    const first=nm.split(/\s+/)[0];
+    const ex=VENDORS.find(v=>{ const vn=v.name.toLowerCase(); return vn===nm||vn.startsWith(first)&&first.length>3; });
+    const mp=MARKETPLACE_ONLY.find(v=>{ const vn=v.name.toLowerCase(); return vn.includes(first)&&first.length>3; });
+    if(ex) r.dup={kind:"private",name:ex.name,id:ex.id};
+    else if(mp) r.dup={kind:"marketplace",name:mp.name,id:mp.id};
+  });
+  pasteSel = pasteRows.findIndex(r=>rowState(r)!=="ready"&&rowState(r)!=="skip");
+  if(pasteSel<0) pasteSel = pasteRows.length?0:null;
+  renderPasteRows(); renderBatchCat(); renderPasteSide(); gotoStep(3);
+}
+function rowState(r){
+  if(r.skip) return "skip";
+  if(!r.company.trim()) return "missing";
+  if(r.email && !validEmail(r.email)) return "blocked";
+  if(r.dup && !r.resolvedDup) return "dup";
+  if(!r.catConfirmed || !r.catId) return "cat";
+  return "ready";
+}
+const STATE_LABEL={ready:"Ready",cat:"Needs category review",dup:"Possible duplicate",missing:"Missing required information",blocked:"Blocked",skip:"Skipped"};
+const STATE_CLS={ready:"rs-ready",cat:"rs-cat",dup:"rs-dup",missing:"rs-missing",blocked:"rs-blocked",skip:"rs-skip"};
+function stateChip(r){ const s=rowState(r); return `<span class="rowstate ${STATE_CLS[s]}">${STATE_LABEL[s]}</span>`; }
+function renderPasteRows(){
+  $("#p-rows").innerHTML = pasteRows.map((r,i)=>`
+    <tr class="prevrow ${i===pasteSel?"sel":""} ${r.skip?"skip":""}" data-prow="${i}">
+      <td><div class="cell-main">${r.company||`<span style="color:var(--iv-danger-base)">— no name —</span>`}</div><div class="cell-sub">${r.location||""}</div></td>
+      <td>${r.contact||`<span style="color:var(--fg-soft)">—</span>`}</td>
+      <td>${r.catConfirmed&&r.catId?`<b style="color:var(--iv-brand-700)">${catName(r.catId)}</b>`:(r.categoryText?`<span style="color:var(--fg-muted)">${r.categoryText}</span>`:`<span style="color:var(--fg-soft)">—</span>`)}</td>
+      <td>${stateChip(r)}</td>
+      <td class="rowact"><a data-prow="${i}">Resolve →</a></td>
+    </tr>`).join("");
+}
+function renderBatchCat(){
+  const groups={};
+  pasteRows.forEach((r,i)=>{ if(r.skip||!r.categoryText||r.catConfirmed) return; const k=r.categoryText.toLowerCase(); (groups[k]=groups[k]||[]).push(i); });
+  const chips=Object.entries(groups).filter(([,a])=>a.length>=2).map(([k,arr])=>{
+    const sg=suggestCategory(k); if(!sg.cat) return "";
+    return `<button data-batchcat="${arr.join(',')}" data-batchcatid="${sg.cat}">Apply “${catName(sg.cat)}” to ${arr.length} matching items</button>`;
+  }).filter(Boolean).join("");
+  $("#p-batchcat").innerHTML = chips ? `<span class="lbl">Batch resolve</span>${chips}` : `<span class="lbl" style="color:var(--fg-soft)">Batch resolve</span><span style="font-size:12px;color:var(--fg-soft)">No repeated categories to batch.</span>`;
+}
+function renderPasteSide(){
+  const side=$("#p-side");
+  if(pasteSel==null||!pasteRows[pasteSel]){ side.innerHTML=`<h4>Select a row</h4><div class="sub">Click any row to resolve it here.</div>`; return; }
+  const r=pasteRows[pasteSel], st=rowState(r);
+  let body=`<h4>${r.company||"(no company name)"}</h4><div class="sub">Row ${pasteSel+1} · ${stateChip(r)}</div>`;
+  // missing / blocked
+  if(st==="missing") body+=`<div class="note" style="display:block">A <b>company name</b> is required to create a private vendor. Add it to the pasted cell, or skip this row.</div>`;
+  if(st==="blocked") body+=`<div class="note" style="display:block">Email “<b>${r.email}</b>” isn’t valid. <button class="mini" data-clearemail>Clear email</button> (a private vendor can be created without one) or fix it in the paste and re-validate.</div>`;
+  // duplicate
+  if(r.dup && !r.resolvedDup){
+    body+=`<div style="margin:10px 0"><b style="font-size:13px">Possible ${r.dup.kind==="marketplace"?"marketplace":"directory"} match:</b> ${r.dup.name}
+      <div class="acts" style="margin-top:8px">
+        <button class="mini" data-dupuse>Use existing record</button>
+        ${r.dup.kind==="marketplace"?`<button class="mini primary" data-duplink>Link to platform vendor</button>`:""}
+        <button class="mini" data-dupsep>Create separate</button>
+        <button class="mini" data-dupskip>Skip row</button>
+      </div><div style="font-size:11.5px;color:var(--fg-soft);margin-top:6px">Nothing is merged automatically. “Create separate” needs an acknowledgment when similarity is high.</div></div>`;
+  }
+  // category
+  body+=`<div style="margin:12px 0 4px"><b style="font-size:13px">Category</b>
+    <div style="font-size:12px;color:var(--fg-soft);margin:3px 0 6px">Entered: “${r.categoryText||"—"}” ${r.categoryText?confChip(r.catConf||"no"):""}</div>`;
+  if(r.catConfirmed&&r.catId) body+=`<div class="conf conf-ok">✓ ${catName(r.catId)}</div> <button class="mini" data-rowmatch style="margin-top:8px">Change</button> <button class="mini" data-rowtext>Keep as text only</button>`;
+  else if(r.catTextOnly) body+=`<span class="prov prov-text">Text only</span> <div style="font-size:11.5px;color:var(--iv-warning-base);margin:6px 0"><b>Text-only does not satisfy the category requirement</b> — confirm a system category to make this row eligible.</div><button class="mini primary" data-rowmatch>Match a category</button>`;
+  else body+=`<button class="mini primary" data-rowmatch>Match a category</button> <button class="mini" data-rowtext>Keep as text only</button>`;
+  body+=`</div>`;
+  // preferred (only when linked to a marketplace profile)
+  if(r.linked) body+=`<label style="display:flex;gap:8px;align-items:center;margin-top:12px;font-size:12.5px;color:var(--fg-muted)"><input type="checkbox" data-rowpref ${r.preferred?"checked":""}/> Mark ⭐ Preferred <span class="mono" style="font-size:10.5px">set_vendor_favorite</span></label>`;
+  else body+=`<div style="font-size:11.5px;color:var(--fg-soft);margin-top:12px">⭐ Preferred is available only after linking this row to a marketplace profile (D1(a) interim).</div>`;
+  body+=`<div style="margin-top:14px;border-top:1px solid var(--iv-light-border);padding-top:12px"><label style="display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--fg-muted)"><input type="checkbox" data-rowskip ${r.skip?"checked":""}/> Skip this row</label></div>`;
+  side.innerHTML=body;
+}
+function pasteCounts(){
+  const c={ready:0,cat:0,dup:0,missing:0,blocked:0,skip:0};
+  pasteRows.forEach(r=>c[rowState(r)]++); return c;
+}
+function renderPreview(){
+  const c=pasteCounts();
+  $("#p-counts").innerHTML=[
+    ["ready",c.ready,"ready"],["cat",c.cat,"need category"],["dup",c.dup,"possible dupes"],
+    ["missing",c.missing,"missing name"],["blocked",c.blocked,"blocked"],["skip",c.skip,"skipped"]
+  ].filter(x=>x[1]>0||x[0]==="ready").map(([k,n,l])=>`<div class="countpill ${k==="ready"?"ready":(k==="missing"||k==="blocked"?"bad":(k==="skip"?"":"warn"))}"><div class="n">${n}</div><div class="l">${l}</div></div>`).join("");
+  const eligible=pasteRows.filter(r=>rowState(r)==="ready");
+  $("#p-final").innerHTML = eligible.length ? eligible.map(r=>`
+    <tr><td class="cell-main">${r.company}</td><td><b style="color:var(--iv-brand-700)">${catName(r.catId)}</b></td>
+    <td><span class="mono" style="font-size:11px">source = excel</span></td><td>${r.linked?kindBadgeRaw("linked"):kindBadgeRaw("private")}${r.preferred?` <span class="badge b-mp" style="margin-left:4px">⭐</span>`:""}</td></tr>`).join("")
+    : `<tr><td colspan="4" style="text-align:center;color:var(--fg-soft);padding:24px">No eligible rows yet — resolve categories and duplicates in the review step.</td></tr>`;
+  $("#p-confirm").textContent = `Create ${eligible.length} vendor${eligible.length===1?"":"s"}`;
+  $("#p-confirm").disabled = eligible.length===0;
+  $("#p-confirm").style.opacity = eligible.length? "1":".5";
+  gotoStep(4);
+}
+function kindBadgeRaw(kind){ return kind==="linked"?`<span class="badge b-linked">Linked private vendor</span>`:`<span class="badge b-pv">Private vendor</span>`; }
+function confirmPaste(){
+  const eligible=pasteRows.filter(r=>rowState(r)==="ready");
+  if(!eligible.length) return;
+  eligible.forEach((r,k)=>{
+    const id="paste-"+Date.now().toString(36)+"-"+k;
+    OFFERINGS[id]={source:"buyer",items:[{text:r.categoryText||catName(r.catId),cat:r.catId,confirmed:true}]};
+    DETAIL[id]={contact:r.contact||"—",desig:"—",phone:r.phone||"—",email:r.email||"—",notes:r.notes?[{d:"2026-07-05",t:r.notes}]:[]};
+    VENDORS.push({id,name:r.company,origin:"private",link:r.linked?"linked":"none",claim:r.linked?"claimed":null,
+      preferred:r.linked&&r.preferred,status:"none",life:"active",cat:catName(r.catId),loc:r.location||"—",used:"2026-07-05",rating:0});
+  });
+  toast(`Created <b>${eligible.length}</b> vendor${eligible.length===1?"":"s"} · per-row <span class="mono">ops.create_private_vendor.v1</span> (<span class="mono">source = excel</span>) — presentation-only; no batch semantics claimed.`);
+  resetPaste(); location.hash="#/vendors?view=private";
+}
+/* paste wizard wiring */
+$("#p-sample").addEventListener("click",()=>{ $("#p-textarea").value=SAMPLE; toast("Sample rows pasted — click “Detect columns”."); });
+$("#p-parse").addEventListener("click",parsePaste);
+$("#p-mapgrid").addEventListener("change",(e)=>{ const s=e.target.closest("[data-mapcol]"); if(s){ pasteMap[+s.dataset.mapcol]=s.value; renderMap(); }});
+$("#p-back-1").addEventListener("click",()=>gotoStep(1));
+$("#p-validate").addEventListener("click",()=>{ if(!pasteMap.includes("company")){ toast("Map a column to Company name first."); return; } validatePaste(); });
+$("#p-back-2").addEventListener("click",()=>gotoStep(2));
+$("#p-preview").addEventListener("click",renderPreview);
+$("#p-back-3").addEventListener("click",()=>gotoStep(3));
+$("#p-confirm").addEventListener("click",confirmPaste);
+$("#p-batchcat").addEventListener("click",(e)=>{
+  const b=e.target.closest("[data-batchcat]"); if(!b) return;
+  const ids=b.dataset.batchcat.split(",").map(Number), cid=b.dataset.batchcatid;
+  ids.forEach(i=>{ pasteRows[i].catId=cid; pasteRows[i].catConfirmed=true; pasteRows[i].catTextOnly=false; });
+  toast(`Applied “${catName(cid)}” to ${ids.length} rows.`);
+  renderPasteRows(); renderBatchCat(); renderPasteSide();
+});
+$("#p-rows").addEventListener("click",(e)=>{ const t=e.target.closest("[data-prow]"); if(t){ pasteSel=+t.dataset.prow; renderPasteRows(); renderPasteSide(); }});
+$("#p-side").addEventListener("click",(e)=>{
+  const r=pasteRows[pasteSel]; if(!r) return;
+  if(e.target.closest("[data-rowmatch]")){ openCategoryMatcher(r.categoryText||r.company,
+    (cid)=>{ r.catId=cid; r.catConfirmed=true; r.catTextOnly=false; renderPasteRows(); renderBatchCat(); renderPasteSide(); },
+    ()=>{ r.catTextOnly=true; r.catConfirmed=false; r.catId=null; renderPasteRows(); renderPasteSide(); }); return; }
+  if(e.target.closest("[data-rowtext]")){ r.catTextOnly=true; r.catConfirmed=false; r.catId=null; renderPasteRows(); renderPasteSide(); return; }
+  if(e.target.closest("[data-clearemail]")){ r.email=""; renderPasteRows(); renderPasteSide(); return; }
+  if(e.target.closest("[data-dupuse]")){ r.skip=true; r.resolvedDup=true; toast(`Using the existing record for “${r.dup.name}” — row skipped (no duplicate created).`); renderPasteRows(); renderPasteSide(); return; }
+  if(e.target.closest("[data-duplink]")){ r.linked=true; r.resolvedDup=true; toast(`Linked to platform vendor “${r.dup.name}”. You can now mark it ⭐ Preferred.`); renderPasteRows(); renderPasteSide(); return; }
+  if(e.target.closest("[data-dupsep]")){
+    openDialog(`<div class="dialog"><div class="dh"><h3>Create a separate private vendor?</h3></div>
+      <div class="db">“<b>${r.company}</b>” looks similar to <b>${r.dup.name}</b>. Creating a separate private record is allowed, but avoid accidental duplicates. Confirm you want a distinct record.</div>
+      <div class="df"><span class="sp"></span><button class="btn btn-outline btn-sm" data-close>Cancel</button><button class="btn btn-primary btn-sm" id="ack-sep">Yes, create separate</button></div></div>`);
+    $("#ack-sep").addEventListener("click",()=>{ r.resolvedDup=true; closeDialog(); renderPasteRows(); renderPasteSide(); toast("Acknowledged — this row will create a separate private vendor."); });
+    return;
+  }
+  if(e.target.closest("[data-dupskip]")){ r.skip=true; renderPasteRows(); renderPasteSide(); return; }
+  const pref=e.target.closest("[data-rowpref]"); if(pref){ r.preferred=pref.checked; return; }
+  const sk=e.target.closest("[data-rowskip]"); if(sk){ r.skip=sk.checked; renderPasteRows(); renderBatchCat(); renderPasteSide(); return; }
+});
+
+/* ════════════════════════════════ ROUTER ════════════════════════════════ */
+function setActive(view){
+  $$(".view").forEach(v=>v.classList.toggle("on", v.id==="view-"+view));
+  // sidebar sub-nav current
+  $$(".nav-sub [data-view]").forEach(a=>{
+    const on = view==="vendors" && a.dataset.view===listState.view;
+    on ? a.setAttribute("aria-current","page") : a.removeAttribute("aria-current");
+  });
+  window.scrollTo(0,0);
+}
+function route(){
+  let h=location.hash||"#/vendors";
+  const [path,query]=h.replace(/^#\//,"").split("?");
+  const parts=path.split("/");            // e.g. ["vendors"] or ["vendors","meghna"] or ["vendors","new"]
+
+  // fold redirect: /saved-vendors → /vendors?view=preferred
+  if(parts[0]==="saved-vendors"){
+    toast(`<b>Saved Vendors</b> folds into ⭐ Preferred — redirected to <span class="mono">/vendors?view=preferred</span>.`);
+    location.replace("#/vendors?view=preferred"); return;
+  }
+
+  if(parts[0]==="vendors" && parts[1]==="new" && parts[2]==="paste"){ if(pasteStep===1&&!pasteRaw.length) gotoStep(1); setActive("paste"); return; }
+  if(parts[0]==="vendors" && parts[1]==="new"){ setMethod(new URLSearchParams(query||"").get("m")==="manual"?"manual":"search"); setActive("new"); return; }
+  if(parts[0]==="vendors" && parts[1]){ renderDetail(parts[1]); setActive("detail"); return; }
+
+  // list
+  const v = new URLSearchParams(query||"").get("view");
+  if(v && VIEWS.some(x=>x.id===v)) listState.view=v;
+  listState.chip="";
+  renderList(); setActive("vendors");
+}
+window.addEventListener("hashchange",route);
+
+/* ── boot ── */
+route();
+</script>
+</body>
+</html>
