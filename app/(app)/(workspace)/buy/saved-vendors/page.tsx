@@ -1,24 +1,44 @@
-// Buyer sidebar IA (BX-04) — "Saved Vendors" (Marketplace group). RESERVED ROUTE, no contract yet:
-// this is DISTINCT from `P-BUY-05` Favorites (frozen `marketplace.catalog_favorites`, product/category
-// ONLY per the FE-BUY-10 owner ruling — vendor-level favoriting is explicitly out of that contract's
-// scope) and DISTINCT from Vendor CRM (`/buy/crm`, buyer-private relationship/approval tracking, Inv#11 —
-// a different concept, not a "saved" list). No vendor-saving read exists anywhere in the frozen
-// corpus today. `ImplementationPendingView` reserves the destination without repurposing either
-// existing surface under a mismatched label.
-import { Star } from "lucide-react";
-import { ImplementationPendingView } from "../_components/implementation-pending-view";
+// My Vendor Directory (Buyer sidebar IA · BX-04 "Saved Vendors") — the Saved-Vendors fold made real.
+// A Next.js SERVER COMPONENT (App Router composition only — REPOSITORY_STRUCTURE §8): no business logic.
+//
+// SAVED VENDORS = ⭐ PREFERRED (owner ruling 2026-07-16): the reserved `/buy/saved-vendors` route had
+// no contract; it is folded into the already-frozen `operations.vendor_favorites` (M4 / BC-OPS-1) — a
+// flag on the buyer↔vendor relationship. This surface unifies that with the shipped Vendor CRM
+// (P-BUY-26/27) into "My Vendor Directory" — marketplace-linked + off-platform private vendors together.
+//
+// PRESENTATION-ONLY (this milestone): `buildDirectorySnapshot()` composes the three frozen reads a
+// linked record spans — `ops.list_private_vendors.v1` + `ops.get_private_vendor.v1` +
+// `ops.get_buyer_supplier_relationship.v1` (Doc-4F §F4.9) plus the M2 public profile — from fixtures
+// (parked; the real reads wire at M4 Wave 5). The browser sets no `Iv-Active-Organization` and calls
+// no Doc-5 contract. All writes (favourite / status / archive / create) are PARKED.
+//
+// GOVERNANCE (load-bearing): buyer-private (Inv #11 — nothing vendor-facing, blacklist undetectable);
+// D1(a) ⭐/status linked-only; D3 clipboard paste ≠ bulk import (single-create only, no batch);
+// D4 add-is-open / removal-authorized-only / no hard delete; D5 category matching presentation-only
+// (no M2 category id persisted in M4). No contract / event / schema / permission is coined here.
+
+import { Suspense } from "react";
+import { SavedVendorsWorkspace } from "./saved-vendors-workspace";
+import {
+  buildDirectorySnapshot,
+  buildMarketplaceSearchCorpus,
+} from "../_components/vendor-directory/working-model";
 
 export const metadata = {
-  title: "Saved Vendors",
+  title: "My Vendor Directory",
 };
 
 export default function SavedVendorsPage() {
+  // The frozen-read seam (parked → fixtures today). At wiring, these become the server-resolved reads.
+  const initialVendors = buildDirectorySnapshot();
+  const marketplaceCorpus = buildMarketplaceSearchCorpus();
+
   return (
-    <ImplementationPendingView
-      breadcrumb={[{ label: "Marketplace" }, { label: "Saved Vendors" }]}
-      title="Saved Vendors"
-      description="Vendors you've saved for quick access. This is separate from Favorites (product/category) and Vendor CRM (private relationship tracking)."
-      icon={<Star aria-hidden />}
-    />
+    <Suspense fallback={null}>
+      <SavedVendorsWorkspace
+        initialVendors={initialVendors}
+        marketplaceCorpus={marketplaceCorpus}
+      />
+    </Suspense>
   );
 }
