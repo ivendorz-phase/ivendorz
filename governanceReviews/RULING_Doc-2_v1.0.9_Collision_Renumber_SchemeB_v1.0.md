@@ -65,3 +65,33 @@ Version numbers are rank-0 architecture-governed — never developer-slidable.
 
 Supersedes the earlier `+1` uniform-shift escalation packet (a session working record; revised to
 Scheme B).
+
+---
+
+## 7. Amendment A-1 — Sibling version lines (additive; owner-ruled 2026-07-23)
+
+**Raised by:** the D2-09 (Growth Hub) cut-time sweep. Scheme B §2–§6 bind only the **Doc-2** version
+line; a reconciled slice is often a **linked multi-patch set** whose sibling documents each carry
+their own version line. The D2-09 sweep found main's Doc-3 tip at **v1.12-absent** (tip v1.11) while
+the branch's Growth Hub Doc-3 patch was authored as **v1.14** on top of a branch-only **v1.12**
+(`FairnessShareWindow`, a different slice) — i.e. a branch-only gap that Scheme B did not cover.
+Flagged and halted per §5 rather than slid locally.
+
+**Normative rule (binding on every remaining reconcile PR):**
+
+> For every linked document in a reconciled slice, use the **next verified available version on
+> current `main`**. **Never** preserve branch-only version gaps. **Never** mix unrelated slices to
+> preserve numbering. **Never** auto-slide if the expected target is occupied — stop and return to
+> the owner.
+
+**Scope/limits.** Additive: adds a rule, changes nothing in §1–§6. Identifier assignment only — it
+does not approve, fold, or alter any patch content (§4 renumber ≠ fold still binds). "Available"
+means verified against `origin/main` at PR-cut time, and includes **label ambiguity**: a target is
+not available if the same version label is already in visible use for that document, even in a
+different (e.g. pre-freeze authoring) namespace.
+
+**First application (D2-09, Growth Hub):** Doc-3 `v1.14 → v1.12` (next free after main's v1.11;
+`FairnessShareWindow` **not** carried — it takes its own next-available number when its slice lands)
+· Doc-7E `v1.0.1 → v1.0.2` (v1.0.1 rejected as an ambiguous label: main already carries two
+`Doc-7E_Content_PassN_Patch_v1.0.1` pre-freeze patches) · Doc-4C v1.0.3 · Doc-4H/4I/4J/4L/5C v1.0.1 ·
+Doc-6C v1.0.4 — all already next-available on main, unchanged.
