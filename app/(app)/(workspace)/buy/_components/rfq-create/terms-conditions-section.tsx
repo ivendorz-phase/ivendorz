@@ -68,7 +68,15 @@ function saveBundles(bundles: TermsBundle[]) {
   }
 }
 
-export function TermsConditionsSection({ terms }: { terms?: string[] }) {
+export function TermsConditionsSection({
+  terms,
+  onTermsChange,
+}: {
+  terms?: string[];
+  /** Optional: lift the non-empty conditions to a parent single-state form (Phase-2 controlled
+   *  surface). Additive — existing self-contained callers pass nothing and are unaffected. */
+  onTermsChange?: (terms: string[]) => void;
+}) {
   const [rows, setRows] = React.useState<TermRow[]>(() => toRows(terms));
   const [bundles, setBundles] = React.useState<TermsBundle[]>([]);
   const [selectedBundleId, setSelectedBundleId] = React.useState("");
@@ -79,6 +87,13 @@ export function TermsConditionsSection({ terms }: { terms?: string[] }) {
   React.useEffect(() => {
     setBundles(loadBundles());
   }, []);
+
+  // Report the non-empty conditions upward whenever rows change (Phase-2 wiring); no-op when absent.
+  const onTermsChangeRef = React.useRef(onTermsChange);
+  onTermsChangeRef.current = onTermsChange;
+  React.useEffect(() => {
+    onTermsChangeRef.current?.(rows.map((r) => r.value.trim()).filter(Boolean));
+  }, [rows]);
 
   function updateRow(id: string, value: string) {
     setRows((cur) => cur.map((r) => (r.id === id ? { ...r, value } : r)));
@@ -165,14 +180,20 @@ export function TermsConditionsSection({ terms }: { terms?: string[] }) {
               onClick={() => setSaveOpen((v) => !v)}
             >
               <Save aria-hidden className="size-3.5" />
-              Save as bundle
+              Save as bundle on this device
             </Button>
           </div>
         </div>
 
         {saveOpen ? (
           <div className="rounded-md border border-dashed border-border bg-secondary/40 p-3">
-            <p className="text-xs text-muted-foreground">
+            {/* D5 (approved, option a) — device-local bundle store, disclosed accurately. This is
+                NOT an organization template and implies no sync; the ruled disclosure is verbatim. */}
+            <p className="text-xs font-medium text-foreground">
+              Available only in this browser on this device. It is not shared with other members of
+              your organization.
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
               Save the current rows (non-empty ones) as a reusable bundle for future RFQs. Up to{" "}
               {MAX_BUNDLES} bundles are kept — saving a 6th replaces the oldest.
             </p>

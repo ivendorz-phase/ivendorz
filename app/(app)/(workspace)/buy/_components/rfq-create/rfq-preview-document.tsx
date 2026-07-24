@@ -11,8 +11,10 @@
 // and the CS print view): fixed white/slate utilities inside the paper only. No fabricated RFQ number:
 // the human_ref is assigned by the system at submission, so the header says exactly that.
 // Presentation-only: renders the draft form object; no fetch, no mutation.
+import { Lock } from "lucide-react";
 import { sanitizeRichNoteHtml } from "@/frontend/components/rich-note-editor";
 import type { RfqDraftForm, WorkNature } from "./rfq-form-models";
+import { ROUTING_MODE_OPTIONS, URGENCY_OPTIONS } from "./rfq-options";
 
 const WORK_NATURE_LABEL: Record<WorkNature, string> = {
   supply: "Supply",
@@ -20,6 +22,23 @@ const WORK_NATURE_LABEL: Record<WorkNature, string> = {
   fabricate: "Fabricate",
   consult: "Consult",
 };
+
+const ROUTING_MODE_LABEL: Record<string, string> = Object.fromEntries(
+  ROUTING_MODE_OPTIONS.map((o) => [o.value, o.label]),
+);
+const URGENCY_LABEL: Record<string, string> = Object.fromEntries(
+  URGENCY_OPTIONS.map((o) => [o.value, o.label]),
+);
+
+/** A key/value row for the internal (below-the-lock-line) sections. */
+function InternalItem({ label, value }: { label: string; value?: string }) {
+  return (
+    <div>
+      <dt className="text-2xs font-semibold uppercase tracking-wide text-slate-500">{label}</dt>
+      <dd className="mt-0.5">{value?.trim() ? value : "—"}</dd>
+    </div>
+  );
+}
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -38,7 +57,15 @@ function DetailItem({ label, value }: { label: string; value?: string }) {
   );
 }
 
-export function RfqPreviewDocument({ form }: { form: RfqDraftForm }) {
+export function RfqPreviewDocument({
+  form,
+  categoryPath,
+}: {
+  form: RfqDraftForm;
+  /** Full category tree path for the header/requirement echo (the frozen model carries id + label
+   *  only; the path is a presentation lookup passed in by the surface). */
+  categoryPath?: string;
+}) {
   const rows =
     form.itemRows && form.itemRows.length > 0
       ? form.itemRows
@@ -73,7 +100,10 @@ export function RfqPreviewDocument({ form }: { form: RfqDraftForm }) {
           <p className="text-xs text-slate-500">Assigned by the platform at submission.</p>
         </div>
         <div className="text-right text-xs text-slate-500">
-          <p>{form.categoryLabel?.trim() ? form.categoryLabel : "Category —"}</p>
+          <p>
+            {categoryPath?.trim() ||
+              (form.categoryLabel?.trim() ? form.categoryLabel : "Category —")}
+          </p>
           <p className="mt-0.5">
             {form.workNature && form.workNature.length > 0
               ? form.workNature.map((w) => WORK_NATURE_LABEL[w]).join(" · ")
@@ -238,9 +268,82 @@ export function RfqPreviewDocument({ form }: { form: RfqDraftForm }) {
         )}
       </section>
 
+      {/* ── Additional notes (vendor-facing) — special instructions are shown to invited vendors,
+          so they sit ABOVE the internal lock line. ── */}
+      {form.specialInstructions?.trim() ? (
+        <section className="space-y-1">
+          <SectionTitle>Additional notes</SectionTitle>
+          <p className="whitespace-pre-line break-words text-slate-700">
+            {form.specialInstructions}
+          </p>
+        </section>
+      ) : null}
+
+      {/* ══ THE DISCLOSURE LOCK LINE ══ Everything above is what an invited vendor receives.
+          Everything below is tagged internal and is NOT sent to vendors. Conservative until the
+          Board rules whether estimated_value / routing_mode are disclosed to invited vendors
+          (DELIVERY_PLAN §8 open item; rfq.get_rfq.v1 leaves vendor-side masking to dev-doc scope). */}
+      <div className="flex items-start gap-2 rounded border border-slate-300 border-l-4 border-l-slate-600 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
+        <Lock aria-hidden className="mt-0.5 size-3.5 shrink-0 text-slate-600" />
+        <p>
+          <span className="font-semibold text-slate-800">Internal — not sent to vendors.</span> Your
+          routing preferences and commercial guidance stay confidential. They are shown here so you
+          can check the whole request before submitting.
+        </p>
+      </div>
+
+      {/* ── Vendor routing (internal) ── */}
+      <section className="space-y-2">
+        <SectionTitle>
+          Vendor routing
+          <span className="float-right text-2xs font-bold uppercase tracking-wide text-slate-500">
+            internal
+          </span>
+        </SectionTitle>
+        <dl className="grid grid-cols-2 gap-3">
+          <InternalItem
+            label="Routing breadth"
+            value={form.routingMode ? ROUTING_MODE_LABEL[form.routingMode] : undefined}
+          />
+          <InternalItem label="Preferred vendor" value={form.preferredVendor} />
+          <InternalItem
+            label="Financial tier"
+            value={form.financialTier ? `Tier ${form.financialTier}` : undefined}
+          />
+          <InternalItem label="Verified only" value={form.verifiedOnly ? "Yes" : "No"} />
+        </dl>
+        <p className="text-xs text-slate-500">
+          Preferences are hints. The matching engine decides which vendors are invited.
+        </p>
+      </section>
+
+      {/* ── Commercial guidance (internal) ── */}
+      <section className="space-y-2">
+        <SectionTitle>
+          Commercial guidance
+          <span className="float-right text-2xs font-bold uppercase tracking-wide text-slate-500">
+            internal
+          </span>
+        </SectionTitle>
+        <dl className="grid grid-cols-2 gap-3">
+          <InternalItem
+            label="Estimated value"
+            value={form.budget?.trim() ? `${form.currency ?? "BDT"} ${form.budget}` : undefined}
+          />
+          <InternalItem label="Currency" value={form.currency ?? "BDT"} />
+          <InternalItem
+            label="Urgency / priority"
+            value={form.urgency ? (URGENCY_LABEL[form.urgency] ?? form.urgency) : undefined}
+          />
+        </dl>
+        <p className="text-xs text-slate-500">
+          Guidance only — payment terms, incoterms and tax are set by the vendor in its quotation.
+        </p>
+      </section>
+
       <p className="border-t border-slate-200 pt-3 text-xs text-slate-500">
-        Routing preferences, budget and priority guidance stay internal — vendors do not receive
-        them with this RFQ.
+        Your identity and this document are shared only with vendors the routing engine invites.
+        This RFQ is never publicly published.
       </p>
     </article>
   );

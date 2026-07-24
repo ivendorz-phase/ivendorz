@@ -123,13 +123,28 @@ function parsePastedRows(text: string): RfqItemRow[] {
   return parsed;
 }
 
-export function ItemRequirementsTable({ rows: initialRows }: { rows?: RfqItemRow[] }) {
+export function ItemRequirementsTable({
+  rows: initialRows,
+  onRowsChange,
+}: {
+  rows?: RfqItemRow[];
+  /** Optional: lift the current rows to a parent single-state form (Phase-2 controlled surface).
+   *  Additive — existing self-contained callers pass nothing and are unaffected. */
+  onRowsChange?: (rows: RfqItemRow[]) => void;
+}) {
   const [rows, setRows] = React.useState<RfqItemRow[]>(() =>
     initialRows && initialRows.length > 0 ? initialRows : [blankRow()],
   );
   const [pasteOpen, setPasteOpen] = React.useState(false);
   const [pasteValue, setPasteValue] = React.useState("");
   const [pasteError, setPasteError] = React.useState("");
+
+  // Report rows upward whenever they change (Phase-2 wiring); no-op when `onRowsChange` is absent.
+  const onRowsChangeRef = React.useRef(onRowsChange);
+  onRowsChangeRef.current = onRowsChange;
+  React.useEffect(() => {
+    onRowsChangeRef.current?.(rows);
+  }, [rows]);
 
   function updateRow(id: string, patch: Partial<RfqItemRow>) {
     setRows((cur) => cur.map((r) => (r.id === id ? { ...r, ...patch } : r)));
