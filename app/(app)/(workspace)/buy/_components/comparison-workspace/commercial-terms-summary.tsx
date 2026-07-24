@@ -12,6 +12,7 @@ import { Badge } from "@/frontend/primitives/badge";
 import { TooltipProvider } from "@/frontend/primitives/tooltip";
 import { CurrencyDisplay } from "@/frontend/components/currency-display";
 import { Money, formatDate } from "@/frontend/components/format";
+import { SealedMarker } from "@/frontend/components/sealed-marker";
 import { cn } from "@/frontend/lib/cn";
 import type { ComparisonSupplier } from "@/frontend/components/comparison";
 import { useWorkspaceView } from "./workspace-url-state";
@@ -61,7 +62,13 @@ export function CommercialTermsSummary({ data }: { data: ComparisonWorkspaceData
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {statement.vendors.map((vendor, vi) => {
               const supplier = supplierByQuotation.get(vendor.quotationId);
-              const isLowest = vi === computed.lowestVendorIdx;
+              // SEALED-UNTIL-CLOSE (Doc-3 §10.1): the server withheld this vendor's price, so there is
+              // no disclosed total to show. Render the seal — never a 0 (the platform money rule), and
+              // never a "Lowest total" cue, which on an undisclosed figure would read as the lowest
+              // possible bid. We do NOT recompute a corrected lowest here (that is adapter work, R7);
+              // we only withhold a cue whose underlying value is not disclosed.
+              const isSealed = Boolean(supplier?.sealed);
+              const isLowest = vi === computed.lowestVendorIdx && !isSealed;
               const isFocused = focusedVendor === vendor.quotationId;
               const isSubdued = Boolean(focusedVendor) && !isFocused;
               return (
@@ -88,21 +95,27 @@ export function CommercialTermsSummary({ data }: { data: ComparisonWorkspaceData
                     <span className="block text-2xs uppercase tracking-wide text-muted-foreground">
                       Grand total
                     </span>
-                    <CurrencyDisplay
-                      amount={computed.grandTotals[vi]?.amount ?? 0}
-                      currency={computed.grandTotals[vi]?.currency ?? currency}
-                      className="text-lg font-semibold text-foreground"
-                    />
+                    {isSealed ? (
+                      <SealedMarker />
+                    ) : computed.grandTotals[vi] ? (
+                      <CurrencyDisplay
+                        amount={computed.grandTotals[vi].amount}
+                        currency={computed.grandTotals[vi].currency ?? currency}
+                        className="text-lg font-semibold text-foreground"
+                      />
+                    ) : (
+                      <span className="text-sm text-muted-foreground">— No value supplied</span>
+                    )}
                   </div>
                   <div className="flex flex-col gap-1.5 border-t border-border pt-3">
                     <TermRow label="Subtotal">
-                      <Money value={computed.subTotals[vi]} />
+                      {isSealed ? <SealedMarker /> : <Money value={computed.subTotals[vi]} />}
                     </TermRow>
                     <TermRow
                       label={`VAT (${computed.vatRatePct}%)`}
                       tip="Value-added tax computed on the subtotal by the server."
                     >
-                      <Money value={computed.vatAmounts[vi]} />
+                      {isSealed ? <SealedMarker /> : <Money value={computed.vatAmounts[vi]} />}
                     </TermRow>
                     <TermRow label="Delivery" tip="The vendor's stated delivery period.">
                       {vendor.deliveryOffer ?? supplier?.delivery ?? "—"}

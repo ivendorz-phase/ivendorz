@@ -830,6 +830,152 @@ export const BUYER_RFQ_UNIVERSE: readonly BuyerRfqRecord[] = [
       quotations: { items: [], nextCursor: null },
     },
   },
+
+  // ──────────────────────────────────────────────────────────────────────────────────────────────
+  // COMPARISON DATA-STATE FIXTURES (presentation-only; pre-merge verification of the buyer
+  // Comparison Workspace). The lifecycle fixtures above top out at 3 disclosed quotations and carry
+  // no sealed quotation, so the 2–5 selection boundaries and the sealed-until-close rendering were
+  // unverifiable at runtime. These two records exist purely to exercise those states. They add no
+  // contract, DTO, permission, or adapter method — only fixture DATA through the existing seam.
+  {
+    // SIX disclosed quotations, the sixth SEALED (Doc-3 §10.1). Exercises: the frozen default
+    // selection capping at five, the max-5 block on the sixth, the minimum-2 uncheck boundary, and
+    // the sealed marker in the tray / attribute matrix / line items.
+    detail: {
+      id: "rfq-000901",
+      humanRef: "RFQ-2026-000901",
+      title: "Cooling tower overhaul — six-vendor comparison fixture",
+      state: "quotations_received",
+      value: { amount: 2400000, currency: "BDT" },
+      summary:
+        "Cooling tower fill, drift eliminator and gearbox overhaul. Six quotations disclosed; one vendor remains sealed until close.",
+      category: "Mechanical Services",
+      workNature: ["service"],
+      currentVersionNo: 1,
+      deliveryLocation: "Gazipur plant",
+      neededBy: "2026-09-30",
+      createdAt: "2026-06-20T09:00:00+06:00",
+      updatedAt: "2026-07-06T16:30:00+06:00",
+      permittedActions: [],
+      lifecycle: [{ id: "l-1", label: "RFQ created", at: "2026-06-20T09:00:00+06:00" }],
+      quotations: { items: [], nextCursor: null },
+    },
+    comparison: {
+      rfqId: "rfq-000901",
+      humanRef: "RFQ-2026-000901",
+      versionNo: 1,
+      generatedAt: "2026-07-06T16:30:00+06:00",
+      suppliers: [
+        {
+          quotationId: "q-901-1",
+          vendorName: "Shitalpur Thermal Services",
+          state: "submitted",
+          amount: { amount: 402000, currency: "BDT" },
+          delivery: "10 days from PO",
+          warranty: "12 months",
+          validUntil: "2026-08-05T00:00:00+06:00",
+          compliance: "CTI-certified fill",
+          attachmentsCount: 2,
+        },
+        {
+          quotationId: "q-901-2",
+          vendorName: "Karnaphuli Mechanical Works",
+          state: "submitted",
+          amount: { amount: 418500, currency: "BDT" },
+          delivery: "12 days from PO",
+          warranty: "12 months",
+          validUntil: "2026-08-05T00:00:00+06:00",
+          compliance: "CTI-certified fill",
+          attachmentsCount: 1,
+        },
+        {
+          quotationId: "q-901-3",
+          vendorName: "Jamuna Cooling Systems",
+          state: "submitted",
+          amount: { amount: 396000, currency: "BDT" },
+          delivery: "14 days from PO",
+          // No warranty disclosed — exercises the honest "No value supplied" absent state.
+          validUntil: "2026-08-10T00:00:00+06:00",
+          compliance: "Equivalent fill media",
+          attachmentsCount: 3,
+        },
+        {
+          quotationId: "q-901-4",
+          vendorName: "Bengal Heat Exchange Ltd.",
+          state: "submitted",
+          amount: { amount: 431000, currency: "BDT" },
+          delivery: "10 days from PO",
+          warranty: "18 months",
+          validUntil: "2026-08-12T00:00:00+06:00",
+          compliance: "CTI-certified fill",
+          attachmentsCount: 2,
+        },
+        {
+          quotationId: "q-901-5",
+          vendorName: "Titas Industrial Services",
+          state: "submitted",
+          amount: { amount: 409500, currency: "BDT" },
+          delivery: "16 days from PO",
+          warranty: "12 months",
+          validUntil: "2026-08-08T00:00:00+06:00",
+          compliance: "CTI-certified fill",
+          attachmentsCount: 1,
+        },
+        {
+          // SEALED-UNTIL-CLOSE: the server withheld this vendor's price and protected commercial
+          // terms (Doc-3 §10.1). The cell must EXPLAIN the seal — never a blank, never implying the
+          // vendor under-quoted. Placed sixth so the frozen default selection (first five) excludes it.
+          quotationId: "q-901-6",
+          vendorName: "Padma Thermal Engineering",
+          state: "submitted",
+          sealed: true,
+          attachmentsCount: 1,
+        },
+      ],
+    },
+  },
+  {
+    // EXACTLY ONE disclosed quotation — the freeze W-6 single-column state. The tray cannot reach the
+    // minimum of two, so its only checkbox stays locked and the surface says so honestly.
+    detail: {
+      id: "rfq-000902",
+      humanRef: "RFQ-2026-000902",
+      title: "Boiler safety valve recertification — single-quotation fixture",
+      state: "quotations_received",
+      value: { amount: 185000, currency: "BDT" },
+      summary:
+        "Recertification of three boiler safety valves. Only one vendor has responded so far.",
+      category: "Mechanical Services",
+      workNature: ["service"],
+      currentVersionNo: 1,
+      deliveryLocation: "Bhaluka factory",
+      neededBy: "2026-09-10",
+      createdAt: "2026-06-28T10:00:00+06:00",
+      updatedAt: "2026-07-06T12:00:00+06:00",
+      permittedActions: [],
+      lifecycle: [{ id: "l-1", label: "RFQ created", at: "2026-06-28T10:00:00+06:00" }],
+      quotations: { items: [], nextCursor: null },
+    },
+    comparison: {
+      rfqId: "rfq-000902",
+      humanRef: "RFQ-2026-000902",
+      versionNo: 1,
+      generatedAt: "2026-07-06T12:00:00+06:00",
+      suppliers: [
+        {
+          quotationId: "q-902-1",
+          vendorName: "Meghna Boiler Services",
+          state: "submitted",
+          amount: { amount: 182500, currency: "BDT" },
+          delivery: "7 days from PO",
+          warranty: "6 months",
+          validUntil: "2026-08-01T00:00:00+06:00",
+          compliance: "ASME PTC 25 recertification",
+          attachmentsCount: 2,
+        },
+      ],
+    },
+  },
 ] as const;
 
 /** The list projection (`list_rfqs`) — derived once from the universe, in last-updated order (the

@@ -81,13 +81,17 @@ function ItemsTable({
   items,
   withTotals,
   data,
+  sealedIds,
 }: {
   vendors: CsVendor[];
   items: CsLineItem[];
   withTotals: boolean;
   data: ComparisonWorkspaceData;
+  sealedIds: Set<string>;
 }) {
   const { computed } = data.statement;
+  // A sealed vendor has no disclosed price, so its totals must read as sealed — never as 0.00, which
+  // would print the withheld bid as the lowest possible figure (Doc-3 §10.1).
   const totalRow = (label: string, values: MoneyValue[], className: string) => (
     <tr className={className}>
       <td colSpan={5} style={{ textAlign: "right", fontWeight: 700 }}>
@@ -95,7 +99,7 @@ function ItemsTable({
       </td>
       {vendors.map((v, vi) => (
         <td key={v.quotationId} colSpan={2} className="cd-num">
-          {amt(values[vi])}
+          {sealedIds.has(v.quotationId) ? "Sealed until close" : amt(values[vi])}
         </td>
       ))}
       <td />
@@ -202,15 +206,21 @@ function CoverBody({
   purpose,
   evaluation,
   approvals,
+  sealedIds,
 }: {
   data: ComparisonWorkspaceData;
   purpose: string;
   evaluation: CsBuyerEvaluation | undefined;
   approvals: CsApprovalBlock[];
+  sealedIds: Set<string>;
 }) {
   const { statement } = data;
   const { computed, vendors, letterhead } = statement;
-  const lowest = vendors[computed.lowestVendorIdx];
+  const lowestCandidate = vendors[computed.lowestVendorIdx];
+  // Never name a SEALED vendor as the lowest grand total — its figure is withheld, not low. We do not
+  // recompute a corrected lowest here (adapter work, R7); the row is withheld as not determinable.
+  const lowest =
+    lowestCandidate && !sealedIds.has(lowestCandidate.quotationId) ? lowestCandidate : undefined;
   return (
     <>
       <div className="cd-letterhead">
@@ -281,9 +291,17 @@ function CoverBody({
               <tr>
                 <th scope="row">Lowest grand total</th>
                 <td>
-                  {lowest?.vendorName} — {data.currency}{" "}
-                  {amt(computed.grandTotals[computed.lowestVendorIdx])}
-                  <span className="cd-prov"> (arithmetic — not a recommendation)</span>
+                  {lowest ? (
+                    <>
+                      {lowest.vendorName} — {data.currency}{" "}
+                      {amt(computed.grandTotals[computed.lowestVendorIdx])}
+                      <span className="cd-prov"> (arithmetic — not a recommendation)</span>
+                    </>
+                  ) : (
+                    <span className="cd-prov">
+                      Not determinable while a compared quotation remains sealed until close.
+                    </span>
+                  )}
                 </td>
               </tr>
               {computed.differenceAmount ? (
@@ -471,6 +489,11 @@ export function ComparisonDocument({ data }: { data: ComparisonWorkspaceData }) 
     title: signatoryNames[block.role]?.title?.trim() || undefined,
   }));
 
+  // Vendors whose price the server sealed (Doc-3 §10.1) — their money must print as sealed, never 0.
+  const sealedIds = new Set(
+    data.selectedSuppliers.filter((s) => s.sealed).map((s) => s.quotationId),
+  );
+
   const pages = composeDocumentPages(statement.items);
 
   return (
@@ -489,6 +512,7 @@ export function ComparisonDocument({ data }: { data: ComparisonWorkspaceData }) 
                 purpose={purpose}
                 evaluation={evaluation}
                 approvals={approvals}
+                sealedIds={sealedIds}
               />
             ) : null}
             {page.kind === "items" ? (
@@ -503,6 +527,7 @@ export function ComparisonDocument({ data }: { data: ComparisonWorkspaceData }) 
                   items={page.items}
                   withTotals={page.withTotals}
                   data={data}
+                  sealedIds={sealedIds}
                 />
                 <p className="cd-prov">
                   <span className="cd-swatch" /> Lowest quoted unit price per item (arithmetic

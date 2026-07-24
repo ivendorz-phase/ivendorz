@@ -80,7 +80,10 @@ export function QuotationTray({ data }: { data: ComparisonWorkspaceData }) {
   const atMax = count >= MAX_COMPARE;
 
   return (
-    <fieldset className="rounded-lg border border-border bg-card p-4">
+    // `min-w-0` + `min-inline-size:0` are load-bearing: a <fieldset> carries a UA-default
+    // `min-inline-size: min-content`, so it refuses to shrink below its widest row and drags the whole
+    // PAGE BODY into horizontal scroll (§2.5 — only the tray's own rail may scroll sideways).
+    <fieldset className="min-w-0 [min-inline-size:0] rounded-lg border border-border bg-card p-4">
       <legend className="px-1 text-sm font-medium text-foreground">
         Select {MIN_COMPARE}–{MAX_COMPARE} quotations to compare
       </legend>
