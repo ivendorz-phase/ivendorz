@@ -32,8 +32,9 @@ export interface CategoryGroup {
 }
 
 /** Data-fetch phase for the picker — the combobox renders a distinct surface per phase. Until the
- *  read is wired the stub resolves synchronously to `data`; `loading`/`error` remain reachable so the
- *  states exist for the state matrix. */
+ *  read is wired the stub resolves synchronously, so only `data` (and its empty result) is reachable
+ *  on this page; `loading`/`error` are implemented by the kit primitive and surface once the async
+ *  `marketplace.list_categories.v1` read replaces the stub. */
 export type CategoryLoadStatus = "loading" | "data" | "error";
 
 /** STUB category data — illustrative only (P1 seeding gated). The live picker reads

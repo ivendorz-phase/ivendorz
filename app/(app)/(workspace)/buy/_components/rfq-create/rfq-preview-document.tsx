@@ -3,9 +3,12 @@
 // P-BUY-RFQ — RFQ PREVIEW DOCUMENT (owner directive 2026-07-07): the "Submit RFQ" preview renders the
 // RFQ as a paper document, the same document convention as the vendor's quotation preview — but with
 // BUYER content ONLY. No vendor features here: no pricing, no financial summary, no offer terms, no
-// signature block. Buyer-INTERNAL guidance (routing preferences, budget, urgency, special
-// instructions) is deliberately EXCLUDED from the document body — vendors never receive it
-// (non-disclosure, types grounding in rfq-form-models.ts) — and a footnote says so honestly.
+// signature block. The document is split by an explicit "Internal — not sent to vendors" lock line:
+// buyer-INTERNAL guidance (vendor routing, estimated value/budget, urgency) renders BELOW it, tagged
+// internal, so the buyer can review the whole request without disclosing it; everything ABOVE the line
+// is what an invited vendor receives (special instructions live here — vendor-facing per their own
+// framing). Estimated value + routing take the conservative internal-only line pending the open Board
+// disclosure ruling (non-disclosure, types grounding in rfq-form-models.ts).
 //
 // Paper-fixed styling (theme-invariant document artifact — same class as the vendor QuotationDocument
 // and the CS print view): fixed white/slate utilities inside the paper only. No fabricated RFQ number:

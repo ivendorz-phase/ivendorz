@@ -265,18 +265,19 @@ export function DeliverySection({ form }: { form: RfqDraftForm }) {
   );
 }
 
-// ── Budget & priority (OPTIONAL — commercial GUIDANCE, not commercial terms; payment/incoterms/tax live
-//    on the VENDOR quotation, Board ruling 2026-07-01) ────────────────────────────────────────────────
+// ── Estimated value & priority. NOTE: this is the RETIRED T-WIZARD scroll, superseded by RfqDraftForm's
+//    D3 treatment. `estimated_value` is in the frozen submission FIXED-set (Doc-3 §1.2) — Required BEFORE
+//    SUBMISSION, never "optional". Commercial terms (payment/incoterms/tax) live on the VENDOR quotation
+//    (Board 2026-07-01). Retained only for `TitledCard`; retire fully in a later cleanup. ───────────────
 export function BudgetSection({ form }: { form: RfqDraftForm }) {
   return (
-    <SectionCard title="Budget & priority (optional)">
-      {/* Made fully optional in the wizard (no asterisk/required marker) per product direction — the
-          frozen submission FIXED-set (rfq-form-models.ts) still lists `estimated_value` as a backend
-          submit-time field, but the buyer is never forced to state a budget figure client-side. */}
+    <SectionCard title="Estimated value & priority">
+      {/* estimated_value is Required before submission (Doc-3 §1.2 FIXED-set) — non-blocking while
+          drafting, but never presented as optional (D3, 2026-07-24). */}
       <FormField
         id="rfq-budget"
-        label="Estimated budget (BDT)"
-        description="Optional guidance for vendors. No currency selector: BDT at create."
+        label="Estimated value (BDT)"
+        description="Required before submission — non-blocking while you draft. BDT at create."
         inputProps={{
           defaultValue: form.budget,
           type: "number",

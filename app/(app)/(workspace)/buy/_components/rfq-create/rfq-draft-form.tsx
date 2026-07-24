@@ -33,7 +33,7 @@ import {
 } from "@/frontend/primitives/dialog";
 import { cn } from "@/frontend/lib/cn";
 import { Callout } from "../callout";
-import { Select, CheckboxRow } from "../form-controls";
+import { Select, CheckboxRow, Textarea } from "../form-controls";
 import {
   ROUTING_MODE_OPTIONS,
   FINANCIAL_TIER_OPTIONS,
@@ -70,9 +70,6 @@ const DISTRICT_OPTIONS = [
   "Rajshahi",
   "Sylhet",
 ].map((d) => ({ value: d, label: d }));
-
-const INPUT_CLASS =
-  "w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-iv-ink-strong shadow-iv-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 function nowLabel() {
   const d = new Date();
@@ -240,7 +237,19 @@ export function RfqDraftForm({ minScopeChars, simulateSaveFailure }: RfqDraftFor
       const el = document.getElementById(sectionAnchorId(s.id));
       if (el) observer.observe(el);
     });
-    return () => observer.disconnect();
+    // Bottom-of-page fallback: the final short section can't scroll high enough to enter the
+    // observer's activation band, so it would never light up. When the page bottoms out, activate
+    // the last section directly so the rail reflects what's actually in view.
+    const onScroll = () => {
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+        setActiveSection(RFQ_SECTIONS[RFQ_SECTIONS.length - 1].id);
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", onScroll);
+    };
   }, [view]);
 
   // ── D2 — leave guards ──
@@ -414,6 +423,7 @@ export function RfqDraftForm({ minScopeChars, simulateSaveFailure }: RfqDraftFor
             type="button"
             disabled={!canContinue}
             onClick={() => {
+              if (!canContinue) return; // gate enforced at the handler, not only the disabled attr
               setView("canvas");
               setActiveSection("requirement");
               window.scrollTo(0, 0);
@@ -566,10 +576,10 @@ export function RfqDraftForm({ minScopeChars, simulateSaveFailure }: RfqDraftFor
               >
                 Scope &amp; acceptance criteria
               </FieldLabel>
-              <textarea
+              <Textarea
                 id="rfq-scope"
                 rows={4}
-                className={cn(INPUT_CLASS, "min-h-24 resize-y")}
+                className="min-h-24 resize-y"
                 value={form.scopeText ?? ""}
                 onChange={(e) => patch({ scopeText: e.target.value })}
                 placeholder="Specification, scope of supply, acceptance criteria, testing and inspection expectations…"
@@ -753,10 +763,10 @@ export function RfqDraftForm({ minScopeChars, simulateSaveFailure }: RfqDraftFor
               <FieldLabel htmlFor="rfq-dinstr" badge={<RequirednessBadge level="optional" />}>
                 Delivery instructions
               </FieldLabel>
-              <textarea
+              <Textarea
                 id="rfq-dinstr"
                 rows={2}
-                className={cn(INPUT_CLASS, "min-h-16 resize-y")}
+                className="min-h-16 resize-y"
                 value={form.deliveryInstructions ?? ""}
                 onChange={(e) => patch({ deliveryInstructions: e.target.value })}
                 placeholder="Access, unloading, timing, packaging…"
@@ -901,10 +911,10 @@ export function RfqDraftForm({ minScopeChars, simulateSaveFailure }: RfqDraftFor
               <FieldLabel htmlFor="rfq-specinstr" badge={<RequirednessBadge level="optional" />}>
                 Special instructions
               </FieldLabel>
-              <textarea
+              <Textarea
                 id="rfq-specinstr"
                 rows={2}
-                className={cn(INPUT_CLASS, "min-h-16 resize-y")}
+                className="min-h-16 resize-y"
                 value={form.specialInstructions ?? ""}
                 onChange={(e) => patch({ specialInstructions: e.target.value })}
                 placeholder="Anything else vendors should know — not commercial terms (those come in the quote)…"
@@ -981,7 +991,11 @@ export function RfqDraftForm({ minScopeChars, simulateSaveFailure }: RfqDraftFor
         </div>
 
         {/* ── readiness panel ── */}
-        <div className="lg:col-span-2 xl:col-span-1">
+        {/* self-stretch: the grid sets `items-start`, which would size this column to its content
+            height and make THAT the sticky containing block — killing the panel's sticky travel (D3
+            requires it persistent). Stretching the column to the full grid-row height gives the inner
+            sticky aside room to travel, mirroring the (direct-grid-child) section rail. */}
+        <div className="self-stretch lg:col-span-2 xl:col-span-1">
           <ReadinessPanel snapshot={snapshot} onJump={jumpToItem} />
         </div>
       </div>
