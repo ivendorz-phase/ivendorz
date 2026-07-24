@@ -191,10 +191,12 @@ Matching rule: vendor eligible when RFQ value ≤ vendor tier ceiling.
 
 ### 4.2 Vendor Capability Matrix (four flags, never a type)
 
-`can_supply` · `can_service` · `can_fabricate` · `can_consult`. Five preset types
-(Service Provider, MRO Supplier, Importer, Manufacturer, Engineering Firm) seed the
-flags; vendors may override. RFQ carries `work_nature`; vendor flags must **cover** it.
-A supply-only RFQ never reaches a pure consultant.
+`can_supply` · `can_service` · `can_fabricate` · `can_consult`. Six preset types
+(Consultant, MRO / Retail Supplier, Importer / Equipment Seller, Manufacturer / Workshop,
+Engineering Firm, Service Provider) seed the flags; vendors may override. RFQ carries
+`work_nature`; vendor flags must **cover** it. A supply-only RFQ never reaches a pure
+consultant. *(Mirror of the re-frozen Architecture §Invariant 1 register per AMD-MA-VTP-1;
+non-authoritative — the Master register governs on any divergence.)*
 
 ---
 
