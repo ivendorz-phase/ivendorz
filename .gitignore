@@ -44,3 +44,6 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 *.code-workspace
+
+# Playwright MCP scratch output (screenshots, console/page dumps)
+/.playwright-mcp/
