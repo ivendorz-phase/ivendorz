@@ -145,6 +145,10 @@ Atomic set (Invite-to-Register Growth Hub; authority `governanceReviews/GrowthHu
 | `Doc-6C_GrowthInvitation_Patch_v1.0.4.md` | Doc-6C → effective v1.0.4 (3 enums + 2 tables DDL/RLS/triggers + GI-1/2/3 + count 47) |
 | `Doc-7E_GrowthHub_Patch_v1.0.2.md` | Doc-7E (Growth Hub surface + `(public)` token landing; wired-reads-only) |
 
+Origins/provenance: the matching `governanceReviews/*_PROPOSAL.md` files (per-patch Review-A / Review-B / fix-verification records).
+
+---
+
 ## 4. Doc-4 Series — Cross-Family Governance & Freeze
 
 | File | Purpose |

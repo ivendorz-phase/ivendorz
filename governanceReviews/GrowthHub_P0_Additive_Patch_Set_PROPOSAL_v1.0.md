@@ -67,8 +67,8 @@
 ## Linked-set manifest (10 additive patches — atomic Board review)
 | Patch | Frozen base | Adds |
 |---|---|---|
-| `Doc-2_Patch_v1.0.10_VendorBuyerRelationship` | Doc-2 v1.0.8 | 2 entities (§10.2), 2 machines (§5), §7 slug `can_manage_growth_invites`, 2 §8 events, 2 §9 audit actions |
-| `Doc-3_…v1.13_GrowthHub` (Identity + billing) | Doc-3 §12.2 | `identity.*` invite keys (dedup/ttl/quota/resolve-rate-limit) + `billing.*` campaign keys (Q-6/Q-12) |
+| `Doc-2_Patch_v1.0.11_GrowthHub` | Doc-2 v1.0.8 | 2 entities (§10.2), 2 machines (§5), §7 slug `can_manage_growth_invites`, 2 §8 events, 2 §9 audit actions |
+| `Doc-3_…v1.12_GrowthHub` (Identity + billing) | Doc-3 §12.2 | `identity.*` invite keys (dedup/ttl/quota/resolve-rate-limit) + `billing.*` campaign keys (Q-6/Q-12) |
 | `Doc-4C_GrowthInvitation_Patch_v1.0.3` | Doc-4C PassB | §C13 **3 contracts** + `provisionIdentity` attribution extension + §C12.7 flip + audit tokens |
 | `Doc-4H_GrowthDelivery_Patch` (M6) | Doc-4H | external-address delivery + `InvitationIssued` consumer + delivery-result lifecycle |
 | `Doc-4I_GrowthReferral_Patch` | Doc-4I PassB Part2 | additive **System event-create branch on `track_referral`** (Q-15 guards) |
@@ -147,7 +147,7 @@ growth_invitation_id, campaign_key, recipient_type, referrer_organization_id, re
 `identity.growth_invite_resolve_rate_limit` (Board MINOR-8, v1.11 precedent) · **[Q-6]**
 `billing.referral_qualification_milestone` · **[Q-12]** `billing.referral_reward_value` (`[ESC-BILL-POLICY]`). The
 `campaign_key`→rules config (M0-owned) is the **Q-9 MVP registry**; **M1 reads+validates it, M8 does not own it**
-(Board MINOR-3). Author as `…v1.13_GrowthHub_Identity` + a `billing.*` extension (namespace split).
+(Board MINOR-3). Author as `…v1.12_GrowthHub_Identity` + a `billing.*` extension (namespace split).
 
 ### A.6 Audit actions (Doc-2 §9; wire tokens = Doc-4C patch, buyer_profile linked-pair pattern)
 `growth_invitation_created`, `invitation_converted` (Doc-2 §9 additive by pointer OR interim `[ESC-IDN-AUDIT]`).
@@ -180,12 +180,12 @@ audits `actor_type=SYSTEM` (Q-15 guard).
 
 # §B — Per-document patch proposals (10) — deltas from v1.3
 
-## B1 · Doc-2 → `Doc-2_Patch_v1.0.10_VendorBuyerRelationship`
+## B1 · Doc-2 → `Doc-2_Patch_v1.0.11_GrowthHub`
 2 entities (§10.2 + tenant-owned RLS list, intra-schema FKs only) · 2 machines (§5) · **§7 slug**
 `can_manage_growth_invites` (unbundled default; routing-slug precedent) · 2 §8 events · 2 §9 audit actions. Purely
 additive; M7 `referrals` untouched. □ §5 number · □ §9 family vs `[ESC-IDN-AUDIT]`.
 
-## B2 · Doc-3 → `…v1.13_GrowthHub` (Identity + billing split)
+## B2 · Doc-3 → `…v1.12_GrowthHub` (Identity + billing split)
 A.5 keys incl. resolve-rate-limit. Config in M0 `core.system_configuration`. □ start values · □ Q-6/Q-12.
 
 ## B3 · Doc-4C → `Doc-4C_GrowthInvitation_Patch_v1.0.3`  *(M1 contracts)*

@@ -17,7 +17,7 @@
 | **Status** | **PROPOSED** — gated on per-patch Review-A → Review-B → Board fold. Additive; extends frozen `Doc-4C` (Structure v1.0 + Content Pass-B) **without editing it in place** (the `Doc-4C_BuyerProfileAuditToken_Patch_v1.0.2` mechanism). |
 | **Date** | 2026-07-19 · **Kind** Additive — new **§C13** (3 contracts) + a behavioral extension of `provisionIdentity` + the **§C12.7** outbox-consumption flip + the §9 audit-token realization. Coins no error class; codes register within the existing `identity_` prefix. |
 | **Authority** | Growth Hub Architecture (**FROZEN** 2026-07-19) §A.4; Board Q-2/Q-14/Q-15/Q-16 + GI-1/2/3; the linked `Doc-2_Patch_v1.0.11` (entities/states/slug/events/audit — the *what*); Doc-4A §21 contract grammar; the frozen `Doc-4C §B.1–B.10` cross-cutting defaults; the public-actor precedent `marketplace.get_public_product_detail.v1`; DC-1 (identity-event-addition channel, `Doc-4C:822`). |
-| **Depends on** | `Doc-2_Patch_v1.0.11` (entities/slug/events/audit), `Doc-3_…v1.12_GrowthHub` (the `[DC-5]` POLICY keys; renumbered v1.13→v1.12 per the Doc-4H collision note), `Doc-6C_…v1.0.4` (schema). Atomic fold. |
+| **Depends on** | `Doc-2_Patch_v1.0.11` (entities/slug/events/audit), `Doc-3_…v1.12_GrowthHub` (the `[DC-5]` POLICY keys; renumbered to v1.12 — the next verified-available Doc-3 version on `main` (chain ends at v1.11) per Amendment A-1), `Doc-6C_…v1.0.4` (schema). Atomic fold. |
 
 Contracts follow the frozen **§B.1 grammar** and the **§B cross-cutting defaults** (cited "(§B default)", not repeated).
 

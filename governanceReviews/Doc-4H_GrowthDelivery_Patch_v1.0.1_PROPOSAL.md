@@ -5,7 +5,7 @@
 | **Status** | **PROPOSED** — gated on per-patch Review-A → Review-B → Board fold (atomic with the 10-patch Growth Hub set). Additive; carried alongside the frozen Doc-4H set (`Doc-4H_PassA_v1.0_FROZEN` + PassB Parts 1–4) **without editing it in place**. |
 | **Date** | 2026-07-19 · **Kind** Additive — **one new BC-COMM-3 System consumer contract** (`comm.dispatch_invitation_delivery.v1`, authored §HB-3.6-style in the frozen Part-3 12-section grammar), the Part-3 §H.7 consumption flip, an invitation-specific **retry guard**, and the GI-3 confinement bindings. Coins **no** entity, state, transition, slug, audit action, POLICY key, template, or domain event (packet §B4: *"No new domain event required"*). |
 | **Authority** | Growth Hub Architecture (**FROZEN** 2026-07-19) §A.3(1) (`InvitationIssued`, consumer M6) + §A.4(4) (`identity.resolve_invitation_delivery_payload.v1`) + §A.7 **GI-3** (confinement + the **M6 operational exception**) + **§B4** (external-address delivery; delivery-result lifecycle owned by M6's frozen delivery log; duplicate-consumer suppression idempotent on `event_id`; **must not retry a `revoked`/`expired` invitation**; targeted channels only); Q-16 (ratified with the delivery-security revision); frozen Part-3 grammar (H.1–H.10, the 12-section record shape); the §HB-2.1 consumed-event-effect model; Doc-4A §4.4 (single-authorship) + §16 (event contract standard) + §16.5 payload rules. |
-| **Depends on** | `Doc-2_Patch_v1.0.11` §4 (the event), `Doc-4C_…v1.0.3` (the delivery-payload contract — internal-service, M6 sole caller), `Doc-4J_…v1.0.1` (catalog), `Doc-4L_…v1.0.1` (flow row L9-1), `Doc-3_…v1.12_GrowthHub` (the invite POLICY keys — renumbered v1.13→v1.12, §6 fold-note). **Atomic fold** — the consumer's trigger and its payload source do not exist without them. |
+| **Depends on** | `Doc-2_Patch_v1.0.11` §4 (the event), `Doc-4C_…v1.0.3` (the delivery-payload contract — internal-service, M6 sole caller), `Doc-4J_…v1.0.1` (catalog), `Doc-4L_…v1.0.1` (flow row L9-1), `Doc-3_…v1.12_GrowthHub` (the invite POLICY keys — renumbered to v1.12 — the next verified-available Doc-3 version on `main` per Amendment A-1; §6 fold-note). **Atomic fold** — the consumer's trigger and its payload source do not exist without them. |
 
 ---
 
@@ -228,8 +228,8 @@ unregistered contract.
   **Fold-notes:** the set's `[DC-5]` label reuse is a fold-confirm item (the original `[DC-5]` was
   cleared by Doc-3 v1.9 — the `00_AUTHORITY_MAP.md` Doc-3 v1.9 row, :131 at Final-Gate audit time,
   cite-by-row governs); and the packet's "Doc-3 v1.13" number was
-  **contested** by `Doc-3_Policy_Key_Registration_Patch_v1.13_EvidenceHandling_PROPOSAL.md` (Review-B
-  F-5) — **resolved: the Phase-3 sibling is authored as `…v1.12_GrowthHub`**; the Board re-verifies both
+  **contested** by a pending EvidenceHandling POLICY-key proposal (a branch-only working record — neither on `main` nor carried here) (Review-B
+  F-5) — **resolved on reconcile: the sibling is authored as `…v1.12_GrowthHub` — the next verified-available Doc-3 version on `main` — per Amendment A-1**; the Board re-verifies both
   numbers at fold.
 
 **Checklist:** □ no new module · □ no ownership change · □ no governance-signal change · □ no
