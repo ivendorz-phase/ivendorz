@@ -1,0 +1,1842 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>New RFQ (P-BUY-07) — Prototype · iVendorz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ── iVendorz design tokens (copied from app/globals.css — light mode) ───── */
+  :root{
+    --iv-brand-50:#eef3fd; --iv-brand-100:#dbe6fa; --iv-brand-200:#b8cef5; --iv-brand-300:#8fb0ea;
+    --iv-brand-400:#5f8ad9; --iv-brand-500:#2f5eb8; --iv-brand-600:#23438f; --iv-brand-700:#1c3672;
+    --iv-brand-800:#162a58; --iv-brand-900:#101f40; --iv-brand-950:#0b1530;
+    --iv-navy-50:#eef2f8; --iv-navy-100:#d9e1ef; --iv-navy-200:#b7c6e0; --iv-navy-300:#8ba0c6;
+    --iv-navy-400:#5a74a3; --iv-navy-500:#375081; --iv-navy-600:#283f6a; --iv-navy-700:#1f3154;
+    --iv-navy-800:#182643; --iv-navy-900:#111c33; --iv-navy-950:#0b1322;
+    --iv-amber-400:#cda434; --iv-amber-500:#b8860b;
+    --iv-light-base:#f6f8fa; --iv-light-raised:#ffffff; --iv-light-muted:#f8fafc;
+    --iv-light-border:#e6e9ee; --iv-light-hover:#f8fafc;
+    --iv-success-base:#16a34a; --iv-success-subtle:rgba(22,163,74,.08);
+    --iv-warning-base:#ca8a04; --iv-warning-subtle:rgba(202,138,4,.08);
+    --iv-danger-base:#dc2626; --iv-danger-subtle:rgba(220,38,38,.07);
+    --iv-info-base:#2563eb; --iv-info-subtle:rgba(37,99,235,.08);
+    --iv-neutral-base:#6b7280; --iv-neutral-subtle:rgba(107,114,128,.08);
+    --fg:#1a2333; --fg-muted:#5b6472; --fg-soft:#8b93a1;
+    --radius:10px; --radius-sm:7px;
+    --sans:'Inter',-apple-system,'Segoe UI',sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--sans);font-size:14px;color:var(--fg);background:var(--iv-light-base);
+    -webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+  input,select,textarea{font:inherit}
+  .mono{font-family:var(--mono)}
+  .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  /* `hidden` must beat any class that sets display (flex/grid) — the recurring prototype gotcha. */
+  [hidden]{display:none !important}
+  @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important}}
+
+  /* ── review chrome ───────────────────────────────────────────────────────── */
+  .proto-banner{display:flex;align-items:center;gap:10px;padding:7px 16px;background:var(--iv-navy-950);
+    color:#cbd5e1;font-size:12px;border-bottom:1px solid #1e2a3b;flex-wrap:wrap}
+  .proto-banner .tag{background:var(--iv-amber-500);color:#fff;font-weight:700;font-size:10.5px;
+    letter-spacing:.06em;padding:2px 7px;border-radius:4px;text-transform:uppercase}
+  .proto-banner .sp{flex:1}
+  .proto-banner label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+  .proto-banner .close{width:24px;height:24px;border-radius:6px;color:#8fa0b8;display:inline-flex;
+    align-items:center;justify-content:center;margin-left:6px}
+  .proto-banner .close:hover{background:#1d2a3f;color:#e2e8f0}
+  body.hide-chrome .proto-banner{display:none}
+  .proto-restore{display:none;position:fixed;left:14px;bottom:74px;z-index:70;align-items:center;gap:7px;
+    height:30px;padding:0 12px;border-radius:999px;background:var(--iv-navy-950);color:#cbd5e1;
+    font-size:11.5px;font-weight:600;box-shadow:0 6px 18px rgba(11,21,48,.3)}
+  .proto-restore:hover{background:var(--iv-navy-900)}
+  body.hide-chrome .proto-restore{display:inline-flex}
+  .demo-states{display:inline-flex;gap:2px;background:#141f33;border:1px solid #223048;border-radius:7px;padding:2px}
+  .demo-states button{font-size:11px;font-weight:600;color:#9fb0c8;padding:3px 10px;border-radius:5px;transition:background .15s ease-out}
+  .demo-states button[aria-pressed="true"]{background:var(--iv-brand-600);color:#fff}
+  .note{display:none;border:1.5px dashed var(--iv-amber-400);background:#fffdf4;border-radius:var(--radius);
+    padding:11px 14px;font-size:12.5px;color:#6b5a1e;line-height:1.55;margin:0 0 16px}
+  .note b{color:#4a3504}
+  .note code{font-family:var(--mono);font-size:11.5px;background:#fff7dd;padding:1px 4px;border-radius:3px}
+  body.show-notes .note{display:block}
+  body.show-notes .cbx-demo{display:block !important}
+
+  /* ── top bar (matches built shell) ───────────────────────────────────────── */
+  .topbar{display:flex;align-items:center;gap:18px;height:56px;padding:0 16px;
+    background:var(--iv-navy-950);color:#e2e8f0}
+  .brand{display:inline-flex;align-items:center;gap:8px;flex-shrink:0}
+  .brand-mark{width:30px;height:30px;border-radius:7px;background:var(--iv-brand-600);color:#fff;
+    display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+  .topsearch{flex:0 1 400px;display:flex;align-items:center;gap:9px;height:36px;padding:0 14px;
+    background:#141f33;border:1px solid #223048;border-radius:999px;color:#7d8aa0;font-size:13.5px}
+  .topbar .sp{flex:1}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:34px;padding:0 14px;
+    border-radius:8px;font-weight:600;font-size:13.5px;transition:background .15s ease-out,border-color .15s ease-out}
+  .btn-primary{background:var(--iv-brand-500);color:#fff}
+  .btn-primary:hover{background:var(--iv-brand-600)}
+  .btn-primary[disabled]{background:var(--iv-navy-200);color:#fff;cursor:not-allowed}
+  .btn-ghost-dark{color:#9fb0c8;width:36px;padding:0;border-radius:8px}
+  .btn-ghost-dark:hover{background:#141f33}
+  .btn-outline{border:1px solid var(--iv-light-border);background:var(--iv-light-raised);color:var(--fg)}
+  .btn-outline:hover{background:var(--iv-light-hover)}
+  .btn-quiet{color:var(--fg-muted)}
+  .btn-quiet:hover{background:var(--iv-light-hover);color:var(--fg)}
+  .btn-sm{height:30px;padding:0 11px;font-size:12.5px;border-radius:7px}
+  .account{display:flex;align-items:center;gap:9px;cursor:pointer;padding:4px 8px;border-radius:8px}
+  .account:hover{background:#141f33}
+  .avatar{width:30px;height:30px;border-radius:999px;background:var(--iv-brand-500);color:#fff;
+    display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+  .account .who{line-height:1.25;font-size:12.5px}
+  .account .who b{display:block;font-size:13px;color:#f1f5f9;font-weight:600}
+  .account .who span{color:#7d8aa0}
+
+  /* ── layout ──────────────────────────────────────────────────────────────── */
+  .frame{display:flex;min-height:calc(100vh - 56px)}
+  .sidebar{width:248px;flex-shrink:0;background:var(--iv-light-raised);
+    border-right:1px solid var(--iv-light-border);display:flex;flex-direction:column}
+  .ws-head{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--iv-navy-50);
+    border-bottom:1px solid var(--iv-light-border)}
+  .ws-head .ic-box{width:30px;height:30px;border-radius:7px;background:var(--iv-brand-100);
+    color:var(--iv-brand-700);display:inline-flex;align-items:center;justify-content:center}
+  .ws-head .t b{display:block;font-size:13.5px;font-weight:700;color:var(--iv-navy-800)}
+  .ws-head .t span{font-size:11.5px;color:var(--fg-muted)}
+  nav.side{flex:1;overflow-y:auto;padding:10px 10px 16px}
+  .grp{margin-top:14px}.grp:first-child{margin-top:4px}
+  .grp>p{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--fg-soft);padding:0 10px;margin-bottom:4px}
+  .nav-item{display:flex;align-items:center;gap:10px;height:34px;padding:0 10px;border-radius:8px;
+    font-size:13.5px;font-weight:500;color:#3c4657;width:100%;text-align:left}
+  .nav-item:hover{background:var(--iv-light-hover)}
+  .nav-item svg{flex-shrink:0;color:var(--fg-soft)}
+  .nav-item .chev{margin-left:auto}
+  .nav-sub{list-style:none;padding-left:30px;margin:1px 0 3px}
+  .nav-sub a{display:flex;height:31px;align-items:center;padding:0 10px;border-radius:8px;
+    font-size:13px;color:#4c5666}
+  .nav-sub a:hover{background:var(--iv-light-hover)}
+  .nav-sub a[aria-current="page"]{background:var(--iv-brand-100);color:var(--iv-brand-800);font-weight:600}
+
+  main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .page{flex:1;width:100%;max-width:1240px;margin:0 auto;padding:22px 30px 0}
+  .crumb{font-size:13px;color:var(--fg-muted);margin-bottom:12px}
+  .crumb a:hover{color:var(--iv-brand-600)}
+  .crumb .sep{margin:0 7px;color:var(--fg-soft)}
+  .crumb .cur{color:var(--fg);font-weight:500}
+  footer.app{border-top:1px solid var(--iv-light-border);padding:13px 30px;display:flex;
+    font-size:12.5px;color:var(--fg-muted)}
+  footer.app .sp{flex:1}
+
+  .card{background:var(--iv-light-raised);border:1px solid var(--iv-light-border);border-radius:var(--radius)}
+  .callout{display:flex;align-items:center;gap:9px;padding:10px 14px;border-radius:var(--radius);
+    background:var(--iv-navy-50);border:1px solid var(--iv-navy-100);font-size:13px;color:var(--fg-muted)}
+  .callout b{color:var(--iv-navy-800);font-weight:600}
+  .callout svg{color:var(--iv-navy-600);flex-shrink:0}
+
+  /* ── requiredness taxonomy (D3) ──────────────────────────────────────────── */
+  .req{display:inline-flex;align-items:center;gap:4px;padding:1.5px 7px;border-radius:999px;
+    font-size:10.5px;font-weight:700;letter-spacing:.03em;white-space:nowrap;vertical-align:middle}
+  .req-start{background:var(--iv-brand-100);color:var(--iv-brand-800)}
+  .req-submit{background:var(--iv-warning-subtle);color:#8a6300;border:1px solid rgba(202,138,4,.28)}
+  .req-cond{background:var(--iv-info-subtle);color:var(--iv-info-base);border:1px solid rgba(37,99,235,.22)}
+  .req-opt{background:transparent;color:var(--fg-soft);font-weight:600;border:1px solid var(--iv-light-border)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--fg-muted);
+    padding:9px 14px;border:1px solid var(--iv-light-border);border-radius:var(--radius);
+    background:var(--iv-light-raised);margin-bottom:16px}
+  .legend .lg{display:inline-flex;align-items:center;gap:6px}
+
+  /* ── ZONE 1 — the gate ───────────────────────────────────────────────────── */
+  .zone1{max-width:720px;margin:0 auto;padding-bottom:56px}
+  .zone1 h1{font-size:27px;font-weight:800;letter-spacing:-.02em;color:var(--iv-navy-900);text-align:center}
+  .zone1 .lede{margin:7px auto 22px;color:var(--fg-muted);font-size:14.5px;line-height:1.55;text-align:center;max-width:540px}
+  .z1-card{padding:24px 26px 22px}
+  .z1-step{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--iv-brand-600);margin-bottom:14px}
+  .z1-step i{font-style:normal;width:19px;height:19px;border-radius:999px;background:var(--iv-brand-600);
+    color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px}
+  .fld{margin-bottom:18px}
+  .fld>label,.fld>.lbl{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;
+    color:var(--fg);margin-bottom:6px}
+  .fld .hint{font-size:12px;color:var(--fg-muted);margin-top:6px;line-height:1.5}
+  .fld .err{display:none;font-size:12px;color:var(--iv-danger-base);margin-top:6px;font-weight:500}
+  .fld.invalid .err{display:block}
+
+  /* ── combobox (D6 — canonical, kit-bound at Phase 3) ─────────────────────── */
+  .cbx{position:relative}
+  .cbx-input{display:flex;align-items:center;gap:8px;height:40px;padding:0 10px 0 12px;
+    background:var(--iv-light-raised);border:1px solid var(--iv-light-border);border-radius:8px;
+    transition:border-color .15s ease-out,box-shadow .15s ease-out}
+  .cbx-input:focus-within{border-color:var(--iv-brand-500);box-shadow:0 0 0 3px rgba(47,94,184,.15)}
+  .cbx-input input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:14px;color:var(--fg)}
+  .cbx-input input::placeholder{color:var(--fg-soft)}
+  .cbx-input svg{color:var(--fg-soft);flex-shrink:0}
+  .cbx[aria-disabled="true"] .cbx-input{background:var(--iv-light-muted);opacity:.6;pointer-events:none}
+  .cbx-clear{width:22px;height:22px;border-radius:999px;display:none;align-items:center;justify-content:center;color:var(--fg-soft)}
+  .cbx-clear:hover{background:var(--iv-light-hover);color:var(--fg)}
+  .cbx.has-value .cbx-clear{display:inline-flex}
+  .cbx-list{position:absolute;z-index:40;top:calc(100% + 5px);left:0;right:0;max-height:290px;overflow-y:auto;
+    background:var(--iv-light-raised);border:1px solid var(--iv-light-border);border-radius:9px;
+    box-shadow:0 12px 30px rgba(16,31,64,.13);padding:5px;display:none}
+  .cbx[aria-expanded="true"] .cbx-list{display:block}
+  .cbx-grp{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--fg-soft);padding:9px 10px 4px}
+  .cbx-opt{display:flex;align-items:flex-start;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;
+    font-size:13.5px;line-height:1.4}
+  .cbx-opt small{display:block;font-size:11.5px;color:var(--fg-soft);margin-top:1px}
+  .cbx-opt.active{background:var(--iv-brand-50)}
+  .cbx-opt[aria-selected="true"]{background:var(--iv-brand-100);font-weight:600;color:var(--iv-brand-800)}
+  .cbx-opt .tick{margin-left:auto;color:var(--iv-brand-600);opacity:0}
+  .cbx-opt[aria-selected="true"] .tick{opacity:1}
+  .cbx-msg{padding:18px 12px;text-align:center;font-size:13px;color:var(--fg-muted)}
+  .cbx-msg.err{color:var(--iv-danger-base)}
+  .cbx-msg .sk{display:block;height:11px;border-radius:5px;margin:8px 22px;
+    background:linear-gradient(90deg,#e9edf2 25%,#f4f7fa 37%,#e9edf2 63%);background-size:400% 100%;
+    animation:sk 1.4s ease infinite}
+  @keyframes sk{0%{background-position:100% 50%}100%{background-position:0 50%}}
+  .cbx-picked{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;color:var(--fg-muted)}
+  .cbx-picked .path{color:var(--iv-navy-800);font-weight:600}
+
+  /* ── procurement mode chooser ────────────────────────────────────────────── */
+  .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .mode{text-align:left;padding:10px 12px;border-radius:9px;border:1px solid var(--iv-light-border);
+    background:var(--iv-light-raised);transition:border-color .15s ease-out,box-shadow .15s ease-out}
+  .mode:hover{border-color:var(--iv-brand-300)}
+  .mode[aria-pressed="true"]{border-color:var(--iv-brand-500);box-shadow:0 0 0 1px var(--iv-brand-500);
+    background:var(--iv-brand-50)}
+  .mode b{display:block;font-size:13px;font-weight:600;color:var(--iv-navy-900)}
+  .mode span{display:block;font-size:11.5px;color:var(--fg-soft);margin-top:2px;font-family:var(--mono)}
+  .maps{margin-top:11px;padding:9px 12px;border-radius:8px;background:var(--iv-navy-50);
+    border:1px solid var(--iv-navy-100);font-size:12.5px;color:var(--fg-muted)}
+  .maps .wn{font-family:var(--mono);font-size:12px;color:var(--iv-navy-800);font-weight:600}
+
+  /* ── CANVAS — rail + sections + readiness ────────────────────────────────── */
+  .canvas-head{display:flex;align-items:flex-start;gap:16px;padding-bottom:16px;
+    border-bottom:1px solid var(--iv-light-border);margin-bottom:18px}
+  .canvas-head h1{font-size:24px;font-weight:800;letter-spacing:-.02em;color:var(--iv-navy-900)}
+  .canvas-head .sub{margin-top:5px;color:var(--fg-muted);font-size:13.5px}
+  .canvas-head .sub .mono{color:var(--iv-navy-700);font-weight:600}
+  .canvas-head .sp{flex:1}
+  .draftchip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;
+    background:var(--iv-neutral-subtle);color:var(--fg-muted);font-size:11.5px;font-weight:700;
+    letter-spacing:.05em;text-transform:uppercase}
+
+  .layout{display:grid;grid-template-columns:198px minmax(0,1fr) 268px;gap:20px;align-items:start;
+    padding-bottom:26px}
+  @media (max-width:1280px){.layout{grid-template-columns:180px minmax(0,1fr)}
+    .readiness-col{grid-column:1/-1}}
+  @media (max-width:900px){.layout{grid-template-columns:1fr}.rail{display:none}}
+
+  /* Sticky columns must never be taller than the viewport, or their last rows are
+     unreachable while scrolling the form. Cap to the space between the top and the
+     sticky action bar, and let the column scroll itself. */
+  .rail{position:sticky;top:14px;max-height:calc(100vh - 88px);overflow-y:auto;
+    scrollbar-width:thin;overscroll-behavior:contain}
+  .rail>p{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--fg-soft);padding:0 8px;margin-bottom:6px}
+  .rail a{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;font-size:13px;
+    color:#46505f;line-height:1.3;transition:background .15s ease-out}
+  .rail a:hover{background:var(--iv-light-hover)}
+  .rail a[aria-current="true"]{background:var(--iv-brand-100);color:var(--iv-brand-800);font-weight:600}
+  .rail .dot{width:7px;height:7px;border-radius:999px;background:var(--iv-light-border);flex-shrink:0}
+  .rail .dot.done{background:var(--iv-success-base)}
+  .rail .dot.part{background:var(--iv-warning-base)}
+  .rail .cnt{margin-left:auto;font-size:10.5px;font-weight:700;min-width:17px;height:17px;padding:0 5px;
+    border-radius:999px;display:none;align-items:center;justify-content:center}
+  .rail .cnt.block{display:inline-flex;background:var(--iv-danger-subtle);color:var(--iv-danger-base)}
+
+  .sec{margin-bottom:16px;scroll-margin-top:14px}
+  .sec-h{display:flex;align-items:center;gap:9px;padding:13px 16px;border-bottom:1px solid var(--iv-light-border)}
+  .sec-h h2{font-size:14px;font-weight:700;color:var(--iv-navy-900)}
+  .sec-h .sp{flex:1}
+  .sec-b{padding:16px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:640px){.grid2{grid-template-columns:1fr}}
+  .in{width:100%;height:38px;padding:0 11px;border:1px solid var(--iv-light-border);border-radius:8px;
+    background:var(--iv-light-raised);color:var(--fg);font-size:13.5px;outline:0;
+    transition:border-color .15s ease-out,box-shadow .15s ease-out}
+  .in:focus{border-color:var(--iv-brand-500);box-shadow:0 0 0 3px rgba(47,94,184,.15)}
+  textarea.in{height:auto;min-height:96px;padding:9px 11px;line-height:1.55;resize:vertical}
+  select.in{cursor:pointer}
+  .fld.invalid .in{border-color:var(--iv-danger-base)}
+  .chk{display:flex;align-items:flex-start;gap:9px;font-size:13.5px;color:var(--fg);cursor:pointer;padding:3px 0}
+  .chk input{margin-top:2px;width:15px;height:15px;accent-color:var(--iv-brand-600);cursor:pointer}
+  .chk span small{display:block;font-size:12px;color:var(--fg-soft);margin-top:1px}
+
+  /* scope meter (conditional requirement) */
+  .meter{margin-top:9px}
+  .meter-bar{height:5px;border-radius:999px;background:var(--iv-light-border);overflow:hidden}
+  .meter-bar i{display:block;height:100%;background:var(--iv-warning-base);width:0;
+    transition:width .2s ease-out,background .2s ease-out}
+  .meter.ok .meter-bar i{background:var(--iv-success-base)}
+  .meter p{font-size:12px;color:var(--fg-muted);margin-top:5px}
+  .meter.ok p{color:var(--iv-success-base)}
+  .meter .policy{font-family:var(--mono);font-size:11px;color:var(--fg-soft)}
+
+  /* ── item requirements — each line is a BLOCK, not a table row, because one item may
+        need more than one line of description (owner directive 2026-07-07) ─────────── */
+  /* Row A gives the item NAME the full width; row B keeps PR/Size/Qty/Unit column-aligned
+     across every block, so a long list still scans like a table. */
+  .itemcols{display:grid;grid-template-columns:26px minmax(0,1fr) 30px;gap:7px;align-items:center}
+  .itemcols2{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.2fr) 68px minmax(0,1.1fr);
+    gap:7px;align-items:center;margin:7px 37px 0 33px}
+  .itemcols2 .micro{display:block;min-width:0}
+  .itemcols2 .micro>span{display:block;font-size:9.5px;font-weight:700;letter-spacing:.07em;
+    text-transform:uppercase;color:var(--fg-soft);margin-bottom:3px}
+  .itemrow .in[data-f="name"]{height:36px;font-size:13.5px;font-weight:500}
+  .itemrow{border:1px solid var(--iv-light-border);border-radius:9px;background:var(--iv-light-raised);
+    padding:8px;margin-bottom:7px;transition:border-color .15s ease-out}
+  .itemrow:focus-within{border-color:var(--iv-brand-300)}
+  .itemrow .in{height:34px;font-size:13px}
+  .itemrow .sl{font-size:12px;color:var(--fg-soft);text-align:center;font-variant-numeric:tabular-nums}
+  .rowdel{width:30px;height:30px;border-radius:7px;color:var(--fg-soft);display:inline-flex;
+    align-items:center;justify-content:center}
+  .rowdel:hover{background:var(--iv-danger-subtle);color:var(--iv-danger-base)}
+  .desc-toggle{display:inline-flex;align-items:center;gap:5px;margin-top:7px;margin-left:33px;
+    font-size:12px;font-weight:600;color:var(--iv-brand-600);padding:2px 4px;border-radius:5px}
+  .desc-toggle:hover{background:var(--iv-brand-50)}
+  .desc-toggle svg{transition:transform .15s ease-out}
+  .itemrow.open .desc-toggle svg{transform:rotate(180deg)}
+  .desc-wrap{display:none;margin:8px 0 2px 33px}
+  .itemrow.open .desc-wrap{display:block}
+  .desc{min-height:56px;padding:8px 10px;border:1px solid var(--iv-light-border);border-radius:8px;
+    background:var(--iv-light-raised);font-size:13px;line-height:1.6;outline:0;
+    transition:border-color .15s ease-out,box-shadow .15s ease-out}
+  .desc:focus{border-color:var(--iv-brand-500);box-shadow:0 0 0 3px rgba(47,94,184,.15)}
+  .desc:empty:before{content:attr(data-ph);color:var(--fg-soft)}
+  .desc-hint{font-size:11.5px;color:var(--fg-soft);margin-top:4px}
+  .richbar{display:flex;align-items:center;gap:5px;padding:6px 9px;border:1px solid var(--iv-light-border);
+    border-radius:8px;background:var(--iv-light-muted);margin-bottom:9px;flex-wrap:wrap;font-size:12px;
+    color:var(--fg-muted)}
+  .richbar b{color:var(--fg);font-weight:600;margin-right:3px}
+  .richbar button{width:26px;height:26px;border-radius:6px;display:inline-flex;align-items:center;
+    justify-content:center;border:1px solid var(--iv-light-border);background:var(--iv-light-raised)}
+  .richbar button:hover{border-color:var(--iv-brand-300)}
+  .richbar .dot{width:12px;height:12px;border-radius:999px;display:block}
+  .addrow{margin-top:8px}
+  .pastebox textarea{width:100%;min-height:150px;font-family:var(--mono);font-size:12px;line-height:1.6;
+    padding:10px 12px;border:1px solid var(--iv-light-border);border-radius:8px;outline:0;resize:vertical}
+  .pastebox textarea:focus{border-color:var(--iv-brand-500);box-shadow:0 0 0 3px rgba(47,94,184,.15)}
+  @media (max-width:760px){
+    .itemcols2{grid-template-columns:1fr 1fr;margin-left:0;margin-right:0}
+    .itemhead{display:none}
+    .desc-toggle,.desc-wrap{margin-left:0}
+  }
+
+  /* attachments + T&C */
+  .drop{border:1.5px dashed var(--iv-light-border);border-radius:var(--radius);padding:22px;text-align:center;
+    color:var(--fg-muted);font-size:13px;background:var(--iv-light-muted)}
+  .drop b{display:block;color:var(--fg);font-size:13.5px;margin:8px 0 3px}
+  .filelist{list-style:none;margin-top:10px;display:flex;flex-direction:column;gap:6px}
+  .filelist li{display:flex;align-items:center;gap:9px;padding:8px 11px;border:1px solid var(--iv-light-border);
+    border-radius:8px;font-size:13px;background:var(--iv-light-raised)}
+  .filelist .nm{font-weight:500}
+  .filelist .sz{color:var(--fg-soft);font-size:12px}
+  .filelist .sp{flex:1}
+  .tcrow{display:flex;gap:8px;align-items:center;margin-bottom:7px}
+  .bundlebox{margin-top:11px;padding:11px 13px;border:1px dashed var(--iv-light-border);border-radius:9px;
+    background:var(--iv-light-muted)}
+  .bundlebox p{font-size:12px;color:var(--fg-muted);line-height:1.5}
+  .bundlebox .devnote{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;
+    color:var(--iv-warning-base);margin-bottom:5px}
+  .bundlechips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+  .bundlechips button{height:27px;padding:0 10px;border-radius:999px;border:1px solid var(--iv-light-border);
+    background:var(--iv-light-raised);font-size:12px;font-weight:600;color:var(--fg-muted)}
+  .bundlechips button:hover{border-color:var(--iv-brand-300);color:var(--iv-brand-700)}
+
+  /* ── readiness panel (D3) ────────────────────────────────────────────────── */
+  .readiness-col{position:sticky;top:14px;max-height:calc(100vh - 88px);display:flex}
+  .rd{overflow:hidden;display:flex;flex-direction:column;min-height:0;width:100%}
+  /* the header stays pinned; only the item lists scroll */
+  .rd-scroll{overflow-y:auto;min-height:0;scrollbar-width:thin;overscroll-behavior:contain}
+  .rd-h{padding:13px 15px;border-bottom:1px solid var(--iv-light-border);flex-shrink:0}
+  .rd-state{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700}
+  .rd-state .pip{width:9px;height:9px;border-radius:999px;flex-shrink:0}
+  .rd[data-state="not-ready"] .rd-state{color:var(--iv-danger-base)}
+  .rd[data-state="not-ready"] .pip{background:var(--iv-danger-base)}
+  .rd[data-state="needs"] .rd-state{color:var(--iv-warning-base)}
+  .rd[data-state="needs"] .pip{background:var(--iv-warning-base)}
+  .rd[data-state="ready"] .rd-state{color:var(--iv-success-base)}
+  .rd[data-state="ready"] .pip{background:var(--iv-success-base)}
+  .rd-h p{font-size:12px;color:var(--fg-muted);margin-top:4px;line-height:1.5}
+  .rd-prog{height:4px;border-radius:999px;background:var(--iv-light-border);margin-top:10px;overflow:hidden}
+  .rd-prog i{display:block;height:100%;background:var(--iv-brand-500);width:0;transition:width .2s ease-out}
+  .rd-grp{padding:11px 15px;border-bottom:1px solid var(--iv-light-border)}
+  .rd-grp:last-child{border-bottom:0}
+  .rd-grp>p{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--fg-soft);margin-bottom:7px}
+  .rd-item{display:flex;align-items:flex-start;gap:8px;width:100%;text-align:left;padding:5px 6px;
+    border-radius:7px;font-size:12.5px;line-height:1.45;color:#46505f}
+  .rd-item:hover{background:var(--iv-light-hover)}
+  .rd-item .ic{flex-shrink:0;margin-top:1px}
+  .rd-item.met{color:var(--fg-muted)}
+  .rd-item.met .ic{color:var(--iv-success-base)}
+  .rd-item.blocked .ic{color:var(--iv-danger-base)}
+  .rd-item.blocked{color:var(--fg);font-weight:500}
+  .rd-item.warn .ic{color:var(--iv-warning-base)}
+  .rd-item .anchor{display:block;font-size:11px;color:var(--iv-brand-600);font-weight:600;margin-top:2px}
+  .rd-foot{padding:11px 15px;background:var(--iv-light-muted);font-size:11.5px;color:var(--fg-soft);line-height:1.5}
+
+  /* ── sticky action bar (D2) ──────────────────────────────────────────────── */
+  .actionbar{position:sticky;bottom:0;z-index:30;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);
+    border-top:1px solid var(--iv-light-border);padding:11px 30px;display:flex;align-items:center;gap:12px;
+    flex-wrap:wrap;margin-top:auto}
+  .savestate{display:flex;flex-direction:column;gap:2px;font-size:12px;min-width:220px}
+  .savestate .line1{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--fg-muted)}
+  .savestate .line1 .dirty{width:7px;height:7px;border-radius:999px;background:var(--iv-warning-base);display:none}
+  body[data-dirty="1"] .savestate .line1 .dirty{display:inline-block}
+  .savestate .line2{color:var(--fg-soft);font-size:11.5px}
+  .savestate .line2.err{color:var(--iv-danger-base);font-weight:600}
+  .actionbar .sp{flex:1}
+  .noautosave{font-size:11.5px;color:var(--fg-soft);display:inline-flex;align-items:center;gap:5px}
+  /* the disclosure must survive narrow widths — it shortens, it never disappears,
+     and the bar must stay a single row so it can't cover the last section */
+  .noautosave .short{display:none}
+  @media (max-width:1500px){
+    .noautosave .full{display:none} .noautosave .short{display:inline}
+  }
+  @media (max-width:1040px){ .savestate{min-width:0} }
+
+  /* ── modals / toast ──────────────────────────────────────────────────────── */
+  .scrim{position:fixed;inset:0;background:rgba(10,20,40,.45);display:none;align-items:center;
+    justify-content:center;z-index:80;padding:20px}
+  .scrim.open{display:flex}
+  .modal{background:var(--iv-light-raised);border-radius:12px;max-width:460px;width:100%;
+    box-shadow:0 22px 60px rgba(11,21,48,.3);overflow:hidden}
+  .modal.wide{max-width:860px;height:min(88vh,900px);display:flex;flex-direction:column}
+  .modal-h{padding:17px 20px 13px}
+  .modal-h h3{font-size:16px;font-weight:700;color:var(--iv-navy-900)}
+  .modal-h p{margin-top:6px;font-size:13px;color:var(--fg-muted);line-height:1.55}
+  .modal-f{padding:13px 20px;background:var(--iv-light-muted);border-top:1px solid var(--iv-light-border);
+    display:flex;gap:8px;align-items:center}
+  .modal-f .sp{flex:1}
+  .modal-body{flex:1;overflow-y:auto;background:#eef1f5;padding:20px}
+  .doc{background:#fff;max-width:660px;margin:0 auto;padding:34px 40px;box-shadow:0 2px 14px rgba(16,31,64,.09);
+    font-size:13px;line-height:1.6}
+  .doc h4{font-size:17px;font-weight:800;color:var(--iv-navy-900);letter-spacing:-.01em}
+  .doc .docref{font-family:var(--mono);font-size:11.5px;color:var(--fg-soft);margin-top:3px}
+  .doc hr{border:0;border-top:1px solid var(--iv-light-border);margin:16px 0}
+  .doc dl{display:grid;grid-template-columns:132px 1fr;gap:6px 12px;font-size:12.5px;align-items:baseline}
+  /* two key/value pairs per line — the whole RFQ fits in one scan */
+  .doc dl.two{grid-template-columns:118px minmax(0,1fr) 118px minmax(0,1fr)}
+  @media (max-width:700px){ .doc dl.two{grid-template-columns:118px minmax(0,1fr)} }
+  .doc dt{color:var(--fg-soft);font-weight:600}
+  .doc dd{color:var(--fg);min-width:0;overflow-wrap:anywhere}
+  .doc dd.span{grid-column:2/-1}
+  .doc .sealed{color:var(--fg-soft);font-style:italic}
+  .doc .needed{color:var(--iv-danger-base);font-style:italic;font-weight:500}
+  .doc h5{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--fg-soft);margin:17px 0 7px;padding-bottom:4px;border-bottom:1px solid #eef1f5}
+  .doc h5 span{float:right;font-weight:600;color:var(--iv-navy-700);letter-spacing:0;text-transform:none}
+  /* the at-a-glance band */
+  .doc dl.keyfacts{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+    background:var(--iv-light-border);border:1px solid var(--iv-light-border);border-radius:8px;
+    overflow:hidden;margin:14px 0 4px;align-items:stretch}
+  .doc dl.keyfacts>div{background:#fff;padding:9px 11px}
+  .doc dl.keyfacts dt{display:block;font-size:9.5px;font-weight:700;letter-spacing:.07em;
+    text-transform:uppercase;color:var(--fg-soft);margin-bottom:3px}
+  .doc dl.keyfacts dd{font-size:13px;font-weight:700;color:var(--iv-navy-900);line-height:1.3}
+  .doc dl.keyfacts dd.miss{font-size:11.5px;font-weight:600;color:var(--iv-danger-base);font-style:italic}
+  @media (max-width:700px){ .doc dl.keyfacts{grid-template-columns:repeat(2,1fr)} }
+  .doc .note-line{font-size:11.5px;color:var(--fg-soft);margin-top:5px}
+  .doc ul.plain{list-style:none;font-size:12.5px}
+  .doc ul.plain li{padding:3px 0 3px 14px;position:relative}
+  .doc ul.plain li:before{content:"";position:absolute;left:2px;top:10px;width:4px;height:4px;
+    border-radius:999px;background:var(--fg-soft)}
+  .doc .chips{display:flex;gap:5px;flex-wrap:wrap}
+  .doc .chip{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--iv-navy-50);
+    color:var(--iv-navy-800);font-size:11.5px;font-weight:600}
+  /* the disclosure boundary — above it is what the vendor receives, below it is yours */
+  .doc .internal-band{display:flex;align-items:flex-start;gap:8px;margin:22px 0 4px;padding:9px 12px;
+    border:1px solid var(--iv-light-border);border-left:3px solid var(--iv-navy-600);border-radius:7px;
+    background:var(--iv-navy-50);font-size:11.5px;line-height:1.55;color:var(--fg-muted)}
+  .doc .internal-band b{color:var(--iv-navy-800)}
+  .doc .internal-band svg{color:var(--iv-navy-600);flex-shrink:0;margin-top:2px}
+  .doc h5 span.tag-int{float:right;font-weight:700;font-size:9.5px;letter-spacing:.07em;
+    text-transform:uppercase;color:var(--iv-navy-600)}
+  .doc table{width:100%;border-collapse:collapse;font-size:12px}
+  .doc table th{text-align:left;padding:5px 8px;border-bottom:1px solid var(--iv-light-border);
+    font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--fg-soft)}
+  .doc table td{padding:6px 8px;border-bottom:1px solid #f1f4f7}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);z-index:90;
+    background:var(--iv-navy-900);color:#e9eef6;font-size:13px;padding:10px 16px;border-radius:9px;
+    box-shadow:0 12px 32px rgba(11,21,48,.34);opacity:0;pointer-events:none;transition:opacity .18s ease-out,transform .18s ease-out;
+    max-width:min(560px,92vw)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body class="show-notes" data-dirty="0">
+
+<!-- ═══ review chrome ═══════════════════════════════════════════════════════ -->
+<div class="proto-banner">
+  <span class="tag">Prototype</span>
+  <span><b>new-rfq</b> · P-BUY-07 · non-authoritative Stage-3 artifact — coins nothing, demo data only, no server</span>
+  <span class="sp"></span>
+  <span class="demo-states" role="group" aria-label="Preview state">
+    <button data-demo="zone1" aria-pressed="true">Zone 1 gate</button>
+    <button data-demo="fresh" aria-pressed="false">Fresh draft</button>
+    <button data-demo="partial" aria-pressed="false">Part-filled</button>
+    <button data-demo="ready" aria-pressed="false">Ready</button>
+    <button data-demo="savefail" aria-pressed="false">Save failure</button>
+  </span>
+  <label style="margin-left:12px"><input type="checkbox" id="notes-toggle" checked /> Review notes</label>
+  <button class="close" id="banner-hide" type="button" aria-label="Hide the prototype banner and all review notes"
+          title="Hide prototype chrome — view the screen as a buyer sees it">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+</div>
+<button class="proto-restore" id="banner-show" type="button">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+  Show prototype chrome
+</button>
+
+<!-- ═══ top bar ═════════════════════════════════════════════════════════════ -->
+<header class="topbar">
+  <a class="brand" href="#"><span class="brand-mark">iV</span></a>
+  <div class="topsearch">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    Search RFQs, vendors, products…
+  </div>
+  <span class="sp"></span>
+  <button class="btn btn-primary" data-guard data-toast="Global Create menu — not part of this prototype.">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Create
+  </button>
+  <button class="btn btn-ghost-dark" data-guard data-toast="Notifications — not part of this prototype." aria-label="Notifications">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+  </button>
+  <div class="account" data-guard data-toast="Workspace &amp; account menu — not part of this prototype.">
+    <span class="avatar">AO</span>
+    <div class="who"><b>Active organization</b><span>Buyer</span></div>
+  </div>
+</header>
+
+<div class="frame">
+  <!-- ═══ sidebar — buyer IA ═══ -->
+  <aside class="sidebar">
+    <div class="ws-head">
+      <span class="ic-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+      <div class="t"><b>Buyer Workspace</b><span>Buyer</span></div>
+    </div>
+    <nav class="side">
+      <div class="grp">
+        <button class="nav-item" data-guard data-toast="Dashboard is built in the app — not part of this prototype.">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </button>
+      </div>
+      <div class="grp">
+        <p>Procurement</p>
+        <button class="nav-item" aria-expanded="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+          RFQs
+          <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <ul class="nav-sub">
+          <li><a href="#" data-guard data-toast="RFQ list — not part of this prototype.">My RFQs</a></li>
+          <li><a href="#" aria-current="page">New RFQ</a></li>
+        </ul>
+        <button class="nav-item" data-guard data-toast="Quotations — not part of this prototype.">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+          Quotations
+        </button>
+        <button class="nav-item" data-guard data-toast="Documents hub — not part of this prototype.">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h16"/><path d="M6 16V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8"/></svg>
+          Documents
+        </button>
+      </div>
+      <div class="grp">
+        <p>Marketplace</p>
+        <button class="nav-item" data-guard data-toast="Not part of this prototype."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Vendor Directory</button>
+        <button class="nav-item" data-guard data-toast="Not part of this prototype."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11.5 3.6 13.7 8l4.9.7-3.5 3.5.8 4.9-4.4-2.3-4.4 2.3.8-4.9L4.4 8.7 9.3 8Z"/></svg>Saved Vendors</button>
+        <button class="nav-item" data-guard data-toast="Not part of this prototype."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>Specification Library</button>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+  <!-- ══════════════════════════ ZONE 1 — the gate ══════════════════════════ -->
+  <section class="page" id="view-zone1">
+    <div class="crumb"><a href="#">Dashboard</a><span class="sep">›</span><span class="cur">New RFQ</span></div>
+
+    <div class="zone1">
+      <div class="note">
+        <b>D1 — gated Zone 1 (ruled 2026-07-24).</b> This gate is not a UX preference: <code>rfq.create_rfq.v1</code>
+        (Doc-4E §E4.1) marks <code>category_id</code> and <code>work_nature[]</code> <b>Required: yes</b>, so no draft
+        can exist server-side without them. The buyer cannot enter the authoring canvas until both are answered.
+        A conventional nine-step wizard is <b>not</b> implemented.
+      </div>
+
+      <h1>What do you need?</h1>
+      <p class="lede">Two answers start your request. Everything else is authored on one canvas afterwards, and you can change these at any time before you submit.</p>
+
+      <div class="card z1-card">
+        <span class="z1-step"><i>1</i> Start your RFQ</span>
+
+        <!-- Category — canonical combobox -->
+        <div class="fld" id="fld-category">
+          <div class="lbl"><label for="cbx-input">Category</label> <span class="req req-start">Required to start</span></div>
+          <div class="cbx" id="cbx" aria-expanded="false">
+            <div class="cbx-input">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input id="cbx-input" type="text" role="combobox" autocomplete="off" spellcheck="false"
+                     aria-expanded="false" aria-controls="cbx-list" aria-autocomplete="list"
+                     aria-describedby="cbx-help" placeholder="Search the category tree…" />
+              <button class="cbx-clear" id="cbx-clear" type="button" aria-label="Clear selected category">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+              <svg id="cbx-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <div class="cbx-list" id="cbx-list" role="listbox" aria-label="Categories"></div>
+          </div>
+          <p class="hint" id="cbx-help">Type to search, ↑ ↓ to move, Enter to select, Esc to close. Categories shown are <b>illustrative</b> — the live picker reads <span class="mono">marketplace.list_categories.v1</span>.</p>
+          <p class="hint cbx-demo" style="display:none">
+            <b>Review control</b> — preview the picker's data states:
+            <button class="btn btn-quiet btn-sm" data-cbx="data" style="text-decoration:underline">Loaded</button>
+            <button class="btn btn-quiet btn-sm" data-cbx="loading" style="text-decoration:underline">Loading</button>
+            <button class="btn btn-quiet btn-sm" data-cbx="error" style="text-decoration:underline">Error</button>
+            <span style="color:var(--fg-soft)">· empty state: type a word that matches nothing.</span>
+          </p>
+          <p class="err">Choose a category to continue.</p>
+          <div class="cbx-picked" id="cbx-picked" hidden>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--iv-success-base)"><path d="M20 6 9 17l-5-5"/></svg>
+            <span>Selected: <span class="path" id="cbx-path"></span></span>
+          </div>
+        </div>
+
+        <!-- Procurement mode → work_nature -->
+        <div class="fld" id="fld-mode" style="margin-bottom:6px">
+          <div class="lbl"><span>What kind of work is this?</span> <span class="req req-start">Required to start</span></div>
+          <div class="modes" id="modes" role="group" aria-label="Procurement mode"></div>
+          <p class="err">Pick at least one kind of work.</p>
+          <div class="maps" id="maps">
+            Stored as <span class="wn">work_nature[]</span> — <span id="maps-val">nothing selected yet</span>.
+            <span style="color:var(--fg-soft)">The buyer-facing label maps onto the frozen capability set; it coins nothing.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="note" style="margin-top:16px">
+        <b>Open item 2 (carried).</b> The nine Procurement-Mode labels come from
+        <code>RFQ-CREATION-BUSINESS-MODEL.md</code> §2, a <b>DRAFT v1.0 non-authoritative</b> companion. They are shown
+        here as a presentation mapping onto frozen <code>work_nature</code>; Board confirmation is still open.
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;margin-top:18px">
+        <div class="callout" style="flex:1">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span><b>Privacy by Design</b> — your RFQ is never publicly published.</span>
+        </div>
+        <button class="btn btn-primary" id="z1-continue" disabled style="height:40px;padding:0 20px">
+          Continue
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <p style="text-align:right;font-size:12px;color:var(--fg-soft);margin-top:7px">Continues to the authoring canvas. In production this is where <span class="mono">create_rfq</span> mints the draft — not in this prototype.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ CANVAS ═════════════════════════════════════ -->
+  <section class="page" id="view-canvas" hidden>
+    <div class="crumb"><a href="#" data-guard data-toast="RFQ list — not part of this prototype.">Dashboard</a><span class="sep">›</span><a href="#" data-guard data-toast="RFQ list — not part of this prototype.">RFQs</a><span class="sep">›</span><span class="cur">New RFQ</span></div>
+
+    <div class="canvas-head">
+      <div>
+        <h1>Create a request for quotation</h1>
+        <p class="sub">Draft · <span class="mono" id="hdr-cat">—</span> · <span class="mono" id="hdr-wn">—</span>
+          <button class="btn btn-quiet btn-sm" id="back-zone1" style="margin-left:6px">Change</button></p>
+      </div>
+      <span class="sp"></span>
+      <span class="draftchip">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/></svg>
+        Draft
+      </span>
+    </div>
+
+    <div class="note">
+      <b>D1/D3 — anchored single canvas + two-tier requiredness.</b> All sections live on one navigable canvas with a
+      persistent rail (left) and a persistent readiness panel (right). Requiredness is <b>not</b> collapsed into one
+      red asterisk: <span class="req req-start">Required to start</span> <span class="req req-submit">Required before submission</span>
+      <span class="req req-cond">Conditionally required</span> <span class="req req-opt">Optional</span> are distinct.
+      The submit set is the frozen FIXED-set (Doc-3 §1.2) — the FE mirrors it for guidance; the server enforces it.
+    </div>
+
+    <div class="legend">
+      <span style="font-weight:600;color:var(--fg)">Field legend</span>
+      <span class="lg"><span class="req req-start">Required to start</span> set in Zone 1</span>
+      <span class="lg"><span class="req req-submit">Required before submission</span> Doc-3 §1.2 FIXED-set</span>
+      <span class="lg"><span class="req req-cond">Conditionally required</span> depends on another answer</span>
+      <span class="lg"><span class="req req-opt">Optional</span> never blocks</span>
+    </div>
+
+    <div class="layout">
+      <!-- ── rail ── -->
+      <nav class="rail" id="rail" aria-label="RFQ sections">
+        <p>Sections</p>
+        <a href="#sec-req" data-rail="sec-req"><span class="dot"></span>Requirement<span class="cnt"></span></a>
+        <a href="#sec-tech" data-rail="sec-tech"><span class="dot"></span>Specification<span class="cnt"></span></a>
+        <a href="#sec-attach" data-rail="sec-attach"><span class="dot"></span>Attachments<span class="cnt"></span></a>
+        <a href="#sec-terms" data-rail="sec-terms"><span class="dot"></span>Terms<span class="cnt"></span></a>
+        <a href="#sec-delivery" data-rail="sec-delivery"><span class="dot"></span>Delivery<span class="cnt"></span></a>
+        <a href="#sec-vendor" data-rail="sec-vendor"><span class="dot"></span>Vendor routing<span class="cnt"></span></a>
+        <a href="#sec-value" data-rail="sec-value"><span class="dot"></span>Estimated value<span class="cnt"></span></a>
+        <a href="#sec-comms" data-rail="sec-comms"><span class="dot"></span>Communication<span class="cnt"></span></a>
+      </nav>
+
+      <!-- ── sections ── -->
+      <div id="sections">
+
+        <!-- 1 · Requirement -->
+        <section class="card sec" id="sec-req">
+          <div class="sec-h"><h2>Requirement</h2><span class="sp"></span>
+            <span class="req req-start">Category &amp; work type set in Zone 1</span></div>
+          <div class="sec-b">
+            <div class="grid2" style="margin-bottom:14px">
+              <div class="fld" style="margin:0">
+                <div class="lbl">Category</div>
+                <div style="display:flex;align-items:center;gap:9px">
+                  <span class="mono" id="req-cat" style="font-size:13px;color:var(--iv-navy-800);font-weight:600">—</span>
+                  <button class="btn btn-quiet btn-sm" data-goto-zone1>Change</button>
+                </div>
+              </div>
+              <div class="fld" style="margin:0">
+                <div class="lbl">Work nature <span class="mono" style="font-size:11px;color:var(--fg-soft)">work_nature[]</span></div>
+                <div style="display:flex;align-items:center;gap:9px">
+                  <span class="mono" id="req-wn" style="font-size:13px;color:var(--iv-navy-800);font-weight:600">—</span>
+                  <button class="btn btn-quiet btn-sm" data-goto-zone1>Change</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="fld" style="margin-bottom:0">
+              <div class="lbl" style="justify-content:space-between">
+                <span style="display:inline-flex;align-items:center;gap:8px">Item requirements <span class="req req-opt">Optional</span></span>
+                <button class="btn btn-outline btn-sm" id="pastexl">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h4"/></svg>
+                  Paste from Excel
+                </button>
+              </div>
+              <p class="hint" style="margin:0 0 9px">Names, sizes, quantities and units per requested line. Your own PR number is optional and buyer-typed — the only system-assigned reference is the RFQ's <span class="mono">human_ref</span>. <b>An item can carry a multi-line description</b> — open it on any line.</p>
+
+              <div class="richbar">
+                <b>Description formatting</b>
+                <button type="button" data-rich="bold" aria-label="Bold selected description text" style="font-weight:800">B</button>
+                <button type="button" data-rich="#1f3154" aria-label="Colour selected description text navy"><span class="dot" style="background:#1f3154"></span></button>
+                <button type="button" data-rich="#b8860b" aria-label="Colour selected description text amber"><span class="dot" style="background:#b8860b"></span></button>
+                <button type="button" data-rich="#dc2626" aria-label="Colour selected description text red"><span class="dot" style="background:#dc2626"></span></button>
+                <span>Select text in a description, then apply. <b style="font-weight:600">Enter</b> adds a new line.</span>
+              </div>
+
+              <div id="itemrows"></div>
+              <button class="btn btn-outline btn-sm addrow" id="additem">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add line
+              </button>
+
+              <div class="note" style="margin-top:12px">
+                <b>Fixed after Stage-3 review feedback (2026-07-24).</b> The first cut squeezed every item onto one
+                table row and dropped the per-line description entirely — a regression against the owner directive of
+                2026-07-07 (multi-line description, bold + three colours, <b>Enter</b> adds a new line). Each item is now
+                a <b>block</b>: the scalar fields stay column-aligned across lines, and any line opens a multi-line
+                description beneath it. Dev-doc capture — it serialises with the row into
+                <code>content_jsonb</code> and coins no contract field.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2 · Specification -->
+        <section class="card sec" id="sec-tech">
+          <div class="sec-h"><h2>Specification</h2><span class="sp"></span>
+            <span class="req req-cond">Attachment or written scope</span></div>
+          <div class="sec-b">
+            <div class="note" style="margin-bottom:14px">
+              <b>Conditional requirement, made visible.</b> Doc-3 §1.2 requires <b>either</b> at least one spec attachment
+              <b>or</b> <code>no_formal_spec</code> plus free-text scope of at least POLICY
+              <code>rfq.min_scope_chars</code>. The threshold is read from the server — the FE never hardcodes it.
+            </div>
+            <div class="fld">
+              <div class="lbl"><label for="scope">Scope &amp; acceptance criteria</label>
+                <span class="req req-cond" id="scope-badge">Conditionally required</span></div>
+              <textarea class="in" id="scope" placeholder="Specification, scope of supply, acceptance criteria, testing and inspection expectations…"></textarea>
+              <div class="meter" id="scope-meter" hidden>
+                <div class="meter-bar"><i></i></div>
+                <p><span id="scope-count">0</span> of <span id="scope-min">—</span> characters
+                  <span class="policy">· POLICY rfq.min_scope_chars (server-provided)</span></p>
+              </div>
+            </div>
+            <label class="chk" style="margin-bottom:14px">
+              <input type="checkbox" id="nospec" />
+              <span>I don't have a formal specification document
+                <small><span class="mono">no_formal_spec</span> — turns on the written-scope minimum instead of requiring an attachment.</small></span>
+            </label>
+            <div class="grid2">
+              <div class="fld" style="margin:0"><div class="lbl"><label for="brand">Brand preference</label> <span class="req req-opt">Optional</span></div><input class="in" id="brand" placeholder="Preferred brand" /></div>
+              <div class="fld" style="margin:0"><div class="lbl"><label for="altbrand">Alternative brand</label> <span class="req req-opt">Optional</span></div><input class="in" id="altbrand" placeholder="Acceptable alternative" /></div>
+              <div class="fld" style="margin:0"><div class="lbl"><label for="cond">Product condition</label> <span class="req req-opt">Optional</span></div>
+                <select class="in" id="cond"><option value="">Select condition</option><option>New</option><option>Reconditioned</option><option>Either</option></select></div>
+              <div class="fld" style="margin:0"><div class="lbl"><label for="std">Standards</label> <span class="req req-opt">Optional</span></div><input class="in" id="std" placeholder="e.g. ASTM A36, ISO 9001" /></div>
+              <div class="fld" style="margin:0"><div class="lbl"><label for="certs">Certifications</label> <span class="req req-opt">Optional</span></div><input class="in" id="certs" placeholder="e.g. EN 10204 3.1, mill test cert" /></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3 · Attachments -->
+        <section class="card sec" id="sec-attach">
+          <div class="sec-h"><h2>Attachments</h2><span class="sp"></span>
+            <span class="req req-cond">Attachment or written scope</span></div>
+          <div class="sec-b">
+            <div class="drop">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--fg-soft)"><path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+              <b>Drag &amp; drop spec documents here</b>
+              PDF, DOCX, XLSX or images. <button class="btn btn-quiet btn-sm" id="addfile" style="text-decoration:underline">Add a demo file</button>
+            </div>
+            <ul class="filelist" id="filelist"></ul>
+            <p class="hint" style="font-size:12px;color:var(--fg-soft);margin-top:9px">Real upload is gated by <span class="mono">[ESC-7-API/upload]</span>; files resolve to <span class="mono">spec_document_ids[]</span> at wiring. Nothing is uploaded here.</p>
+          </div>
+        </section>
+
+        <!-- 4 · Terms -->
+        <section class="card sec" id="sec-terms">
+          <div class="sec-h"><h2>Terms &amp; conditions</h2><span class="sp"></span><span class="req req-opt">Optional</span></div>
+          <div class="sec-b">
+            <p class="hint" style="margin:0 0 10px">Conditions vendors must accept to quote — inspection rights, warranty expectations, penalty clauses.</p>
+            <div id="tcrows"></div>
+            <button class="btn btn-outline btn-sm" id="addtc">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add condition
+            </button>
+
+            <div class="bundlebox">
+              <span class="devnote">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+                Saved to this device only
+              </span>
+              <p><b>Available only in this browser on this device. It is not shared with other members of your organization.</b>
+                 Reuse a set of conditions you type often. This is a convenience store on your machine — not an organization template, and not synchronised anywhere.</p>
+              <div style="display:flex;gap:8px;margin-top:9px;align-items:center;flex-wrap:wrap">
+                <input class="in" id="bundlename" placeholder="e.g. Standard steel supply terms" style="max-width:270px;height:34px" />
+                <button class="btn btn-outline btn-sm" id="savebundle">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+                  Save as bundle on this device
+                </button>
+              </div>
+              <div class="bundlechips" id="bundlechips"></div>
+            </div>
+
+            <div class="note" style="margin-top:12px">
+              <b>D5 — approved (option a).</b> The bundle store stays browser-local and now says so, in the label and in the
+              body copy. It is not called an organization template and implies no sync. Organization-owned reusable
+              commercial terms is recorded as a <b>future governed capability</b>, not part of this milestone — no
+              escalation opened for the prototype.
+            </div>
+          </div>
+        </section>
+
+        <!-- 5 · Delivery -->
+        <section class="card sec" id="sec-delivery">
+          <div class="sec-h"><h2>Delivery</h2><span class="sp"></span>
+            <span class="req req-submit">District required before submission</span></div>
+          <div class="sec-b">
+            <div class="grid2">
+              <div class="fld" id="fld-district" style="margin:0">
+                <div class="lbl"><label for="district">Delivery district</label> <span class="req req-submit">Required before submission</span></div>
+                <select class="in" id="district">
+                  <option value="">Select district</option>
+                  <option>Dhaka</option><option>Gazipur</option><option>Narayanganj</option>
+                  <option>Chattogram</option><option>Khulna</option><option>Rajshahi</option><option>Sylhet</option>
+                </select>
+                <p class="hint"><span class="mono">delivery_geography</span> — Doc-3 §1.2 requires at least district level.</p>
+              </div>
+              <div class="fld" style="margin:0"><div class="lbl"><label for="dsite">Delivery site</label> <span class="req req-opt">Optional</span></div>
+                <select class="in" id="dsite"><option value="">Factory / Warehouse / Site</option><option>Factory</option><option>Warehouse</option><option>Project site</option></select></div>
+              <div class="fld" style="margin:0"><div class="lbl"><label for="daddr">Delivery location</label> <span class="req req-opt">Optional</span></div><input class="in" id="daddr" placeholder="Site / address" /></div>
+              <div class="fld" style="margin:0"><div class="lbl"><label for="ddate">Required delivery date</label> <span class="req req-opt">Optional</span></div><input class="in" id="ddate" type="date" /></div>
+            </div>
+            <div class="fld" style="margin:14px 0 0"><div class="lbl"><label for="dinstr">Delivery instructions</label> <span class="req req-opt">Optional</span></div>
+              <textarea class="in" id="dinstr" rows="2" style="min-height:64px" placeholder="Access, unloading, timing, packaging…"></textarea></div>
+          </div>
+        </section>
+
+        <!-- 6 · Vendor routing -->
+        <section class="card sec" id="sec-vendor">
+          <div class="sec-h"><h2>Vendor routing</h2><span class="sp"></span>
+            <span class="req req-submit">Routing required before submission</span></div>
+          <div class="sec-b">
+            <div class="fld" id="fld-routing">
+              <div class="lbl"><label for="routing">Routing breadth</label> <span class="req req-submit">Required before submission</span></div>
+              <select class="in" id="routing">
+                <option value="">Select routing breadth</option>
+                <option value="approved_only">Approved vendors only</option>
+                <option value="approved_conditional">Approved + conditional</option>
+                <option value="approved_open">Approved + open</option>
+                <option value="open_market">Open market</option>
+              </select>
+              <p class="hint">You choose how <b>broadly</b> to route (<span class="mono">routing_mode</span>). The matching engine still decides which vendors are invited — routing preferences never make an RFQ public and never set matching weights.</p>
+            </div>
+            <div class="grid2">
+              <div class="fld" style="margin:0"><div class="lbl"><label for="pvendor">Preferred vendor</label> <span class="req req-opt">Optional hint</span></div>
+                <input class="in" id="pvendor" placeholder="Search your network…" />
+                <p class="hint">A preference hint only — never an invitation or a dispatch.</p></div>
+              <div class="fld" style="margin:0"><div class="lbl"><label for="ftier">Preferred financial tier</label> <span class="req req-opt">Optional hint</span></div>
+                <select class="in" id="ftier"><option value="">Any tier</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select>
+                <p class="hint">The frozen A–E capability tier — not a subscription plan.</p></div>
+            </div>
+            <label class="chk" style="margin-top:12px"><input type="checkbox" id="verifiedonly" /><span>Verified vendors only</span></label>
+            <label class="chk"><input type="checkbox" id="acceptalt" /><span>Accept alternative products / brands</span></label>
+          </div>
+        </section>
+
+        <!-- 7 · Estimated value -->
+        <section class="card sec" id="sec-value">
+          <div class="sec-h"><h2>Estimated value &amp; priority</h2><span class="sp"></span>
+            <span class="req req-submit">Required before submission</span></div>
+          <div class="sec-b">
+            <div class="note" style="margin-bottom:14px">
+              <b>D3 — MAJOR correction, mandatory.</b> The built page currently heads this card
+              <code>Budget &amp; priority (optional)</code> with <code>Optional — commercial guidance</code>.
+              Doc-3 §1.2 puts <code>estimated_value</code> present and <b>&gt; BDT 0</b> inside the submission FIXED-set.
+              Rejected wording removed; it stays <b>non-blocking while drafting</b> but is never shown as optional.
+            </div>
+            <div class="note" style="margin-bottom:14px">
+              <b>OPEN — is the estimated value disclosed to invited vendors?</b> The built
+              <code>rfq-preview-document.tsx</code> states <i>“Routing preferences, budget and priority guidance stay
+              internal — vendors do not receive them”</i>; this prototype's first cut said the opposite. The frozen
+              corpus does <b>not</b> settle it: <code>rfq.get_rfq.v1</code> returns an “RFQ projection (<b>scope per
+              grant</b>)” and leaves the vendor-side field masking to dev-doc scope. No Flag-and-Halt — nothing
+              conflicts with a frozen doc — but the two surfaces disagree and a Board ruling is owed. Until then the
+              preview takes the <b>conservative</b> line: the vendor-facing document excludes it, and it appears only
+              under “Internal — not sent to vendors”.
+            </div>
+            <div class="grid2">
+              <div class="fld" id="fld-value" style="margin:0">
+                <div class="lbl"><label for="value">Estimated value</label> <span class="req req-submit">Required before submission</span></div>
+                <input class="in" id="value" inputmode="numeric" placeholder="e.g. 1,800,000" />
+                <p class="hint">In <b>BDT</b> — <span class="mono">currency</span> is BDT at create; no selector. Internal guidance that sizes and routes your request; it is not a commitment, and the platform moves no money. <b>Whether an invited vendor sees this figure is an open disclosure question</b> — see the note below.</p>
+                <p class="err">Estimated value must be greater than BDT 0 before you can submit.</p>
+              </div>
+              <div class="fld" style="margin:0"><div class="lbl"><label for="urgency">Urgency</label> <span class="req req-opt">Optional</span></div>
+                <select class="in" id="urgency"><option>Standard</option><option>Urgent</option><option>Planned / scheduled</option></select>
+                <p class="hint">Commercial terms — payment, incoterms, tax — are defined by the <b>vendor</b> in its quotation, not requested here.</p></div>
+            </div>
+            <div class="fld" style="margin:14px 0 0"><div class="lbl"><label for="specinstr">Special instructions</label> <span class="req req-opt">Optional</span></div>
+              <textarea class="in" id="specinstr" rows="2" style="min-height:64px" placeholder="Anything else vendors should know — not commercial terms (those come in the quote)…"></textarea></div>
+          </div>
+        </section>
+
+        <!-- 8 · Communication -->
+        <section class="card sec" id="sec-comms">
+          <div class="sec-h"><h2>Communication</h2><span class="sp"></span><span class="req req-opt">Optional</span></div>
+          <div class="sec-b">
+            <div class="grid2" style="margin-bottom:12px">
+              <div class="fld" style="margin:0"><div class="lbl"><label for="cperson">RFQ contact person</label> <span class="req req-opt">Optional</span></div><input class="in" id="cperson" placeholder="e.g. Engr. Kamrul Hassan" /></div>
+              <div class="fld" style="margin:0"><div class="lbl"><label for="cnum">Contact number</label> <span class="req req-opt">Optional</span></div><input class="in" id="cnum" placeholder="+880 1XXXXXXXXX" /></div>
+            </div>
+            <p class="hint" style="margin-bottom:8px">Platform messages stay on — they are the official record and audit trail. The channels below are optional and shared only with vendors who receive this RFQ.</p>
+            <label class="chk"><input type="checkbox" checked disabled /><span>Platform messages <small>Always on — the system of record.</small></span></label>
+            <label class="chk"><input type="checkbox" id="cphone" /><span>Phone call</span></label>
+            <label class="chk"><input type="checkbox" id="cwa" /><span>WhatsApp</span></label>
+            <label class="chk"><input type="checkbox" id="cmail" /><span>Email</span></label>
+            <div class="fld" style="margin:14px 0 0;max-width:280px"><div class="lbl"><label for="ctime">Preferred contact time</label> <span class="req req-opt">Optional</span></div>
+              <select class="in" id="ctime"><option value="">Anytime</option><option>Business hours</option><option>Morning</option><option>Afternoon</option><option>Evening</option></select></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ── readiness panel ── -->
+      <div class="readiness-col">
+        <div class="card rd" id="rd" data-state="not-ready">
+          <div class="rd-h">
+            <div class="rd-state"><span class="pip"></span><span id="rd-label">Not ready</span></div>
+            <p id="rd-sub">Complete the blocking items below to submit.</p>
+            <div class="rd-prog"><i id="rd-prog"></i></div>
+          </div>
+          <div class="rd-scroll">
+            <div class="rd-grp">
+              <p>Required before submission</p>
+              <div id="rd-blockers"></div>
+            </div>
+            <div class="rd-grp" id="rd-warn-grp">
+              <p>Worth adding — never blocks</p>
+              <div id="rd-warnings"></div>
+            </div>
+          </div>
+          <div class="rd-foot" style="flex-shrink:0">
+            Mirrors the frozen submission set (Doc-3 §1.2). These are presentation states only —
+            <b>Not ready · Needs attention · Ready to submit</b> are never persisted as RFQ lifecycle states.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ sticky action bar ══════════════════════════ -->
+  <div class="actionbar" id="actionbar" hidden>
+    <div class="savestate">
+      <span class="line1"><span class="dirty"></span><span id="save-line1">No changes yet</span></span>
+      <span class="line2" id="save-line2">Draft not saved yet</span>
+    </div>
+    <span class="noautosave">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+      <span class="full">There is no autosave — your draft is saved only when you choose <b style="font-weight:700">Save draft</b>.</span>
+      <span class="short">No autosave — use <b style="font-weight:700">Save draft</b>.</span>
+    </span>
+    <span class="sp"></span>
+    <button class="btn btn-quiet" id="discard">Discard changes</button>
+    <button class="btn btn-outline" id="savedraft">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+      Save draft
+    </button>
+    <button class="btn btn-primary" id="review">Review &amp; submit</button>
+  </div>
+
+  <footer class="app"><span>© iVendorz — Industrial Procurement OS.</span><span class="sp"></span><span>Prototype · no server · BDT</span></footer>
+  </main>
+</div>
+
+<!-- ═══ leave guard ═══ -->
+<div class="scrim" id="guard-scrim" role="dialog" aria-modal="true" aria-labelledby="guard-t">
+  <div class="modal">
+    <div class="modal-h">
+      <h3 id="guard-t">Leave without saving?</h3>
+      <p>You have unsaved changes to this RFQ draft. Drafts are saved only when you choose <b>Save draft</b> — there is no autosave, so leaving now discards them.</p>
+    </div>
+    <div class="modal-f">
+      <button class="btn btn-quiet" id="guard-leave">Leave &amp; discard</button>
+      <span class="sp"></span>
+      <button class="btn btn-outline" id="guard-stay">Keep editing</button>
+      <button class="btn btn-primary" id="guard-save">Save draft</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ discard confirm ═══ -->
+<div class="scrim" id="disc-scrim" role="dialog" aria-modal="true" aria-labelledby="disc-t">
+  <div class="modal">
+    <div class="modal-h">
+      <h3 id="disc-t">Discard your changes?</h3>
+      <p>Everything typed since your last save is removed. This cannot be undone.</p>
+    </div>
+    <div class="modal-f">
+      <span class="sp"></span>
+      <button class="btn btn-outline" id="disc-cancel">Keep editing</button>
+      <button class="btn btn-primary" id="disc-ok" style="background:var(--iv-danger-base)">Discard changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ paste from Excel ═══ -->
+<div class="scrim" id="paste-scrim" role="dialog" aria-modal="true" aria-labelledby="paste-t">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-h">
+      <h3 id="paste-t">Paste your item list</h3>
+      <p>Copy the rows from Excel or Sheets and paste below. Columns are read as
+        <b>Item name · Size · Qty · Unit · Description</b> (tab, comma or semicolon separated).
+        Four columns drop Description; three drop Size.</p>
+    </div>
+    <div style="padding:0 20px 16px" class="pastebox">
+      <textarea id="pastearea" spellcheck="false" placeholder="MS plate 12mm ASTM A36&#9;2000×1000mm&#9;40&#9;Sheet&#9;Mill test certificate required per heat"></textarea>
+      <p class="hint" id="pastecount" style="margin-top:6px">Nothing pasted yet.</p>
+    </div>
+    <div class="modal-f">
+      <button class="btn btn-quiet" id="paste-cancel">Cancel</button>
+      <span class="sp"></span>
+      <button class="btn btn-outline" id="paste-append">Append</button>
+      <button class="btn btn-primary" id="paste-replace">Replace all</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ review document ═══ -->
+<div class="scrim" id="rev-scrim" role="dialog" aria-modal="true" aria-labelledby="rev-t">
+  <div class="modal wide">
+    <div class="modal-h" style="border-bottom:1px solid var(--iv-light-border)">
+      <h3 id="rev-t">Review your request</h3>
+      <p>Read-only — the whole request at a glance. Everything above the lock line is what an invited vendor
+         receives; below it is internal and stays with you. You can still edit anything before submitting.</p>
+    </div>
+    <div class="modal-body">
+      <div class="doc" id="revdoc"></div>
+    </div>
+    <div class="modal-f">
+      <span id="rev-gate" style="font-size:12.5px;color:var(--fg-muted)"></span>
+      <span class="sp"></span>
+      <button class="btn btn-outline" id="rev-edit">Back to editing</button>
+      <button class="btn btn-primary" id="rev-submit">Submit RFQ</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ══ demo constants — illustrative only, never frozen data ══════════════════ */
+const POLICY_MIN_SCOPE = 200;           // server-provided at wiring; NEVER hardcoded in production FE
+const CATEGORIES = [
+  {g:"Mechanical", items:[
+    {id:"c-ms-plate", label:"Mild steel plate", path:"Mechanical › Steel & Metals › Mild steel plate"},
+    {id:"c-ss-pipe",  label:"Stainless steel pipe", path:"Mechanical › Steel & Metals › Stainless steel pipe"},
+    {id:"c-bearing",  label:"Bearings & bushings", path:"Mechanical › Rotating Equipment › Bearings & bushings"},
+    {id:"c-pump",     label:"Centrifugal pumps", path:"Mechanical › Rotating Equipment › Centrifugal pumps"},
+    {id:"c-boiler",   label:"Industrial boilers", path:"Mechanical › Thermal Systems › Industrial boilers"},
+  ]},
+  {g:"Electrical", items:[
+    {id:"c-cable", label:"Power cables (LV/MV)", path:"Electrical › Cabling › Power cables (LV/MV)"},
+    {id:"c-vfd",   label:"Variable frequency drives", path:"Electrical › Drives & Control › Variable frequency drives"},
+    {id:"c-trafo", label:"Distribution transformers", path:"Electrical › Power Distribution › Distribution transformers"},
+    {id:"c-panel", label:"LT switchgear panels", path:"Electrical › Power Distribution › LT switchgear panels"},
+  ]},
+  {g:"HVAC & Utilities", items:[
+    {id:"c-chiller", label:"Water-cooled chillers", path:"HVAC & Utilities › Cooling › Water-cooled chillers"},
+    {id:"c-comp",    label:"Air compressors", path:"HVAC & Utilities › Compressed Air › Air compressors"},
+    {id:"c-duct",    label:"Ducting fabrication", path:"HVAC & Utilities › Air Distribution › Ducting fabrication"},
+  ]},
+  {g:"Services", items:[
+    {id:"c-erect", label:"Erection & installation", path:"Services › Site Works › Erection & installation"},
+    {id:"c-amc",   label:"Annual maintenance contract", path:"Services › Maintenance › Annual maintenance contract"},
+    {id:"c-design",label:"Design & engineering consultancy", path:"Services › Engineering › Design & engineering consultancy"},
+  ]},
+];
+/* Procurement Mode → work_nature (RFQ-CREATION-BUSINESS-MODEL.md §2 crosswalk) */
+const MODES = [
+  {k:"supply",       label:"Supply",                 wn:["supply"]},
+  {k:"supply_inst",  label:"Supply + Installation",  wn:["supply","service"]},
+  {k:"supply_comm",  label:"Supply + Commissioning", wn:["supply","service"]},
+  {k:"fabrication",  label:"Fabrication",            wn:["fabricate"]},
+  {k:"fab_inst",     label:"Fabrication + Install",  wn:["fabricate","service"]},
+  {k:"turnkey",      label:"Turnkey EPC",            wn:["supply","fabricate","service"]},
+  {k:"consultancy",  label:"Consultancy",            wn:["consult"]},
+  {k:"maintenance",  label:"Maintenance contract",   wn:["service"]},
+  {k:"amc",          label:"Annual service (AMC)",   wn:["service"]},
+];
+
+/* ══ state ═════════════════════════════════════════════════════════════════ */
+const S = {
+  view:"zone1", categoryId:null, categoryLabel:"", categoryPath:"", mode:null, workNature:[],
+  items:[], scope:"", noSpec:false, files:[], terms:[], district:"", value:"", routing:"",
+  ddate:"", saved:null, dirty:false, savefail:false, cbxState:"data"
+};
+const $  = (s,r)=> (r||document).querySelector(s);
+const $$ = (s,r)=> Array.prototype.slice.call((r||document).querySelectorAll(s));
+
+/* ══ toast ═════════════════════════════════════════════════════════════════ */
+let toastT;
+function toast(msg){
+  const t=$("#toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2600);
+}
+
+/* ══ dirty tracking (D2 — explicit save only, never autosave) ══════════════ */
+function markDirty(){
+  S.dirty=true; document.body.dataset.dirty="1";
+  $("#save-line1").textContent="Unsaved changes";
+  if(!S.savefail) $("#save-line2").textContent = S.saved ? ("Last saved "+S.saved) : "Draft not saved yet";
+}
+function markClean(when){
+  S.dirty=false; document.body.dataset.dirty="0"; S.saved=when;
+  $("#save-line1").textContent="All changes saved";
+  const l2=$("#save-line2"); l2.classList.remove("err");
+  l2.textContent="Last saved "+when+" · prototype only, nothing left the browser";
+}
+
+/* ══ COMBOBOX (D6 — canonical; promoted to the kit at Phase 3) ═════════════ */
+const cbx={root:$("#cbx"), input:$("#cbx-input"), list:$("#cbx-list"), clear:$("#cbx-clear"),
+  open:false, active:-1, opts:[]};
+
+function cbxRender(filter){
+  const q=(filter||"").trim().toLowerCase();
+  cbx.list.innerHTML=""; cbx.opts=[];
+
+  if(S.cbxState==="loading"){
+    cbx.list.innerHTML='<div class="cbx-msg"><span class="sk"></span><span class="sk" style="margin-right:60px"></span>Loading categories…</div>';
+    return;
+  }
+  if(S.cbxState==="error"){
+    cbx.list.innerHTML='<div class="cbx-msg err">Couldn\'t load categories. <button class="btn btn-quiet btn-sm" style="text-decoration:underline" id="cbx-retry">Try again</button></div>';
+    const r=$("#cbx-retry"); if(r) r.addEventListener("click",()=>{S.cbxState="data";cbxRender(cbx.input.value);});
+    return;
+  }
+  let n=0;
+  CATEGORIES.forEach(grp=>{
+    const hits=grp.items.filter(it=> !q || it.label.toLowerCase().includes(q) || it.path.toLowerCase().includes(q));
+    if(!hits.length) return;
+    const h=document.createElement("div"); h.className="cbx-grp"; h.setAttribute("role","presentation");
+    h.textContent=grp.g; cbx.list.appendChild(h);
+    hits.forEach(it=>{
+      const o=document.createElement("div");
+      o.className="cbx-opt"; o.id="cbxo-"+it.id; o.setAttribute("role","option");
+      o.setAttribute("aria-selected", String(S.categoryId===it.id));
+      o.innerHTML='<span><b style="font-weight:500">'+it.label+'</b><small>'+it.path+'</small></span>'+
+        '<span class="tick"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg></span>';
+      o.addEventListener("mousedown",e=>{e.preventDefault(); cbxPick(it);});
+      o.addEventListener("mousemove",()=>cbxActivate(cbx.opts.indexOf(o)));
+      cbx.list.appendChild(o); cbx.opts.push(o); o._item=it; n++;
+    });
+  });
+  if(!n) cbx.list.innerHTML='<div class="cbx-msg">No categories match “'+(filter||"")+'”.<br/><span style="font-size:12px;color:var(--fg-soft)">Try a broader word, e.g. “pump” or “cable”.</span></div>';
+}
+function cbxOpen(){
+  if(cbx.open) return;
+  cbx.open=true; cbx.root.setAttribute("aria-expanded","true"); cbx.input.setAttribute("aria-expanded","true");
+  cbxRender(""); cbxActivate(S.categoryId ? cbx.opts.findIndex(o=>o._item.id===S.categoryId) : -1);
+}
+function cbxClose(){
+  cbx.open=false; cbx.root.setAttribute("aria-expanded","false"); cbx.input.setAttribute("aria-expanded","false");
+  cbx.input.removeAttribute("aria-activedescendant"); cbx.active=-1;
+  cbx.input.value = S.categoryLabel || "";
+}
+function cbxActivate(i){
+  cbx.opts.forEach(o=>o.classList.remove("active"));
+  cbx.active=i;
+  if(i>=0 && cbx.opts[i]){
+    cbx.opts[i].classList.add("active");
+    cbx.input.setAttribute("aria-activedescendant",cbx.opts[i].id);
+    const o=cbx.opts[i], L=cbx.list;
+    if(o.offsetTop < L.scrollTop) L.scrollTop=o.offsetTop-4;
+    else if(o.offsetTop+o.offsetHeight > L.scrollTop+L.clientHeight) L.scrollTop=o.offsetTop+o.offsetHeight-L.clientHeight+4;
+  }
+}
+function cbxPick(it){
+  S.categoryId=it.id; S.categoryLabel=it.label; S.categoryPath=it.path;
+  cbx.root.classList.add("has-value");
+  $("#cbx-picked").hidden=false; $("#cbx-path").textContent=it.path;
+  $("#fld-category").classList.remove("invalid");
+  cbxClose(); cbx.input.focus(); syncZone1(); markDirty(); refresh();
+}
+function cbxReset(){
+  S.categoryId=null; S.categoryLabel=""; S.categoryPath="";
+  cbx.root.classList.remove("has-value"); cbx.input.value="";
+  $("#cbx-picked").hidden=true; syncZone1(); refresh();
+}
+cbx.input.addEventListener("focus",cbxOpen);
+cbx.input.addEventListener("input",()=>{ if(!cbx.open) cbxOpen(); cbxRender(cbx.input.value); cbxActivate(cbx.opts.length?0:-1); });
+cbx.input.addEventListener("keydown",e=>{
+  if(e.key==="ArrowDown"){ e.preventDefault(); if(!cbx.open){cbxOpen();return;} cbxActivate(Math.min(cbx.active+1,cbx.opts.length-1)); }
+  else if(e.key==="ArrowUp"){ e.preventDefault(); if(!cbx.open){cbxOpen();return;} cbxActivate(Math.max(cbx.active-1,0)); }
+  else if(e.key==="Home" && cbx.open){ e.preventDefault(); cbxActivate(0); }
+  else if(e.key==="End" && cbx.open){ e.preventDefault(); cbxActivate(cbx.opts.length-1); }
+  else if(e.key==="Enter"){ if(cbx.open && cbx.active>=0){ e.preventDefault(); cbxPick(cbx.opts[cbx.active]._item);} }
+  else if(e.key==="Escape"){ if(cbx.open){ e.stopPropagation(); cbxClose(); } }
+  else if(e.key==="Tab"){ if(cbx.open) cbxClose(); }
+});
+cbx.clear.addEventListener("click",()=>{ cbxReset(); cbx.input.focus(); });
+$$("[data-cbx]").forEach(b=>b.addEventListener("click",()=>{
+  S.cbxState=b.dataset.cbx; cbxOpen(); cbxRender(cbx.input.value); cbx.input.focus();
+}));
+document.addEventListener("mousedown",e=>{ if(cbx.open && !cbx.root.contains(e.target)) cbxClose(); });
+
+/* ══ ZONE 1 ════════════════════════════════════════════════════════════════ */
+(function buildModes(){
+  const box=$("#modes");
+  MODES.forEach(m=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="mode"; b.setAttribute("aria-pressed","false"); b.dataset.mode=m.k;
+    b.innerHTML="<b>"+m.label+"</b><span>"+m.wn.join(" · ")+"</span>";
+    b.addEventListener("click",()=>{
+      S.mode=m.k; S.workNature=m.wn.slice();
+      $$(".mode").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+      $("#fld-mode").classList.remove("invalid");
+      syncZone1(); markDirty(); refresh();
+    });
+    box.appendChild(b);
+  });
+})();
+function syncZone1(){
+  $("#maps-val").textContent = S.workNature.length ? "["+S.workNature.join(", ")+"]" : "nothing selected yet";
+  $("#z1-continue").disabled = !(S.categoryId && S.workNature.length);
+}
+$("#z1-continue").addEventListener("click",()=>{
+  if(!S.categoryId){ $("#fld-category").classList.add("invalid"); cbx.input.focus(); return; }
+  if(!S.workNature.length){ $("#fld-mode").classList.add("invalid"); return; }
+  go("canvas");
+});
+$("#back-zone1").addEventListener("click",()=>go("zone1"));
+$$("[data-goto-zone1]").forEach(b=>b.addEventListener("click",()=>go("zone1")));
+
+function go(v){
+  S.view=v;
+  $("#view-zone1").hidden = v!=="zone1";
+  $("#view-canvas").hidden = v!=="canvas";
+  $("#actionbar").hidden = v!=="canvas";
+  window.scrollTo(0,0);
+  if(v==="canvas") refresh();
+}
+
+/* ══ item requirements — one item may need MORE THAN ONE LINE ══════════════
+   Each item is a block: a column-aligned scalar line plus an optional multi-line
+   description (owner directive 2026-07-07 — bold + three colours, Enter = new line).
+   Dev-doc capture; serialises with the row into content_jsonb. ══════════════ */
+const UNIT_OPTIONS=[["pcs","Pieces (pcs)"],["kg","Kilograms (kg)"],["ton","Metric tons (t)"],
+  ["m","Metres (m)"],["sqm","Square metres (m²)"],["litre","Litres (L)"],["set","Sets"],["lot","Lot"]];
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function unitSelect(v){
+  return '<select class="in" data-f="unit" aria-label="Unit"><option value="">Unit</option>'+
+    UNIT_OPTIONS.map(u=>'<option value="'+u[0]+'"'+(v===u[0]?" selected":"")+'>'+u[1]+'</option>').join("")+'</select>';
+}
+function addItem(seed){
+  seed=seed||{};
+  const row=document.createElement("div");
+  row.className="itemrow"+(seed.desc?" open":"");
+  row.innerHTML=
+    '<div class="itemcols">'+
+      '<span class="sl"></span>'+
+      '<input class="in" data-f="name" aria-label="Item name" placeholder="e.g. MS plate 12mm ASTM A36" value="'+esc(seed.name)+'" />'+
+      '<button class="rowdel" aria-label="Remove this line"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>'+
+    '</div>'+
+    '<div class="itemcols2">'+
+      '<label class="micro"><span>PR # (yours)</span><input class="in" data-f="pr" placeholder="PR-2026-014" value="'+esc(seed.pr)+'" /></label>'+
+      '<label class="micro"><span>Size</span><input class="in" data-f="size" placeholder="2000×1000mm" value="'+esc(seed.size)+'" /></label>'+
+      '<label class="micro"><span>Qty</span><input class="in" data-f="qty" inputmode="numeric" placeholder="0" value="'+esc(seed.qty)+'" /></label>'+
+      '<label class="micro"><span>Unit</span>'+unitSelect(seed.unit)+'</label>'+
+    '</div>'+
+    '<button class="desc-toggle" type="button" aria-expanded="'+(seed.desc?"true":"false")+'">'+
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg>'+
+      '<span class="lbl-txt">'+(seed.desc?"Hide description":"Add a description")+'</span></button>'+
+    '<div class="desc-wrap">'+
+      '<div class="desc" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Item description" '+
+        'data-ph="Grade, tolerance, finish, testing, packing — as many lines as you need.">'+(seed.desc||"")+'</div>'+
+      '<p class="desc-hint">Multi-line. Select text and use the formatting bar above; <b>Enter</b> adds a new line.</p>'+
+    '</div>';
+
+  $$("input,select",row).forEach(i=>i.addEventListener("input",()=>{markDirty();refresh();}));
+  $(".rowdel",row).addEventListener("click",()=>{row.remove();renumber();markDirty();refresh();});
+  const tog=$(".desc-toggle",row);
+  tog.addEventListener("click",()=>{
+    const open=row.classList.toggle("open");
+    tog.setAttribute("aria-expanded",String(open));
+    $(".lbl-txt",tog).textContent = open? "Hide description" : "Add a description";
+    if(open) $(".desc",row).focus();
+  });
+  const d=$(".desc",row);
+  d.addEventListener("input",()=>{markDirty();refresh();});
+  d.addEventListener("focus",()=>{ activeDesc=d; });
+  $("#itemrows").appendChild(row); renumber();
+}
+function renumber(){ $$("#itemrows .itemrow").forEach((r,i)=>{ $(".sl",r).textContent=i+1; }); }
+$("#additem").addEventListener("click",()=>{addItem();markDirty();refresh();
+  const rows=$$("#itemrows .itemrow"); const last=rows[rows.length-1]; if(last) $('[data-f="name"]',last).focus();});
+
+/* rich formatting — applies to the selection inside the description last focused */
+let activeDesc=null;
+$$("[data-rich]").forEach(b=>b.addEventListener("mousedown",e=>{
+  e.preventDefault();
+  if(!activeDesc){ toast("Open a description and select some text first."); return; }
+  activeDesc.focus();
+  const cmd=b.dataset.rich;
+  try{
+    if(cmd==="bold") document.execCommand("bold");
+    else { document.execCommand("styleWithCSS",false,true); document.execCommand("foreColor",false,cmd); }
+  }catch(err){}
+  markDirty();
+}));
+
+/* Paste from Excel — tab / comma / semicolon, Append or Replace */
+function splitCells(line){
+  if(line.indexOf("\t")>=0) return line.split("\t");
+  if(line.indexOf(",")>=0)  return line.split(",");
+  if(line.indexOf(";")>=0)  return line.split(";");
+  return [line];
+}
+function parsePaste(text){
+  const out=[];
+  String(text||"").split(/\r\n|\r|\n/).map(l=>l.trim()).filter(Boolean).forEach(line=>{
+    const c=splitCells(line).map(x=>x.trim());
+    let name="",size="",qty="",unit="",desc="";
+    if(c.length>=5){ name=c[0];size=c[1];qty=c[2];unit=c[3];desc=c.slice(4).join(" "); }
+    else if(c.length===4){ name=c[0];size=c[1];qty=c[2];unit=c[3]; }
+    else if(c.length===3){ name=c[0];qty=c[1];unit=c[2]; }
+    else { name=c[0]||""; }
+    if(!name && !qty) return;
+    const u=unit.toLowerCase();
+    const syn={pc:"pcs",piece:"pcs",pieces:"pcs",sheet:"pcs",sheets:"pcs",kgs:"kg",kilogram:"kg",
+      tons:"ton",tonne:"ton",t:"ton",meter:"m",metre:"m",mtr:"m",ltr:"litre",liter:"litre",litres:"litre",
+      sets:"set",lots:"lot"};
+    const known=UNIT_OPTIONS.some(o=>o[0]===u);
+    out.push({name:name,size:size,qty:qty.replace(/[^0-9.]/g,""),unit:known?u:(syn[u]||""),desc:esc(desc)});
+  });
+  return out;
+}
+$("#pastexl").addEventListener("click",()=>{ $("#pastearea").value=""; $("#pastecount").textContent="Nothing pasted yet."; openScrim("#paste-scrim"); setTimeout(()=>$("#pastearea").focus(),50); });
+$("#pastearea").addEventListener("input",()=>{
+  const n=parsePaste($("#pastearea").value).length;
+  $("#pastecount").textContent = n? (n+" line"+(n>1?"s":"")+" recognised.") : "Nothing recognisable yet — one item per line.";
+});
+$("#paste-cancel").addEventListener("click",()=>closeScrim("#paste-scrim"));
+function applyPaste(replace){
+  const rows=parsePaste($("#pastearea").value);
+  if(!rows.length){ toast("Nothing recognisable to add."); return; }
+  if(replace) $("#itemrows").innerHTML="";
+  rows.forEach(addItem); renumber(); closeScrim("#paste-scrim"); markDirty(); refresh();
+  toast(rows.length+" line"+(rows.length>1?"s":"")+(replace?" replaced the list.":" added."));
+}
+$("#paste-append").addEventListener("click",()=>applyPaste(false));
+$("#paste-replace").addEventListener("click",()=>applyPaste(true));
+
+/* ══ terms rows + device-local bundles (D5) ════════════════════════════════ */
+function addTerm(val){
+  const row=document.createElement("div"); row.className="tcrow";
+  row.innerHTML='<input class="in" placeholder="e.g. Vendor must accept a pre-dispatch inspection" value="'+(val||"")+'" />'+
+    '<button class="rowdel" aria-label="Remove condition"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>';
+  $("input",row).addEventListener("input",()=>{markDirty();refresh();});
+  $(".rowdel",row).addEventListener("click",()=>{row.remove();markDirty();refresh();});
+  $("#tcrows").appendChild(row);
+}
+$("#addtc").addEventListener("click",()=>{addTerm();markDirty();});
+const BKEY="ivendorz.proto.newrfq.tcbundles";
+function readBundles(){ try{ return JSON.parse(localStorage.getItem(BKEY)||"[]"); }catch(e){ return []; } }
+function paintBundles(){
+  const box=$("#bundlechips"); box.innerHTML="";
+  const b=readBundles();
+  if(!b.length){ box.innerHTML='<span style="font-size:12px;color:var(--fg-soft)">No bundles saved on this device yet.</span>'; return; }
+  b.forEach(x=>{
+    const btn=document.createElement("button"); btn.type="button";
+    btn.innerHTML='<span>'+x.name+'</span> <span style="color:var(--fg-soft);font-weight:500">· '+x.rows.length+'</span>';
+    btn.addEventListener("click",()=>{ $("#tcrows").innerHTML=""; x.rows.forEach(addTerm); markDirty(); toast("Loaded “"+x.name+"” from this device."); });
+    box.appendChild(btn);
+  });
+}
+$("#savebundle").addEventListener("click",()=>{
+  const name=$("#bundlename").value.trim();
+  const rows=$$("#tcrows input").map(i=>i.value.trim()).filter(Boolean);
+  if(!name) return toast("Give the bundle a name first.");
+  if(!rows.length) return toast("Add at least one condition to save.");
+  const list=readBundles().filter(x=>x.name!==name); list.unshift({name:name,rows:rows});
+  try{ localStorage.setItem(BKEY, JSON.stringify(list.slice(0,5))); }catch(e){}
+  $("#bundlename").value=""; paintBundles();
+  toast("Saved “"+name+"” to this device only — not shared with your organization.");
+});
+
+/* ══ attachments ═══════════════════════════════════════════════════════════ */
+let fileSeq=0;
+const DEMO_FILES=[["GA-drawing-rev-C.pdf","1.8 MB"],["Bill-of-quantities.xlsx","244 KB"],["Material-test-cert.pdf","612 KB"]];
+$("#addfile").addEventListener("click",()=>{
+  const f=DEMO_FILES[fileSeq%DEMO_FILES.length]; fileSeq++;
+  const li=document.createElement("li");
+  li.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--fg-soft)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>'+
+    '<span class="nm">'+f[0]+'</span><span class="sz">'+f[1]+'</span><span class="sp"></span>'+
+    '<button class="rowdel" aria-label="Remove '+f[0]+'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>';
+  $(".rowdel",li).addEventListener("click",()=>{li.remove();markDirty();refresh();});
+  $("#filelist").appendChild(li); markDirty(); refresh();
+});
+
+/* ══ scope meter (conditional requirement) ════════════════════════════════ */
+function syncScope(){
+  const on=$("#nospec").checked;
+  $("#scope-meter").hidden=!on;
+  $("#scope-badge").textContent = on ? "Required before submission" : "Conditionally required";
+  $("#scope-badge").className = on ? "req req-submit" : "req req-cond";
+  $("#scope-min").textContent=POLICY_MIN_SCOPE;
+  const n=$("#scope").value.trim().length;
+  $("#scope-count").textContent=n;
+  const pct=Math.min(100, Math.round(n/POLICY_MIN_SCOPE*100));
+  $("#scope-meter .meter-bar i").style.width=pct+"%";
+  $("#scope-meter").classList.toggle("ok", n>=POLICY_MIN_SCOPE);
+}
+["#scope","#nospec"].forEach(sel=> $(sel).addEventListener("input",()=>{syncScope();markDirty();refresh();}));
+
+/* ══ generic dirty wiring ══════════════════════════════════════════════════ */
+$$("#sections input, #sections select, #sections textarea").forEach(el=>{
+  el.addEventListener("input",()=>{markDirty();refresh();});
+  el.addEventListener("change",()=>{markDirty();refresh();});
+});
+
+/* ══ READINESS (D3) ═══════════════════════════════════════════════════════ */
+function num(v){ const n=parseFloat(String(v).replace(/[, ]/g,"")); return isNaN(n)?0:n; }
+function evaluate(){
+  const files=$$("#filelist li").length;
+  const scopeLen=$("#scope").value.trim().length;
+  const noSpec=$("#nospec").checked;
+  const blockers=[
+    {id:"cat",   ok:!!S.categoryId,                    label:"Category selected",              anchor:"sec-req",      hint:"Set in Zone 1"},
+    {id:"wn",    ok:S.workNature.length>0,             label:"Work nature chosen",             anchor:"sec-req",      hint:"Set in Zone 1"},
+    {id:"value", ok:num($("#value").value)>0,          label:"Estimated value greater than BDT 0", anchor:"sec-value",  hint:"Go to Estimated value", focus:"#value"},
+    {id:"dist",  ok:!!$("#district").value,            label:"Delivery district",              anchor:"sec-delivery", hint:"Go to Delivery", focus:"#district"},
+    {id:"route", ok:!!$("#routing").value,             label:"Routing breadth",                anchor:"sec-vendor",   hint:"Go to Vendor routing", focus:"#routing"},
+    {id:"spec",  ok:(files>0)||(noSpec&&scopeLen>=POLICY_MIN_SCOPE),
+       label: files>0 ? "Specification attached" : "Specification — attachment, or written scope of "+POLICY_MIN_SCOPE+"+ characters",
+       anchor:"sec-tech", hint:"Go to Specification", focus:"#scope"},
+  ];
+  const warnings=[
+    {id:"items", ok:$$("#itemrows .itemrow").some(r=>$('[data-f="name"]',r).value.trim()),
+       label:"No item lines yet — vendors quote more accurately against a line list", anchor:"sec-req", hint:"Go to Requirement"},
+    {id:"date",  ok:!!$("#ddate").value, label:"No required delivery date — logistics can't be priced", anchor:"sec-delivery", hint:"Go to Delivery"},
+    {id:"files", ok:files>0, label:"No attachments — vendors will quote from your written scope alone", anchor:"sec-attach", hint:"Go to Attachments"},
+    {id:"contact", ok:!!$("#cperson").value.trim(), label:"No RFQ contact person named", anchor:"sec-comms", hint:"Go to Communication"},
+  ];
+  return {blockers:blockers, warnings:warnings};
+}
+function icon(kind){
+  if(kind==="met") return '<svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>';
+  if(kind==="blocked") return '<svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>';
+  return '<svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>';
+}
+function rowFor(it,kind){
+  const b=document.createElement("button");
+  b.type="button"; b.className="rd-item "+kind;
+  b.innerHTML=icon(kind)+"<span>"+it.label+(kind!=="met"&&it.hint?'<span class="anchor">'+it.hint+' →</span>':"")+"</span>";
+  b.addEventListener("click",()=>jump(it));
+  return b;
+}
+function jump(it){
+  const sec=document.getElementById(it.anchor);
+  if(sec) sec.scrollIntoView({behavior:"smooth",block:"start"});
+  if(it.focus){ const f=$(it.focus); if(f) setTimeout(()=>{ f.focus({preventScroll:true}); },320); }
+  if(it.anchor==="sec-req" && (it.id==="cat"||it.id==="wn")) toast("Category and work nature are set in Zone 1 — use Change.");
+}
+function refresh(){
+  if(S.view!=="canvas") { syncZone1(); return; }
+  $("#hdr-cat").textContent=S.categoryLabel||"—";
+  $("#hdr-wn").textContent = S.workNature.length? S.workNature.join(" · ") : "—";
+  $("#req-cat").textContent=S.categoryPath||"—";
+  $("#req-wn").textContent = S.workNature.length? "["+S.workNature.join(", ")+"]" : "—";
+
+  const ev=evaluate();
+  const unmetB=ev.blockers.filter(b=>!b.ok), unmetW=ev.warnings.filter(w=>!w.ok);
+
+  const bb=$("#rd-blockers"); bb.innerHTML="";
+  ev.blockers.forEach(b=> bb.appendChild(rowFor(b, b.ok?"met":"blocked")));
+  const wb=$("#rd-warnings"); wb.innerHTML="";
+  unmetW.forEach(w=> wb.appendChild(rowFor(w,"warn")));
+  $("#rd-warn-grp").hidden = unmetW.length===0;
+
+  const rd=$("#rd");
+  let state, label, sub;
+  if(unmetB.length){ state="not-ready"; label="Not ready";
+    sub=unmetB.length+" item"+(unmetB.length>1?"s":"")+" must be completed before you can submit."; }
+  else if(unmetW.length){ state="needs"; label="Needs attention";
+    sub="You can submit. "+unmetW.length+" optional item"+(unmetW.length>1?"s":"")+" would make your RFQ easier to quote."; }
+  else { state="ready"; label="Ready to submit"; sub="Everything the submission gate needs is in place."; }
+  rd.dataset.state=state; $("#rd-label").textContent=label; $("#rd-sub").textContent=sub;
+  const met=ev.blockers.length-unmetB.length;
+  $("#rd-prog").style.width=Math.round(met/ev.blockers.length*100)+"%";
+
+  // rail state
+  const secMap={
+    "sec-req":   {done:!!S.categoryId&&S.workNature.length>0, block:0},
+    "sec-tech":  {done:ev.blockers.find(b=>b.id==="spec").ok, block:ev.blockers.find(b=>b.id==="spec").ok?0:1},
+    "sec-attach":{done:$$("#filelist li").length>0, block:0},
+    "sec-terms": {done:$$("#tcrows input").some(i=>i.value.trim()), block:0},
+    "sec-delivery":{done:!!$("#district").value, block:$("#district").value?0:1},
+    "sec-vendor":{done:!!$("#routing").value, block:$("#routing").value?0:1},
+    "sec-value": {done:num($("#value").value)>0, block:num($("#value").value)>0?0:1},
+    "sec-comms": {done:!!$("#cperson").value.trim(), block:0},
+  };
+  $$("#rail a").forEach(a=>{
+    const st=secMap[a.dataset.rail]; if(!st) return;
+    const dot=$(".dot",a), cnt=$(".cnt",a);
+    dot.className="dot"+(st.done?" done":"");
+    cnt.className="cnt"+(st.block?" block":"");
+    cnt.textContent=st.block? st.block : "";
+  });
+  $("#review").textContent = state==="ready" ? "Review & submit" : "Review request";
+}
+
+/* ══ rail scroll-spy ══════════════════════════════════════════════════════ */
+const spy=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting) return;
+    $$("#rail a").forEach(a=>a.setAttribute("aria-current", String(a.dataset.rail===e.target.id)));
+  });
+},{rootMargin:"-10% 0px -75% 0px"});
+$$("#sections .sec").forEach(s=>spy.observe(s));
+$$("#rail a").forEach(a=>a.addEventListener("click",e=>{
+  e.preventDefault();
+  document.getElementById(a.dataset.rail).scrollIntoView({behavior:"smooth",block:"start"});
+}));
+
+/* ══ SAVE / DISCARD / LEAVE GUARD (D2) ════════════════════════════════════ */
+function nowLabel(){
+  const d=new Date();
+  return d.getHours().toString().padStart(2,"0")+":"+d.getMinutes().toString().padStart(2,"0");
+}
+let pendingLeave=null;
+function doSave(cb){
+  const btn=$("#savedraft"); btn.disabled=true; btn.textContent="Saving…";
+  setTimeout(()=>{
+    btn.disabled=false;
+    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> Save draft';
+    if(S.savefail){
+      const l2=$("#save-line2"); l2.classList.add("err");
+      l2.textContent="Couldn't save — your changes are still here. Try again.";
+      $("#save-line1").textContent="Unsaved changes";
+      toast("Couldn't save your draft. Nothing was lost — try again.");
+      return;
+    }
+    markClean(nowLabel());
+    toast("Draft saved (simulated — this prototype has no server).");
+    if(cb) cb();
+  },700);
+}
+$("#savedraft").addEventListener("click",()=>doSave());
+$("#discard").addEventListener("click",()=>{ if(!S.dirty) return toast("Nothing to discard."); openScrim("#disc-scrim"); });
+$("#disc-cancel").addEventListener("click",()=>closeScrim("#disc-scrim"));
+$("#disc-ok").addEventListener("click",()=>{
+  closeScrim("#disc-scrim");
+  $$("#sections input, #sections textarea").forEach(i=>{ if(i.type==="checkbox"){ if(!i.disabled) i.checked=false; } else i.value=""; });
+  $$("#sections select").forEach(s=>{ s.selectedIndex=0; });
+  $("#itemrows").innerHTML=""; $("#tcrows").innerHTML=""; $("#filelist").innerHTML="";
+  addItem(); addTerm(); syncScope();
+  S.dirty=false; document.body.dataset.dirty="0";
+  $("#save-line1").textContent = S.saved? "All changes saved" : "No changes yet";
+  const l2=$("#save-line2"); l2.classList.remove("err");
+  l2.textContent = S.saved? ("Last saved "+S.saved) : "Draft not saved yet";
+  refresh(); toast("Changes discarded.");
+});
+
+function openScrim(sel){ $(sel).classList.add("open"); }
+function closeScrim(sel){ $(sel).classList.remove("open"); }
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape") return;
+  ["#guard-scrim","#disc-scrim","#rev-scrim","#paste-scrim"].forEach(s=>{ if($(s).classList.contains("open")) closeScrim(s); });
+});
+$$("[data-guard]").forEach(el=>{
+  el.addEventListener("click",e=>{
+    e.preventDefault();
+    if(S.dirty && S.view==="canvas"){ pendingLeave=el.dataset.toast||"Navigated away."; openScrim("#guard-scrim"); return; }
+    if(el.dataset.toast) toast(el.dataset.toast);
+  });
+});
+$("#guard-stay").addEventListener("click",()=>{ pendingLeave=null; closeScrim("#guard-scrim"); });
+$("#guard-leave").addEventListener("click",()=>{
+  closeScrim("#guard-scrim");
+  toast(pendingLeave? (pendingLeave+" (draft discarded)") : "Left without saving.");
+  pendingLeave=null;
+});
+$("#guard-save").addEventListener("click",()=>{
+  closeScrim("#guard-scrim");
+  doSave(()=>{ if(pendingLeave) toast(pendingLeave); pendingLeave=null; });
+});
+window.addEventListener("beforeunload",e=>{ if(S.dirty){ e.preventDefault(); e.returnValue=""; } });
+
+/* ══ REVIEW DOCUMENT ══════════════════════════════════════════════════════ */
+function sealed(v,fallback){ return v && String(v).trim() ? v : '<span class="sealed">'+(fallback||"Not provided")+'</span>'; }
+$("#review").addEventListener("click",()=>{
+  const ev=evaluate(); const unmet=ev.blockers.filter(b=>!b.ok);
+  const items=$$("#itemrows .itemrow").map(r=>({
+    pr:$('[data-f="pr"]',r).value.trim(), name:$('[data-f="name"]',r).value.trim(),
+    size:$('[data-f="size"]',r).value.trim(), qty:$('[data-f="qty"]',r).value.trim(),
+    unit:(function(s){return s.selectedIndex>0? s.options[s.selectedIndex].text : "";})($('[data-f="unit"]',r)),
+    desc:$(".desc",r).innerHTML.trim()
+  })).filter(it=>it.name||it.qty);
+  const terms=$$("#tcrows input").map(i=>i.value.trim()).filter(Boolean);
+  const files=$$("#filelist li").map(li=>$(".nm",li).textContent);
+  let rows=items.map((it,i)=>
+    '<tr><td>'+(i+1)+'</td><td>'+(it.pr||"—")+'</td><td>'+(esc(it.name)||"—")+
+    (it.desc? '<div style="font-size:11.5px;color:var(--fg-muted);margin-top:3px;line-height:1.5">'+it.desc+'</div>':"")+
+    '</td><td>'+(esc(it.size)||"—")+'</td><td>'+(esc(it.qty)||"—")+'</td><td>'+(esc(it.unit)||"—")+'</td></tr>').join("");
+  if(!rows) rows='<tr><td colspan="6" class="sealed">No item lines added</td></tr>';
+
+  /* ── the preview must show the WHOLE request, not a summary of six fields ──
+     Every captured input is rendered. Optional blanks show "—" so the document
+     shape is stable; submit-required blanks are called out honestly in red. */
+  const v  = sel => ($(sel) ? String($(sel).value||"").trim() : "");
+  const sel_= sel => { const e=$(sel); return (e && e.selectedIndex>0) ? e.options[e.selectedIndex].text : ""; };
+  const chk = sel => !!($(sel) && $(sel).checked);
+  const opt = t => t ? esc(t) : '<span class="sealed">—</span>';
+  const need= t => t ? esc(t) : '<span class="needed">Required before submission</span>';
+  const pair= (label,html,span) => '<dt>'+label+'</dt><dd'+(span?' class="span"':'')+'>'+html+'</dd>';
+  const para= t => t ? esc(t).replace(/\n/g,"<br/>") : '<span class="sealed">Not provided</span>';
+
+  const valNum=num($("#value").value);
+  const money = valNum>0 ? "BDT "+valNum.toLocaleString("en-US") : "";
+  const routing = sel_("#routing");
+  const channels=[chk("#cphone")&&"Phone call",chk("#cwa")&&"WhatsApp",chk("#cmail")&&"Email"].filter(Boolean);
+
+  $("#revdoc").innerHTML=
+    '<h4>Request for Quotation</h4>'+
+    '<div class="docref">RFQ-2026-000000 · reference allocated on submission · Active organization (Buyer)</div>'+
+
+    /* at-a-glance band */
+    '<dl class="keyfacts">'+
+      '<div><dt>Estimated value</dt><dd'+(money?'':' class="miss"')+'>'+(money||"Required")+'</dd></div>'+
+      '<div><dt>Delivery district</dt><dd'+(v("#district")?'':' class="miss"')+'>'+(esc(v("#district"))||"Required")+'</dd></div>'+
+      '<div><dt>Required by</dt><dd>'+(esc(v("#ddate"))||"—")+'</dd></div>'+
+      '<div><dt>Routing</dt><dd'+(routing?'':' class="miss"')+'>'+(esc(routing)||"Required")+'</dd></div>'+
+    '</dl>'+
+
+    '<h5>Requirement</h5>'+
+    '<dl class="two">'+
+      pair("Category", need(S.categoryPath), true)+
+      pair("Work nature", S.workNature.length? '<span class="mono">['+S.workNature.join(", ")+']</span>' : '<span class="needed">Required before submission</span>')+
+      pair("Urgency", opt(v("#urgency")))+
+    '</dl>'+
+
+    '<h5>Items <span>'+items.length+' line'+(items.length===1?"":"s")+'</span></h5>'+
+    '<table><thead><tr><th>#</th><th>PR #</th><th>Item</th><th>Size</th><th>Qty</th><th>Unit</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+
+    '<h5>Specification</h5>'+
+    '<p>'+para($("#scope").value)+'</p>'+
+    ($("#nospec").checked
+      ? '<p class="note-line">Marked <b>“no formal specification document”</b> — the written scope above stands in for an attached spec.</p>'
+      : "")+
+    '<dl class="two" style="margin-top:10px">'+
+      pair("Brand preference", opt(v("#brand")))+
+      pair("Alternative brand", opt(v("#altbrand")))+
+      pair("Condition", opt(sel_("#cond")))+
+      pair("Standards", opt(v("#std")))+
+      pair("Certifications", opt(v("#certs")), true)+
+    '</dl>'+
+
+    '<h5>Attachments <span>'+files.length+'</span></h5>'+
+    (files.length? '<ul class="plain">'+files.map(f=>"<li>"+esc(f)+"</li>").join("")+'</ul>'
+                 : '<p class="sealed">None attached</p>')+
+
+    '<h5>Terms &amp; conditions <span>'+terms.length+'</span></h5>'+
+    (terms.length? "<ol style='padding-left:18px;font-size:12.5px'>"+terms.map(t=>"<li style='padding:2px 0'>"+esc(t)+"</li>").join("")+"</ol>"
+                 : '<p class="sealed">None stated</p>')+
+
+    '<h5>Delivery</h5>'+
+    '<dl class="two">'+
+      pair("District", need(v("#district")))+
+      pair("Site type", opt(sel_("#dsite")))+
+      pair("Location", opt(v("#daddr")))+
+      pair("Required by", opt(v("#ddate")))+
+      pair("Instructions", para(v("#dinstr")), true)+
+    '</dl>'+
+
+    '<h5>Communication</h5>'+
+    '<dl class="two">'+
+      pair("Contact person", opt(v("#cperson")))+
+      pair("Contact number", opt(v("#cnum")))+
+      pair("Preferred time", opt(sel_("#ctime")))+
+      pair("Channels", '<span class="chips"><span class="chip">Platform messages</span>'+
+        channels.map(c=>'<span class="chip">'+c+'</span>').join("")+'</span>')+
+    '</dl>'+
+    '<p class="note-line">Shared only with vendors who receive this RFQ.</p>'+
+
+    /* ── everything above is what an invited vendor receives; everything below is yours ── */
+    '<div class="internal-band">'+
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'+
+      '<b>Internal — not sent to vendors.</b> Your routing preferences and commercial guidance stay '+
+      'confidential. They are shown here so you can check the whole request before submitting.'+
+    '</div>'+
+
+    '<h5>Vendor routing <span class="tag-int">internal</span></h5>'+
+    '<dl class="two">'+
+      pair("Routing breadth", need(routing), true)+
+      pair("Preferred vendor", opt(v("#pvendor")))+
+      pair("Financial tier", opt(sel_("#ftier")))+
+      pair("Verified only", chk("#verifiedonly")?"Yes":"No")+
+      pair("Alternatives", chk("#acceptalt")?"Accepted":"Not accepted")+
+    '</dl>'+
+    '<p class="note-line">Preferences are hints. The matching engine decides which vendors are invited.</p>'+
+
+    '<h5>Commercial guidance <span class="tag-int">internal</span></h5>'+
+    '<dl class="two">'+
+      pair("Estimated value", money? esc(money) : '<span class="needed">Required before submission</span>')+
+      pair("Currency", "BDT")+
+      pair("Special instructions", para(v("#specinstr")), true)+
+    '</dl>'+
+    '<p class="note-line">Guidance only — payment terms, incoterms and tax are set by the vendor in its quotation.</p>'+
+
+    '<hr/><p style="font-size:11.5px;color:var(--fg-soft)">Your identity and this document are shared only with vendors the routing engine invites. This RFQ is never publicly published.</p>';
+
+  const gate=$("#rev-gate"), sub=$("#rev-submit");
+  if(unmet.length){
+    gate.innerHTML='<b style="color:var(--iv-danger-base)">'+unmet.length+' item'+(unmet.length>1?"s":"")+' still required</b> — '+unmet.map(u=>u.label).join("; ");
+    sub.disabled=true;
+  } else {
+    gate.innerHTML='<span style="color:var(--iv-success-base);font-weight:600">Ready to submit.</span> The server re-checks the submission gate — this preview is guidance, not the decision.';
+    sub.disabled=false;
+  }
+  openScrim("#rev-scrim");
+});
+$("#rev-edit").addEventListener("click",()=>closeScrim("#rev-scrim"));
+$("#rev-submit").addEventListener("click",()=>{
+  closeScrim("#rev-scrim");
+  toast("Prototype only — no RFQ was created and nothing was sent to a server.");
+});
+
+/* ══ demo states ══════════════════════════════════════════════════════════ */
+function setField(sel,val){ const e=$(sel); if(e){ e.value=val; } }
+function resetAll(){
+  cbxReset(); S.mode=null; S.workNature=[];
+  $$(".mode").forEach(x=>x.setAttribute("aria-pressed","false"));
+  $$("#sections input, #sections textarea").forEach(i=>{ if(i.type==="checkbox"){ if(!i.disabled) i.checked=false; } else i.value=""; });
+  $$("#sections select").forEach(s=>s.selectedIndex=0);
+  $("#itemrows").innerHTML=""; $("#tcrows").innerHTML=""; $("#filelist").innerHTML="";
+  addItem(); addTerm(); syncScope();
+  S.savefail=false; S.saved=null; S.dirty=false; document.body.dataset.dirty="0";
+  $("#save-line1").textContent="No changes yet";
+  const l2=$("#save-line2"); l2.classList.remove("err"); l2.textContent="Draft not saved yet";
+}
+const LOREM="Supply of hot-rolled mild steel plate to ASTM A36, cut to the sizes listed, with mill test certificates for each heat. Plates must be free of laminations, pitting and surface rust beyond light mill scale. Delivery in a single consignment to the Gazipur plant, unloaded by the supplier. Pre-dispatch inspection by our QA engineer is required, and rejected material is to be replaced within seven days at the supplier's cost.";
+function demo(kind){
+  resetAll();
+  if(kind==="zone1"){ go("zone1"); refresh(); return; }
+  // all canvas states start from a chosen category + mode
+  cbxPick(CATEGORIES[0].items[0]);
+  const b=$$('.mode')[0]; if(b) b.click();
+  go("canvas");
+  if(kind==="fresh"){ S.dirty=false; document.body.dataset.dirty="0";
+    $("#save-line1").textContent="No changes yet"; $("#save-line2").textContent="Draft not saved yet"; refresh(); return; }
+
+  $("#itemrows").innerHTML="";
+  addItem({pr:"PR-2026-014",name:"MS plate 12mm ASTM A36",size:"2000×1000mm",qty:"40",unit:"pcs",
+    desc:'<b>Mill test certificate required per heat.</b><div>Surface: free of laminations and pitting; light mill scale accepted.</div>'+
+         '<div><span style="color:#dc2626">Rejected material replaced within 7 days at supplier cost.</span></div>'});
+  addItem({pr:"PR-2026-014",name:"MS plate 16mm ASTM A36",size:"2000×1000mm",qty:"18",unit:"pcs"});
+  setField("#scope",LOREM.slice(0,120));
+  setField("#district","Gazipur");
+  syncScope();
+
+  if(kind==="partial"){ markDirty(); refresh(); return; }
+
+  // ready / savefail
+  setField("#scope",LOREM);
+  $("#nospec").checked=true; syncScope();
+  setField("#value","1,800,000");
+  setField("#routing","approved_open");
+  setField("#ddate","2026-09-15");
+  setField("#brand","Tata / SAIL");
+  setField("#altbrand","Any equivalent to ASTM A36");
+  setField("#cond","New");
+  setField("#std","ASTM A36, ISO 9001");
+  setField("#certs","EN 10204 3.1 mill test certificate");
+  setField("#dsite","Factory");
+  setField("#daddr","Plot 44, BSCIC Industrial Estate");
+  setField("#dinstr","Deliver 09:00–17:00 on working days. Supplier unloads; 12-tonne crane available on site.");
+  setField("#urgency","Standard");
+  setField("#specinstr","Partial deliveries acceptable if the first lot covers at least half the tonnage.");
+  setField("#pvendor","Meghna Steel & Engineering");
+  setField("#ftier","B");
+  $("#verifiedonly").checked=true; $("#acceptalt").checked=true;
+  setField("#cperson","Engr. Kamrul Hassan");
+  setField("#cnum","+880 1711 234567");
+  setField("#ctime","Business hours");
+  $("#cphone").checked=true; $("#cwa").checked=true;
+  $("#tcrows").innerHTML=""; addTerm("Vendor must accept a pre-dispatch inspection."); addTerm("Mill test certificates required per heat.");
+  $("#addfile").click();
+  if(kind==="savefail"){ S.savefail=true; markDirty(); refresh();
+    toast("Save-failure state armed — press Save draft."); return; }
+  markDirty(); refresh();
+}
+$$(".demo-states button").forEach(b=>b.addEventListener("click",()=>{
+  $$(".demo-states button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+  demo(b.dataset.demo);
+}));
+$("#notes-toggle").addEventListener("change",e=>document.body.classList.toggle("show-notes",e.target.checked));
+
+/* Hide ALL prototype chrome — banner + amber review notes — so the screen can be read
+   exactly as a buyer would see it. Restores from the floating chip. */
+$("#banner-hide").addEventListener("click",()=>{
+  document.body.classList.add("hide-chrome");
+  document.body.classList.remove("show-notes");
+  $("#notes-toggle").checked=false;
+  toast("Prototype chrome hidden. Use “Show prototype chrome”, bottom-left, to bring it back.");
+});
+$("#banner-show").addEventListener("click",()=>{
+  document.body.classList.remove("hide-chrome");
+  document.body.classList.add("show-notes");
+  $("#notes-toggle").checked=true;
+});
+
+/* ══ boot ══════════════════════════════════════════════════════════════════ */
+addItem(); addTerm(); paintBundles(); syncScope(); syncZone1(); cbxRender(""); refresh();
+})();
+</script>
+</body>
+</html>
