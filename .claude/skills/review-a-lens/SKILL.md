@@ -228,6 +228,44 @@ type VendorId = Brand<string, 'VendorId'>
 
 ---
 
+### 9. Representation & State-Existence Drift
+**Check:** do two correct-looking sides silently disagree?
+
+**Money / quantity representation.** For each monetary or quantity value: where is it created,
+in what unit and representation, and does every downstream arithmetic, comparison, aggregation,
+and display transform match that representation? Flag mismatches **even where the code currently
+runs without error**.
+
+- [ ] Creation site names the unit/representation (minor units vs decimal, per-unit vs extended)
+- [ ] Every comparison and aggregation reads the same representation it was written in
+- [ ] A display transform never becomes an input to a comparison or a stored value
+
+*Local precedent:* a SEALED vendor rendered as BDT 0 and consequently won "Lowest total";
+adapter root cause raised, not fixed.
+
+**State-existence assumptions.** For each event handler and background job, list the state it
+reads but did not create. For each, name the **code-level** guarantee that the state exists at
+read time — an existence check, an upsert, a compare-and-set, or an ordering constraint. A naming
+convention, an "it always runs after X" assumption, or a SELECT-time-only check is **not** a
+guarantee.
+
+- [ ] Read-but-not-created state enumerated per handler/job
+- [ ] Each has a named guarantee, not an assumed ordering
+- [ ] Concurrency-sensitive reads use CAS or a constraint, not check-then-write
+
+*Local precedent:* RV-0144.
+
+**Severity mapping (§13):** a representation mismatch that can produce a wrong monetary figure,
+ranking, or award = **BLOCKER**; one that is display-only and cannot reach a stored or compared
+value = **MINOR**. A missing state-existence guarantee = **MAJOR**, or **BLOCKER** where it can
+corrupt a document, score, or award.
+
+**Divergence:** where this check surfaces code that disagrees with a frozen doc, the disposition
+is **Flag-and-Halt (§11)** — cite both sources and escalate. Never reconcile whichever side
+looks wrong.
+
+---
+
 ## Red Flags (Stop & Escalate)
 
 BLOCKER if:
@@ -245,8 +283,11 @@ BLOCKER if:
 
 ## Verdict Template
 
+**The default verdict is FAIL.** A gate opens only on produced evidence; absence of evidence
+is a fail, not a pass. A check that was not exercised is `REVISION` — never `PASS`.
+
 ```
-🟢 PASS / 🟠 REVISION / 🟥 BLOCKER
+🟥 BLOCKER / 🟠 REVISION / 🟢 PASS
 
 Scope: ✓ (no cross-module access)
 Coined Fields: ✓ (statuses from Doc-4M)
@@ -256,8 +297,9 @@ Contracts: [finding if any]
 Routes: ✓ (registered in page universe)
 Invariants: ✓ (M4 document kinds frozen-only)
 Types: ✓ (IDs type-safe)
+Drift: ✓ (money representation + state-existence traced)
 
-Overall: [PASS/REVISION/BLOCKER]
+Overall: [BLOCKER/REVISION/PASS]
 [If REVISION: list findings with severity + remediation]
 [If BLOCKER: escalate + cite frozen doc]
 ```

@@ -19,11 +19,21 @@ Multi-tenant data isolation + authorization pre-commit verification. Catches iVe
 - [ ] Server action retrieves + validates org context from session
 - [ ] Org ID sourced from JWT/session, never request body
 - [ ] Error handling for missing/invalid org context
+- [ ] Org context resolved by a **server-verified membership lookup keyed by the authenticated user id**
+
+**"In the token" is not the test — "server-verified" is.** Supabase `user_metadata` is
+client-editable *and* is carried in the JWT, so reading org context from it satisfies
+"from the JWT/session" while still violating Invariant #5. Unacceptable sources, all
+equally BLOCKER: request body · query param · header · `user_metadata` · any
+self-writable custom claim.
 
 **BLOCKER Pattern:**
 ```typescript
 // ❌ Client-supplied org ID
 const data = await db.query(`WHERE org_id = ${req.body.orgId}`)
+
+// ❌ In the JWT, but client-editable — still Invariant #5
+const orgId = session.user.user_metadata.active_org_id
 
 // ✅ Server-validated
 const org = await validateUserOrg(userId, orgIdFromSession)
@@ -37,6 +47,17 @@ const data = await db.query(`WHERE org_id = ${org.id}`)
 - [ ] RLS policy exists + aligns with app-layer rule (not inverted)?
 - [ ] No raw SQL that bypasses RLS
 - [ ] Admin (M8) never bypasses owning module's domain
+- [ ] Every policy's `USING` / `WITH CHECK` predicate constrains rows to the authenticated
+      principal's org or user — **unless** the table/view carries `visibility_scope = public`
+      (Invariant #3), in which case the predicate must still exclude soft-deleted and
+      `buyer_private` rows and the public scope must be named in the finding
+
+**The RLS check is identity-scoping, not policy existence.** A policy whose `USING` /
+`WITH CHECK` expression does not constrain rows to the authenticated principal —
+`USING (true)` being the canonical case — is enabled-but-non-enforcing and fails this gate,
+**except on a declared-public read surface**, where an unconstrained principal is the design.
+Default-private is the platform rule: a permissive policy passes only when the public scope
+is explicit, never by omission. Name the predicate in the finding.
 
 **Verify:**
 ```typescript
@@ -101,6 +122,11 @@ const performanceScore = calculatePerformanceScore(vendor) // M5 only
 - [ ] No PII in error messages or logs (email, phone, org name)
 - [ ] Audit logs exclude sensitive fields
 - [ ] File uploads scoped to org (never world-readable)
+- [ ] Any secret that reached a commit is **rotated at the issuing provider**, not just deleted
+
+**A credential is burned at commit time, not at exploitation.** Removing it from the code
+does not close the finding; the finding closes only when the concrete rotation step at the
+issuing provider is named and performed. Treat any secret that reached a commit as public.
 
 **BLOCKER:**
 ```typescript

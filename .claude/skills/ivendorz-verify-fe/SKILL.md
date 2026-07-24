@@ -89,7 +89,7 @@ Test the user flow end-to-end:
 
 ---
 
-### Layer 5: State Matrix (loading / empty / error / success)
+### Layer 5: State Matrix (loading / empty / error / success / focus / disabled)
 Every surface has more states than its happy path. Walk the full matrix for each new/changed
 surface. **Presentation-only phase:** verify the states render correctly from props/fixtures
 (no network to simulate); **wired surfaces:** exercise them live with the DevTools steps below.
@@ -115,6 +115,17 @@ surface. **Presentation-only phase:** verify the states render correctly from pr
 - [ ] The surface reflects the new state without a manual refresh
 - [ ] Presentation-only phase: disabled actions carry an honest note ("Totals and VAT calculate in the integration phase", "Drafts are kept on this device") — never a fake success or fake save
 
+**Focus:**
+- [ ] Every interactive element shows a visible focus ring (kit default — never `outline: none`)
+- [ ] Tab order follows visual order; dialogs trap focus and restore it to the trigger on close
+
+**Disabled:**
+- [ ] Disabled controls are visibly disabled *and* genuinely non-submitting — either the native
+      `disabled` attribute, or `aria-disabled` **plus a handler-level guard** (`aria-disabled`
+      alone leaves the control focusable, clickable, and submitting). `pointer-events: none`
+      is never sufficient — it does not block keyboard activation.
+- [ ] The reason is legible — a disabled action carries an honest note, never a silent dead control
+
 **Test (wired surfaces):**
 ```bash
 # Loading: DevTools → Network → Slow 3G, hard-reload the route → skeleton must show
@@ -128,6 +139,12 @@ surface. **Presentation-only phase:** verify the states render correctly from pr
 
 ### Layer 6: Performance Sanity
 Verify no egregious regressions:
+
+**Non-normative smoke heuristics — not coined budgets.** The figures below are rough sanity
+thresholds for catching egregious regressions by eye. They are **not** a performance budget:
+the budget/test is Doc-8's (`Doc-7A §10.4`; `Doc-7B BR8`), and Doc-8 — the Test & Conformance
+Realization Program — has not coined one. Never cite these numbers as a conformance threshold.
+A miss here is an **OBS** (§13, non-gating) until Doc-8 coins a budget by additive patch.
 
 - [ ] Page loads in <3s (first contentful paint)
 - [ ] Interactions respond within <100ms (no lag)
@@ -210,8 +227,10 @@ Layer 5 - State Matrix:
 - [ ] Empty: kit EmptyState, exclusion-silent copy, no fabricated counts
 - [ ] Error: network / permission (no 404-vs-403 leak) / validation / session
 - [ ] Success: confirmation visible; honest notes on unwired actions
+- [ ] Focus: visible ring, tab order, dialog focus trap + restore
+- [ ] Disabled: native `disabled` or `aria-disabled` + handler guard; reason legible
 
-Layer 6 - Performance:
+Layer 6 - Performance (smoke heuristics, non-normative — Doc-8 owns budgets):
 - [ ] Loads <3s
 - [ ] Interactions responsive (<100ms)
 - [ ] No memory leaks
