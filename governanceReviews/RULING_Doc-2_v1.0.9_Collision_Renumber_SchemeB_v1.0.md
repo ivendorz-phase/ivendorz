@@ -114,4 +114,31 @@ patch-ID axis. The consistent resolution appears to be `PATCH-D2-11`, but that i
 identifier assignment for a future PR: **not slid locally.** Per §5 and CLAUDE.md §11 this is raised
 to the owner, who may either rule the single case or ratify a general patch-ID clause (an A-2).
 
-**Status:** OPEN — owner ruling required before the D2-10 forward-PR is cut.
+**Status:** ✅ **RESOLVED 2026-07-23 by Amendment A-2 (§9).**
+
+---
+
+## 9. Amendment A-2 — Doc-2 Patch-ID Reconciliation (additive; owner-ruled 2026-07-23)
+
+Resolves the §8 OPEN item. Scheme B §1–§6 and Amendment A-1 bind the **version line**; this amendment
+binds the **`PATCH-D2-xx` identifier axis**.
+
+**Normative rule.** For reconciled Doc-2 patches, the `PATCH-D2-xx` identifier must follow the
+authoritative sequence already present on current `main`:
+
+> - If the branch patch ID is already occupied on `main`, assign the **next verified available
+>   contiguous** `PATCH-D2` identifier.
+> - **Do not** preserve branch-only patch-ID gaps.
+> - **Do not** change an occupied identifier already merged on `main`.
+> - If the expected next identifier is occupied or reserved, **Flag-and-Halt** and return to the owner.
+> - Patch-ID reassignment **changes identifiers only**; it does not approve, fold, or alter patch
+>   semantics (§4 renumber ≠ fold still binds).
+
+**Approved application.** Growth Hub remains **`PATCH-D2-10`** (merged on `main`; not changed).
+VendorType Preset becomes **`PATCH-D2-11`**.
+
+**D2-10 forward-PR targets:** Doc-2 version **`v1.0.12`** · patch ID **`PATCH-D2-11`**. Both verified
+free on `main` at cut time (`4fc4b23`: Doc-2 tip v1.0.11; `PATCH-D2-01…10` contiguous).
+
+**Scope/limits.** Additive: adds one rule; §1–§7 unchanged. Together with A-1 the ruling now binds
+both identifier axes — version line (A-1) and patch ID (A-2).
