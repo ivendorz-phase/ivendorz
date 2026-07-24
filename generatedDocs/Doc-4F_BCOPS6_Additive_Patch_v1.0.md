@@ -28,6 +28,12 @@
 > this patch. Implementation may elaborate mechanics but may not decide missing behavior;
 > "hardening at realization" is never permission to invent semantics during coding.
 
+> **Metadata correction (2026-07-24, editorial).** At the 2026-07-19 fold, two residual
+> pre-fold metadata elements were left unflipped: the **Status** field below and the closing
+> footer. Both are reconciled here to the ratified **FOLDED / owner-Board APPROVED** state
+> already recorded in this header and in `00_AUTHORITY_MAP.md:65`. Editorial reconciliation
+> only — no semantic, contract, aggregate, or architectural change.
+
 | Field | Value |
 |---|---|
 | **Patches** | Doc-4F (Business Operations Engine) — additive overlay on the FROZEN set: `Doc-4F_Structure_v1.0_FROZEN.md` (**§F1/§F3/§F4/§F5/§F6/§F8/§F9/§F10/§F15** additive rows — NF-02: the full amendment surface) + a new contract section (**§F16 — BC-OPS-6**). No frozen base file edited; no existing BC/contract/aggregate changed. |
@@ -35,7 +41,7 @@
 | **Domain authority** | **Doc-2 v1.0.10** (`generatedDocs/Doc-2_Patch_v1.0.10_VendorBuyerRelationship.md`, PATCH-D2-08, FOLDED 2026-07-19) — the aggregate, tables, stage set, provenance model, slug, audit rows, and consumer declarations this patch realizes. Per Doc-4A §20.1/§20.2 the domain change preceded this contract patch. |
 | **Authorized by** | Owner rulings 2026-07-19: G1 (structural amendment: BC-OPS-6, 7→8) · G2 (tier mapping Option A) · train order (T3 after T1 fold; T2 resolved-by-confirmation Option A). Trail: `governanceReviews/VendorBuyerRelationship_Domain_Patch_Train_PROPOSAL_v1.0.md` (v1.2) |
 | **Conforms To** | Architecture v1.0 FINAL, ADR Compendium v1, **Doc-2 v1.0.10**, Doc-3 v1.0.2 (+ POLICY registration patches v1.0–v1.11), Doc-4A v1.0, Doc-4B/4C/4D/4E v1.0, Doc-4F Structure + Pass-A + Pass-B Parts 1–5 (all FROZEN) |
-| **Status** | **PROPOSED — human/Board approval required to fold** |
+| **Status** | **FOLDED — owner/Board APPROVED FOR FOLD 2026-07-19** (per the ratified header above + `00_AUTHORITY_MAP.md:65`; §13 gate at fold: BLOCKER 0 · MAJOR 0 · MINOR 0) |
 
 ---
 
@@ -408,6 +414,6 @@ FK.
 
 ---
 
-*Additive patch proposal; no frozen base file edited. Realizes Doc-2 v1.0.10 per Doc-4A
-§20.1/§20.2 (domain first, contracts after). Folding requires explicit owner/Board approval;
-review per §13 (Review-A architecture/governance lens recommended before fold).*
+*Additive patch (FOLDED 2026-07-19); no frozen base file edited. Realizes Doc-2 v1.0.10 per Doc-4A
+§20.1/§20.2 (domain first, contracts after). Folded under explicit owner/Board approval 2026-07-19;
+§13 gate at fold: BLOCKER 0 · MAJOR 0 · MINOR 0 (Review-A architecture/governance lens applied).*
