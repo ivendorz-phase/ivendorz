@@ -239,7 +239,17 @@ export const mockRfqWorkflowData: RfqWorkflowData = {
       );
       const vatAmounts = subTotals.map((sub) => Math.round(sub * (fixture.vatRatePct / 100)));
       const grandTotals = subTotals.map((sub, vi) => sub + vatAmounts[vi]);
-      const order = grandTotals.map((_, vi) => vi).sort((a, b) => grandTotals[a] - grandTotals[b]);
+      // Review-A F1 (§9 representation): a SEALED vendor discloses no total — its subtotal computes
+      // to 0 above — so it must NEVER enter the lowest / second-lowest / difference arithmetic. Left in,
+      // it sorts first at 0 and (via the view-layer sealed guard) steals the "lowest" identification
+      // from the genuinely-lowest DISCLOSED vendor. Rank the disclosed set only; if — degenerately —
+      // every compared quotation is sealed, fall back to the full order so the view layer's sealed
+      // guard renders "not determinable" rather than a bogus index.
+      const byTotalAsc = (a: number, b: number) => grandTotals[a] - grandTotals[b];
+      const disclosedIdxs = chosen.map((_, vi) => vi).filter((vi) => !chosen[vi].sealed);
+      const order = (disclosedIdxs.length > 0 ? disclosedIdxs : chosen.map((_, vi) => vi)).sort(
+        byTotalAsc,
+      );
       const lowestVendorIdx = order[0];
       const secondLowestVendorIdx = order.length > 1 ? order[1] : undefined;
       const difference =

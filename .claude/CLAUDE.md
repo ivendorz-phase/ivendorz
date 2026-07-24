@@ -22,7 +22,7 @@
 
 ### Verification
 - **`/ivendorz-verify-fe`** — End-to-end frontend verification
-  - 8-layer check: run app, design, governance, journey, state matrix (loading/empty/error/success), perf, edges, prod build
+  - 8-layer check: run app, design, governance, journey, state matrix (loading/empty/error/success/focus/disabled), perf, edges, prod build
 
 - **`/fe-verify-bundle`** — Prod-build verification (code-split changes)
   - Isolated build, chunk manifests, barrel audits
