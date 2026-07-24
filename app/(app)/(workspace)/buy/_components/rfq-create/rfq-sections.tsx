@@ -1,17 +1,23 @@
-// P-BUY-RFQ — the wizard FIELD SECTIONS. PRESENTATION-ONLY: fields render from `data.form` via `defaultValue`/
-// `defaultChecked` (uncontrolled — no state, no onChange, no submit; a client form surface wires values at
-// integration). Reuses the kit `Card`/`FormField` + the buyer `Textarea`/`Select` controls + `Badge`. The
+"use client";
+
+// P-BUY-RFQ — the canvas FIELD SECTIONS. CONTROLLED as of 2026-07-24 (owner rulings D1–D3): every
+// field renders from the single `RfqDraftForm` owned by `RfqAuthoringSurface` and reports edits via
+// `onChange`. Still no fetch, no mutation, no submit — the draft is client-held until an explicit
+// Save, and Save itself is simulated until Phase 4 (D2). Reuses the kit `Card`/`FormField`/
+// `Combobox` + the buyer `Textarea`/`Select` controls + `Badge`. The
 // PINNED frozen fields (category, work_nature, scope_text, no_formal_spec, budget/currency, routing_mode) are
 // labelled by intent; the rest are the dev-doc capture (see rfq-form-models.ts). No matching weight is set
 // by the buyer (R6); no AI. COMMERCIAL terms (payment / incoterms / tax) are NOT here — the vendor defines
 // them in its quotation (Board ruling 2026-07-01); the buyer states only optional budget GUIDANCE (R8).
 
 import * as React from "react";
-import { Info, Search } from "lucide-react";
+import { Info } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/frontend/primitives/card";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/frontend/primitives/tooltip";
-import { Input } from "@/frontend/primitives/input";
+import { Combobox } from "@/frontend/primitives/combobox";
 import { FormField } from "@/frontend/components/form-field";
+import { RequirednessMark } from "./rfq-requiredness";
+import { CATEGORY_OPTIONS, categoryDisplayPath } from "./rfq-category-options";
 import { cn } from "@/frontend/lib/cn";
 import { Textarea, Select, CheckboxRow } from "../form-controls";
 import { ItemRequirementsTable } from "./item-requirements-table";
@@ -103,8 +109,16 @@ function TipsHint({ label, tips }: { label: string; tips: string[] }) {
   );
 }
 
+/** Every section is CONTROLLED: it renders `form` and reports edits through `onChange`. The draft
+ *  lives in one place (`RfqAuthoringSurface`) so readiness, the rail and the preview all read the
+ *  same object. No section owns draft state and none of them saves anything (D2 — explicit save). */
+export interface SectionProps {
+  form: RfqDraftForm;
+  onChange: (patch: Partial<RfqDraftForm>) => void;
+}
+
 // ── Phase 2 — Requirement details ─────────────────────────────────────────────────────────────────────
-export function RequirementSection({ form }: { form: RfqDraftForm }) {
+export function RequirementSection({ form, onChange }: SectionProps) {
   return (
     <SectionCard
       title="Requirement details"
@@ -120,102 +134,184 @@ export function RequirementSection({ form }: { form: RfqDraftForm }) {
         />
       }
     >
-      <FormField id="rfq-category" label="Category" required>
-        <div className="relative">
-          <Search
-            aria-hidden
-            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            defaultValue={form.categoryLabel}
-            placeholder="Search category…"
-            className="pl-9"
-          />
-        </div>
+      {/* The kit combobox (D6). Set in the Zone-1 gate; still editable here — the gate controls
+          ENTRY, not ownership. The value is the opaque `category_id`; the path is display only. */}
+      <FormField
+        id="rfq-category"
+        label={
+          <span className="inline-flex items-center gap-2">
+            Category
+            <RequirednessMark kind="start" />
+          </span>
+        }
+        description={form.categoryPath || undefined}
+      >
+        <Combobox
+          id="rfq-category"
+          options={CATEGORY_OPTIONS}
+          value={form.categoryId ?? null}
+          placeholder="Search the category tree…"
+          onValueChange={(value, option) =>
+            onChange({
+              categoryId: value ?? undefined,
+              categoryLabel: option?.label,
+              categoryPath: categoryDisplayPath(option),
+            })
+          }
+        />
       </FormField>
       {/* A checkbox GROUP → fieldset/legend (not FormField, which wires a single label→control). */}
       <fieldset className="sm:col-span-2">
-        <legend className="text-sm font-medium text-foreground">
+        <legend className="flex items-center gap-2 text-sm font-medium text-foreground">
           Request type
-          <span className="ml-0.5 text-destructive" aria-hidden="true">
-            *
-          </span>
-          {/* The asterisk is decorative (aria-hidden); convey "required" to AT for this group explicitly. */}
-          <span className="sr-only">(required)</span>
+          <RequirednessMark kind="start" />
         </legend>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Pick all that apply (Product Supply / Service / Fabrication / Consulting).
+          Pick all that apply (Product Supply / Service / Fabrication / Consulting). Stored as{" "}
+          <span className="font-mono">work_nature[]</span>.
         </p>
         <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {WORK_NATURE_OPTIONS.map((o) => (
-            <CheckboxRow
-              key={o.value}
-              id={`rfq-wn-${o.value}`}
-              label={o.label}
-              defaultChecked={form.workNature?.includes(o.value)}
-            />
-          ))}
+          {WORK_NATURE_OPTIONS.map((o) => {
+            const checked = form.workNature?.includes(o.value) ?? false;
+            return (
+              <CheckboxRow
+                key={o.value}
+                id={`rfq-wn-${o.value}`}
+                label={o.label}
+                checked={checked}
+                onChange={(event) => {
+                  const current = form.workNature ?? [];
+                  onChange({
+                    workNature: event.target.checked
+                      ? // keep the frozen set order stable, and never duplicate (Doc-2 §10.4)
+                        WORK_NATURE_OPTIONS.map((x) => x.value).filter(
+                          (v) => v === o.value || current.includes(v),
+                        )
+                      : current.filter((v) => v !== o.value),
+                  });
+                }}
+              />
+            );
+          })}
         </div>
       </fieldset>
-      <ItemRequirementsTable rows={form.itemRows} />
+      <ItemRequirementsTable rows={form.itemRows} onChange={(itemRows) => onChange({ itemRows })} />
     </SectionCard>
   );
 }
 
 // ── Phase 3 — Technical requirements ──────────────────────────────────────────────────────────────────
-export function TechnicalSection({ form }: { form: RfqDraftForm }) {
+export function TechnicalSection({
+  form,
+  onChange,
+  minScopeChars,
+}: SectionProps & {
+  /** POLICY `rfq.min_scope_chars` — SERVER-PROVIDED (Doc-3 §12.2). Never hardcoded here. */
+  minScopeChars: number;
+}) {
+  const scopeLength = (form.scopeText ?? "").trim().length;
+  const scopeMeterOn = form.noFormalSpec === true;
+  const scopeMet = scopeLength >= minScopeChars;
+
   return (
     <SectionCard title="Technical requirements">
       <FormField
         id="rfq-scope"
-        label="Specifications"
-        description="Describe the requirement — grade, dimensions, tolerances, scope of work. Required to submit."
+        label={
+          <span className="inline-flex items-center gap-2">
+            Specifications
+            <RequirednessMark kind={scopeMeterOn ? "submit" : "conditional"} />
+          </span>
+        }
+        description="Grade, dimensions, tolerances, scope of work. The submission gate needs either an attachment or a written scope."
         className="sm:col-span-2"
       >
         <Textarea
           rows={6}
-          defaultValue={form.scopeText}
+          value={form.scopeText ?? ""}
+          onChange={(event) => onChange({ scopeText: event.target.value })}
           placeholder="Specification, scope, and acceptance criteria…"
         />
       </FormField>
+
+      {/* The conditional requirement, made visible: with `no_formal_spec` set, the written scope
+          must reach POLICY `rfq.min_scope_chars` (Doc-3 §1.2). The threshold comes from the server. */}
+      {scopeMeterOn ? (
+        <div className="sm:col-span-2">
+          <div className="h-1 overflow-hidden rounded-full bg-border">
+            <span
+              className={cn(
+                "block h-full rounded-full transition-[width] duration-200 ease-iv-out",
+                scopeMet ? "bg-iv-success-base" : "bg-iv-warning-base",
+              )}
+              style={{
+                width: `${Math.min(100, Math.round((scopeLength / minScopeChars) * 100))}%`,
+              }}
+            />
+          </div>
+          <p
+            className={cn(
+              "mt-1.5 text-xs",
+              scopeMet
+                ? "text-iv-success-muted dark:text-iv-success-text"
+                : "text-muted-foreground",
+            )}
+          >
+            {scopeLength} of {minScopeChars} characters
+          </p>
+        </div>
+      ) : null}
+
       <div className="sm:col-span-2">
         <CheckboxRow
           id="rfq-noformalspec"
           label="I don't have a formal specification document"
-          defaultChecked={form.noFormalSpec}
+          checked={form.noFormalSpec ?? false}
+          onChange={(event) => onChange({ noFormalSpec: event.target.checked })}
         />
       </div>
       <FormField
         id="rfq-brand"
         label="Brand preference"
         inputProps={{
-          defaultValue: form.brandPreference,
+          value: form.brandPreference ?? "",
+          onChange: (event) => onChange({ brandPreference: event.target.value }),
           placeholder: "Preferred brand (optional)",
         }}
       />
       <FormField
         id="rfq-altbrand"
         label="Alternative brand"
-        inputProps={{ defaultValue: form.alternativeBrand, placeholder: "Acceptable alternative" }}
+        inputProps={{
+          value: form.alternativeBrand ?? "",
+          onChange: (event) => onChange({ alternativeBrand: event.target.value }),
+          placeholder: "Acceptable alternative",
+        }}
       />
       <FormField id="rfq-condition" label="Product condition">
         <Select
           options={CONDITION_OPTIONS}
           placeholder="Select condition"
-          defaultValue={form.productCondition ?? ""}
+          value={form.productCondition ?? ""}
+          onChange={(event) => onChange({ productCondition: event.target.value })}
         />
       </FormField>
       <FormField
         id="rfq-standards"
         label="Standards"
-        inputProps={{ defaultValue: form.standards, placeholder: "e.g. ASTM A36, ISO 9001" }}
+        inputProps={{
+          value: form.standards ?? "",
+          onChange: (event) => onChange({ standards: event.target.value }),
+          placeholder: "e.g. ASTM A36, ISO 9001",
+        }}
       />
       <FormField
         id="rfq-certs"
         label="Certifications"
         className="sm:col-span-2"
         inputProps={{
-          defaultValue: form.certifications,
+          value: form.certifications ?? "",
+          onChange: (event) => onChange({ certifications: event.target.value }),
           placeholder: "e.g. EN 10204 3.1, mill test cert",
         }}
       />
@@ -224,40 +320,68 @@ export function TechnicalSection({ form }: { form: RfqDraftForm }) {
 }
 
 // ── Delivery requirements ─────────────────────────────────────────────────────────────────────────────
-export function DeliverySection({ form }: { form: RfqDraftForm }) {
+export function DeliverySection({ form, onChange }: SectionProps) {
   return (
     <SectionCard title="Delivery requirements">
       <FormField
         id="rfq-location"
-        label="Delivery location"
-        inputProps={{ defaultValue: form.deliveryLocation, placeholder: "Site / address" }}
+        label={
+          <span className="inline-flex items-center gap-2">
+            Delivery location
+            <RequirednessMark kind="optional" />
+          </span>
+        }
+        inputProps={{
+          value: form.deliveryLocation ?? "",
+          onChange: (event) => onChange({ deliveryLocation: event.target.value }),
+          placeholder: "Site / address",
+        }}
       />
-      {/* FZ-06: `required` (asterisk + aria-required) — the frozen submission FIXED-set marks
-          `delivery_geography` required at submit (rfq-form-models.ts:23-24), same convention as
-          Category/Request type; draft itself stays permissive (Doc-3 §1.2), never enforced here. */}
+      {/* `delivery_geography` at least to district level is in the frozen submission FIXED-set
+          (Doc-3 §1.2). Marked as required-before-submission, never enforced client-side — the draft
+          itself stays permissive. */}
       <FormField
         id="rfq-district"
-        label="Delivery district"
-        description="At least a district is required to submit."
-        required
-        inputProps={{ defaultValue: form.district, placeholder: "e.g. Gazipur" }}
+        label={
+          <span className="inline-flex items-center gap-2">
+            Delivery district
+            <RequirednessMark kind="submit" />
+          </span>
+        }
+        description="At least a district is needed before you can submit."
+        inputProps={{
+          value: form.district ?? "",
+          onChange: (event) => onChange({ district: event.target.value }),
+          placeholder: "e.g. Gazipur",
+        }}
       />
       <FormField
         id="rfq-date"
-        label="Required delivery date"
-        inputProps={{ defaultValue: form.deliveryDate, type: "date" }}
+        label={
+          <span className="inline-flex items-center gap-2">
+            Required delivery date
+            <RequirednessMark kind="optional" />
+          </span>
+        }
+        inputProps={{
+          value: form.deliveryDate ?? "",
+          onChange: (event) => onChange({ deliveryDate: event.target.value }),
+          type: "date",
+        }}
       />
       <FormField id="rfq-site" label="Delivery site">
         <Select
           options={DELIVERY_SITE_OPTIONS}
           placeholder="Factory / Warehouse / Site"
-          defaultValue={form.deliverySite ?? ""}
+          value={form.deliverySite ?? ""}
+          onChange={(event) => onChange({ deliverySite: event.target.value })}
         />
       </FormField>
       <FormField id="rfq-instructions" label="Delivery instructions" className="sm:col-span-2">
         <Textarea
           rows={3}
-          defaultValue={form.deliveryInstructions}
+          value={form.deliveryInstructions ?? ""}
+          onChange={(event) => onChange({ deliveryInstructions: event.target.value })}
           placeholder="Access, unloading, timing, packaging…"
         />
       </FormField>
@@ -265,37 +389,48 @@ export function DeliverySection({ form }: { form: RfqDraftForm }) {
   );
 }
 
-// ── Budget & priority (OPTIONAL — commercial GUIDANCE, not commercial terms; payment/incoterms/tax live
-//    on the VENDOR quotation, Board ruling 2026-07-01) ────────────────────────────────────────────────
-export function BudgetSection({ form }: { form: RfqDraftForm }) {
+// ── Estimated value & priority ────────────────────────────────────────────────────────────────────────
+// CORRECTED 2026-07-24 (owner ruling D3 — MAJOR, mandatory). This card previously read "Budget &
+// priority (optional)" with the helper "Optional guidance for vendors", which contradicts the frozen
+// gate: Doc-3 §1.2 puts `estimated_value` present and > 0 BDT INSIDE the submission FIXED-set. It
+// stays non-blocking while drafting, but it is never presented as optional.
+//
+// It remains commercial GUIDANCE, not commercial terms: payment / incoterms / tax are defined by the
+// VENDOR in its quotation (Board ruling 2026-07-01), and the platform moves no money (R8).
+export function BudgetSection({ form, onChange }: SectionProps) {
   return (
-    <SectionCard title="Budget & priority (optional)">
-      {/* Made fully optional in the wizard (no asterisk/required marker) per product direction — the
-          frozen submission FIXED-set (rfq-form-models.ts) still lists `estimated_value` as a backend
-          submit-time field, but the buyer is never forced to state a budget figure client-side. */}
+    <SectionCard title="Estimated value & priority">
       <FormField
         id="rfq-budget"
-        label="Estimated budget (BDT)"
-        description="Optional guidance for vendors. No currency selector: BDT at create."
+        label={
+          <span className="inline-flex items-center gap-2">
+            Estimated value (BDT)
+            <RequirednessMark kind="submit" />
+          </span>
+        }
+        description="Needed before you can submit. Sizes and routes your request; it is not a commitment, and no currency selector — BDT at create."
         inputProps={{
-          defaultValue: form.budget,
+          value: form.budget ?? "",
+          onChange: (event) => onChange({ budget: event.target.value }),
           type: "number",
           inputMode: "decimal",
           min: 0,
-          placeholder: "e.g. 1,800,000",
+          placeholder: "e.g. 1800000",
         }}
       />
       <FormField id="rfq-urgency" label="Urgency">
         <Select
           options={URGENCY_OPTIONS}
           placeholder="Standard"
-          defaultValue={form.urgency ?? ""}
+          value={form.urgency ?? ""}
+          onChange={(event) => onChange({ urgency: event.target.value })}
         />
       </FormField>
       <FormField id="rfq-special" label="Special instructions" className="sm:col-span-2">
         <Textarea
           rows={3}
-          defaultValue={form.specialInstructions}
+          value={form.specialInstructions ?? ""}
+          onChange={(event) => onChange({ specialInstructions: event.target.value })}
           placeholder="Anything else vendors should know — not commercial terms (those come in the quote)…"
         />
       </FormField>
@@ -304,36 +439,54 @@ export function BudgetSection({ form }: { form: RfqDraftForm }) {
 }
 
 // ── Phase 6 — Vendor preferences ──────────────────────────────────────────────────────────────────────
-export function VendorSection({ form }: { form: RfqDraftForm }) {
+export function VendorSection({ form, onChange }: SectionProps) {
   return (
     <SectionCard title="Vendor preferences">
-      {/* FZ-06: `required` (asterisk + aria-required) — `routing_mode` is in the frozen submission
-          FIXED-set (rfq-form-models.ts:23-24), previously not flagged at all; draft itself stays
-          permissive (Doc-3 §1.2), never enforced here. */}
+      {/* `routing_mode` is in the frozen submission FIXED-set (Doc-3 §1.2). The buyer sets BREADTH;
+          the engine decides who is invited (R6) — never a dispatch, never a matching weight. */}
       <FormField
         id="rfq-routing"
-        label="Routing"
+        label={
+          <span className="inline-flex items-center gap-2">
+            Routing breadth
+            <RequirednessMark kind="submit" />
+          </span>
+        }
         description="How broadly to route this RFQ. The matching engine still decides who is invited. Routing preferences affect vendor matching only. They never make an RFQ public."
         className="sm:col-span-2"
-        required
       >
         <Select
           options={ROUTING_MODE_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
           placeholder="Select routing breadth"
-          defaultValue={form.routingMode ?? ""}
+          value={form.routingMode ?? ""}
+          onChange={(event) =>
+            onChange({
+              routingMode: (event.target.value || undefined) as RfqDraftForm["routingMode"],
+            })
+          }
         />
       </FormField>
       <FormField
         id="rfq-prefvendor"
-        label="Preferred vendor"
-        description="Search your network (presentation only — search connects later)."
-        inputProps={{ defaultValue: form.preferredVendor, placeholder: "Search vendors…" }}
+        label={
+          <span className="inline-flex items-center gap-2">
+            Preferred vendor
+            <RequirednessMark kind="optional" label="Optional hint" />
+          </span>
+        }
+        description="A preference hint only — never an invitation or a dispatch."
+        inputProps={{
+          value: form.preferredVendor ?? "",
+          onChange: (event) => onChange({ preferredVendor: event.target.value }),
+          placeholder: "Search vendors…",
+        }}
       />
       <FormField id="rfq-vendortype" label="Vendor type">
         <Select
           options={VENDOR_TYPE_OPTIONS}
           placeholder="Any"
-          defaultValue={form.manufacturerOrImporter ?? ""}
+          value={form.manufacturerOrImporter ?? ""}
+          onChange={(event) => onChange({ manufacturerOrImporter: event.target.value })}
         />
       </FormField>
       <FormField
@@ -344,19 +497,26 @@ export function VendorSection({ form }: { form: RfqDraftForm }) {
         <Select
           options={FINANCIAL_TIER_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
           placeholder="Any tier"
-          defaultValue={form.financialTier ?? ""}
+          value={form.financialTier ?? ""}
+          onChange={(event) =>
+            onChange({
+              financialTier: (event.target.value || undefined) as RfqDraftForm["financialTier"],
+            })
+          }
         />
       </FormField>
       <div className="flex flex-col gap-2 sm:col-span-2">
         <CheckboxRow
           id="rfq-verified"
           label="Verified vendors only"
-          defaultChecked={form.verifiedOnly}
+          checked={form.verifiedOnly ?? false}
+          onChange={(event) => onChange({ verifiedOnly: event.target.checked })}
         />
         <CheckboxRow
           id="rfq-acceptalt"
           label="Accept alternative products / brands"
-          defaultChecked={form.acceptAlternatives}
+          checked={form.acceptAlternatives ?? false}
+          onChange={(event) => onChange({ acceptAlternatives: event.target.checked })}
         />
       </div>
     </SectionCard>

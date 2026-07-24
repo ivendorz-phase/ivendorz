@@ -80,8 +80,15 @@ export interface RfqDraftForm {
   /** `category_id` (the picker's value is the opaque category id; the label is display). */
   categoryId?: string;
   categoryLabel?: string;
+  /** Display-only breadcrumb for the chosen category (group trail + label). Never an id. */
+  categoryPath?: string;
   /** `work_nature[]` — the frozen set (Request Type). */
   workNature?: WorkNature[];
+  /** Which buyer-facing Procurement Mode label produced `workNature` — presentation memory only
+   *  (RFQ-CREATION-BUSINESS-MODEL.md §2 crosswalk). It coins NO RFQ field and is never sent: the
+   *  stored value is `work_nature[]`. Held so the Zone-1 gate can re-show the buyer's own choice
+   *  when two modes map to the same frozen set (e.g. Installation vs Commissioning). */
+  procurementMode?: string;
   /** Dev-doc capture → serialized into scope_text/content_jsonb. */
   itemName?: string;
   quantity?: string;

@@ -3,6 +3,7 @@
 // incoterms, …) are real-world option sets the surface serializes into `scope_text`/`content_jsonb` — they
 // coin no FROZEN contract enum. Presentation-only.
 
+import { VENDOR_TYPE_PRESETS } from "../../../../_components/vendor/company/vendor-type-presets";
 import type { WorkNature, RoutingMode, FinancialTier } from "./rfq-form-models";
 
 export interface Option<T extends string = string> {
@@ -106,13 +107,27 @@ export const CONTACT_TIME_OPTIONS: Option[] = [
   { value: "evening", label: "Evening" },
 ];
 
-/** Vendor type preference — presentation list (a routing/preference hint, not a matching weight). */
-export const VENDOR_TYPE_OPTIONS: Option[] = [
-  { value: "any", label: "Any" },
-  { value: "manufacturer", label: "Manufacturer" },
-  { value: "importer", label: "Importer" },
-  { value: "distributor", label: "Distributor" },
-];
+// ── Vendor type preset ────────────────────────────────────────────────────────────────────────────────
+// REPLACED 2026-07-24. This list previously held four INVENTED buyer-local values
+// (`any` / `manufacturer` / `importer` / `distributor`) matching no governed register.
+//
+// The value domain of `marketplace.vendor_profiles.vendor_type_preset` is a CLOSED SIX-MEMBER set
+// owned by Doc-2 §10.3 (`Doc-2_Patch_v1.0.13_VendorTypePresetValues`, PATCH-D2-10, folded
+// 2026-07-22), bound by pointer to the six rows re-frozen by `AMD-MA-VTP-1`. The five-value
+// v1.0.11 / v1.0.12 drafts are reserved-superseded — do not backfill.
+//
+// OWNERSHIP: the buyer workspace does not own vendor types and keeps NO copy. It CONSUMES the single
+// register (`_components/vendor/company/vendor-type-presets.ts`) that the vendor picker and profile
+// overview already read. Only `slug` + `label` are used: a preset is a LABEL, never the capability
+// source of truth, and nothing here reads the capability `seeds` or derives a preset back from the
+// four flags (Invariant 1 — the flags drive matching, never the preset name).
+//
+// "Any" is the ABSENCE of a preference, not a preset value — it is the Select's placeholder and
+// carries the empty string, so an unset preference never serialises as a governed slug.
+export const VENDOR_TYPE_OPTIONS: Option[] = VENDOR_TYPE_PRESETS.map((preset) => ({
+  value: preset.slug,
+  label: preset.label,
+}));
 
 // ── Wizard steps (the progress indicator) ────────────────────────────────────────────────────────────
 

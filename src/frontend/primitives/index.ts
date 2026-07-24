@@ -4,10 +4,12 @@
 // DEFERRED primitives (demand-driven — vendor when a surface first needs one; NOT a silent cap):
 //   select · checkbox · radio · switch · toast · table
 // (`table` arrives with the `data-table` app-component; `toast` with the Doc-7C notification center.
-//  `popover` · `accordion` · `navigation-menu` vendored 2026-07-03 by FE-PUB-09 MEGA_MENU Phase 0.)
+//  `popover` · `accordion` · `navigation-menu` vendored 2026-07-03 by FE-PUB-09 MEGA_MENU Phase 0.
+//  `combobox` promoted 2026-07-24 from the new-rfq Stage-3 prototype — owner ruling D6.)
 
 export * from "./button";
 export * from "./input";
+export * from "./combobox";
 export * from "./badge";
 export * from "./card";
 export * from "./skeleton";

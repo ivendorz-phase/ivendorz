@@ -68,7 +68,15 @@ function saveBundles(bundles: TermsBundle[]) {
   }
 }
 
-export function TermsConditionsSection({ terms }: { terms?: string[] }) {
+export function TermsConditionsSection({
+  terms,
+  onChange,
+}: {
+  terms?: string[];
+  /** Reports the non-empty conditions up to the surface's single draft. The row ids stay internal
+   *  (they exist only to keep React keys stable while editing). */
+  onChange?: (terms: string[]) => void;
+}) {
   const [rows, setRows] = React.useState<TermRow[]>(() => toRows(terms));
   const [bundles, setBundles] = React.useState<TermsBundle[]>([]);
   const [selectedBundleId, setSelectedBundleId] = React.useState("");
@@ -79,6 +87,18 @@ export function TermsConditionsSection({ terms }: { terms?: string[] }) {
   React.useEffect(() => {
     setBundles(loadBundles());
   }, []);
+
+  // Lift the edited conditions into the draft. One-way: the parent seeds the initial rows and then
+  // receives updates, so there is no feedback loop.
+  const reportedRef = React.useRef<string>("");
+  React.useEffect(() => {
+    if (!onChange) return;
+    const values = rows.map((r) => r.value.trim()).filter(Boolean);
+    const signature = JSON.stringify(values);
+    if (signature === reportedRef.current) return;
+    reportedRef.current = signature;
+    onChange(values);
+  }, [rows, onChange]);
 
   function updateRow(id: string, value: string) {
     setRows((cur) => cur.map((r) => (r.id === id ? { ...r, value } : r)));
@@ -165,15 +185,22 @@ export function TermsConditionsSection({ terms }: { terms?: string[] }) {
               onClick={() => setSaveOpen((v) => !v)}
             >
               <Save aria-hidden className="size-3.5" />
-              Save as bundle
+              Save as bundle on this device
             </Button>
           </div>
         </div>
 
         {saveOpen ? (
           <div className="rounded-md border border-dashed border-border bg-secondary/40 p-3">
-            <p className="text-xs text-muted-foreground">
-              Save the current rows (non-empty ones) as a reusable bundle for future RFQs. Up to{" "}
+            {/* Owner ruling D5 (2026-07-24): the capability stays, and its scope is disclosed
+                accurately. It is NOT an organization template and implies no synchronisation.
+                Organization-owned reusable commercial terms is a future governed capability. */}
+            <p className="text-xs font-medium text-iv-warning-muted dark:text-iv-warning-text">
+              Available only in this browser on this device. It is not shared with other members of
+              your organization.
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Save the current rows (non-empty ones) for reuse on your own machine. Up to{" "}
               {MAX_BUNDLES} bundles are kept — saving a 6th replaces the oldest.
             </p>
             <div className="mt-2 flex items-center gap-2">

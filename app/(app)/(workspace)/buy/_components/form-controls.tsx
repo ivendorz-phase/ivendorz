@@ -98,6 +98,9 @@ export interface RadioRowProps {
   value: string;
   label: React.ReactNode;
   defaultChecked?: boolean;
+  /** Controlled mode — supply with `onChange`. Uncontrolled callers keep using `defaultChecked`. */
+  checked?: boolean;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
   disabled?: boolean;
 }
 
@@ -106,7 +109,16 @@ export interface RadioRowProps {
  *  radio. For a caller whose OWN element is already the label (e.g. a selectable card), use
  *  `RADIO_INPUT_CLASS` directly on a bare `<input>` instead — nesting this component's `<label>` inside
  *  another `<label>` would be invalid HTML. */
-export function RadioRow({ id, name, value, label, defaultChecked, disabled }: RadioRowProps) {
+export function RadioRow({
+  id,
+  name,
+  value,
+  label,
+  defaultChecked,
+  checked,
+  onChange,
+  disabled,
+}: RadioRowProps) {
   return (
     <label
       htmlFor={id}
@@ -118,7 +130,7 @@ export function RadioRow({ id, name, value, label, defaultChecked, disabled }: R
         id={id}
         name={name}
         value={value}
-        defaultChecked={defaultChecked}
+        {...(onChange ? { checked: checked ?? false, onChange } : { defaultChecked })}
         disabled={disabled}
         className={RADIO_INPUT_CLASS}
       />

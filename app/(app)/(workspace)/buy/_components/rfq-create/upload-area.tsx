@@ -9,7 +9,15 @@ import { UploadCloud, Paperclip, AlertTriangle } from "lucide-react";
 import { cn } from "@/frontend/lib/cn";
 import type { RfqAttachment } from "./rfq-form-models";
 
-export function UploadArea({ attachments }: { attachments?: RfqAttachment[] }) {
+export function UploadArea({
+  attachments,
+  onChange,
+}: {
+  attachments?: RfqAttachment[];
+  /** Removal is wired so the buyer can undo a mistaken attachment; ADDING still needs a real
+   *  upload grant (`[ESC-7-API/upload]`) and stays absent rather than faked. */
+  onChange?: (attachments: RfqAttachment[]) => void;
+}) {
   const files = attachments ?? [];
   return (
     <div className="flex flex-col gap-3">
@@ -56,6 +64,16 @@ export function UploadArea({ attachments }: { attachments?: RfqAttachment[] }) {
                 ) : (
                   <span className="ml-auto shrink-0 text-xs text-muted-foreground">Ready</span>
                 )}
+                {onChange ? (
+                  <button
+                    type="button"
+                    aria-label={`Remove ${f.name}`}
+                    className="shrink-0 rounded-md px-1.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    onClick={() => onChange(files.filter((x) => x.id !== f.id))}
+                  >
+                    Remove
+                  </button>
+                ) : null}
               </li>
             );
           })}

@@ -141,24 +141,43 @@ export function parsePastedRows(text: string): RfqItemRow[] {
   return parsed;
 }
 
-export function ItemRequirementsTable({ rows: initialRows }: { rows?: RfqItemRow[] }) {
-  const [rows, setRows] = React.useState<RfqItemRow[]>(() =>
-    initialRows && initialRows.length > 0 ? initialRows : [blankRow()],
-  );
+/** A stable seed row, so an empty list still shows one editable line without minting a fresh id on
+ *  every render (which would destroy focus and remount the rich-text editors). */
+const SEED_ROW: RfqItemRow = {
+  id: "row-seed",
+  prNumber: "",
+  itemName: "",
+  size: "",
+  quantity: "",
+  unit: "",
+  description: "",
+};
+
+export function ItemRequirementsTable({
+  rows: rowsProp,
+  onChange: setRows,
+}: {
+  rows?: RfqItemRow[];
+  /** CONTROLLED (2026-07-24): rows live in the surface's single `RfqDraftForm`, so readiness, the
+   *  rail and the preview all read the same lines. This component owns no draft state. */
+  onChange: (rows: RfqItemRow[]) => void;
+}) {
+  const rows = rowsProp && rowsProp.length > 0 ? rowsProp : [SEED_ROW];
   const [pasteOpen, setPasteOpen] = React.useState(false);
   const [pasteValue, setPasteValue] = React.useState("");
   const [pasteError, setPasteError] = React.useState("");
 
   function updateRow(id: string, patch: Partial<RfqItemRow>) {
-    setRows((cur) => cur.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+    setRows(rows.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   }
 
   function addRow() {
-    setRows((cur) => [...cur, blankRow()]);
+    setRows([...rows, blankRow()]);
   }
 
   function removeRow(id: string) {
-    setRows((cur) => (cur.length > 1 ? cur.filter((r) => r.id !== id) : cur));
+    if (rows.length <= 1) return;
+    setRows(rows.filter((r) => r.id !== id));
   }
 
   function handleImportPaste(append: boolean) {
@@ -173,7 +192,7 @@ export function ItemRequirementsTable({ rows: initialRows }: { rows?: RfqItemRow
       );
       return;
     }
-    setRows((cur) => (append ? [...cur, ...parsed] : parsed));
+    setRows(append ? [...rows, ...parsed] : parsed);
     setPasteValue("");
     setPasteError("");
     setPasteOpen(false);

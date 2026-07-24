@@ -12,7 +12,13 @@ import { CONTACT_TIME_OPTIONS } from "./rfq-options";
 import type { RfqDraftForm } from "./rfq-form-models";
 import { TitledCard } from "./rfq-sections";
 
-export function CommunicationSection({ form }: { form: RfqDraftForm }) {
+export function CommunicationSection({
+  form,
+  onChange,
+}: {
+  form: RfqDraftForm;
+  onChange: (patch: Partial<RfqDraftForm>) => void;
+}) {
   const [whatsappEnabled, setWhatsappEnabled] = React.useState(!!form.contactWhatsapp);
 
   return (
@@ -35,7 +41,8 @@ export function CommunicationSection({ form }: { form: RfqDraftForm }) {
             id="rfq-contact-person"
             label="Contact person"
             inputProps={{
-              defaultValue: form.contactPersonName,
+              value: form.contactPersonName ?? "",
+              onChange: (event) => onChange({ contactPersonName: event.target.value }),
               placeholder: "e.g. Engr. Kamrul Hassan",
             }}
           />
@@ -43,7 +50,8 @@ export function CommunicationSection({ form }: { form: RfqDraftForm }) {
             id="rfq-contact-number"
             label="Contact number"
             inputProps={{
-              defaultValue: form.contactPersonNumber,
+              value: form.contactPersonNumber ?? "",
+              onChange: (event) => onChange({ contactPersonNumber: event.target.value }),
               type: "tel",
               inputMode: "tel",
               placeholder: "+880 1XXXXXXXXX",
@@ -68,14 +76,27 @@ export function CommunicationSection({ form }: { form: RfqDraftForm }) {
             defaultChecked
             disabled
           />
-          <CheckboxRow id="rfq-cm-phone" label="Phone call" defaultChecked={form.contactPhone} />
+          <CheckboxRow
+            id="rfq-cm-phone"
+            label="Phone call"
+            checked={form.contactPhone ?? false}
+            onChange={(event) => onChange({ contactPhone: event.target.checked })}
+          />
           <CheckboxRow
             id="rfq-cm-whatsapp"
             label="WhatsApp"
             checked={whatsappEnabled}
-            onChange={(e) => setWhatsappEnabled(e.target.checked)}
+            onChange={(event) => {
+              setWhatsappEnabled(event.target.checked);
+              onChange({ contactWhatsapp: event.target.checked });
+            }}
           />
-          <CheckboxRow id="rfq-cm-email" label="Email" defaultChecked={form.contactEmail} />
+          <CheckboxRow
+            id="rfq-cm-email"
+            label="Email"
+            checked={form.contactEmail ?? false}
+            onChange={(event) => onChange({ contactEmail: event.target.checked })}
+          />
         </div>
       </fieldset>
 
@@ -88,12 +109,14 @@ export function CommunicationSection({ form }: { form: RfqDraftForm }) {
             <CheckboxRow
               id="rfq-wa-allow"
               label="Allow verified vendors to contact me via WhatsApp"
-              defaultChecked={form.whatsappAllow}
+              checked={form.whatsappAllow ?? false}
+              onChange={(event) => onChange({ whatsappAllow: event.target.checked })}
             />
             <CheckboxRow
               id="rfq-wa-useaccount"
               label="Use my account phone number"
-              defaultChecked={form.whatsappUseAccount}
+              checked={form.whatsappUseAccount ?? false}
+              onChange={(event) => onChange({ whatsappUseAccount: event.target.checked })}
             />
           </div>
           <div className="mt-3">
@@ -102,7 +125,8 @@ export function CommunicationSection({ form }: { form: RfqDraftForm }) {
               label="Alternative WhatsApp number"
               description="Only if different from your account number."
               inputProps={{
-                defaultValue: form.whatsappNumber,
+                value: form.whatsappNumber ?? "",
+                onChange: (event) => onChange({ whatsappNumber: event.target.value }),
                 type: "tel",
                 inputMode: "tel",
                 placeholder: "+880 1XXXXXXXXX",
@@ -129,7 +153,8 @@ export function CommunicationSection({ form }: { form: RfqDraftForm }) {
               name="rfq-contacttime"
               value={o.value}
               label={o.label}
-              defaultChecked={form.preferredContactTime === o.value}
+              checked={form.preferredContactTime === o.value}
+              onChange={() => onChange({ preferredContactTime: o.value })}
             />
           ))}
         </div>
