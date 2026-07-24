@@ -209,15 +209,16 @@ can_fabricate   — custom/made-to-order fabrication, production
 can_consult     — advisory, design, engineering consultancy
 ```
 
-Five named vendor types exist purely as **presets** over these flags, with vendor-elected **overrides** ("Additional Capabilities") on top:
+Six named vendor types exist purely as **presets** over these flags, with vendor-elected **overrides** ("Additional Capabilities") on top:
 
 | Vendor Type (preset) | supply | service | fabricate | consult |
 |---|:---:|:---:|:---:|:---:|
-| Service Provider / Consultant | – | – | – | ✓ |
+| Consultant | – | – | – | ✓ |
 | MRO / Retail Supplier | ✓ | – | – | – |
 | Importer / Equipment Seller | ✓ | – | – | – |
-| Manufacturer | ✓ | – | ✓ | – |
+| Manufacturer / Workshop | ✓ | – | ✓ | – |
 | Engineering Firm | ✓ | ✓ | ✓ | ✓ |
+| Service Provider | – | ✓ | – | – |
 
 A vendor may enable additional capability flags beyond its preset (for example, an Importer that also performs installation and commissioning enables `can_service`). The preset seeds the flags; the flags — not the preset name — drive all matching.
 
